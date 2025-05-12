@@ -3,7 +3,7 @@
 import { useContext } from "react";
 import Link from "next/link";
 import { useSelectedLayoutSegment } from "next/navigation";
-// import { useSession } from "next-auth/react";
+import { useSession } from "next-auth/react";
 
 import { marketingConfig } from "@/config/marketing";
 import { siteConfig } from "@/config/site";
@@ -22,7 +22,7 @@ interface NavBarProps {
 
 export function NavBar({ scroll = false }: NavBarProps) {
   const scrolled = useScroll(50);
-  // const { data: session, status } = useSession();
+  const { data: session, status } = useSession();
   const { setShowSignInModal } = useContext(ModalContext);
 
   const selectedLayout = useSelectedLayoutSegment();
@@ -76,9 +76,9 @@ export function NavBar({ scroll = false }: NavBarProps) {
         <div className="flex items-center space-x-3">
           {/* right header for docs */}
 
-          {/* {session ? (
+          {session ? (
             <Link
-              href={session.user.role === "ADMIN" ? "/admin" : "/dashboard"}
+              href={session.user.role === "INSTITUTION" ? "/admin" : "/dashboard"}
               className="hidden md:block"
             >
               <Button
@@ -90,20 +90,20 @@ export function NavBar({ scroll = false }: NavBarProps) {
                 <span>Dashboard</span>
               </Button>
             </Link>
-          ) : status === "unauthenticated" ? ( */}
+          ) : status === "unauthenticated" ? (
             <Button
               className="hidden gap-2 px-5 md:flex"
               variant="default"
               size="sm"
-              // rounded="full"
+              rounded="full"
               onClick={() => setShowSignInModal(true)}
             >
               <span>Sign In</span>
               <Icons.arrowRight className="size-4" />
             </Button>
-          {/* ) : (
+          ) : (
             <Skeleton className="hidden h-9 w-28 rounded-full lg:flex" />
-          )} */}
+          )}
         </div>
       </MaxWidthWrapper>
     </header>

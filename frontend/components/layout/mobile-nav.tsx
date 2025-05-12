@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useSelectedLayoutSegment } from "next/navigation";
 import { Menu, X } from "lucide-react";
-// import { useSession } from "next-auth/react";
+import { useSession } from "next-auth/react";
 
 // import { docsConfig } from "@/config/docs";
 import { marketingConfig } from "@/config/marketing";
@@ -15,7 +15,7 @@ import { Icons } from "@/components/shared/icons";
 import { ModeToggle } from "./mode-toggle";
 
 export function NavMobile() {
-  // const { data: session } = useSession();
+  const { data: session } = useSession();
   const [open, setOpen] = useState(false);
   const selectedLayout = useSelectedLayoutSegment();
   // const documentation = selectedLayout === "docs";
@@ -24,8 +24,8 @@ export function NavMobile() {
     // docs: docsConfig.mainNav,
   };
 
-  // const links =
-  //   (selectedLayout && configMap[selectedLayout]) || marketingConfig.mainNav;
+  const links =
+    selectedLayout || marketingConfig.mainNav;
 
   // prevent body scroll when modal is open
   useEffect(() => {
@@ -59,7 +59,7 @@ export function NavMobile() {
         )}
       >
         <ul className="grid divide-y divide-muted">
-          {/* {links && links.length > 0 && links.map(({ title, href }) => (
+          {links && links.length > 0 && links?.map(({ title, href }:any) => (
             <li key={href} className="py-3">
               <Link
                 href={href}
@@ -69,11 +69,11 @@ export function NavMobile() {
                 {title}
               </Link>
             </li>
-          ))} */}
+          ))}
 
-          {/* {session ? (
+          {session ? (
             <>
-              {session.user.role === "ADMIN" ? (
+              {session.user.role === "INSTITUTION" ? (
                 <li className="py-3">
                   <Link
                     href="/admin"
@@ -95,7 +95,7 @@ export function NavMobile() {
                 </Link>
               </li>
             </>
-          ) : ( */}
+          ) : (
             <>
               <li className="py-3">
                 <Link
@@ -117,7 +117,7 @@ export function NavMobile() {
                 </Link>
               </li>
             </>
-          {/* )} */}
+          )}
         </ul>
 
         <div className="mt-5 flex items-center justify-end space-x-4">

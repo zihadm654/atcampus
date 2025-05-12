@@ -1,16 +1,16 @@
 "use client";
 
 import { useState, useTransition } from "react";
-// import { updateUserRole, type FormData } from "@/actions/update-user-role";
+import { updateUserRole, type FormData } from "@/actions/update-user-role";
 import { zodResolver } from "@hookform/resolvers/zod";
-// import { User, UserRole } from "@prisma/client";
-// import { useSession } from "next-auth/react";
+import { User, UserRole } from "@prisma/client";
+import { useSession } from "next-auth/react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 
-// import { userRoleSchema } from "@/lib/validations/user";
-// import { Button } from "@/components/ui/button";
+import { userRoleSchema } from "@/lib/validations/user";
+import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
@@ -29,36 +29,36 @@ import {
 import { SectionColumns } from "@/components/dashboard/section-columns";
 import { Icons } from "@/components/shared/icons";
 
-// interface UserNameFormProps {
-//   user: Pick<User, "id" | "role">;
-// }
+interface UserNameFormProps {
+  user: Pick<User, "id" | "role">;
+}
 
 export function UserRoleForm({ user }: any) {
-  // const { update } = useSession();
+  const { update } = useSession();
   const [updated, setUpdated] = useState(false);
   const [isPending, startTransition] = useTransition();
-  // const updateUserRoleWithId = updateUserRole.bind(null, user.id);
+  const updateUserRoleWithId = updateUserRole.bind(null, user.id);
 
-  // const roles = Object.values(UserRole);
+  const roles = Object.values(UserRole);
   const [role, setRole] = useState(user.role);
 
   const form = useForm<FormData>({
-    // resolver: zodResolver(userRoleSchema),
-    // values: {
-    //   role: role,
-    // },
+    resolver: zodResolver(userRoleSchema),
+    values: {
+      role: role,
+    },
   });
 
   const onSubmit = (data:any) => {
     startTransition(async () => {
-      // const { status } = await updateUserRoleWithId(data);
+      const { status } = await updateUserRoleWithId(data);
 
       if (status !== "success") {
         toast.error("Something went wrong.", {
           description: "Your role was not updated. Please try again.",
         });
       } else {
-        // await update();
+        await update();
         setUpdated(false);
         toast.success("Your role has been updated.");
       }
@@ -73,7 +73,7 @@ export function UserRoleForm({ user }: any) {
           description="Select the role what you want for test the app."
         >
           <div className="flex w-full items-center gap-2">
-            {/* <FormField
+            <FormField
               control={form.control}
               name="role"
               render={({ field }) => (
@@ -105,8 +105,8 @@ export function UserRoleForm({ user }: any) {
                   <FormMessage />
                 </FormItem>
               )}
-            /> */}
-            {/* <Button
+            />
+            <Button
               type="submit"
               variant={updated ? "default" : "disable"}
               disabled={isPending || !updated}
@@ -120,7 +120,7 @@ export function UserRoleForm({ user }: any) {
                   <span className="hidden sm:inline-flex">&nbsp;Changes</span>
                 </p>
               )}
-            </Button> */}
+            </Button>
           </div>
           <div className="flex flex-col justify-between p-1">
             <p className="text-[13px] text-muted-foreground">

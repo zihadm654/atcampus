@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { LayoutDashboard, LogOut, Settings } from "lucide-react";
-// import { signOut, useSession } from "next-auth/react";
+import { LayoutDashboard, Lock, LogOut, Settings } from "lucide-react";
+import { signOut, useSession } from "next-auth/react";
 import { Drawer } from "vaul";
 
 import { useMediaQuery } from "@/hooks/use-media-query";
@@ -14,11 +14,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-// import { UserAvatar } from "@/components/shared/user-avatar";
+import { UserAvatar } from "@/components/shared/user-avatar";
 
 export function UserAccountNav() {
-  // const { data: session } = useSession();
-  // const user = session?.user;
+  const { data: session } = useSession();
+  const user = session?.user;
 
   const [open, setOpen] = useState(false);
   const closeDrawer = () => {
@@ -27,19 +27,19 @@ export function UserAccountNav() {
 
   const { isMobile } = useMediaQuery();
 
-  // if (!user)
-  //   return (
-  //     <div className="size-8 animate-pulse rounded-full border bg-muted" />
-  //   );
+  if (!user)
+    return (
+      <div className="size-8 animate-pulse rounded-full border bg-muted" />
+    );
 
   if (isMobile) {
     return (
       <Drawer.Root open={open} onClose={closeDrawer}>
         <Drawer.Trigger onClick={() => setOpen(true)}>
-          {/* <UserAvatar
+          <UserAvatar
             user={{ name: user.name || null, image: user.image || null }}
             className="size-9 border"
-          /> */}
+          />
         </Drawer.Trigger>
         <Drawer.Portal>
           <Drawer.Overlay
@@ -53,17 +53,17 @@ export function UserAccountNav() {
 
             <div className="flex items-center justify-start gap-2 p-2">
               <div className="flex flex-col">
-                {/* {user.name && <p className="font-medium">{user.name}</p>}
+                {user.name && <p className="font-medium">{user.name}</p>}
                 {user.email && (
                   <p className="w-[200px] truncate text-muted-foreground">
                     {user?.email}
                   </p>
-                )} */}
+                )}
               </div>
             </div>
 
             <ul role="list" className="mb-14 mt-1 w-full text-muted-foreground">
-              {/* {user.role === "ADMIN" ? (
+              {user.role === "INSTITUTION" ? (
                 <li className="rounded-lg text-foreground hover:bg-muted">
                   <Link
                     href="/admin"
@@ -74,7 +74,7 @@ export function UserAccountNav() {
                     <p className="text-sm">Admin</p>
                   </Link>
                 </li>
-              ) : null} */}
+              ) : null}
 
               <li className="rounded-lg text-foreground hover:bg-muted">
                 <Link
@@ -102,9 +102,9 @@ export function UserAccountNav() {
                 className="rounded-lg text-foreground hover:bg-muted"
                 onClick={(event) => {
                   event.preventDefault();
-                  // signOut({
-                  //   callbackUrl: `${window.location.origin}/`,
-                  // });
+                  signOut({
+                    callbackUrl: `${window.location.origin}/`,
+                  });
                 }}
               >
                 <div className="flex w-full items-center gap-3 px-2.5 py-2">
@@ -123,32 +123,32 @@ export function UserAccountNav() {
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger>
-        {/* <UserAvatar
+        <UserAvatar
           user={{ name: user.name || null, image: user.image || null }}
           className="size-8 border"
-        /> */}
+        />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <div className="flex items-center justify-start gap-2 p-2">
           <div className="flex flex-col space-y-1 leading-none">
-            {/* {user.name && <p className="font-medium">{user.name}</p>}
+            {user.name && <p className="font-medium">{user.name}</p>}
             {user.email && (
               <p className="w-[200px] truncate text-sm text-muted-foreground">
                 {user?.email}
               </p>
-            )} */}
+            )}
           </div>
         </div>
         <DropdownMenuSeparator />
 
-        {/* {user.role === "ADMIN" ? (
+        {user.role === "INSTITUTION" ? (
           <DropdownMenuItem asChild>
             <Link href="/admin" className="flex items-center space-x-2.5">
               <Lock className="size-4" />
               <p className="text-sm">Admin</p>
             </Link>
           </DropdownMenuItem>
-        ) : null} */}
+        ) : null}
 
         <DropdownMenuItem asChild>
           <Link href="/dashboard" className="flex items-center space-x-2.5">

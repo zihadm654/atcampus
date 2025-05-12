@@ -1,29 +1,29 @@
 "use client";
 
 import { useState, useTransition } from "react";
-// import { updateUserName, type FormData } from "@/actions/update-user-name";
+import { updateUserName, type FormData } from "@/actions/update-user-name";
 import { zodResolver } from "@hookform/resolvers/zod";
-// import { User } from "@prisma/client";
-// import { useSession } from "next-auth/react";
+import { User } from "@prisma/client";
+import { useSession } from "next-auth/react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
-// import { userNameSchema } from "@/lib/validations/user";
-// import { Button } from "@/components/ui/button";
+import { userNameSchema } from "@/lib/validations/user";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { SectionColumns } from "@/components/dashboard/section-columns";
-// import { Icons } from "@/components/shared/icons";
+import { Icons } from "@/components/shared/icons";
 
-// interface UserNameFormProps {
-//   user: Pick<User, "id" | "name">;
-// }
+interface UserNameFormProps {
+  user: Pick<User, "id" | "name">;
+}
 
-export function UserNameForm({ user }: any) {
-  // const { update } = useSession();
+export function UserNameForm({ user }: UserNameFormProps) {
+  const { update } = useSession();
   const [updated, setUpdated] = useState(false);
   const [isPending, startTransition] = useTransition();
-  // const updateUserNameWithId = updateUserName.bind(null, user.id);
+  const updateUserNameWithId = updateUserName.bind(null, user.id);
 
   const checkUpdate = (value:any) => {
     setUpdated(user.name !== value);
@@ -34,22 +34,22 @@ export function UserNameForm({ user }: any) {
     register,
     formState: { errors },
   } = useForm<FormData>({
-    // resolver: zodResolver(userNameSchema),
+    resolver: zodResolver(userNameSchema),
     defaultValues: {
-      // name: user?.name || "",
+      name: user?.name || "",
     },
   });
 
   const onSubmit = handleSubmit((data) => {
     startTransition(async () => {
-      // const { status } = await updateUserNameWithId(data);
+      const { status } = await updateUserNameWithId(data);
 
       if (status !== "success") {
         toast.error("Something went wrong.", {
           description: "Your name was not updated. Please try again.",
         });
       } else {
-        // await update();
+        await update();
         setUpdated(false);
         toast.success("Your name has been updated.");
       }
@@ -70,10 +70,10 @@ export function UserNameForm({ user }: any) {
             id="name"
             className="flex-1"
             size={32}
-            // {...register("name")}
+            {...register("name")}
             onChange={(e) => checkUpdate(e.target.value)}
           />
-          {/* <Button
+          <Button
             type="submit"
             variant={updated ? "default" : "disable"}
             disabled={isPending || !updated}
@@ -87,14 +87,14 @@ export function UserNameForm({ user }: any) {
                 <span className="hidden sm:inline-flex">&nbsp;Changes</span>
               </p>
             )}
-          </Button> */}
+          </Button>
         </div>
         <div className="flex flex-col justify-between p-1">
-          {/* {errors?.name && (
+          {errors?.name && (
             <p className="pb-0.5 text-[13px] text-red-600">
               {errors.name.message}
             </p>
-          )} */}
+          )}
           <p className="text-[13px] text-muted-foreground">Max 32 characters</p>
         </div>
       </SectionColumns>

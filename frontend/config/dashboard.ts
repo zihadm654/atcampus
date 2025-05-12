@@ -1,4 +1,4 @@
-// import { UserRole } from "@prisma/client";
+import { UserRole } from "@prisma/client";
 
 import { SidebarNavItem } from "@/types";
 
@@ -10,14 +10,14 @@ export const sidebarLinks: SidebarNavItem[] = [
         href: "/admin",
         icon: "laptop",
         title: "Admin Panel",
-        // authorizeOnly: UserRole.ADMIN,
+        authorizeOnly: UserRole.INSTITUTION,
       },
       { href: "/dashboard", icon: "dashboard", title: "Dashboard" },
       {
         href: "/dashboard/billing",
         icon: "billing",
         title: "Billing",
-        // authorizeOnly: UserRole.USER,
+        authorizeOnly: UserRole.INSTITUTION,
       },
       { href: "/dashboard/charts", icon: "lineChart", title: "Charts" },
       {
@@ -25,13 +25,13 @@ export const sidebarLinks: SidebarNavItem[] = [
         icon: "package",
         title: "Orders",
         badge: 2,
-        // authorizeOnly: UserRole.ADMIN,
+        authorizeOnly: UserRole.INSTITUTION,
       },
       {
         href: "#/dashboard/posts",
         icon: "post",
         title: "User Posts",
-        // authorizeOnly: UserRole.USER,
+        authorizeOnly: UserRole.INSTITUTION,
         disabled: true,
       },
     ],

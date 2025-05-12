@@ -3,7 +3,7 @@
 import * as React from "react";
 import { useSearchParams } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
-// import { signIn } from "next-auth/react";
+import { signIn } from "next-auth/react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 
@@ -36,19 +36,19 @@ export function UserAuthForm({ className, type, ...props }: UserAuthFormProps) {
   async function onSubmit(data: FormData) {
     setIsLoading(true);
 
-    // const signInResult = await signIn("resend", {
-    //   email: data.email.toLowerCase(),
-    //   redirect: false,
-    //   callbackUrl: searchParams?.get("from") || "/dashboard",
-    // });
+    const signInResult = await signIn("resend", {
+      email: data.email.toLowerCase(),
+      redirect: false,
+      callbackUrl: searchParams?.get("from") || "/dashboard",
+    });
 
     setIsLoading(false);
 
-    // if (!signInResult?.ok) {
-    //   return toast.error("Something went wrong.", {
-    //     description: "Your sign in request failed. Please try again."
-    //   });
-    // }
+    if (!signInResult?.ok) {
+      return toast.error("Something went wrong.", {
+        description: "Your sign in request failed. Please try again."
+      });
+    }
 
     return toast.success("Check your email", {
       description: "We sent you a login link. Be sure to check your spam too.",
