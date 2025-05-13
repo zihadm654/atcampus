@@ -14,6 +14,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ModalContext } from "@/components/modals/providers";
 import { Icons } from "@/components/shared/icons";
 import MaxWidthWrapper from "@/components/shared/max-width-wrapper";
+import { UserAccountNav } from "./user-account-nav";
 
 interface NavBarProps {
   scroll?: boolean;
@@ -51,7 +52,7 @@ export function NavBar({ scroll = false }: NavBarProps) {
             </span>
           </Link>
 
-          {links && links.length > 0 ? (
+          {/* {links && links.length > 0 ? (
             <nav className="hidden gap-6 md:flex">
               {links?.map((item, index) => (
                 <Link
@@ -70,13 +71,13 @@ export function NavBar({ scroll = false }: NavBarProps) {
                 </Link>
               ))}
             </nav>
-          ) : null}
+          ) : null} */}
         </div>
 
         <div className="flex items-center space-x-3">
           {/* right header for docs */}
 
-          {session ? (
+          {/* {session ? (
             <Link
               href={session.user.role === "INSTITUTION" ? "/admin" : "/dashboard"}
               className="hidden md:block"
@@ -103,7 +104,23 @@ export function NavBar({ scroll = false }: NavBarProps) {
             </Button>
           ) : (
             <Skeleton className="hidden h-9 w-28 rounded-full lg:flex" />
-          )}
+          )} */}
+          {session?.user ?
+          <UserAccountNav/>
+          :
+          <>
+          <Button>
+            <Link href="/login">
+              Login
+            </Link>
+            </Button>
+          <Button>
+            <Link href="/register">
+              Sign Up
+            </Link>
+            </Button>
+          </>
+            }
         </div>
       </MaxWidthWrapper>
     </header>

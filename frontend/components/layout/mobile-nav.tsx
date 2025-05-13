@@ -17,7 +17,7 @@ import { ModeToggle } from "./mode-toggle";
 export function NavMobile() {
   const { data: session } = useSession();
   const [open, setOpen] = useState(false);
-  const selectedLayout = useSelectedLayoutSegment();
+  // const selectedLayout = useSelectedLayoutSegment();
   // const documentation = selectedLayout === "docs";
 
   const configMap = {
@@ -25,7 +25,7 @@ export function NavMobile() {
   };
 
   const links =
-    selectedLayout || marketingConfig.mainNav;
+    marketingConfig.mainNav;
 
   // prevent body scroll when modal is open
   useEffect(() => {
@@ -59,7 +59,7 @@ export function NavMobile() {
         )}
       >
         <ul className="grid divide-y divide-muted">
-          {links && links.length > 0 && links?.map(({ title, href }:any) => (
+          {links && links.length > 0 && links.map(({ title, href }:any) => (
             <li key={href} className="py-3">
               <Link
                 href={href}

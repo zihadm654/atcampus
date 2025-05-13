@@ -11,6 +11,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "postinstall": "prisma generate",
     "preview": "next build && next start",
     "email": "email dev --dir emails --port 3333"
   },

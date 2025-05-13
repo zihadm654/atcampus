@@ -72,8 +72,14 @@ export function DashboardSidebar({ links }: DashboardSidebarProps) {
           >
             <div className="flex h-full max-h-screen flex-1 flex-col gap-2">
               <div className="flex h-14 items-center p-4 lg:h-[60px]">
-                {isSidebarExpanded ? <ProjectSwitcher /> : null}
-
+                {isSidebarExpanded ? 
+                <Link href="/" className="flex items-center space-x-1.5">
+            <Icons.logo />
+            <span className="font-urban text-xl font-bold">
+              {siteConfig.name}
+            </span>
+          </Link>
+                 : null}
                 <Button
                   variant="ghost"
                   size="icon"
@@ -167,9 +173,9 @@ export function DashboardSidebar({ links }: DashboardSidebarProps) {
                 ))}
               </nav>
 
-              <div className="mt-auto xl:p-4">
+              {/* <div className="mt-auto xl:p-4">
                 {isSidebarExpanded ? <UpgradeCard /> : null}
-              </div>
+              </div> */}
             </div>
           </aside>
         </ScrollArea>
@@ -210,7 +216,7 @@ export function MobileSheetSidebar({ links }: DashboardSidebarProps) {
                   </span>
                 </Link>
 
-                <ProjectSwitcher large />
+                {/* <ProjectSwitcher large /> */}
 
                 {links.map((section) => (
                   <section
@@ -256,9 +262,9 @@ export function MobileSheetSidebar({ links }: DashboardSidebarProps) {
                   </section>
                 ))}
 
-                <div className="mt-auto">
+                {/* <div className="mt-auto">
                   <UpgradeCard />
-                </div>
+                </div> */}
               </nav>
             </div>
           </ScrollArea>

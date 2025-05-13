@@ -171,9 +171,9 @@ export function UserAccountNav() {
           className="cursor-pointer"
           onSelect={(event) => {
             event.preventDefault();
-            // signOut({
-            //   callbackUrl: `${window.location.origin}/`,
-            // });
+            signOut({
+              callbackUrl: `${window.location.origin}/`,
+            });
           }}
         >
           <div className="flex items-center space-x-2.5">
