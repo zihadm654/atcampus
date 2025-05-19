@@ -38,7 +38,7 @@ const currentUser = await getUserById(user?.id!);
               <Separator className="my-2" />
               <div className="flex justify-between">
                 <div>
-                  <p>{currentUser._count.following}</p>
+                  <p>{currentUser._count.followings}</p>
                   <p className="text-xs text-muted-foreground">Following</p>
                 </div>
                 <Separator orientation="vertical" />

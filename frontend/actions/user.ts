@@ -22,6 +22,7 @@ export async function syncUser() {
     const dbUser = await prisma.user.create({
       data: {
         id: user.id,
+        username: user.name!,
         name: `${user.name}`,
         email: user.email,
         image: user.image
@@ -43,7 +44,7 @@ export async function getUserById(userId: string) {
       _count: {
         select: {
           followers: true,
-          following: true,
+          followings: true,
           posts: true
         }
       }

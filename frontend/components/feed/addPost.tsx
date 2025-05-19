@@ -8,13 +8,15 @@ import { ExtendedUser } from "@/types/next-auth";
 import { UserAvatar } from "../shared/user-avatar";
 import { Smile } from "lucide-react";
 
-const AddPost = ({user}:{user:any}) => {
+const AddPost = ({user}:{user:ExtendedUser}) => {
   const [desc, setDesc] = useState("");
-  const [img, setImg] = useState<any>();
+  const [img, setImg] = useState<any>("");
   return (
     <div className="p-4 shadow-md rounded-lg flex gap-4 justify-between text-sm">
       {/* AVATAR */}
+      {user?
       <UserAvatar user={user} />
+      :null}
       {/* POST */}
       <div className="flex-1">
         {/* TEXT INPUT */}

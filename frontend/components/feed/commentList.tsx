@@ -29,10 +29,11 @@ const CommentList = ({
       desc,
       createdAt: new Date(Date.now()),
       updatedAt: new Date(Date.now()),
-      userId: user.id!,
+      userId: user.id,
       postId: postId,
       user:{
-        id: user.id!,
+        id: user.id,
+        username: user.username,
         name: "",
         email: "sending please wait",
         image: "",
@@ -60,7 +61,9 @@ const CommentList = ({
     <>
       {user && (
         <div className="flex items-center gap-4">
+          {user?
           <UserAvatar user={user} />
+        :null}
           <form
             action={add}
             className="flex-1 flex items-center justify-between rounded-xl text-sm px-6 py-2 w-full"

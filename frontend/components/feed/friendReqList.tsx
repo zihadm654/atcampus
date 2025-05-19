@@ -2,13 +2,10 @@
 
 import { acceptFollowRequest, declineFollowRequest } from "@/actions/actions";
 import { FollowRequest, User } from "@prisma/client";
-import Image from "next/image";
 import { useOptimistic, useState } from "react";
 import { UserAvatar } from "../shared/user-avatar";
 import { Button } from "../ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
-import { Icons } from "../shared/icons";
-import { getUserById } from "@/actions/user";
+import { CheckCircle, CheckIcon, Cross, CrossIcon } from "lucide-react";
 
 type RequestWithUser = FollowRequest & {
   sender: User;
@@ -42,15 +39,16 @@ const FriendRequestList = ({ requests }: { requests: RequestWithUser[] }) => {
         return(
         <div className="flex items-center justify-between" key={request.id}>
           <UserAvatar user={request.sender} />
+          <span>{request.sender.name}</span>
           <div className="flex gap-3 justify-end">
             <form action={() => accept(request.id, request.sender.id)}>
               <Button type="submit">
-                ok
+                <CheckIcon className="size-4"/>
               </Button>
             </form>
             <form action={() => decline(request.id, request.sender.id)}>
               <Button type="submit">
-                no
+                <Cross className="size-4"/>
               </Button>
             </form>
           </div>

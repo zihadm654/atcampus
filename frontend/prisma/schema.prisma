@@ -53,6 +53,7 @@ model Session {
 model User {
     id            String    @id @default(cuid()) @map("_id")
     name          String?
+    username      String    @unique
     email         String?   @unique
     emailVerified DateTime?
     image         String?
@@ -72,7 +73,7 @@ model User {
     likes    Like[]
 
     followers              Follower[]      @relation("UserFollowers")
-    following              Follower[]      @relation("UserFollowings")
+    followings             Follower[]      @relation("UserFollowings")
     followRequestsSent     FollowRequest[] @relation("FollowRequestsSent")
     followRequestsReceived FollowRequest[] @relation("FollowRequestsReceived")
     blocksGiven            Block[]         @relation("BlocksSent")

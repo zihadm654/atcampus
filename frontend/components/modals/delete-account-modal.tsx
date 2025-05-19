@@ -5,13 +5,13 @@ import {
   useMemo,
   useState,
 } from "react";
-// import { signOut, useSession } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Modal } from "@/components/ui/modal";
-// import { UserAvatar } from "@/components/shared/user-avatar";
+import { UserAvatar } from "@/components/shared/user-avatar";
 
 function DeleteAccountModal({
   showDeleteAccountModal,
@@ -20,7 +20,7 @@ function DeleteAccountModal({
   showDeleteAccountModal: boolean;
   setShowDeleteAccountModal: Dispatch<SetStateAction<boolean>>;
 }) {
-  // const { data: session } = useSession();
+  const { data: session } = useSession();
   const [deleting, setDeleting] = useState(false);
 
   async function deleteAccount() {
@@ -35,9 +35,9 @@ function DeleteAccountModal({
         // delay to allow for the route change to complete
         await new Promise((resolve) =>
           setTimeout(() => {
-            // signOut({
-            //   callbackUrl: `${window.location.origin}/`,
-            // });
+            signOut({
+              callbackUrl: `${window.location.origin}/`,
+            });
             resolve(null);
           }, 500),
         );
@@ -56,12 +56,12 @@ function DeleteAccountModal({
       className="gap-0"
     >
       <div className="flex flex-col items-center justify-center space-y-3 border-b p-4 pt-8 sm:px-16">
-        {/* <UserAvatar
+        <UserAvatar
           user={{
             name: session?.user?.name || null,
             image: session?.user?.image || null,
           }}
-        /> */}
+        />
         <h3 className="text-lg font-semibold">Delete Account</h3>
         <p className="text-center text-sm text-muted-foreground">
           <b>Warning:</b> This will permanently delete your account and your

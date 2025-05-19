@@ -18,7 +18,7 @@ export async function getProfileById(id: string) {
         _count: {
           select: {
             followers: true,
-            following: true,
+            followings: true,
             posts: true
           }
         }

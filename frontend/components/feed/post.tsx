@@ -21,7 +21,9 @@ const Post = async({ post }: { post: FeedPostType }) => {
     <div className="flex flex-col gap-4 p-2 shadow rounded-md">
       {/* USER */}
       <div className="flex items-center justify-between">
+        {user?  
         <UserAvatar user={user!}/>
+      : null}
         {user?.id === post.user.id && <PostInfo postId={post.id} />}
       </div>
       {/* DESC */}
