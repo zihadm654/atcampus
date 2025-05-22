@@ -1,11 +1,12 @@
 "use client";
 
-import { acceptFollowRequest, declineFollowRequest } from "@/actions/actions";
-import { FollowRequest, User } from "@prisma/client";
 import { useOptimistic, useState } from "react";
+import { acceptFollowRequest, declineFollowRequest } from "@/actions/actions";
+import { FollowRequest, User } from "@/generated/prisma";
+import { CheckCircle, CheckIcon, Cross, CrossIcon } from "lucide-react";
+
 import { UserAvatar } from "../shared/user-avatar";
 import { Button } from "../ui/button";
-import { CheckCircle, CheckIcon, Cross, CrossIcon } from "lucide-react";
 
 type RequestWithUser = FollowRequest & {
   sender: User;
@@ -31,29 +32,30 @@ const FriendRequestList = ({ requests }: { requests: RequestWithUser[] }) => {
 
   const [optimisticRequests, removeOptimisticRequest] = useOptimistic(
     requestState,
-    (state, value: string) => state.filter((req) => req.id !== value)
+    (state, value: string) => state.filter((req) => req.id !== value),
   );
   return (
     <div className="">
       {optimisticRequests.map(async (request) => {
-        return(
-        <div className="flex items-center justify-between" key={request.id}>
-          <UserAvatar user={request.sender} />
-          <span>{request.sender.name}</span>
-          <div className="flex gap-3 justify-end">
-            <form action={() => accept(request.id, request.sender.id)}>
-              <Button type="submit">
-                <CheckIcon className="size-4"/>
-              </Button>
-            </form>
-            <form action={() => decline(request.id, request.sender.id)}>
-              <Button type="submit">
-                <Cross className="size-4"/>
-              </Button>
-            </form>
+        return (
+          <div className="flex items-center justify-between" key={request.id}>
+            <UserAvatar user={request.sender} />
+            <span>{request.sender.name}</span>
+            <div className="flex justify-end gap-3">
+              <form action={() => accept(request.id, request.sender.id)}>
+                <Button type="submit">
+                  <CheckIcon className="size-4" />
+                </Button>
+              </form>
+              <form action={() => decline(request.id, request.sender.id)}>
+                <Button type="submit">
+                  <Cross className="size-4" />
+                </Button>
+              </form>
+            </div>
           </div>
-        </div>
-      )})}
+        );
+      })}
     </div>
   );
 };

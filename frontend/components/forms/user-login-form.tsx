@@ -1,58 +1,56 @@
 "use client";
 
 import * as React from "react";
-import { useSearchParams } from "next/navigation";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { signInEmailAction } from "@/actions/sign-in-email.action";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { signIn } from "next-auth/react";
 import { useForm } from "react-hook-form";
-import * as z from "zod";
+import { toast } from "sonner";
 
+import { signIn } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
-import { userAuthSchema } from "@/lib/validations/auth";
+import { loginSchema, TLogin } from "@/lib/validations/auth";
 import { buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { toast } from "sonner";
 import { Icons } from "@/components/shared/icons";
 
 interface UserAuthFormProps extends React.HTMLAttributes<HTMLDivElement> {
   type?: string;
 }
 
-type FormData = z.infer<typeof userAuthSchema>;
-
 export function UserAuthForm({ className, type, ...props }: UserAuthFormProps) {
   const {
     register,
+    reset,
     handleSubmit,
     formState: { errors },
-  } = useForm<FormData>({
-    resolver: zodResolver(userAuthSchema),
+  } = useForm<TLogin>({
+    resolver: zodResolver(loginSchema),
   });
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const [isGoogleLoading, setIsGoogleLoading] = React.useState<boolean>(false);
-  const searchParams = useSearchParams();
 
-  async function onSubmit(data: FormData) {
+  const router = useRouter();
+
+  async function onSubmit(data: TLogin) {
     setIsLoading(true);
 
-    const signInResult = await signIn("resend", {
-      email: data.email.toLowerCase(),
-      redirect: false,
-      callbackUrl: searchParams?.get("from") || "/dashboard",
-    });
-
-    setIsLoading(false);
-
-    if (!signInResult?.ok) {
-      return toast.error("Something went wrong.", {
-        description: "Your sign in request failed. Please try again."
+    const res = await signInEmailAction(data);
+    if (res.error) {
+      toast.error(
+        typeof res.error === "string" ? res.error : "Registration failed",
+      );
+      setIsLoading(false);
+    } else {
+      reset();
+      router.push("/dashboard");
+      toast.success("Login successfully", {
+        description: res.message,
       });
     }
-
-    return toast.success("Check your email", {
-      description: "We sent you a login link. Be sure to check your spam too.",
-    });
+    setIsLoading(false);
   }
 
   return (
@@ -79,6 +77,35 @@ export function UserAuthForm({ className, type, ...props }: UserAuthFormProps) {
               </p>
             )}
           </div>
+          <div className="grid gap-1">
+            <div className="flex items-center justify-between gap-2">
+              <Label className="sr-only" htmlFor="password">
+                Password
+              </Label>
+              <Link
+                tabIndex={-1}
+                href="/forgot-password"
+                className="text-muted-foreground hover:text-foreground text-sm italic"
+              >
+                Forgot password?
+              </Link>
+            </div>
+            <Input
+              id="password"
+              placeholder="********"
+              type="password"
+              autoCapitalize="none"
+              autoComplete="none"
+              autoCorrect="off"
+              disabled={isLoading || isGoogleLoading}
+              {...register("password")}
+            />
+            {errors?.password && (
+              <p className="px-1 text-xs text-red-600">
+                {errors?.email?.message}
+              </p>
+            )}
+          </div>
           <button className={cn(buttonVariants())} disabled={isLoading}>
             {isLoading && (
               <Icons.spinner className="mr-2 size-4 animate-spin" />
@@ -92,7 +119,7 @@ export function UserAuthForm({ className, type, ...props }: UserAuthFormProps) {
           <span className="w-full border-t" />
         </div>
         <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-background px-2 text-muted-foreground">
+          <span className="bg-background text-muted-foreground px-2">
             Or continue with
           </span>
         </div>
@@ -100,9 +127,13 @@ export function UserAuthForm({ className, type, ...props }: UserAuthFormProps) {
       <button
         type="button"
         className={cn(buttonVariants({ variant: "outline" }))}
-        onClick={() => {
+        onClick={async () => {
           setIsGoogleLoading(true);
-          signIn("google");
+          await signIn.social({
+            provider: "google",
+            callbackURL: "/dashboard",
+            errorCallbackURL: "/login/error",
+          });
         }}
         disabled={isLoading || isGoogleLoading}
       >

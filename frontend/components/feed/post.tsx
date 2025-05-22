@@ -1,39 +1,46 @@
-import Image from "next/image";
-import { Post as PostType, User } from "@prisma/client";
 import { Suspense } from "react";
+import Image from "next/image";
+import { Post as PostType, User } from "@/generated/prisma";
+
 import { getCurrentUser } from "@/lib/session";
+
+import BlurImage from "../shared/blur-image";
+import { UserAvatar } from "../shared/user-avatar";
+import Comments from "./comments";
 import PostInfo from "./postInfo";
 import PostInteraction from "./postInteraction";
-import Comments from "./comments";
-import { UserAvatar } from "../shared/user-avatar";
-import BlurImage from "../shared/blur-image";
-import { ExtendedUser } from "@/types/next-auth";
 
-type FeedPostType = PostType & { user: ExtendedUser } & {
+type FeedPostType = PostType & { user: User } & {
   likes: [{ userId: string }];
 } & {
   _count: { comments: number };
 };
 
-const Post = async({ post }: { post: FeedPostType }) => {
+const Post = async ({ post }: { post: FeedPostType }) => {
   const user = await getCurrentUser();
   return (
-    <div className="flex flex-col gap-4 p-2 shadow rounded-md">
+    <div className="flex flex-col gap-4 rounded-md p-2 shadow">
       {/* USER */}
       <div className="flex items-center justify-between">
-        {user?  
-        <UserAvatar user={user!}/>
-      : null}
+        <div className="flex items-center space-x-1">
+          <UserAvatar
+            user={{
+              name: post.user?.username || post.user?.name!,
+              image: post.user?.image || null,
+            }}
+          />
+          <h5>{post.user?.name}</h5>
+        </div>
         {user?.id === post.user.id && <PostInfo postId={post.id} />}
       </div>
       {/* DESC */}
       <div className="flex flex-col gap-4">
         {post.img && (
-          <div className="w-full min-h-96 relative">
+          <div className="relative min-h-96 w-full">
             <BlurImage
               src={post.img}
               fill
-              className="object-cover rounded-md"
+              className="rounded-md object-cover"
               alt={post.id}
             />
           </div>

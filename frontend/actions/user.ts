@@ -1,62 +1,63 @@
 "use server";
 
-import { auth } from "@/auth";
-import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 
-export async function syncUser() {
-  try {
-    const session = await auth();
-    const user = session?.user;
+import { prisma } from "@/lib/db";
+import { getCurrentUser } from "@/lib/session";
 
-    if (!user?.id || !user) return;
+// export async function syncUser() {
+//   try {
+//     const session = await getCurrentUser();
+//     const user = session;
 
-    const existingUser = await prisma.user.findUnique({
-      where: {
-        id: user.id
-      }
-    });
+//     if (!user?.id || !user) return;
 
-    if (existingUser) return existingUser;
+//     const existingUser = await prisma.user.findUnique({
+//       where: {
+//         id: user.id,
+//       },
+//     });
 
-    const dbUser = await prisma.user.create({
-      data: {
-        id: user.id,
-        username: user.name!,
-        name: `${user.name}`,
-        email: user.email,
-        image: user.image
-      }
-    });
+//     if (existingUser) return existingUser;
 
-    return dbUser;
-  } catch (error) {
-    console.log("Error in syncUser", error);
-  }
-}
+//     const dbUser = await prisma.user.create({
+//       data: {
+//         id: user.id,
+//         username: user.name!,
+//         name: `${user.name}`,
+//         email: user.email,
+//         image: user.image,
+//       },
+//     });
+
+//     return dbUser;
+//   } catch (error) {
+//     console.log("Error in syncUser", error);
+//   }
+// }
 
 export async function getUserById(userId: string) {
   return prisma.user.findUnique({
     where: {
-      id:userId
+      id: userId,
     },
     include: {
       _count: {
         select: {
           followers: true,
           followings: true,
-          posts: true
-        }
-      }
-    }
+          posts: true,
+        },
+      },
+    },
   });
 }
 
 export async function getDbUserId() {
-  const session = await auth();
-  if (!session?.user.id) return null;
+  const session = await getCurrentUser();
+  if (!session?.id) return null;
 
-  const user = await getUserById(session.user.id);
+  const user = await getUserById(session.id);
 
   if (!user) throw new Error("User not found");
 
@@ -78,12 +79,12 @@ export async function getRandomUsers() {
             NOT: {
               followers: {
                 some: {
-                  followerId: userId
-                }
-              }
-            }
-          }
-        ]
+                  followerId: userId,
+                },
+              },
+            },
+          },
+        ],
       },
       select: {
         id: true,
@@ -92,11 +93,11 @@ export async function getRandomUsers() {
         image: true,
         _count: {
           select: {
-            followers: true
-          }
-        }
+            followers: true,
+          },
+        },
       },
-      take: 3
+      take: 3,
     });
 
     return randomUsers;
@@ -118,9 +119,9 @@ export async function toggleFollow(targetUserId: string) {
       where: {
         followerId_followingId: {
           followerId: userId,
-          followingId: targetUserId
-        }
-      }
+          followingId: targetUserId,
+        },
+      },
     });
 
     if (existingFollow) {
@@ -129,9 +130,9 @@ export async function toggleFollow(targetUserId: string) {
         where: {
           followerId_followingId: {
             followerId: userId,
-            followingId: targetUserId
-          }
-        }
+            followingId: targetUserId,
+          },
+        },
       });
     } else {
       // follow
@@ -139,17 +140,17 @@ export async function toggleFollow(targetUserId: string) {
         prisma.follower.create({
           data: {
             followerId: userId,
-            followingId: targetUserId
-          }
+            followingId: targetUserId,
+          },
         }),
 
-        prisma.notification.create({
-          data: {
-            type: "FOLLOW",
-            userId: targetUserId, // user being followed
-            creatorId: userId // user following
-          }
-        })
+        // prisma.notification.create({
+        //   data: {
+        //     type: "FOLLOW",
+        //     userId: targetUserId, // user being followed
+        //     creatorId: userId, // user following
+        //   },
+        // }),
       ]);
     }
 

@@ -1,7 +1,6 @@
 import "@/styles/globals.css";
 
 import { fontGeist, fontHeading, fontSans, fontUrban } from "@/assets/fonts";
-import { SessionProvider } from "next-auth/react";
 import { ThemeProvider } from "next-themes";
 
 import { cn, constructMetadata } from "@/lib/utils";
@@ -22,28 +21,24 @@ export default function RootLayout({ children }: RootLayoutProps) {
       <head />
       <body
         className={cn(
-          "min-h-screen bg-background font-sans antialiased",
+          "bg-background min-h-screen font-sans antialiased",
           fontSans.variable,
           fontUrban.variable,
           fontHeading.variable,
-          fontGeist.variable
+          fontGeist.variable,
         )}
       >
-        <SessionProvider>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
           enableSystem
           disableTransitionOnChange
         >
-          <ModalProvider>
-            {children}
-            </ModalProvider>
+          <ModalProvider>{children}</ModalProvider>
           <Analytics />
           <Toaster richColors closeButton />
           <TailwindIndicator />
         </ThemeProvider>
-        </SessionProvider>
       </body>
     </html>
   );

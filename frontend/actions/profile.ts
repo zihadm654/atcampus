@@ -1,28 +1,28 @@
 "use server";
 
-import { auth } from "@/auth";
-import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
+
+import { prisma } from "@/lib/db";
+import { getCurrentUser } from "@/lib/session";
 
 export async function getProfileById(id: string) {
   try {
     const user = await prisma.user.findUnique({
-      where: { id:id },
+      where: { id: id },
       select: {
         id: true,
         name: true,
         bio: true,
         image: true,
-        website: true,
         createdAt: true,
         _count: {
           select: {
             followers: true,
             followings: true,
-            posts: true
-          }
-        }
-      }
+            posts: true,
+          },
+        },
+      },
     });
 
     return user;
@@ -36,15 +36,15 @@ export async function getUserPosts(userId: string) {
   try {
     const posts = await prisma.post.findMany({
       where: {
-        userId: userId
+        userId: userId,
       },
       include: {
         user: {
           select: {
             id: true,
             name: true,
-            image: true
-          }
+            image: true,
+          },
         },
         comments: {
           include: {
@@ -52,29 +52,29 @@ export async function getUserPosts(userId: string) {
               select: {
                 id: true,
                 name: true,
-                image: true
-              }
-            }
+                image: true,
+              },
+            },
           },
           orderBy: {
-            createdAt: "asc"
-          }
+            createdAt: "asc",
+          },
         },
         likes: {
           select: {
-            userId: true
-          }
+            userId: true,
+          },
         },
         _count: {
           select: {
             likes: true,
-            comments: true
-          }
-        }
+            comments: true,
+          },
+        },
       },
       orderBy: {
-        createdAt: "desc"
-      }
+        createdAt: "desc",
+      },
     });
 
     return posts;
@@ -90,9 +90,9 @@ export async function getUserLikedPosts(userId: string) {
       where: {
         likes: {
           some: {
-            userId
-          }
-        }
+            userId,
+          },
+        },
       },
       include: {
         user: {
@@ -100,8 +100,8 @@ export async function getUserLikedPosts(userId: string) {
             id: true,
             name: true,
             image: true,
-            email:true
-          }
+            email: true,
+          },
         },
         comments: {
           include: {
@@ -109,29 +109,29 @@ export async function getUserLikedPosts(userId: string) {
               select: {
                 id: true,
                 name: true,
-                image: true
-              }
-            }
+                image: true,
+              },
+            },
           },
           orderBy: {
-            createdAt: "asc"
-          }
+            createdAt: "asc",
+          },
         },
         likes: {
           select: {
-            userId: true
-          }
+            userId: true,
+          },
         },
         _count: {
           select: {
             likes: true,
-            comments: true
-          }
-        }
+            comments: true,
+          },
+        },
       },
       orderBy: {
-        createdAt: "desc"
-      }
+        createdAt: "desc",
+      },
     });
 
     return likedPosts;
@@ -143,8 +143,8 @@ export async function getUserLikedPosts(userId: string) {
 
 export async function updateProfile(formData: FormData) {
   try {
-   const session = await auth();
-   if (!session?.user.id) return;
+    const session = await getCurrentUser();
+    if (!session?.id) return;
 
     const name = formData.get("name") as string;
     const bio = formData.get("bio") as string;
@@ -152,15 +152,14 @@ export async function updateProfile(formData: FormData) {
     const website = formData.get("website") as string;
 
     const user = await prisma.user.update({
-      where: { id:session.user.id },
+      where: { id: session.id },
       data: {
         name,
         bio,
-        website
-      }
+      },
     });
 
-    revalidatePath("/profile");
+    revalidatePath("/dashboard");
     return { success: true, user };
   } catch (error) {
     console.error("Error updating profile:", error);
@@ -170,16 +169,16 @@ export async function updateProfile(formData: FormData) {
 
 export async function isFollowing(userId: string) {
   try {
-   const session = await auth();
-   if (!session?.user.id) return;
+    const session = await getCurrentUser();
+    if (!session?.id) return;
 
     const follow = await prisma.follower.findUnique({
       where: {
         followerId_followingId: {
-          followerId: session.user.id,
-          followingId: userId
-        }
-      }
+          followerId: session.id,
+          followingId: userId,
+        },
+      },
     });
 
     return !!follow;

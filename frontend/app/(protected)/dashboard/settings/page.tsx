@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 
 import { getCurrentUser } from "@/lib/session";
 import { constructMetadata } from "@/lib/utils";
+import { ChangePasswordForm } from "@/components/change-password-form";
 import { DeleteAccountSection } from "@/components/dashboard/delete-account";
 import { DashboardHeader } from "@/components/dashboard/header";
 import { UserNameForm } from "@/components/forms/user-name-form";
@@ -23,9 +24,14 @@ export default async function SettingsPage() {
         heading="Settings"
         text="Manage account and website settings."
       />
-      <div className="divide-y divide-muted pb-10">
+      <div className="divide-muted divide-y pb-10">
         <UserNameForm user={{ id: user.id, name: user.name || "" }} />
         <UserRoleForm user={{ id: user.id, role: user.role }} />
+        <div className="border-md space-y-4 rounded-b-md border p-2">
+          <h2 className="text-2xl font-bold">Change Password</h2>
+
+          <ChangePasswordForm />
+        </div>
         <DeleteAccountSection />
       </div>
     </>

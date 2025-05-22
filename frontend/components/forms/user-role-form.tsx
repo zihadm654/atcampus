@@ -2,13 +2,13 @@
 
 import { useState, useTransition } from "react";
 import { updateUserRole, type FormData } from "@/actions/update-user-role";
+import { User, UserRole } from "@/generated/prisma";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { User, UserRole } from "@prisma/client";
-import { useSession } from "next-auth/react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 
+import { useSession } from "@/lib/auth-client";
 import { userRoleSchema } from "@/lib/validations/user";
 import { Button } from "@/components/ui/button";
 import {
@@ -33,7 +33,7 @@ interface UserNameFormProps {
   user: Pick<User, "id" | "role">;
 }
 
-export function UserRoleForm({ user }: any) {
+export function UserRoleForm({ user }: UserNameFormProps) {
   const { update } = useSession();
   const [updated, setUpdated] = useState(false);
   const [isPending, startTransition] = useTransition();
@@ -49,7 +49,7 @@ export function UserRoleForm({ user }: any) {
     },
   });
 
-  const onSubmit = (data:any) => {
+  const onSubmit = (data: any) => {
     startTransition(async () => {
       const { status } = await updateUserRoleWithId(data);
 
@@ -123,7 +123,7 @@ export function UserRoleForm({ user }: any) {
             </Button>
           </div>
           <div className="flex flex-col justify-between p-1">
-            <p className="text-[13px] text-muted-foreground">
+            <p className="text-muted-foreground text-[13px]">
               Remove this field on real production
             </p>
           </div>

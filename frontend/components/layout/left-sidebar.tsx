@@ -1,36 +1,39 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { Avatar, AvatarImage } from "@/components/ui/avatar";
-import { Separator } from "@/components/ui/separator";
-import { GraduationCap, LinkIcon, MapPinIcon, NotebookPen } from "lucide-react";
-import { getCurrentUser } from "@/lib/session";
-import { UserAvatar } from "../shared/user-avatar";
 import { getUserById } from "@/actions/user";
+import { GraduationCap, LinkIcon, MapPinIcon, NotebookPen } from "lucide-react";
+
+import { getCurrentUser } from "@/lib/session";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+
+import { UserAvatar } from "../shared/user-avatar";
 
 async function Sidebar() {
   const user = await getCurrentUser();
   if (!user) return <UnAuthenticatedSidebar />;
-const currentUser = await getUserById(user?.id!);
+  const currentUser = await getUserById(user?.id!);
   if (!currentUser) return null;
 
   return (
-    <div className="sticky top-16 pb-4 space-y-2">
+    <div className="sticky top-16 space-y-2 pb-4">
       <Card>
         <CardContent className="pt-2">
           <div className="flex flex-col items-center text-center">
             <Link
-              href={`/profile/${user.name}`}
+              href={`/profile/${user.username}`}
               className="flex flex-col items-center justify-center"
             >
               <UserAvatar
-          user={{ name: user.name || null, image: user.image || null }}
-          className="size-10 border"
-        />
+                user={{
+                  name: user.username || user.name,
+                  image: user.image || null,
+                }}
+                className="size-10 border"
+              />
 
               <div className="mt-4 space-y-1">
-                <h3 className="font-semibold">{user.name}</h3>
-                {/* <p className="text-sm text-muted-foreground">{user.email}</p> */}
+                <h3 className="font-semibold">{user.username}</h3>
               </div>
             </Link>
 
@@ -39,12 +42,12 @@ const currentUser = await getUserById(user?.id!);
               <div className="flex justify-between">
                 <div>
                   <p>{currentUser._count.followings}</p>
-                  <p className="text-xs text-muted-foreground">Following</p>
+                  <p className="text-muted-foreground text-xs">Following</p>
                 </div>
                 <Separator orientation="vertical" />
                 <div>
                   <p>{currentUser?._count.followers}</p>
-                  <p className="text-xs text-muted-foreground">Followers</p>
+                  <p className="text-muted-foreground text-xs">Followers</p>
                 </div>
               </div>
             </div>
@@ -53,12 +56,12 @@ const currentUser = await getUserById(user?.id!);
       </Card>
       <Card>
         <CardContent>
-          <div className="flex flex-col items-center text-center space-y-2">
+          <div className="flex flex-col items-center space-y-2 text-center">
             <Button className="w-full" variant="outline">
-              <GraduationCap className="size-6"/> Courses
+              <GraduationCap className="size-6" /> Courses
             </Button>
             <Button className="w-full" variant="outline">
-              <NotebookPen className="size-6"/> Suppliments
+              <NotebookPen className="size-6" /> Suppliments
             </Button>
           </div>
         </CardContent>
@@ -78,7 +81,7 @@ const UnAuthenticatedSidebar = () => (
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <p className="text-center text-muted-foreground mb-4">
+        <p className="text-muted-foreground mb-4 text-center">
           Login to access your profile and connect with others.
         </p>
         {/* <SignInButton mode="modal">

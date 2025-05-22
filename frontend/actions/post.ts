@@ -1,21 +1,22 @@
 "use server";
 
-import { auth } from "@/auth";
-import { prisma } from "@/lib/db";
 import { revalidatePath } from "next/cache";
+
+import { prisma } from "@/lib/db";
+import { getCurrentUser } from "@/lib/session";
 
 export async function createPost(desc: string, img: string) {
   try {
-    const session = await auth();
+    const session = await getCurrentUser();
 
-    if (!session?.user.id) return;
+    if (!session?.id) return;
 
     const post = await prisma.post.create({
       data: {
         desc,
         img,
-        userId:session.user.id
-      }
+        userId: session.id,
+      },
     });
 
     revalidatePath("/"); // purge the cache for the home page
@@ -30,44 +31,44 @@ export async function getPosts() {
   try {
     const posts = await prisma.post.findMany({
       orderBy: {
-        createdAt: "desc"
+        createdAt: "desc",
       },
       include: {
         user: {
           select: {
             id: true,
-            email:true,
+            email: true,
             name: true,
             image: true,
-          }
+          },
         },
         comments: {
           include: {
             user: {
               select: {
                 id: true,
-                email:true,
+                email: true,
                 image: true,
-                name: true
-              }
-            }
+                name: true,
+              },
+            },
           },
           orderBy: {
-            createdAt: "asc"
-          }
+            createdAt: "asc",
+          },
         },
         likes: {
           select: {
-            userId: true
-          }
+            userId: true,
+          },
         },
         _count: {
           select: {
             likes: true,
-            comments: true
-          }
-        }
-      }
+            comments: true,
+          },
+        },
+      },
     });
 
     return posts;
@@ -175,13 +176,13 @@ export async function getPostsByIds(ids: string[]) {
 
 export async function createComment(postId: string, desc: string) {
   try {
-    const session = await auth();
-    if (!session?.user.id) return;
+    const session = await getCurrentUser();
+    if (!session?.id) return;
     if (!desc) throw new Error("Content is required");
 
     const post = await prisma.post.findUnique({
       where: { id: postId },
-      select: { userId: true }
+      select: { userId: true },
     });
 
     if (!post) throw new Error("Post not found");
@@ -192,23 +193,23 @@ export async function createComment(postId: string, desc: string) {
       const newComment = await tx.comment.create({
         data: {
           desc,
-          userId: session.user?.id!,
-          postId
-        }
+          userId: session?.id!,
+          postId,
+        },
       });
 
       // Create notification if commenting on someone else's post
-      if (post.userId !== session.user.id) {
-        await tx.notification.create({
-          data: {
-            type: "COMMENT",
-            userId: post.userId,
-            creatorId: session.user?.id!,
-            postId,
-            commentId: newComment.id
-          }
-        });
-      }
+      // if (post.userId !== session.id) {
+      //   await tx.notification.create({
+      //     data: {
+      //       type: "COMMENT",
+      //       userId: post.userId,
+      //       creatorId: session?.id!,
+      //       postId,
+      //       commentId: newComment.id,
+      //     },
+      //   });
+      // }
 
       return [newComment];
     });
@@ -223,19 +224,20 @@ export async function createComment(postId: string, desc: string) {
 
 export async function deletePost(postId: string) {
   try {
-    const session = await auth();
-    if (!session?.user.id) return;
+    const session = await getCurrentUser();
+    if (!session?.id) return;
 
     const post = await prisma.post.findUnique({
       where: { id: postId },
-      select: { userId: true }
+      select: { userId: true },
     });
 
     if (!post) throw new Error("Post not found");
-    if (post.userId !== session.user.id) throw new Error("Unauthorized - no delete permission");
+    if (post.userId !== session.id)
+      throw new Error("Unauthorized - no delete permission");
 
     await prisma.post.delete({
-      where: { id: postId }
+      where: { id: postId },
     });
 
     revalidatePath("/"); // purge the cache

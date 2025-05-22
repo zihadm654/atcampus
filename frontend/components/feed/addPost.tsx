@@ -1,34 +1,36 @@
 "use client";
 
-import Image from "next/image";
 import { useState } from "react";
-import AddPostButton from "./addPostButton";
+import Image from "next/image";
 import { addPost } from "@/actions/actions";
-import { ExtendedUser } from "@/types/next-auth";
-import { UserAvatar } from "../shared/user-avatar";
+import { User } from "@/generated/prisma";
 import { Smile } from "lucide-react";
 
-const AddPost = ({user}:{user:ExtendedUser}) => {
+import { UserAvatar } from "../shared/user-avatar";
+import AddPostButton from "./addPostButton";
+
+const AddPost = ({ user }: { user: User }) => {
   const [desc, setDesc] = useState("");
   const [img, setImg] = useState<any>("");
   return (
-    <div className="p-4 shadow-md rounded-lg flex gap-4 justify-between text-sm">
+    <div className="flex justify-between gap-4 rounded-lg p-4 text-sm shadow-md">
       {/* AVATAR */}
-      {user?
-      <UserAvatar user={user} />
-      :null}
+      {user ? <UserAvatar user={user} /> : null}
       {/* POST */}
       <div className="flex-1">
         {/* TEXT INPUT */}
-        <form action={(formData)=>addPost(formData,img?.secure_url || "")} className="flex gap-4">
+        <form
+          action={(formData) => addPost(formData, img?.secure_url || "")}
+          className="flex gap-4"
+        >
           <textarea
             placeholder="What's on your mind?"
-            className="flex-1 rounded-lg p-2 border"
+            className="flex-1 rounded-lg border p-2"
             name="desc"
             onChange={(e) => setDesc(e.target.value)}
           ></textarea>
           <div className="">
-            <Smile className="size-6"/>
+            <Smile className="size-6" />
             <AddPostButton />
           </div>
         </form>

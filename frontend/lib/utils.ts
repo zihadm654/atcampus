@@ -69,6 +69,26 @@ export function constructMetadata({
     }),
   };
 }
+export const generateUsername = (name: string) => {
+  const randomNumbers = Math.floor(1000 + Math.random() * 9000); // Generate a random 4-digit number
+  return `${name.replace(/\s+/g, "").toLowerCase()}${randomNumbers}`;
+};
+export const VALID_DOMAINS = () => {
+  const domains = ["gmail.com", "yahoo.com", "outlook.com"];
+
+  if (process.env.NODE_ENV === "development") {
+    domains.push("example.com");
+  }
+
+  return domains;
+};
+export function normalizeName(name: string) {
+  return name
+    .trim()
+    .replace(/\s+/g, " ")
+    .replace(/[^a-zA-Z\s'-]/g, "")
+    .replace(/\b\w/g, (char) => char.toUpperCase());
+}
 
 export function formatDate(input: string | number): string {
   const date = new Date(input);
@@ -122,7 +142,7 @@ export const timeAgo = (timestamp: Date, timeOnly?: boolean): string => {
 
 export async function fetcher<JSON = any>(
   input: RequestInfo,
-  init?: RequestInit
+  init?: RequestInit,
 ): Promise<JSON> {
   const res = await fetch(input, init);
 
@@ -186,7 +206,7 @@ export const getBlurDataURL = async (url: string | null) => {
 
   try {
     const response = await fetch(
-      `https://wsrv.nl/?url=${url}&w=50&h=50&blur=5`
+      `https://wsrv.nl/?url=${url}&w=50&h=50&blur=5`,
     );
     const buffer = await response.arrayBuffer();
     const base64 = Buffer.from(buffer).toString("base64");

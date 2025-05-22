@@ -2,10 +2,13 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { LayoutDashboard, Lock, LogOut, Settings } from "lucide-react";
-import { signOut, useSession } from "next-auth/react";
+import { useFormStatus } from "react-dom";
+import { toast } from "sonner";
 import { Drawer } from "vaul";
 
+import { signOut, useSession } from "@/lib/auth-client";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import {
   DropdownMenu,
@@ -16,9 +19,34 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { UserAvatar } from "@/components/shared/user-avatar";
 
+import { SignOutButton } from "../sign-out-button";
+
 export function UserAccountNav() {
   const { data: session } = useSession();
   const user = session?.user;
+
+  const [isPending, setIsPending] = useState(false);
+  const router = useRouter();
+
+  async function handleClick() {
+    await signOut({
+      fetchOptions: {
+        onRequest: () => {
+          setIsPending(true);
+        },
+        onResponse: () => {
+          setIsPending(false);
+        },
+        onError: (ctx) => {
+          toast.error(ctx.error.message);
+        },
+        onSuccess: () => {
+          toast.success("You’ve logged out. See you soon!");
+          router.push("/login");
+        },
+      },
+    });
+  }
 
   const [open, setOpen] = useState(false);
   const closeDrawer = () => {
@@ -29,7 +57,7 @@ export function UserAccountNav() {
 
   if (!user)
     return (
-      <div className="size-8 animate-pulse rounded-full border bg-muted" />
+      <div className="bg-muted size-8 animate-pulse rounded-full border" />
     );
 
   if (isMobile) {
@@ -43,28 +71,28 @@ export function UserAccountNav() {
         </Drawer.Trigger>
         <Drawer.Portal>
           <Drawer.Overlay
-            className="fixed inset-0 z-40 h-full bg-background/80 backdrop-blur-xs"
+            className="bg-background/80 fixed inset-0 z-40 h-full backdrop-blur-xs"
             onClick={closeDrawer}
           />
-          <Drawer.Content className="fixed inset-x-0 bottom-0 z-50 mt-24 overflow-hidden rounded-t-[10px] border bg-background px-3 text-sm">
+          <Drawer.Content className="bg-background fixed inset-x-0 bottom-0 z-50 mt-24 overflow-hidden rounded-t-[10px] border px-3 text-sm">
             <div className="sticky top-0 z-20 flex w-full items-center justify-center bg-inherit">
-              <div className="my-3 h-1.5 w-16 rounded-full bg-muted-foreground/20" />
+              <div className="bg-muted-foreground/20 my-3 h-1.5 w-16 rounded-full" />
             </div>
 
             <div className="flex items-center justify-start gap-2 p-2">
               <div className="flex flex-col">
                 {user.name && <p className="font-medium">{user.name}</p>}
                 {user.email && (
-                  <p className="w-[200px] truncate text-muted-foreground">
+                  <p className="text-muted-foreground w-[200px] truncate">
                     {user?.email}
                   </p>
                 )}
               </div>
             </div>
 
-            <ul role="list" className="mb-14 mt-1 w-full text-muted-foreground">
+            <ul role="list" className="text-muted-foreground mt-1 mb-14 w-full">
               {user.role === "INSTITUTION" ? (
-                <li className="rounded-lg text-foreground hover:bg-muted">
+                <li className="text-foreground hover:bg-muted rounded-lg">
                   <Link
                     href="/admin"
                     onClick={closeDrawer}
@@ -76,7 +104,7 @@ export function UserAccountNav() {
                 </li>
               ) : null}
 
-              <li className="rounded-lg text-foreground hover:bg-muted">
+              <li className="text-foreground hover:bg-muted rounded-lg">
                 <Link
                   href="/dashboard"
                   onClick={closeDrawer}
@@ -87,7 +115,7 @@ export function UserAccountNav() {
                 </Link>
               </li>
 
-              <li className="rounded-lg text-foreground hover:bg-muted">
+              <li className="text-foreground hover:bg-muted rounded-lg">
                 <Link
                   href="/dashboard/settings"
                   onClick={closeDrawer}
@@ -99,12 +127,10 @@ export function UserAccountNav() {
               </li>
 
               <li
-                className="rounded-lg text-foreground hover:bg-muted"
+                className="text-foreground hover:bg-muted rounded-lg"
                 onClick={(event) => {
                   event.preventDefault();
-                  signOut({
-                    callbackUrl: `${window.location.origin}/`,
-                  });
+                  handleClick();
                 }}
               >
                 <div className="flex w-full items-center gap-3 px-2.5 py-2">
@@ -133,7 +159,7 @@ export function UserAccountNav() {
           <div className="flex flex-col space-y-1 leading-none">
             {user.name && <p className="font-medium">{user.name}</p>}
             {user.email && (
-              <p className="w-[200px] truncate text-sm text-muted-foreground">
+              <p className="text-muted-foreground w-[200px] truncate text-sm">
                 {user?.email}
               </p>
             )}
@@ -171,9 +197,7 @@ export function UserAccountNav() {
           className="cursor-pointer"
           onSelect={(event) => {
             event.preventDefault();
-            signOut({
-              callbackUrl: `${window.location.origin}/`,
-            });
+            handleClick();
           }}
         >
           <div className="flex items-center space-x-2.5">

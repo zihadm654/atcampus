@@ -1,21 +1,22 @@
 "use server";
 
-import { z } from "zod";
 import { revalidatePath } from "next/cache";
-import { auth } from "@/auth";
+import { z } from "zod";
+
 import { prisma } from "@/lib/db";
+import { getCurrentUser } from "@/lib/session";
 
 export const switchFollow = async (userId: string) => {
-  const session = await auth();
+  const session = await getCurrentUser();
 
-  if (!session?.user) {
+  if (!session) {
     throw new Error("User is not authenticated!");
   }
 
   try {
     const existingFollow = await prisma.follower.findFirst({
       where: {
-        followerId: session.user.id,
+        followerId: session.id,
         followingId: userId,
       },
     });
@@ -26,11 +27,11 @@ export const switchFollow = async (userId: string) => {
           id: existingFollow.id,
         },
       });
-      return {message: "Unfollowed"}
+      return { message: "Unfollowed" };
     } else {
       const existingFollowRequest = await prisma.followRequest.findFirst({
         where: {
-          senderId: session.user.id,
+          senderId: session.id,
           receiverId: userId,
         },
       });
@@ -41,15 +42,15 @@ export const switchFollow = async (userId: string) => {
             id: existingFollowRequest.id,
           },
         });
-        return {message: "deleted follow request"}
+        return { message: "deleted follow request" };
       } else {
         await prisma.followRequest.create({
           data: {
-            senderId: session.user.id!,
+            senderId: session.id!,
             receiverId: userId,
           },
         });
-        return {message: "sent follow request"}
+        return { message: "sent follow request" };
       }
     }
   } catch (err) {
@@ -59,16 +60,16 @@ export const switchFollow = async (userId: string) => {
 };
 
 export const switchBlock = async (userId: string) => {
-  const session =await auth();
+  const session = await getCurrentUser();
 
-  if (!session?.user) {
+  if (!session) {
     throw new Error("User is not Authenticated!!");
   }
 
   try {
     const existingBlock = await prisma.block.findFirst({
       where: {
-        blockerId: session.user.id,
+        blockerId: session.id,
         blockedId: userId,
       },
     });
@@ -82,7 +83,7 @@ export const switchBlock = async (userId: string) => {
     } else {
       await prisma.block.create({
         data: {
-          blockerId: session.user.id!,
+          blockerId: session.id!,
           blockedId: userId,
         },
       });
@@ -94,9 +95,9 @@ export const switchBlock = async (userId: string) => {
 };
 
 export const acceptFollowRequest = async (userId: string) => {
-  const session = await auth();
+  const session = await getCurrentUser();
 
-  if (!session?.user) {
+  if (!session) {
     throw new Error("User is not Authenticated!!");
   }
 
@@ -104,7 +105,7 @@ export const acceptFollowRequest = async (userId: string) => {
     const existingFollowRequest = await prisma.followRequest.findFirst({
       where: {
         senderId: userId,
-        receiverId: session.user.id,
+        receiverId: session.id,
       },
     });
 
@@ -118,49 +119,48 @@ export const acceptFollowRequest = async (userId: string) => {
       await prisma.follower.create({
         data: {
           followerId: userId,
-          followingId: session.user.id!,
+          followingId: session.id!,
         },
       });
     }
-    revalidatePath('/')
+    revalidatePath("/");
   } catch (err) {
     console.log(err);
     throw new Error("Something went wrong!");
   }
 };
-export const existingFollowRequest= async (userId: string) => {
-  const session = await auth();
+export const existingFollowRequest = async (userId: string) => {
+  const session = await getCurrentUser();
 
-  if (!session?.user) {
+  if (!session) {
     throw new Error("User is not Authenticated!!");
   }
 
   try {
     const existingFollow = await prisma.followRequest.findFirst({
       where: {
-        senderId: session.user.id,
+        senderId: session.id,
         receiverId: userId,
       },
     });
 
     if (existingFollow) {
-      const alreadyFollowed= await prisma.follower.findFirst({
+      const alreadyFollowed = await prisma.follower.findFirst({
         where: {
           id: existingFollow.id,
         },
       });
-      return alreadyFollowed
+      return alreadyFollowed;
     }
-  }
-  catch(err){
+  } catch (err) {
     console.log(err);
     throw new Error("Something went wrong!");
   }
-}
+};
 export const declineFollowRequest = async (userId: string) => {
-  const session = await auth();
+  const session = await getCurrentUser();
 
-  if (!session?.user) {
+  if (!session) {
     throw new Error("User is not Authenticated!!");
   }
 
@@ -168,7 +168,7 @@ export const declineFollowRequest = async (userId: string) => {
     const existingFollowRequest = await prisma.followRequest.findFirst({
       where: {
         senderId: userId,
-        receiverId: session.user.id,
+        receiverId: session.id,
       },
     });
 
@@ -179,7 +179,7 @@ export const declineFollowRequest = async (userId: string) => {
         },
       });
     }
-    revalidatePath('/')
+    revalidatePath("/");
   } catch (err) {
     console.log(err);
     throw new Error("Something went wrong!");
@@ -188,13 +188,13 @@ export const declineFollowRequest = async (userId: string) => {
 
 export const updateProfile = async (
   prevState: { success: boolean; error: boolean },
-  payload: { formData: FormData; cover: string }
+  payload: { formData: FormData; cover: string },
 ) => {
   const { formData, cover } = payload;
   const fields = Object.fromEntries(formData);
 
   const filteredFields = Object.fromEntries(
-    Object.entries(fields).filter(([_, value]) => value !== "")
+    Object.entries(fields).filter(([_, value]) => value !== ""),
   );
 
   const Profile = z.object({
@@ -211,19 +211,19 @@ export const updateProfile = async (
     return { success: false, error: true };
   }
 
-  const session= await auth()
+  const session = await getCurrentUser();
 
-  if (!session?.user) {
+  if (!session) {
     return { success: false, error: true };
   }
 
   try {
-    await prisma.user.update({
-      where: {
-        id: session.user.id,
-      },
-      data: validatedFields.data,
-    });
+    // await prisma.update({
+    //   where: {
+    //     id: session.id,
+    //   },
+    //   data: validatedFields.data,
+    // });
     return { success: true, error: false };
   } catch (err) {
     console.log(err);
@@ -232,15 +232,15 @@ export const updateProfile = async (
 };
 
 export const switchLike = async (postId: string) => {
-  const session= await auth()
+  const session = await getCurrentUser();
 
-  if (!session?.user) throw new Error("User is not authenticated!");
+  if (!session) throw new Error("User is not authenticated!");
 
   try {
     const existingLike = await prisma.like.findFirst({
       where: {
         postId,
-        userId: session.user.id,
+        userId: session.id,
       },
     });
 
@@ -254,7 +254,7 @@ export const switchLike = async (postId: string) => {
       await prisma.like.create({
         data: {
           postId,
-          userId:session.user.id!,
+          userId: session.id!,
         },
       });
     }
@@ -265,7 +265,7 @@ export const switchLike = async (postId: string) => {
 };
 
 export const addComment = async (postId: string, desc: string) => {
-  const session= await auth()
+  const session = await getCurrentUser();
 
   if (!session) throw new Error("User is not authenticated!");
 
@@ -273,7 +273,7 @@ export const addComment = async (postId: string, desc: string) => {
     const createdComment = await prisma.comment.create({
       data: {
         desc,
-        userId:session.user.id!,
+        userId: session?.id!,
         postId,
       },
       include: {
@@ -300,7 +300,7 @@ export const addPost = async (formData: FormData, img: string) => {
     console.log("description is not valid");
     return;
   }
-  const session= await auth()
+  const session = await getCurrentUser();
 
   if (!session) throw new Error("User is not authenticated!");
 
@@ -308,7 +308,7 @@ export const addPost = async (formData: FormData, img: string) => {
     await prisma.post.create({
       data: {
         desc: validatedDesc.data,
-        userId:session.user.id!,
+        userId: session?.id!,
         img,
       },
     });
@@ -320,14 +320,14 @@ export const addPost = async (formData: FormData, img: string) => {
 };
 
 export const addStory = async (img: string) => {
-  const session= await auth()
+  const session = await getCurrentUser();
 
   if (!session) throw new Error("User is not authenticated!");
 
   try {
     const existingStory = await prisma.story.findFirst({
       where: {
-        userId:session.user.id,
+        userId: session?.id,
       },
     });
 
@@ -340,7 +340,7 @@ export const addStory = async (img: string) => {
     }
     const createdStory = await prisma.story.create({
       data: {
-        userId:session.user.id!,
+        userId: session?.id!,
         img,
         expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
       },
@@ -356,7 +356,7 @@ export const addStory = async (img: string) => {
 };
 
 export const deletePost = async (postId: string) => {
-  const session= await auth()
+  const session = await getCurrentUser();
 
   if (!session) throw new Error("User is not authenticated!");
 
@@ -364,10 +364,10 @@ export const deletePost = async (postId: string) => {
     await prisma.post.delete({
       where: {
         id: postId,
-        userId:session.user.id,
+        userId: session?.id,
       },
     });
-    revalidatePath("/")
+    revalidatePath("/");
   } catch (err) {
     console.log(err);
   }

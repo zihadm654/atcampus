@@ -1,14 +1,16 @@
-import Post from "./post";
-import { getCurrentUser } from "@/lib/session";
 import { prisma } from "@/lib/db";
-const Feed = async ({ id }: { id?: string }) => {
-  const user = await getCurrentUser()
-  let posts:any[]=[]
-  if (id) {
+import { getCurrentUser } from "@/lib/session";
+
+import Post from "./post";
+
+const Feed = async ({ username }: { username?: string }) => {
+  const user = await getCurrentUser();
+  let posts: any[] = [];
+  if (username) {
     posts = await prisma.post.findMany({
       where: {
         user: {
-          id: id,
+          username: username,
         },
       },
       include: {
@@ -30,7 +32,7 @@ const Feed = async ({ id }: { id?: string }) => {
     });
   }
 
-  if (!id && user?.id) {
+  if (!username && user?.username) {
     const following = await prisma.follower.findMany({
       where: {
         followerId: user.id,
@@ -41,7 +43,7 @@ const Feed = async ({ id }: { id?: string }) => {
     });
 
     const followingIds = following.map((f) => f.followingId);
-    const ids = [user.id,...followingIds]
+    const ids = [user.id, ...followingIds];
 
     posts = await prisma.post.findMany({
       where: {
@@ -67,12 +69,12 @@ const Feed = async ({ id }: { id?: string }) => {
       },
     });
   }
-  console.log(posts,"posts")
+  console.log(posts, "posts");
   return (
-    <div className="rounded-lg py-3 flex flex-col gap-6">
-      {posts.length ? (posts.map((post)=>(
-        <Post key={post.id} post={post} />
-      ))) : "No posts found!"}
+    <div className="flex flex-col gap-6 rounded-lg py-3">
+      {posts.length
+        ? posts.map((post) => <Post key={post.id} post={post} />)
+        : "No posts found!"}
     </div>
   );
 };

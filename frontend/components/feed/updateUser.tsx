@@ -1,17 +1,21 @@
 "use client";
 
-import { updateProfile } from "@/actions/actions";
-import { User } from "@prisma/client";
-import Image from "next/image";
 import { useActionState, useState } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { updateProfile } from "@/actions/actions";
+import { User } from "@/generated/prisma";
+
 // import UpdateButton from "./UpdateButton";
 
 const UpdateUser = ({ user }: { user: User }) => {
   const [open, setOpen] = useState(false);
   const [cover, setCover] = useState<any>(false);
 
-  const [state, formAction] = useActionState(updateProfile,{success:false,error:false});
+  const [state, formAction] = useActionState(updateProfile, {
+    success: false,
+    error: false,
+  });
 
   const router = useRouter();
 
@@ -23,18 +27,18 @@ const UpdateUser = ({ user }: { user: User }) => {
   return (
     <div className="">
       <span
-        className="text-blue-500 text-xs cursor-pointer"
+        className="cursor-pointer text-xs text-blue-500"
         onClick={() => setOpen(true)}
       >
         Update
       </span>
       {open && (
-        <div className="absolute w-screen h-screen top-0 left-0 flex items-center justify-center z-50 ">
+        <div className="absolute top-0 left-0 z-50 flex h-screen w-screen items-center justify-center">
           <form
             action={(formData) =>
               formAction({ formData, cover: cover?.secure_url || "" })
             }
-            className="p-12 rounded-lg shadow-md flex flex-col gap-2 w-full md:w-1/2 xl:w-1/3 relative"
+            className="relative flex w-full flex-col gap-2 rounded-lg p-12 shadow-md md:w-1/2 xl:w-1/3"
           >
             {/* TITLE */}
             <h1>Update Profile</h1>
@@ -80,7 +84,7 @@ const UpdateUser = ({ user }: { user: User }) => {
                 <input
                   type="text"
                   placeholder={user.name || "John"}
-                  className="ring-1 ring-gray-300 p-[13px] rounded-md text-sm"
+                  className="rounded-md p-[13px] text-sm ring-1 ring-gray-300"
                   name="name"
                 />
               </div>
@@ -92,7 +96,7 @@ const UpdateUser = ({ user }: { user: User }) => {
                 <input
                   type="text"
                   placeholder={user.bio || "Life is beautiful..."}
-                  className="ring-1 ring-gray-300 p-[13px] rounded-md text-sm"
+                  className="rounded-md p-[13px] text-sm ring-1 ring-gray-300"
                   name="description"
                 />
               </div>
@@ -105,7 +109,7 @@ const UpdateUser = ({ user }: { user: User }) => {
                 <input
                   type="text"
                   placeholder={user.website || "https://example.com"}
-                  className="ring-1 ring-gray-300 p-[13px] rounded-md text-sm"
+                  className="rounded-md p-[13px] text-sm ring-1 ring-gray-300"
                   name="website"
                 />
               </div>
@@ -118,7 +122,7 @@ const UpdateUser = ({ user }: { user: User }) => {
               <span className="text-red-500">Something went wrong!</span>
             )}
             <div
-              className="absolute text-xl right-2 top-3 cursor-pointer"
+              className="absolute top-3 right-2 cursor-pointer text-xl"
               onClick={handleClose}
             >
               X

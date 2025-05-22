@@ -3,10 +3,10 @@
 import { useContext } from "react";
 import Link from "next/link";
 import { useSelectedLayoutSegment } from "next/navigation";
-import { useSession } from "next-auth/react";
 
 import { marketingConfig } from "@/config/marketing";
 import { siteConfig } from "@/config/site";
+import { useSession } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
 import { useScroll } from "@/hooks/use-scroll";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ModalContext } from "@/components/modals/providers";
 import { Icons } from "@/components/shared/icons";
 import MaxWidthWrapper from "@/components/shared/max-width-wrapper";
+
 import { UserAccountNav } from "./user-account-nav";
 
 interface NavBarProps {
@@ -23,8 +24,8 @@ interface NavBarProps {
 
 export function NavBar({ scroll = false }: NavBarProps) {
   const scrolled = useScroll(50);
-  const { data: session, status } = useSession();
-  const { setShowSignInModal } = useContext(ModalContext);
+  const { data: session, isPending } = useSession();
+  // const { setShowSignInModal } = useContext(ModalContext);
 
   const selectedLayout = useSelectedLayoutSegment();
 
@@ -36,7 +37,7 @@ export function NavBar({ scroll = false }: NavBarProps) {
 
   return (
     <header
-      className={`sticky top-0 z-40 flex w-full justify-center bg-background/60 backdrop-blur-xl transition-all ${
+      className={`bg-background/60 sticky top-0 z-40 flex w-full justify-center backdrop-blur-xl transition-all ${
         scroll ? (scrolled ? "border-b" : "bg-transparent") : "border-b"
       }`}
     >
@@ -52,7 +53,7 @@ export function NavBar({ scroll = false }: NavBarProps) {
             </span>
           </Link>
 
-          {/* {links && links.length > 0 ? (
+          {links && links.length > 0 ? (
             <nav className="hidden gap-6 md:flex">
               {links?.map((item, index) => (
                 <Link
@@ -60,7 +61,7 @@ export function NavBar({ scroll = false }: NavBarProps) {
                   href={item.disabled ? "#" : item.href}
                   prefetch={true}
                   className={cn(
-                    "flex items-center text-lg font-medium transition-colors hover:text-foreground/80 sm:text-sm",
+                    "hover:text-foreground/80 flex items-center text-lg font-medium transition-colors sm:text-sm",
                     item.href.startsWith(`/${selectedLayout}`)
                       ? "text-foreground"
                       : "text-foreground/60",
@@ -71,7 +72,7 @@ export function NavBar({ scroll = false }: NavBarProps) {
                 </Link>
               ))}
             </nav>
-          ) : null} */}
+          ) : null}
         </div>
 
         <div className="flex items-center space-x-3">
@@ -79,7 +80,9 @@ export function NavBar({ scroll = false }: NavBarProps) {
 
           {/* {session ? (
             <Link
-              href={session.user.role === "INSTITUTION" ? "/admin" : "/dashboard"}
+              href={
+                session.user.role === "INSTITUTION" ? "/admin" : "/dashboard"
+              }
               className="hidden md:block"
             >
               <Button
@@ -91,7 +94,7 @@ export function NavBar({ scroll = false }: NavBarProps) {
                 <span>Dashboard</span>
               </Button>
             </Link>
-          ) : status === "unauthenticated" ? (
+          ) : !session ? (
             <Button
               className="hidden gap-2 px-5 md:flex"
               variant="default"
@@ -105,22 +108,30 @@ export function NavBar({ scroll = false }: NavBarProps) {
           ) : (
             <Skeleton className="hidden h-9 w-28 rounded-full lg:flex" />
           )} */}
-          {session?.user ?
-          <UserAccountNav/>
-          :
-          <>
-          <Button>
-            <Link href="/login">
-              Login
-            </Link>
-            </Button>
-          <Button>
-            <Link href="/register">
-              Sign Up
-            </Link>
-            </Button>
-          </>
-            }
+          {session?.user ? (
+            <div className="hidden md:block">
+              <UserAccountNav />
+            </div>
+          ) : (
+            <>
+              <Button
+                className="hidden gap-2 px-5 md:flex"
+                variant="default"
+                size="sm"
+                rounded="full"
+              >
+                <Link href="/login">Login</Link>
+              </Button>
+              <Button
+                className="hidden gap-2 px-5 md:flex"
+                variant="default"
+                size="sm"
+                rounded="full"
+              >
+                <Link href="/register">Sign Up</Link>
+              </Button>
+            </>
+          )}
         </div>
       </MaxWidthWrapper>
     </header>

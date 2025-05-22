@@ -1,13 +1,15 @@
 "use client";
 
-import { addComment } from "@/actions/actions";
-import { getCurrentUser } from "@/lib/session";
-import { Comment, User } from "@prisma/client";
-import Image from "next/image";
 import { useOptimistic, useState } from "react";
-import { UserAvatar } from "../shared/user-avatar";
-import { useSession } from "next-auth/react";
+import Image from "next/image";
+import { addComment } from "@/actions/actions";
+import { Comment, User } from "@/generated/prisma";
 import { Ellipsis, Smile, ThumbsUp } from "lucide-react";
+
+import { useSession } from "@/lib/auth-client";
+
+import { UserAvatar } from "../shared/user-avatar";
+
 type CommentWithUser = Comment & { user: User };
 
 const CommentList = ({
@@ -19,8 +21,8 @@ const CommentList = ({
 }) => {
   const [commentState, setCommentState] = useState(comments);
   const [desc, setDesc] = useState("");
-  const { data: session, status } = useSession();
-  const user = session?.user as User;
+  const { data: session } = useSession();
+  const user = session?.user;
   const add = async () => {
     if (!user || !desc) return;
 
@@ -31,21 +33,25 @@ const CommentList = ({
       updatedAt: new Date(Date.now()),
       userId: user.id,
       postId: postId,
-      user:{
+      user: {
         id: user.id,
-        username: user.username,
+        username: user?.username || null,
         name: "",
         email: "sending please wait",
         image: "",
-        emailVerified: null,
+        emailVerified: false,
         coverImage: "",
         bio: "",
-        website: "",
         institution: "",
         createdAt: new Date(Date.now()),
         updatedAt: new Date(Date.now()),
-        role:"STUDENT"
-      }
+        role: user.role,
+        banned: null,
+        banReason: null,
+        banExpires: null,
+        displayUsername: null,
+        twoFactor: false,
+      },
     });
     try {
       const createdComment = await addComment(postId, desc);
@@ -55,46 +61,47 @@ const CommentList = ({
 
   const [optimisticComments, addOptimisticComment] = useOptimistic(
     commentState,
-    (state, value: CommentWithUser) => [value, ...state]
+    (state, value: CommentWithUser) => [value, ...state],
   );
   return (
     <>
       {user && (
         <div className="flex items-center gap-4">
-          {user?
-          <UserAvatar user={user} />
-        :null}
+          <div className="flex items-center space-x-2">
+            <UserAvatar user={{ name: user.name, image: user.image || null }} />
+            <h5>{user.name}</h5>
+          </div>
           <form
             action={add}
-            className="flex-1 flex items-center justify-between rounded-xl text-sm px-6 py-2 w-full"
+            className="flex w-full flex-1 items-center justify-between rounded-xl px-6 py-2 text-sm"
           >
             <input
               type="text"
               placeholder="Write a comment..."
-              className="bg-transparent outline-none flex-1"
+              className="flex-1 bg-transparent outline-none"
               onChange={(e) => setDesc(e.target.value)}
             />
-            <Smile className="size-6"/>
+            <Smile className="size-6" />
           </form>
         </div>
       )}
       <div className="">
         {/* COMMENT */}
         {optimisticComments.map((comment) => (
-          <div className="flex gap-4 justify-between mt-6" key={comment.id}>
+          <div className="mt-6 flex justify-between gap-4" key={comment.id}>
             {/* AVATAR */}
             <UserAvatar user={comment.user} />
             {/* DESC */}
-            <div className="flex flex-col gap-2 flex-1">
+            <div className="flex flex-1 flex-col gap-2">
               <span className="font-medium">
                 {comment.user.name && comment.user.name
                   ? comment.user.name
                   : comment.user.name}
               </span>
               <p>{comment.desc}</p>
-              <div className="flex items-center gap-8 text-xs text-gray-500 mt-2">
+              <div className="mt-2 flex items-center gap-8 text-xs text-gray-500">
                 <div className="flex items-center gap-4">
-                  <ThumbsUp className="size-6"/>
+                  <ThumbsUp className="size-6" />
                   <span className="text-gray-300">|</span>
                   <span className="text-gray-500">0 Likes</span>
                 </div>
@@ -102,7 +109,7 @@ const CommentList = ({
               </div>
             </div>
             {/* ICON */}
-            <Ellipsis className="size-6"/>
+            <Ellipsis className="size-6" />
           </div>
         ))}
       </div>
