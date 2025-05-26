@@ -16,6 +16,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Icons } from "@/components/shared/icons";
 
+import { SignInOauthButton } from "../auth/sign-in-oauth-button";
+
 interface UserAuthFormProps extends React.HTMLAttributes<HTMLDivElement> {
   type?: string;
 }
@@ -45,10 +47,10 @@ export function UserAuthForm({ className, type, ...props }: UserAuthFormProps) {
       setIsLoading(false);
     } else {
       reset();
-      router.push("/dashboard");
       toast.success("Login successfully", {
         description: res.message,
       });
+      router.push("/dashboard");
     }
     setIsLoading(false);
   }
@@ -124,7 +126,8 @@ export function UserAuthForm({ className, type, ...props }: UserAuthFormProps) {
           </span>
         </div>
       </div>
-      <button
+      <SignInOauthButton provider="google" />
+      {/* <button
         type="button"
         className={cn(buttonVariants({ variant: "outline" }))}
         onClick={async () => {
@@ -143,7 +146,7 @@ export function UserAuthForm({ className, type, ...props }: UserAuthFormProps) {
           <Icons.google className="mr-2 size-4" />
         )}{" "}
         Google
-      </button>
+      </button> */}
     </div>
   );
 }

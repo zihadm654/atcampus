@@ -7,8 +7,8 @@ import { getCurrentUser } from "@/lib/session";
 import {
   DeleteUserButton,
   PlaceholderDeleteUserButton,
-} from "@/components/delete-user-button";
-import { ReturnButton } from "@/components/return-button";
+} from "@/components/auth/delete-user-button";
+import { ReturnButton } from "@/components/auth/return-button";
 import { UserRoleSelect } from "@/components/user-role-select";
 
 export default async function Page() {

@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 
-import { ResetPasswordForm } from "@/components/reset-password-form";
-import { ReturnButton } from "@/components/return-button";
+import { ReturnButton } from "@/components/auth/return-button";
+import { ResetPasswordForm } from "@/components/forms/reset-password-form";
 
 interface PageProps {
   searchParams: Promise<{ token: string }>;

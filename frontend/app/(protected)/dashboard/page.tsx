@@ -5,12 +5,12 @@ import { auth } from "@/lib/auth";
 import { getCurrentUser } from "@/lib/session";
 import { constructMetadata } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { ChangePasswordForm } from "@/components/change-password-form";
 import { DashboardHeader } from "@/components/dashboard/header";
-import { ReturnButton } from "@/components/return-button";
+import { ChangePasswordForm } from "@/components/forms/change-password-form";
+import { UpdateUserForm } from "@/components/forms/update-user-form";
+import { ReturnButton } from "@/components/auth/return-button";
 import { EmptyPlaceholder } from "@/components/shared/empty-placeholder";
-import { SignOutButton } from "@/components/sign-out-button";
-import { UpdateUserForm } from "@/components/update-user-form";
+import { SignOutButton } from "@/components/auth/sign-out-button";
 
 export const metadata = constructMetadata({
   title: "Dashboard – SaaS Starter",

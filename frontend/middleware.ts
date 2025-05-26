@@ -5,13 +5,13 @@ const protectedRoutes = ["/dashboard", "/admin/dashboard"];
 
 export async function middleware(req: NextRequest) {
   const { nextUrl } = req;
-  const sessionCookie = getSessionCookie(req);
+  const sessionCookie = await getSessionCookie(req);
 
   const res = NextResponse.next();
 
   const isLoggedIn = !!sessionCookie;
   const isOnProtectedRoute = protectedRoutes.includes(nextUrl.pathname);
-  const isOnAuthRoute = nextUrl.pathname.startsWith("/auth");
+  const isOnAuthRoute = nextUrl.pathname.startsWith("/(auth)");
 
   if (isOnProtectedRoute && !isLoggedIn) {
     return NextResponse.redirect(new URL("/login", req.url));

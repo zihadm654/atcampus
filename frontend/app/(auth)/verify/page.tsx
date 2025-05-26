@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 
-import { ReturnButton } from "@/components/return-button";
-import { SendVerificationEmailForm } from "@/components/send-verification-email-form";
+import { ReturnButton } from "@/components/auth/return-button";
+import { SendVerificationEmailForm } from "@/components/forms/send-verification-email-form";
 
 interface PageProps {
   searchParams: Promise<{ error: string }>;

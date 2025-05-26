@@ -27,7 +27,6 @@ export const switchFollow = async (userId: string) => {
           id: existingFollow.id,
         },
       });
-      return { message: "Unfollowed" };
     } else {
       const existingFollowRequest = await prisma.followRequest.findFirst({
         where: {
@@ -42,15 +41,13 @@ export const switchFollow = async (userId: string) => {
             id: existingFollowRequest.id,
           },
         });
-        return { message: "deleted follow request" };
       } else {
         await prisma.followRequest.create({
           data: {
-            senderId: session.id!,
+            senderId: session.id,
             receiverId: userId,
           },
         });
-        return { message: "sent follow request" };
       }
     }
   } catch (err) {
@@ -119,11 +116,10 @@ export const acceptFollowRequest = async (userId: string) => {
       await prisma.follower.create({
         data: {
           followerId: userId,
-          followingId: session.id!,
+          followingId: session.id,
         },
       });
     }
-    revalidatePath("/");
   } catch (err) {
     console.log(err);
     throw new Error("Something went wrong!");
@@ -218,12 +214,12 @@ export const updateProfile = async (
   }
 
   try {
-    // await prisma.update({
-    //   where: {
-    //     id: session.id,
-    //   },
-    //   data: validatedFields.data,
-    // });
+    await prisma.user.update({
+      where: {
+        id: session.id,
+      },
+      data: validatedFields.data,
+    });
     return { success: true, error: false };
   } catch (err) {
     console.log(err);

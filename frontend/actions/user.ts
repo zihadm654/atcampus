@@ -88,6 +88,7 @@ export async function getRandomUsers() {
       },
       select: {
         id: true,
+        username: true,
         name: true,
         email: true,
         image: true,

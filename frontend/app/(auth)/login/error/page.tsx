@@ -1,4 +1,4 @@
-import { ReturnButton } from "@/components/return-button";
+import { ReturnButton } from "@/components/auth/return-button";
 
 interface PageProps {
   searchParams: Promise<{ error: string }>;

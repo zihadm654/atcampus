@@ -2,8 +2,9 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider = "prisma-client-js"
-  output   = "../generated/prisma"
+  provider        = "prisma-client-js"
+  previewFeatures = ["fullTextSearch"]
+  output          = "../generated/prisma"
 }
 
 datasource db {
@@ -76,22 +77,21 @@ model User {
   createdAt DateTime @default(now()) @map(name: "created_at")
   updatedAt DateTime @default(now()) @map(name: "updated_at")
 
-  accounts               Account[]
-  sessions               Session[]
-  posts                  Post[]
-  comments               Comment[]
-  likes                  Like[]
-  followers              Follower[]      @relation("UserFollowers")
-  followings             Follower[]      @relation("UserFollowings")
-  followRequestsSent     FollowRequest[] @relation("FollowRequestsSent")
-  followRequestsReceived FollowRequest[] @relation("FollowRequestsReceived")
-  block                  Block[]         @relation("BlocksSent")
-  blockBy                Block[]         @relation("BlocksReceived")
-  stories                Story?
-  Follower               Follower[]
-  FollowRequest          FollowRequest[]
-  Block                  Block[]
-  TwoFactor              TwoFactor[]
+  accounts              Account[]
+  sessions              Session[]
+  posts                 Post[]
+  comments              Comment[]
+  likes                 Like[]
+  followers             Follow[]       @relation("UserFollowers")
+  followings            Follow[]       @relation("UserFollowings")
+  block                 Block[]        @relation("BlocksSent")
+  blockBy               Block[]        @relation("BlocksReceived")
+  stories               Story?
+  Block                 Block[]
+  TwoFactor             TwoFactor[]
+  receivedNotifications Notification[] @relation("Recipient")
+  issuedNotifications   Notification[] @relation("Issuer")
+  bookmarks             Bookmark[]
 
   username   String?
   banned     Boolean?
@@ -103,75 +103,72 @@ model User {
 }
 
 model Post {
-  id        String    @id @default(cuid()) @map("_id")
-  desc      String
-  img       String?
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id        String   @id @default(cuid()) @map("_id")
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    String
-  comments  Comment[]
-  likes     Like[]
+
+  comments            Comment[]
+  likes               Like[]
+  linkedNotifications Notification[]
+  attachments         Media[]
+  bookmarks           Bookmark[]
 
   @@map(name: "posts")
 }
 
-model Comment {
-  id        String   @id @default(cuid()) @map("_id")
-  desc      String
+model Media {
+  id     String    @id @default(cuid()) @map("_id")
+  postId String?
+  post   Post?     @relation(fields: [postId], references: [id], onDelete: SetNull)
+  type   MediaType
+  url    String
+
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
 
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId String
-  post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
+  @@map(name: "post_media")
+}
 
-  postId String
-  likes  Like[]
+enum MediaType {
+  IMAGE
+  VIDEO
+}
 
-  @@map(name: "comments")
+model Comment {
+  id      String @id @default(cuid()) @map("_id")
+  content String
+  userId  String
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  postId  String
+  post    Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@map("comments")
 }
 
 model Like {
-  id        String   @id @default(cuid()) @map("_id")
-  createdAt DateTime @default(now())
+  id     String @id @default(cuid()) @map("_id")
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  postId String
+  post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
 
-  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  post    Post?    @relation(fields: [postId], references: [id], onDelete: Cascade)
-  Comment Comment? @relation(fields: [commentId], references: [id], onDelete: Cascade)
-
-  userId    String
-  postId    String?
-  commentId String?
-
+  @@unique([userId, postId])
   @@map(name: "likes")
 }
 
-model Follower {
-  id          String   @id @default(cuid()) @map("_id")
-  createdAt   DateTime @default(now())
-  follower    User     @relation("UserFollowers", fields: [followerId], references: [id], onDelete: Cascade)
+model Follow {
+  id          String @id @default(cuid()) @map("_id")
   followerId  String
-  following   User     @relation("UserFollowings", fields: [followingId], references: [id], onDelete: Cascade)
+  follower    User   @relation("UserFollowers", fields: [followerId], references: [id], onDelete: Cascade)
   followingId String
-  User        User?    @relation(fields: [userId], references: [id])
-  userId      String?
+  following   User   @relation("UserFollowings", fields: [followingId], references: [id], onDelete: Cascade)
 
-  @@map(name: "followers")
-}
-
-model FollowRequest {
-  id         String   @id @default(cuid()) @map("_id")
-  createdAt  DateTime @default(now())
-  sender     User     @relation("FollowRequestsSent", fields: [senderId], references: [id], onDelete: Cascade)
-  senderId   String
-  receiver   User     @relation("FollowRequestsReceived", fields: [receiverId], references: [id], onDelete: Cascade)
-  receiverId String
-  User       User?    @relation(fields: [userId], references: [id])
-  userId     String?
-
-  @@unique([senderId, receiverId])
-  @@map(name: "follow_requests")
+  @@unique([followerId, followingId])
+  @@map(name: "follows")
 }
 
 model Block {
@@ -200,12 +197,14 @@ model Story {
 }
 
 model Verification {
-  id         String    @id @map("_id")
+  id String @id @default(cuid()) @map("_id")
+
   identifier String
   value      String
   expiresAt  DateTime
-  createdAt  DateTime?
-  updatedAt  DateTime?
+
+  createdAt DateTime?
+  updatedAt DateTime?
 
   @@map("verifications")
 }
@@ -218,4 +217,39 @@ model TwoFactor {
   user        User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("twoFactor")
+}
+
+model Bookmark {
+  id     String @id @default(cuid()) @map("_id")
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  postId String
+  post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, postId])
+  @@map(name: "bookmarks")
+}
+
+model Notification {
+  id          String           @id @default(cuid()) @map("_id")
+  recipientId String
+  recipient   User             @relation("Recipient", fields: [recipientId], references: [id], onDelete: Cascade)
+  issuerId    String
+  issuer      User             @relation("Issuer", fields: [issuerId], references: [id], onDelete: Cascade)
+  postId      String?
+  post        Post?            @relation(fields: [postId], references: [id], onDelete: Cascade)
+  type        NotificationType
+  read        Boolean          @default(false)
+
+  createdAt DateTime @default(now())
+
+  @@map(name: "notifications")
+}
+
+enum NotificationType {
+  LIKE
+  FOLLOW
+  COMMENT
 }

@@ -18,6 +18,7 @@ export async function signUpEmailAction(data: TRegister) {
     await auth.api.signUpEmail({
       body: {
         name,
+        username,
         email,
         password,
       },

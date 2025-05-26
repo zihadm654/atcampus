@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { UserAvatar } from "@/components/shared/user-avatar";
 
-import { SignOutButton } from "../sign-out-button";
+import { SignOutButton } from "../auth/sign-out-button";
 
 export function UserAccountNav() {
   const { data: session } = useSession();

@@ -190,8 +190,13 @@ export const auth = betterAuth({
           email: user.email,
           image: user.image,
           createdAt: user.createdAt,
+          updatedAt: user.updatedAt,
           role: user.role,
           emailVerified: user.emailVerified,
+          twoFactorEnabled: user.twoFactorEnabled,
+          banned: user.banned,
+          banReason: user.banReason,
+          banExpires: user.banExpires,
         },
       };
     }, options),
