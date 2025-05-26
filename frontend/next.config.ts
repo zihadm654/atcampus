@@ -1,5 +1,7 @@
 import type { NextConfig } from "next";
 
+import { env } from "./env.mjs";
+
 const nextConfig: NextConfig = {
   /* config options here */
   experimental: {
@@ -25,7 +27,7 @@ const nextConfig: NextConfig = {
       {
         protocol: "https",
         hostname: "utfs.io",
-        pathname: `/a/${process.env.NEXT_PUBLIC_UPLOADTHING_APP_ID}/*`,
+        pathname: `/a/${env.NEXT_PUBLIC_UPLOADTHING_APP_ID}/*`,
       },
     ],
   },

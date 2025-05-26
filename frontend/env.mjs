@@ -17,6 +17,9 @@ export const env = createEnv({
     UPLOADTHING_TOKEN: z.string().min(1),
     NEXT_PUBLIC_STREAM_KEY: z.string().min(1),
     STREAM_SECRET: z.string().min(1),
+    UPLOADTHING_SECRET: z.string().min(1),
+    NEXT_PUBLIC_UPLOADTHING_APP_ID: z.string().min(1),
+    CRON_SECRET: z.string().min(1),
   },
   client: {
     NEXT_PUBLIC_APP_URL: z.string().min(1),
@@ -35,5 +38,8 @@ export const env = createEnv({
     UPLOADTHING_TOKEN: process.env.UPLOADTHING_TOKEN,
     NEXT_PUBLIC_STREAM_KEY: process.env.NEXT_PUBLIC_STREAM_KEY,
     STREAM_SECRET: process.env.STREAM_SECRET,
+    UPLOADTHING_SECRET: process.env.UPLOADTHING_SECRET,
+    NEXT_PUBLIC_UPLOADTHING_APP_ID: process.env.NEXT_PUBLIC_UPLOADTHING_APP_ID,
+    CRON_SECRET: process.env.CRON_SECRET,
   },
 });

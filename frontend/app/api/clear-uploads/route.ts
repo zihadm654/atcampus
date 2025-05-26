@@ -1,12 +1,13 @@
 import { UTApi } from "uploadthing/server";
 
+import { env } from "@/env.mjs";
 import { prisma } from "@/lib/db";
 
 export async function GET(req: Request) {
   try {
     const authHeader = req.headers.get("Authorization");
 
-    if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+    if (authHeader !== `Bearer ${env.CRON_SECRET}`) {
       return Response.json(
         { message: "Invalid authorization header" },
         { status: 401 },
@@ -32,8 +33,7 @@ export async function GET(req: Request) {
 
     new UTApi().deleteFiles(
       unusedMedia.map(
-        (m) =>
-          m.url.split(`/a/${process.env.NEXT_PUBLIC_UPLOADTHING_APP_ID}/`)[1],
+        (m) => m.url.split(`/a/${env.NEXT_PUBLIC_UPLOADTHING_APP_ID}/`)[1],
       ),
     );
 
