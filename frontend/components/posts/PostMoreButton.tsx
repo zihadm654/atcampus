@@ -1,6 +1,8 @@
-import { PostData } from "@/lib/types";
-import { MoreHorizontal, Trash2 } from "lucide-react";
 import { useState } from "react";
+import { MoreHorizontal, Trash2 } from "lucide-react";
+
+import { PostData } from "@/types/types";
+
 import { Button } from "../ui/button";
 import {
   DropdownMenu,
@@ -26,12 +28,12 @@ export default function PostMoreButton({
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button size="icon" variant="ghost" className={className}>
-            <MoreHorizontal className="size-5 text-muted-foreground" />
+            <MoreHorizontal className="text-muted-foreground size-5" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent>
           <DropdownMenuItem onClick={() => setShowDeleteDialog(true)}>
-            <span className="flex items-center gap-3 text-destructive">
+            <span className="text-destructive flex items-center gap-3">
               <Trash2 className="size-4" />
               Delete
             </span>

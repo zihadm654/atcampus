@@ -11,7 +11,7 @@ import { useSession } from "@/lib/auth-client";
 import { cn, formatRelativeDate } from "@/lib/utils";
 
 import Comments from "../comments/Comments";
-import Linkify from "../Linkify";
+import Linkify from "../feed/Linkify";
 import UserAvatar from "../UserAvatar";
 import UserTooltip from "../UserTooltip";
 import BookmarkButton from "./BookmarkButton";

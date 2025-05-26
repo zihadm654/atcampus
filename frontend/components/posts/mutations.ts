@@ -1,11 +1,13 @@
-import { PostsPage } from "@/lib/types";
+import { usePathname, useRouter } from "next/navigation";
 import {
   InfiniteData,
   QueryFilters,
   useMutation,
   useQueryClient,
 } from "@tanstack/react-query";
-import { usePathname, useRouter } from "next/navigation";
+
+import { PostsPage } from "@/types/types";
+
 import { useToast } from "../ui/use-toast";
 import { deletePost } from "./actions";
 

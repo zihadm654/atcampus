@@ -6,9 +6,9 @@ import Link from "next/link";
 import { FollowerInfo, UserData } from "@/types/types";
 import { useSession } from "@/lib/auth-client";
 
+import FollowButton from "./feed/FollowButton";
 import FollowerCount from "./feed/FollowerCount";
-import FollowButton from "./FollowButton";
-import Linkify from "./Linkify";
+import Linkify from "./feed/Linkify";
 import { UserAvatar } from "./shared/user-avatar";
 import {
   Tooltip,

@@ -10,7 +10,7 @@ import { ImageIcon, Loader2, X } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import LoadingButton from "@/components/LoadingButton";
+import LoadingButton from "@/components/feed/LoadingButton";
 import UserAvatar from "@/components/UserAvatar";
 
 import { useSubmitPostMutation } from "./mutations";

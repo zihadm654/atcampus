@@ -1,6 +1,8 @@
-import { PostData } from "@/lib/types";
-import { Loader2, SendHorizonal } from "lucide-react";
 import { useState } from "react";
+import { Loader2, SendHorizonal } from "lucide-react";
+
+import { PostData } from "@/types/types";
+
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { useSubmitCommentMutation } from "./mutations";

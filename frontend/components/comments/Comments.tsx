@@ -1,7 +1,9 @@
-import kyInstance from "@/lib/ky";
-import { CommentsPage, PostData } from "@/lib/types";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
+
+import { CommentsPage, PostData } from "@/types/types";
+import kyInstance from "@/lib/ky";
+
 import { Button } from "../ui/button";
 import Comment from "./Comment";
 import CommentInput from "./CommentInput";
@@ -46,10 +48,10 @@ export default function Comments({ post }: CommentsProps) {
       )}
       {status === "pending" && <Loader2 className="mx-auto animate-spin" />}
       {status === "success" && !comments.length && (
-        <p className="text-center text-muted-foreground">No comments yet.</p>
+        <p className="text-muted-foreground text-center">No comments yet.</p>
       )}
       {status === "error" && (
-        <p className="text-center text-destructive">
+        <p className="text-destructive text-center">
           An error occurred while loading comments.
         </p>
       )}

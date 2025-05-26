@@ -1,10 +1,12 @@
-import { CommentsPage } from "@/lib/types";
 import {
   InfiniteData,
   QueryKey,
   useMutation,
   useQueryClient,
 } from "@tanstack/react-query";
+
+import { CommentsPage } from "@/types/types";
+
 import { useToast } from "../ui/use-toast";
 import { deleteComment, submitComment } from "./actions";
 

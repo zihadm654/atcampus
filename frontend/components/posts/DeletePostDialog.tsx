@@ -1,5 +1,6 @@
-import { PostData } from "@/lib/types";
-import LoadingButton from "../LoadingButton";
+import { PostData } from "@/types/types";
+
+import LoadingButton from "../feed/LoadingButton";
 import { Button } from "../ui/button";
 import {
   Dialog,

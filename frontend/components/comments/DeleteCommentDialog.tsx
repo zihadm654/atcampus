@@ -1,5 +1,6 @@
-import { CommentData } from "@/lib/types";
-import LoadingButton from "../LoadingButton";
+import { CommentData } from "@/types/types";
+
+import LoadingButton from "../feed/LoadingButton";
 import { Button } from "../ui/button";
 import {
   Dialog,

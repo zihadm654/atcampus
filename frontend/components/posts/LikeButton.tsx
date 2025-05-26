@@ -1,6 +1,3 @@
-import kyInstance from "@/lib/ky";
-import { LikeInfo } from "@/lib/types";
-import { cn } from "@/lib/utils";
 import {
   QueryKey,
   useMutation,
@@ -8,6 +5,11 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 import { Heart } from "lucide-react";
+
+import { LikeInfo } from "@/types/types";
+import kyInstance from "@/lib/ky";
+import { cn } from "@/lib/utils";
+
 import { useToast } from "../ui/use-toast";
 
 interface LikeButtonProps {
