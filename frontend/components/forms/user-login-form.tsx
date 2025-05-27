@@ -126,8 +126,8 @@ export function UserAuthForm({ className, type, ...props }: UserAuthFormProps) {
           </span>
         </div>
       </div>
-      <SignInOauthButton provider="google" />
-      {/* <button
+      {/* <SignInOauthButton provider="google" /> */}
+      <button
         type="button"
         className={cn(buttonVariants({ variant: "outline" }))}
         onClick={async () => {
@@ -146,7 +146,7 @@ export function UserAuthForm({ className, type, ...props }: UserAuthFormProps) {
           <Icons.google className="mr-2 size-4" />
         )}{" "}
         Google
-      </button> */}
+      </button>
     </div>
   );
 }

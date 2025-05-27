@@ -29,7 +29,7 @@ export default function Post({ post }: PostProps) {
     return null;
   }
   const [showComments, setShowComments] = useState(false);
-
+  console.log(post, "post");
   return (
     <article className="group/post bg-card space-y-3 rounded-2xl p-5 shadow-sm">
       <div className="flex justify-between gap-3">
@@ -67,9 +67,9 @@ export default function Post({ post }: PostProps) {
       <Linkify>
         <div className="break-words whitespace-pre-line">{post.content}</div>
       </Linkify>
-      {!!post.attachments.length && (
-        <MediaPreviews attachments={post.attachments} />
-      )}
+      {/* {post?.attachments && post?.attachments.length > 0 ? (
+        <MediaPreviews attachments={post?.attachments} />
+      ) : null} */}
       <hr className="text-muted-foreground" />
       <div className="flex justify-between gap-5">
         <div className="flex items-center gap-5">
@@ -111,9 +111,7 @@ function MediaPreviews({ attachments }: MediaPreviewsProps) {
         attachments.length > 1 && "sm:grid sm:grid-cols-2",
       )}
     >
-      {attachments.map((m) => (
-        <MediaPreview key={m.id} media={m} />
-      ))}
+      {attachments?.map((m) => <MediaPreview key={m.id} media={m} />)}
     </div>
   );
 }
@@ -126,7 +124,7 @@ function MediaPreview({ media }: MediaPreviewProps) {
   if (media.type === "IMAGE") {
     return (
       <Image
-        src={media.url}
+        src={media?.url}
         alt="Attachment"
         width={500}
         height={500}
@@ -139,7 +137,7 @@ function MediaPreview({ media }: MediaPreviewProps) {
     return (
       <div>
         <video
-          src={media.url}
+          src={media?.url}
           controls
           className="mx-auto size-fit max-h-[30rem] rounded-2xl"
         />

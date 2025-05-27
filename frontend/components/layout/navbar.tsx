@@ -15,6 +15,7 @@ import { ModalContext } from "@/components/modals/providers";
 import { Icons } from "@/components/shared/icons";
 import MaxWidthWrapper from "@/components/shared/max-width-wrapper";
 
+import SearchField from "../feed/SearchField";
 import { UserAccountNav } from "./user-account-nav";
 
 interface NavBarProps {
@@ -46,14 +47,14 @@ export function NavBar({ scroll = false }: NavBarProps) {
         // large={documentation}
       >
         <div className="flex gap-6 md:gap-10">
-          <Link href="/" className="flex items-center space-x-1.5">
+          <Link href="/" className="text-primary flex items-center space-x-1.5">
             <Icons.logo />
             <span className="font-urban text-xl font-bold">
               {siteConfig.name}
             </span>
           </Link>
 
-          {links && links.length > 0 ? (
+          {/* {links && links.length > 0 ? (
             <nav className="hidden gap-6 md:flex">
               {links?.map((item, index) => (
                 <Link
@@ -72,7 +73,8 @@ export function NavBar({ scroll = false }: NavBarProps) {
                 </Link>
               ))}
             </nav>
-          ) : null}
+          ) : null} */}
+          <SearchField />
         </div>
 
         <div className="flex items-center space-x-3">
@@ -109,10 +111,10 @@ export function NavBar({ scroll = false }: NavBarProps) {
             <Skeleton className="hidden h-9 w-28 rounded-full lg:flex" />
           )} */}
           {session?.user ? (
-            <div className="hidden md:block">
+            <>
               <UserAccountNav />
-            </div>
-          ) : (
+            </>
+          ) : !session ? (
             <>
               <Button
                 className="hidden gap-2 px-5 md:flex"
@@ -131,6 +133,8 @@ export function NavBar({ scroll = false }: NavBarProps) {
                 <Link href="/register">Sign Up</Link>
               </Button>
             </>
+          ) : (
+            <Skeleton className="hidden h-9 w-28 rounded-full lg:flex" />
           )}
         </div>
       </MaxWidthWrapper>

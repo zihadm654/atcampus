@@ -11,7 +11,7 @@ import { ImageIcon, Loader2, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import LoadingButton from "@/components/feed/LoadingButton";
-import UserAvatar from "@/components/UserAvatar";
+import { UserAvatar } from "@/components/shared/user-avatar";
 
 import { useSubmitPostMutation } from "./mutations";
 
@@ -79,11 +79,17 @@ export default function PostEditor() {
       .map((item) => item.getAsFile()) as File[];
     startUpload(files);
   }
-
+  if (!user) return null;
   return (
-    <div className="bg-card flex flex-col gap-5 rounded-2xl p-5 shadow-sm">
-      <div className="flex gap-5">
-        <UserAvatar avatarUrl={user?.image} className="hidden sm:inline" />
+    <div className="bg-card relative flex w-full items-center justify-between gap-3 rounded-xl p-3 shadow-sm">
+      <div className="flex w-full items-center justify-between gap-3">
+        <UserAvatar
+          user={{
+            name: user.name as string,
+            username: user.username || null,
+            image: user.image || null,
+          }}
+        />
         <div {...rootProps} className="w-full">
           <EditorContent
             editor={editor}
@@ -96,13 +102,13 @@ export default function PostEditor() {
           <input {...getInputProps()} />
         </div>
       </div>
-      {!!attachments.length && (
-        <AttachmentPreviews
-          attachments={attachments}
-          removeAttachment={removeAttachment}
-        />
-      )}
-      <div className="flex items-center justify-end gap-3">
+      <div className="flex items-center justify-between gap-3">
+        {!!attachments.length && (
+          <AttachmentPreviews
+            attachments={attachments}
+            removeAttachment={removeAttachment}
+          />
+        )}
         {isUploading && (
           <>
             <span className="text-sm">{uploadProgress ?? 0}%</span>
@@ -117,7 +123,7 @@ export default function PostEditor() {
           onClick={onSubmit}
           loading={mutation.isPending}
           disabled={!input.trim() || isUploading}
-          className="min-w-20"
+          className="min-w-10"
         >
           Post
         </LoadingButton>

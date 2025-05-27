@@ -157,7 +157,7 @@ export function UserAccountNav() {
           user={{
             name: user.name as string,
             username: user.displayUsername || null,
-            image: user.image || null,
+            image: user.image ?? null,
           }}
           className="size-8 border"
         />
@@ -185,9 +185,12 @@ export function UserAccountNav() {
         ) : null}
 
         <DropdownMenuItem asChild>
-          <Link href="/dashboard" className="flex items-center space-x-2.5">
+          <Link
+            href={`/users/${user.username}`}
+            className="flex items-center space-x-2.5"
+          >
             <LayoutDashboard className="size-4" />
-            <p className="text-sm">Dashboard</p>
+            <p className="text-sm">Profile</p>
           </Link>
         </DropdownMenuItem>
 
