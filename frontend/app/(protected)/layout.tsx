@@ -1,10 +1,9 @@
 import { redirect } from "next/navigation";
 
 import { getCurrentUser } from "@/lib/session";
+import MenuBar from "@/components/feed/MenuBar";
+import { NavBar } from "@/components/layout/navbar";
 import { SiteFooter } from "@/components/layout/site-footer";
-
-import MenuBar from "../../components/feed/MenuBar";
-import { NavBar } from "../../components/layout/navbar";
 
 interface ProtectedLayoutProps {
   children: React.ReactNode;

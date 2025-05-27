@@ -1,12 +1,12 @@
-import { Metadata } from "next";
-
+import { constructMetadata } from "@/lib/utils";
 import TrendsSidebar from "@/components/feed/TrendsSidebar";
 
 import Notifications from "./Notifications";
 
-export const metadata: Metadata = {
-  title: "Notifications",
-};
+export const metadata = constructMetadata({
+  title: "Notifications - AtCampus",
+  description: "Latest news and updates from AtCampus.",
+});
 
 export default function Page() {
   return (

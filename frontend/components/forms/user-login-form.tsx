@@ -50,7 +50,7 @@ export function UserAuthForm({ className, type, ...props }: UserAuthFormProps) {
       toast.success("Login successfully", {
         description: res.message,
       });
-      router.push("/dashboard");
+      router.push("/");
     }
     setIsLoading(false);
   }
@@ -134,7 +134,7 @@ export function UserAuthForm({ className, type, ...props }: UserAuthFormProps) {
           setIsGoogleLoading(true);
           await signIn.social({
             provider: "google",
-            callbackURL: "/dashboard",
+            callbackURL: "/",
             errorCallbackURL: "/login/error",
           });
         }}

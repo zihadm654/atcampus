@@ -1,12 +1,12 @@
-import { Metadata } from "next";
-
+import { constructMetadata } from "@/lib/utils";
 import TrendsSidebar from "@/components/feed/TrendsSidebar";
 
 import Bookmarks from "./Bookmarks";
 
-export const metadata: Metadata = {
-  title: "Bookmarks",
-};
+export const metadata = constructMetadata({
+  title: "Bookmarks – AtCampus",
+  description: "Latest news and updates from Next AtCampus.",
+});
 
 export default function Page() {
   return (

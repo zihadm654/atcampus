@@ -10,7 +10,7 @@ interface PageProps {
 export default async function Page({ searchParams }: PageProps) {
   const error = (await searchParams).error;
 
-  if (!error) redirect("/dashboard");
+  if (!error) redirect("/");
 
   return (
     <div className="container mx-auto max-w-screen-lg space-y-8 px-8 py-16">

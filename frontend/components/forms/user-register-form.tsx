@@ -179,7 +179,7 @@ export function UserAuthForm({ className, type, ...props }: UserAuthFormProps) {
           setIsGoogleLoading(true);
           await signIn.social({
             provider: "google",
-            callbackURL: "/dashboard",
+            callbackURL: "/",
             errorCallbackURL: "/login/error",
           });
         }}

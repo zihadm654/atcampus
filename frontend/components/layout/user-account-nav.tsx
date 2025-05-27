@@ -110,7 +110,7 @@ export function UserAccountNav() {
 
               <li className="text-foreground hover:bg-muted rounded-lg">
                 <Link
-                  href="/dashboard"
+                  href="/"
                   onClick={closeDrawer}
                   className="flex w-full items-center gap-3 px-2.5 py-2"
                 >

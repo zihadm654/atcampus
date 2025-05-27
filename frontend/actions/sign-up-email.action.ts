@@ -12,13 +12,12 @@ export async function signUpEmailAction(data: TRegister) {
   if (!result.success) {
     return { error: result.error.format() };
   }
-  const { name, username, email, password } = result.data;
+  const { name, email, password } = result.data;
 
   try {
     await auth.api.signUpEmail({
       body: {
         name,
-        username,
         email,
         password,
       },
