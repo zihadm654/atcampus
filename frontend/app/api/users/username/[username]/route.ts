@@ -4,8 +4,9 @@ import { getCurrentUser } from "@/lib/session";
 
 export async function GET(
   req: Request,
-  { params: { username } }: { params: { username: string } },
+  { params }: { params: Promise<{ username: string }> },
 ) {
+  const { username } = await params;
   try {
     const loggedInUser = await getCurrentUser();
 

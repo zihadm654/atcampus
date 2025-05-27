@@ -1,6 +1,6 @@
 import React, { JSX } from "react";
 import Link from "next/link";
-import { NotificationType } from "@/generated/prisma";
+import { NotificationType } from "@prisma/client";
 import { Heart, MessageCircle, User2 } from "lucide-react";
 
 import { NotificationData } from "@/types/types";

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Media } from "@/generated/prisma";
+import { Media } from "@prisma/client";
 import { MessageSquare } from "lucide-react";
 
 import { PostData } from "@/types/types";

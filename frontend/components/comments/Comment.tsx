@@ -21,7 +21,7 @@ export default function Comment({ comment }: CommentProps) {
       <span className="hidden sm:inline">
         <UserTooltip user={comment.user}>
           <Link href={`/users/${comment.user.username}`}>
-            <UserAvatar avatarUrl={comment.user.avatarUrl} size={40} />
+            <UserAvatar avatarUrl={comment.user.image} size={40} />
           </Link>
         </UserTooltip>
       </span>
@@ -32,7 +32,7 @@ export default function Comment({ comment }: CommentProps) {
               href={`/users/${comment.user.username}`}
               className="font-medium hover:underline"
             >
-              {comment.user.displayName}
+              {comment.user.displayUsername}
             </Link>
           </UserTooltip>
           <span className="text-muted-foreground">

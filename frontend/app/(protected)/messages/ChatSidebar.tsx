@@ -12,7 +12,7 @@ import { useSession } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
-import NewChatDialog from "./NewChatDialog";
+// import NewChatDialog from "./NewChatDialog";
 
 interface ChatSidebarProps {
   open: boolean;
@@ -100,7 +100,7 @@ function MenuHeader({ onClose }: MenuHeaderProps) {
           <MailPlus className="size-5" />
         </Button>
       </div>
-      {showNewChatDialog && (
+      {/* {showNewChatDialog && (
         <NewChatDialog
           onOpenChange={setShowNewChatDialog}
           onChatCreated={() => {
@@ -108,7 +108,7 @@ function MenuHeader({ onClose }: MenuHeaderProps) {
             onClose();
           }}
         />
-      )}
+      )} */}
     </>
   );
 }
