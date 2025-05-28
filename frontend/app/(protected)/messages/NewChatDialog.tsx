@@ -38,30 +38,30 @@ export default function NewChatDialog({
 
   const [selectedUsers, setSelectedUsers] = useState<UserResponse[]>([]);
 
-  // const { data, isFetching, isError, isSuccess } = useQuery({
-  //   queryKey: ["stream-users", searchInputDebounced],
-  //   queryFn: async () =>
-  //     client.queryUsers(
-  //       {
-  //         _id: { $ne: loggedInUser.id },
-  //         role: { $ne: "admin" },
-  //         ...(searchInputDebounced
-  //           ? {
-  //               $or: [
-  //                 { name: { $autocomplete: searchInputDebounced } },
-  //                 { username: { $autocomplete: searchInputDebounced } },
-  //               ],
-  //             }
-  //           : {}),
-  //       },
-  //       { name: 1, username: 1 },
-  //       { limit: 15 },
-  //     ),
-  // });
+  const { data, isFetching, isError, isSuccess } = useQuery({
+    queryKey: ["stream-users", searchInputDebounced],
+    // queryFn: async () =>
+    //   client.queryUsers(
+    //     {
+    //       _id: { $ne: loggedInUser.id },
+    //       role: { $nin: ["admin"] },
+    //       ...(searchInputDebounced
+    //         ? {
+    //             $or: [
+    //               { name: { $autocomplete: searchInputDebounced } },
+    //               { username: { $autocomplete: searchInputDebounced } },
+    //             ],
+    //           }
+    //         : {}),
+    //     },
+    //     { name: 1, username: 1 },
+    //     { limit: 15 },
+    //   ),
+  });
 
   // const mutation = useMutation({
   //   mutationFn: async () => {
-  //     const channel = client?.channel("messaging", crypto.randomUUID(), {
+  //     const channel = client.channel("messaging", {
   //       members: [loggedInUser.id, ...selectedUsers.map((u) => u.id)],
   //       name:
   //         selectedUsers.length > 1
@@ -118,8 +118,8 @@ export default function NewChatDialog({
             </div>
           )}
           <hr />
-          {/* <div className="h-96 overflow-y-auto">
-            {isSuccess &&
+          <div className="h-96 overflow-y-auto">
+            {/* {isSuccess &&
               data.users.map((user) => (
                 <UserResult
                   key={user.id}
@@ -133,19 +133,19 @@ export default function NewChatDialog({
                     );
                   }}
                 />
-              ))}
-            {isSuccess && !data.users.length && (
+              ))} */}
+            {/* {isSuccess && !data.users.length && (
               <p className="text-muted-foreground my-3 text-center">
                 No users found. Try a different name.
               </p>
-            )}
+            )} */}
             {isFetching && <Loader2 className="mx-auto my-3 animate-spin" />}
             {isError && (
               <p className="text-destructive my-3 text-center">
                 An error occurred while loading users.
               </p>
             )}
-          </div> */}
+          </div>
         </div>
         <DialogFooter className="px-6 pb-6">
           {/* <LoadingButton

@@ -20,10 +20,10 @@ export default async function SettingsPage() {
 
   return (
     <>
-      <DashboardHeader
+      {/* <DashboardHeader
         heading="Settings"
         text="Manage account and website settings."
-      />
+      /> */}
       <div className="divide-muted divide-y pb-10">
         <UserNameForm user={{ id: user.id, name: user.name || "" }} />
         <UserRoleForm user={{ id: user.id, role: user.role }} />

@@ -5,9 +5,8 @@ import { QueryKey, useMutation, useQueryClient } from "@tanstack/react-query";
 import { FollowerInfo } from "@/types/types";
 import kyInstance from "@/lib/ky";
 import useFollowerInfo from "@/hooks/useFollowerInfo";
-
-import { Button } from "./../ui/button";
-import { useToast } from "./../ui/use-toast";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/components/ui/use-toast";
 
 interface FollowButtonProps {
   userId: string;
@@ -23,7 +22,7 @@ export default function FollowButton({
   const queryClient = useQueryClient();
 
   const { data } = useFollowerInfo(userId, initialState);
-
+  console.log(data, "data");
   const queryKey: QueryKey = ["follower-info", userId];
 
   const { mutate } = useMutation({
@@ -54,13 +53,12 @@ export default function FollowButton({
       });
     },
   });
-
   return (
     <Button
       variant={data.isFollowedByUser ? "secondary" : "default"}
       onClick={() => mutate()}
     >
-      {data.isFollowedByUser ? "Unfollow" : "Follow"}
+      {data?.isFollowedByUser ? "Unfollow" : "Follow"}
     </Button>
   );
 }

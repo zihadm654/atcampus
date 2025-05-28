@@ -16,7 +16,7 @@ export async function GET() {
     const issuedAt = Math.floor(Date.now() / 1000) - 60;
 
     const token = streamServerClient.createToken(
-      user.id,
+      user?.id,
       expirationTime,
       issuedAt,
     );

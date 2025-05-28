@@ -120,7 +120,8 @@ const options = {
     },
   },
   session: {
-    expiresIn: 30 * 24 * 60 * 60,
+    expiresIn: 60 * 60 * 24 * 60,
+    updateAge: 60 * 60 * 24,
     cookieCache: {
       enabled: true,
       maxAge: 5 * 60,

@@ -26,7 +26,7 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: "https",
-        hostname: "ow5s2dy4yv.ufs.sh",
+        hostname: "ufs.io",
         pathname: `/a/${env.NEXT_PUBLIC_UPLOADTHING_APP_ID}/*`,
       },
     ],

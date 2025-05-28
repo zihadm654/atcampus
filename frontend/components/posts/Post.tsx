@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Media } from "@prisma/client";
@@ -12,7 +12,7 @@ import { cn, formatRelativeDate } from "@/lib/utils";
 
 import Comments from "../comments/Comments";
 import Linkify from "../feed/Linkify";
-import UserAvatar from "../UserAvatar";
+import { UserAvatar } from "../shared/user-avatar";
 import UserTooltip from "../UserTooltip";
 import BookmarkButton from "./BookmarkButton";
 import LikeButton from "./LikeButton";
@@ -29,18 +29,17 @@ export default function Post({ post }: PostProps) {
     return null;
   }
   const [showComments, setShowComments] = useState(false);
-  console.log(post, "post");
   return (
     <article className="group/post bg-card space-y-3 rounded-2xl p-5 shadow-sm">
       <div className="flex justify-between gap-3">
         <div className="flex flex-wrap gap-3">
           <UserTooltip user={post.user}>
             <Link href={`/users/${post.user.username}`}>
-              <UserAvatar avatarUrl={post.user.image} />
+              <UserAvatar user={post?.user} />
             </Link>
           </UserTooltip>
           <div>
-            <UserTooltip user={post.user}>
+            <UserTooltip user={post?.user}>
               <Link
                 href={`/users/${post.user.username}`}
                 className="block font-medium hover:underline"
@@ -67,9 +66,11 @@ export default function Post({ post }: PostProps) {
       <Linkify>
         <div className="break-words whitespace-pre-line">{post.content}</div>
       </Linkify>
-      {/* {post?.attachments && post?.attachments.length > 0 ? (
-        <MediaPreviews attachments={post?.attachments} />
-      ) : null} */}
+      {/* <Suspense fallback="loading">
+        {post?.attachments && post?.attachments.length > 0 ? (
+          <MediaPreviews attachments={post?.attachments} />
+        ) : null}
+      </Suspense> */}
       <hr className="text-muted-foreground" />
       <div className="flex justify-between gap-5">
         <div className="flex items-center gap-5">

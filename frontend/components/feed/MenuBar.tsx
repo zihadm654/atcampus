@@ -26,7 +26,7 @@ export default async function MenuBar({ className }: MenuBarProps) {
       },
     }),
     await streamServerClient
-      .getUnreadCount(user?.id)
+      .getUnreadCount(user.id)
       .then((result) => result.total_unread_count)
       .catch((error) => {
         console.warn("Failed to get unread count from Stream:", error.message);

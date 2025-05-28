@@ -1,5 +1,3 @@
-import { Metadata } from "next";
-
 import { constructMetadata } from "@/lib/utils";
 
 import Chat from "./Chat";

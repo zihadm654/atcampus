@@ -1,4 +1,5 @@
 import { Prisma } from "@prisma/client";
+import type { LiteralStringForUnion, UR } from "stream-chat";
 
 export function getUserDataSelect(loggedInUserId: string) {
   return {
@@ -133,3 +134,25 @@ export interface NotificationCountInfo {
 export interface MessageCountInfo {
   unreadCount: number;
 }
+
+export type AttachmentType = {};
+export type ChannelType = { demo?: string };
+export type CommandType = LiteralStringForUnion;
+export type EventType = {};
+export type MemberType = UR;
+export type MessageType = {};
+export type ReactionType = {};
+export type UserType = { image?: string };
+
+export type StreamChatGenerics = {
+  attachmentType: AttachmentType;
+  channelType: ChannelType;
+  commandType: CommandType;
+  eventType: EventType;
+  memberType: MemberType;
+  messageType: MessageType;
+  reactionType: ReactionType;
+  userType: UserType;
+  pollOptionType: Record<string, unknown>;
+  pollType: Record<string, unknown>;
+};
