@@ -3,6 +3,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { Check, Loader2, SearchIcon, X } from "lucide-react";
 import { UserResponse } from "stream-chat";
 import { useChatContext } from "stream-chat-react";
+import { v4 as uuid } from "uuid";
 
 import { useSession } from "@/lib/auth-client";
 import useDebounce from "@/hooks/useDebounce";
@@ -15,7 +16,7 @@ import {
 } from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/use-toast";
 import LoadingButton from "@/components/feed/LoadingButton";
-import UserAvatar from "@/components/UserAvatar";
+import { UserAvatar } from "@/components/shared/user-avatar";
 
 interface NewChatDialogProps {
   onOpenChange: (open: boolean) => void;
@@ -38,30 +39,30 @@ export default function NewChatDialog({
 
   const [selectedUsers, setSelectedUsers] = useState<UserResponse[]>([]);
 
-  const { data, isFetching, isError, isSuccess } = useQuery({
-    queryKey: ["stream-users", searchInputDebounced],
-    // queryFn: async () =>
-    //   client.queryUsers(
-    //     {
-    //       _id: { $ne: loggedInUser.id },
-    //       role: { $nin: ["admin"] },
-    //       ...(searchInputDebounced
-    //         ? {
-    //             $or: [
-    //               { name: { $autocomplete: searchInputDebounced } },
-    //               { username: { $autocomplete: searchInputDebounced } },
-    //             ],
-    //           }
-    //         : {}),
-    //     },
-    //     { name: 1, username: 1 },
-    //     { limit: 15 },
-    //   ),
-  });
+  // const { data, isFetching, isError, isSuccess } = useQuery({
+  //   queryKey: ["stream-users", searchInputDebounced],
+  //   queryFn: async () =>
+  //     client.queryUsers(
+  //       {
+  //         id: { $ne: loggedInUser.id },
+  //         _role: { $ne: ["admin"] },
+  //         ...(searchInputDebounced
+  //           ? {
+  //               $or: [
+  //                 { name: { $autocomplete: searchInputDebounced } },
+  //                 { username: { $autocomplete: searchInputDebounced } },
+  //               ],
+  //             }
+  //           : {}),
+  //       },
+  //       { name: 1, username: 1 },
+  //       { limit: 15 },
+  //     ),
+  // });
 
   // const mutation = useMutation({
   //   mutationFn: async () => {
-  //     const channel = client.channel("messaging", {
+  //     const channel = client.channel("messaging", uuid(), {
   //       members: [loggedInUser.id, ...selectedUsers.map((u) => u.id)],
   //       name:
   //         selectedUsers.length > 1
@@ -118,8 +119,8 @@ export default function NewChatDialog({
             </div>
           )}
           <hr />
-          <div className="h-96 overflow-y-auto">
-            {/* {isSuccess &&
+          {/* <div className="h-96 overflow-y-auto">
+            {isSuccess &&
               data.users.map((user) => (
                 <UserResult
                   key={user.id}
@@ -133,19 +134,19 @@ export default function NewChatDialog({
                     );
                   }}
                 />
-              ))} */}
-            {/* {isSuccess && !data.users.length && (
+              ))}
+            {isSuccess && !data.users.length && (
               <p className="text-muted-foreground my-3 text-center">
                 No users found. Try a different name.
               </p>
-            )} */}
+            )}
             {isFetching && <Loader2 className="mx-auto my-3 animate-spin" />}
             {isError && (
               <p className="text-destructive my-3 text-center">
                 An error occurred while loading users.
               </p>
             )}
-          </div>
+          </div> */}
         </div>
         <DialogFooter className="px-6 pb-6">
           {/* <LoadingButton
@@ -168,13 +169,20 @@ interface UserResultProps {
 }
 
 function UserResult({ user, selected, onClick }: UserResultProps) {
+  if ((user && !user.name) || !user.username) return null;
   return (
     <button
       className="hover:bg-muted/50 flex w-full items-center justify-between px-4 py-2.5 transition-colors"
       onClick={onClick}
     >
       <div className="flex items-center gap-2">
-        <UserAvatar avatarUrl={user.image} />
+        <UserAvatar
+          user={{
+            name: user.name! ?? null,
+            username: user.username ?? null,
+            image: user.image ?? null,
+          }}
+        />
         <div className="flex flex-col text-start">
           <p className="font-bold">{user.name}</p>
           <p className="text-muted-foreground">@{user.username}</p>
@@ -196,7 +204,13 @@ function SelectedUserTag({ user, onRemove }: SelectedUserTagProps) {
       onClick={onRemove}
       className="hover:bg-muted/50 flex items-center gap-2 rounded-full border p-1"
     >
-      <UserAvatar avatarUrl={user.image} size={24} />
+      <UserAvatar
+        user={{
+          image: user.image ?? null,
+          name: user.name! ?? null,
+          username: user.username ?? null,
+        }}
+      />
       <p className="font-bold">{user.name}</p>
       <X className="text-muted-foreground mx-2 size-5" />
     </button>

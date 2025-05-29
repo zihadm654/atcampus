@@ -225,11 +225,11 @@ importers:
         specifier: ^2.0.3
         version: 2.0.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       stream-chat:
-        specifier: ^9.1.1
-        version: 9.1.1
+        specifier: ^9.3.0
+        version: 9.3.0
       stream-chat-react:
-        specifier: ^13.0.4
-        version: 13.0.4(@types/react@19.1.3)(jquery@3.7.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(stream-chat@9.1.1)
+        specifier: ^13.0.5
+        version: 13.0.5(@breezystack/lamejs@1.2.7)(@types/react@19.1.3)(jquery@3.7.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(stream-chat@9.3.0)
       tailwind-merge:
         specifier: ^3.2.0
         version: 3.2.0
@@ -239,6 +239,9 @@ importers:
       uploadthing:
         specifier: ^7.7.2
         version: 7.7.2(express@5.1.0)(next@15.3.2(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(tailwindcss@4.1.7)
+      uuid:
+        specifier: ^11.1.0
+        version: 11.1.0
       vaul:
         specifier: ^1.1.2
         version: 1.1.2(@types/react-dom@19.1.3(@types/react@19.1.3))(@types/react@19.1.3)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
@@ -279,6 +282,9 @@ importers:
       '@types/react-dom':
         specifier: ^19
         version: 19.1.3(@types/react@19.1.3)
+      '@types/uuid':
+        specifier: ^10.0.0
+        version: 10.0.0
       eslint:
         specifier: ^9
         version: 9.26.0(jiti@2.4.2)
@@ -382,6 +388,9 @@ packages:
 
   '@braintree/sanitize-url@6.0.4':
     resolution: {integrity: sha512-s3jaWicZd0pkP0jf5ysyHUI/RE7MHos6qlToFcGWXVp+ykHOy77OUMrfbgJ9it2C5bow7OIQwYYaHjk9XlBQ2A==}
+
+  '@breezystack/lamejs@1.2.7':
+    resolution: {integrity: sha512-6wc7ck65ctA75Hq7FYHTtTvGnYs6msgdxiSUICQ+A01nVOWg6rqouZB8IdyteRlfpYYiFovkf67dIeOgWIUzTA==}
 
   '@commitlint/cli@19.8.1':
     resolution: {integrity: sha512-LXUdNIkspyxrlV6VDHWBmCZRtkEVRpBKxi2Gtw3J54cGWhLCTouVD/Q6ZSaSvd2YaDObWK8mDjrz3TIKtaQMAA==}
@@ -2181,6 +2190,9 @@ packages:
 
   '@types/use-sync-external-store@0.0.6':
     resolution: {integrity: sha512-zFDAD+tlpf2r4asuHEj0XH6pY6i0g5NeAHPn+15wk3BV6JA69eERFXC1gyGThDkVa1zCyKr5jox1+2LbV/AMLg==}
+
+  '@types/uuid@10.0.0':
+    resolution: {integrity: sha512-7gqG38EyHgyP1S+7+xomFtL+ZNHcKv6DwNaCZmJmo1vgMugyF3TCnXVg4t1uk89mLNwnLtnY3TpOpCOyp1/xHQ==}
 
   '@types/ws@8.18.1':
     resolution: {integrity: sha512-ThVF6DCVhA8kUGy+aazFQ4kXQ7E1Ty7A3ypFOe0IcJV8O/M511G99AW24irKrW56Wt44yG9+ij8FaqoBGkuBXg==}
@@ -4904,8 +4916,8 @@ packages:
     resolution: {integrity: sha512-RwNA9Z/7PrK06rYLIzFMlaF+l73iwpzsqRIFgbMLbTcLD6cOao82TaWefPXQvB2fOC4AjuYSEndS7N/mTCbkdQ==}
     engines: {node: '>= 0.8'}
 
-  stream-chat-react@13.0.4:
-    resolution: {integrity: sha512-hc6ctIhsVmRi2qvryEokwgBaAIibtsK/wzXsRBknIIUDINF7FA5o82ws9kRpK5WMuQVOhxxJvshdxR54FDf2mA==}
+  stream-chat-react@13.0.5:
+    resolution: {integrity: sha512-HCjkWyOOpH4g5aGikEeJ33vyyWX2Ws0sB6gjiEKNOMWFLrGGKNPOBJuM2MY0/X1sC+ZMzu/srLyEP5TgpJe/2A==}
     peerDependencies:
       '@breezystack/lamejs': ^1.2.7
       '@emoji-mart/data': ^1.1.0
@@ -4924,8 +4936,8 @@ packages:
       emoji-mart:
         optional: true
 
-  stream-chat@9.1.1:
-    resolution: {integrity: sha512-7Y23aIVQMppNZgRj/rTFwIx9pszxgDcS99idkSXJSgdV8C7FlyDtiF1yQSdP0oiNFAt7OUP/xSqmbJTljrm24Q==}
+  stream-chat@9.3.0:
+    resolution: {integrity: sha512-S73B3HrvmQvJjq58Zjo50vh74juhsWsVRpT+OBjGAxSGxlA+ITkZ3vKs8Y/r2eDK7mBTMmX5QCruFaDJH5dRuw==}
     engines: {node: '>=18'}
 
   streamsearch@1.1.0:
@@ -5265,6 +5277,10 @@ packages:
   util-deprecate@1.0.2:
     resolution: {integrity: sha512-EPD5q1uXyFxJpCrLnCc1nHnq3gOa6DZBocAIiI2TaSCA7VCJ1UJDMagCzIkXNsUYfD1daK//LTEQ8xiIbrHtcw==}
 
+  uuid@11.1.0:
+    resolution: {integrity: sha512-0/A9rDy9P7cJ+8w1c9WD9V//9Wj15Ce2MPz8Ri6032usz+NfePxx5AcN3bN+r6ZL6jEo066/yNYB3tn4pQEx+A==}
+    hasBin: true
+
   vary@1.1.2:
     resolution: {integrity: sha512-BNGbWLfd0eUPabhkXUVm0j8uuvREyTh5ovRa/dyow/BqAbZJyC+5fU+IzQOzmAKzYqYRAISoRhdQr3eIZ/PXqg==}
     engines: {node: '>= 0.8'}
@@ -5443,6 +5459,9 @@ snapshots:
   '@better-fetch/fetch@1.1.18': {}
 
   '@braintree/sanitize-url@6.0.4': {}
+
+  '@breezystack/lamejs@1.2.7':
+    optional: true
 
   '@commitlint/cli@19.8.1(@types/node@20.17.46)(typescript@5.8.3)':
     dependencies:
@@ -7263,6 +7282,8 @@ snapshots:
   '@types/unist@3.0.3': {}
 
   '@types/use-sync-external-store@0.0.6': {}
+
+  '@types/uuid@10.0.0': {}
 
   '@types/ws@8.18.1':
     dependencies:
@@ -10508,7 +10529,7 @@ snapshots:
 
   statuses@2.0.1: {}
 
-  stream-chat-react@13.0.4(@types/react@19.1.3)(jquery@3.7.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(stream-chat@9.1.1):
+  stream-chat-react@13.0.5(@breezystack/lamejs@1.2.7)(@types/react@19.1.3)(jquery@3.7.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(stream-chat@9.3.0):
     dependencies:
       '@braintree/sanitize-url': 6.0.4
       '@popperjs/core': 2.11.8
@@ -10538,13 +10559,14 @@ snapshots:
       react-textarea-autosize: 8.5.9(@types/react@19.1.3)(react@19.1.0)
       react-virtuoso: 2.19.1(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       remark-gfm: 4.0.1
-      stream-chat: 9.1.1
+      stream-chat: 9.3.0
       textarea-caret: 3.1.0
       tslib: 2.8.1
       unist-builder: 4.0.0
       unist-util-visit: 5.0.0
       use-sync-external-store: 1.5.0(react@19.1.0)
     optionalDependencies:
+      '@breezystack/lamejs': 1.2.7
       '@stream-io/transliterate': 1.5.5
       mml-react: 0.4.7(@types/react@19.1.3)(jquery@3.7.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
     transitivePeerDependencies:
@@ -10552,7 +10574,7 @@ snapshots:
       - jquery
       - supports-color
 
-  stream-chat@9.1.1:
+  stream-chat@9.3.0:
     dependencies:
       '@types/jsonwebtoken': 9.0.9
       '@types/ws': 8.18.1
@@ -10945,6 +10967,8 @@ snapshots:
       react: 19.1.0
 
   util-deprecate@1.0.2: {}
+
+  uuid@11.1.0: {}
 
   vary@1.1.2: {}
 

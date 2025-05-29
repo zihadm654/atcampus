@@ -125,9 +125,9 @@ export default function EditProfileDialog({
               )}
             />
             <DialogFooter>
-              {/* <LoadingButton type="submit" loading={mutation.isPending}>
+              <LoadingButton type="submit" loading={mutation.isPending}>
                 Save
-              </LoadingButton> */}
+              </LoadingButton>
             </DialogFooter>
           </form>
         </Form>
@@ -180,7 +180,7 @@ function AvatarInput({ src, onImageCropped }: AvatarInputProps) {
           alt="Avatar preview"
           width={150}
           height={150}
-          className="size-32 flex-none rounded-full object-cover"
+          className="size-16 flex-none rounded-full object-cover"
         />
         <span className="bg-opacity-30 group-hover:bg-opacity-25 absolute inset-0 m-auto flex size-12 items-center justify-center rounded-full bg-black text-white transition-colors duration-200">
           <Camera size={24} />

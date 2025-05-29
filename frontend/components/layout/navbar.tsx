@@ -16,6 +16,7 @@ import { Icons } from "@/components/shared/icons";
 import MaxWidthWrapper from "@/components/shared/max-width-wrapper";
 
 import SearchField from "../feed/SearchField";
+import { ModeToggle } from "./mode-toggle";
 import { UserAccountNav } from "./user-account-nav";
 
 interface NavBarProps {
@@ -49,7 +50,7 @@ export function NavBar({ scroll = false }: NavBarProps) {
         <div className="flex gap-6 md:gap-10">
           <Link href="/" className="text-primary flex items-center space-x-1.5">
             <Icons.logo />
-            <span className="font-urban text-xl font-bold">
+            <span className="font-urban hidden text-xl font-bold md:block">
               {siteConfig.name}
             </span>
           </Link>
@@ -78,6 +79,7 @@ export function NavBar({ scroll = false }: NavBarProps) {
         </div>
 
         <div className="flex items-center space-x-3">
+          <ModeToggle />
           {/* right header for docs */}
 
           {/* {session ? (

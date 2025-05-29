@@ -1,5 +1,3 @@
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 import { Menu } from "lucide-react";
 import {
   Channel,
@@ -9,6 +7,9 @@ import {
   MessageList,
   Window,
 } from "stream-chat-react";
+
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 interface ChatChannelProps {
   open: boolean;
