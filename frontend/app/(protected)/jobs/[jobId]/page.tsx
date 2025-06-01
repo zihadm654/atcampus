@@ -16,9 +16,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
 interface JobPageProps {
-  params: {
+  params: Promise<{
     jobId: string;
-  };
+  }>;
 }
 
 export async function generateMetadata({
@@ -38,7 +38,7 @@ export default async function JobPage({ params }: JobPageProps) {
 
   // This is a placeholder. In a real implementation, you would fetch job data
   // based on the jobId parameter
-  const jobId = params.jobId;
+  const { jobId } = await params;
 
   // Mock job data for demonstration
   const job = {

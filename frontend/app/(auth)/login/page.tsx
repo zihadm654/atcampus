@@ -25,7 +25,7 @@ export default function LoginPage() {
       >
         <>
           <BlurImage
-            src="/_static/logo.png"
+            src="/_static/logo1.png"
             height={40}
             width={40}
             alt="logo"

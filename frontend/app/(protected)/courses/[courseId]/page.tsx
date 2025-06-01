@@ -18,9 +18,9 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 
 interface CoursePageProps {
-  params: {
+  params: Promise<{
     courseId: string;
-  };
+  }>;
 }
 
 export async function generateMetadata({
@@ -34,13 +34,13 @@ export async function generateMetadata({
 }
 
 export default async function CoursePage({ params }: CoursePageProps) {
+  const { courseId } = await params;
   const user = await getCurrentUser();
 
   if (!user) redirect("/login");
 
   // This is a placeholder. In a real implementation, you would fetch course data
   // based on the courseId parameter
-  const courseId = params.courseId;
 
   // Mock course data for demonstration
   const course = {

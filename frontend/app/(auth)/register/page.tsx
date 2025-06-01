@@ -26,7 +26,7 @@ export default function RegisterPage() {
       </Link>
       <div className="bg-muted hidden h-full place-items-center lg:grid">
         <BlurImage
-          src="/_static/logo.png"
+          src="/_static/logo1.png"
           height={100}
           width={100}
           alt="logo"
