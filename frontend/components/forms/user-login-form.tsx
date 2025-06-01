@@ -80,7 +80,7 @@ export function UserAuthForm({ className, type, ...props }: UserAuthFormProps) {
             )}
           </div>
           <div className="grid gap-1">
-            <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center justify-end gap-2">
               <Label className="sr-only" htmlFor="password">
                 Password
               </Label>

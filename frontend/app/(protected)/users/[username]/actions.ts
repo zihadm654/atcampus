@@ -25,7 +25,7 @@ export async function updateUserProfile(values: UpdateUserProfileValues) {
     await streamServerClient.partialUpdateUser({
       id: user.id,
       set: {
-        name: validatedValues.displayName,
+        name: validatedValues.name,
       },
     });
     return updatedUser;

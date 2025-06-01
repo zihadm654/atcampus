@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Bookmark, Home } from "lucide-react";
+import { Bookmark, Briefcase, GraduationCap, Home } from "lucide-react";
 
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/session";
@@ -60,6 +60,28 @@ export default async function MenuBar({ className }: MenuBarProps) {
         <Link href="/bookmarks">
           <Bookmark />
           <span className="hidden lg:inline">Bookmarks</span>
+        </Link>
+      </Button>
+      <Button
+        variant="ghost"
+        className="flex items-center justify-start gap-3"
+        title="Courses"
+        asChild
+      >
+        <Link href="/courses">
+          <GraduationCap />
+          <span className="hidden lg:inline">Courses</span>
+        </Link>
+      </Button>
+      <Button
+        variant="ghost"
+        className="flex items-center justify-start gap-3"
+        title="Jobs"
+        asChild
+      >
+        <Link href="/jobs">
+          <Briefcase />
+          <span className="hidden lg:inline">Jobs</span>
         </Link>
       </Button>
     </div>

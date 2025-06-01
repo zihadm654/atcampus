@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { v4 as uuid } from "uuid";
 
 import { useUploadThing } from "@/lib/uploadthing";
 import { useToast } from "@/components/ui/use-toast";
@@ -20,13 +21,9 @@ export default function useMediaUpload() {
     onBeforeUploadBegin(files) {
       const renamedFiles = files.map((file) => {
         const extension = file.name.split(".").pop();
-        return new File(
-          [file],
-          `attachment_${crypto.randomUUID()}.${extension}`,
-          {
-            type: file.type,
-          },
-        );
+        return new File([file], `attachment_${uuid}.${extension}`, {
+          type: file.type,
+        });
       });
 
       setAttachments((prev) => [

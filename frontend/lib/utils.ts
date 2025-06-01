@@ -1,6 +1,6 @@
 import { Metadata } from "next";
 import { clsx, type ClassValue } from "clsx";
-import { formatDistanceToNowStrict } from "date-fns";
+import { format, formatDistanceToNowStrict } from "date-fns";
 // import ms from "ms";
 import { twMerge } from "tailwind-merge";
 
@@ -117,15 +117,17 @@ export function normalizeName(name: string) {
     .replace(/[^a-zA-Z\s'-]/g, "")
     .replace(/\b\w/g, (char) => char.toUpperCase());
 }
-
-export function formatDate(from: Date, input: string | number): string {
-  const date = new Date(input);
-  return date.toLocaleDateString("en-US", {
-    month: "long",
-    day: "numeric",
-    year: "numeric",
-  });
+export function formatDate(date: Date, formatString: string): string {
+  return format(date, formatString);
 }
+// export function formatDate(from: Date, input: string | number): string {
+//   const date = new Date(input);
+//   return date.toLocaleDateString("en-US", {
+//     month: "long",
+//     day: "numeric",
+//     year: "numeric",
+//   });
+// }
 
 export function absoluteUrl(path: string) {
   return `${env.NEXT_PUBLIC_APP_URL}${path}`;

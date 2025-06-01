@@ -7,7 +7,7 @@ import {
 } from "@tanstack/react-query";
 
 import { PostsPage } from "@/types/types";
-// import { useUploadThing } from "@/lib/uploadthing";
+import { useUploadThing } from "@/lib/uploadthing";
 import { UpdateUserProfileValues } from "@/lib/validations/validation";
 import { useToast } from "@/components/ui/use-toast";
 
@@ -20,7 +20,7 @@ export function useUpdateProfileMutation() {
 
   const queryClient = useQueryClient();
 
-  // const { startUpload: startAvatarUpload } = useUploadThing("avatar");
+  const { startUpload: startAvatarUpload } = useUploadThing("imageUploader");
 
   const mutation = useMutation({
     mutationFn: async ({

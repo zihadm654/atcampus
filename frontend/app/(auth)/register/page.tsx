@@ -4,6 +4,7 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
 import { UserAuthForm } from "@/components/forms/user-register-form";
+import BlurImage from "@/components/shared/blur-image";
 import { Icons } from "@/components/shared/icons";
 
 export const metadata = {
@@ -23,11 +24,18 @@ export default function RegisterPage() {
       >
         Login
       </Link>
-      <div className="bg-muted hidden h-full lg:block" />
+      <div className="bg-muted hidden h-full place-items-center lg:grid">
+        <BlurImage
+          src="/_static/logo.png"
+          height={100}
+          width={100}
+          alt="logo"
+          className="place-items-center justify-center"
+        />
+      </div>
       <div className="lg:p-8">
         <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
           <div className="flex flex-col space-y-2 text-center">
-            <Icons.logo className="mx-auto size-6" />
             <h1 className="text-2xl font-semibold tracking-tight">
               Create an account
             </h1>
@@ -36,7 +44,7 @@ export default function RegisterPage() {
             </p>
           </div>
           <Suspense>
-            <UserAuthForm type="register" />
+            <UserAuthForm />
           </Suspense>
           <p className="text-muted-foreground px-8 text-center text-sm">
             By clicking continue, you agree to our{" "}

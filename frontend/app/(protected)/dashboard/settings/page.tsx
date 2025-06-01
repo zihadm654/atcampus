@@ -26,7 +26,7 @@ export default async function SettingsPage() {
       /> */}
       <div className="divide-muted divide-y pb-10">
         <UserNameForm user={{ id: user.id, name: user.name || "" }} />
-        <UserRoleForm user={{ id: user.id, role: user.role }} />
+        {/* <UserRoleForm user={{ id: user.id, role: user.role }} /> */}
         <div className="border-md space-y-4 rounded-b-md border p-2">
           <h2 className="text-2xl font-bold">Change Password</h2>
 

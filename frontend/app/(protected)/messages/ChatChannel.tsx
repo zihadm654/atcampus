@@ -22,8 +22,10 @@ export default function ChatChannel({ open, openSidebar }: ChatChannelProps) {
       <Channel>
         <Window>
           <CustomChannelHeader openSidebar={openSidebar} />
-          <MessageList />
-          <MessageInput />
+          <MessageList
+            messageActions={["edit", "delete", "flag", "react", "reply"]}
+          />
+          <MessageInput focus />
         </Window>
       </Channel>
     </div>

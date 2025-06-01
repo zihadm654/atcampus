@@ -31,7 +31,7 @@ export default function FollowingFeed() {
   });
 
   const posts = data?.pages.flatMap((page) => page.posts) || [];
-
+  console.log(posts, "following-posts");
   if (status === "pending") {
     return <PostsLoadingSkeleton />;
   }

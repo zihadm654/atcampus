@@ -5,6 +5,7 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
 import { UserAuthForm } from "@/components/forms/user-login-form";
+import BlurImage from "@/components/shared/blur-image";
 import { Icons } from "@/components/shared/icons";
 
 export const metadata: Metadata = {
@@ -23,7 +24,13 @@ export default function LoginPage() {
         )}
       >
         <>
-          <Icons.chevronLeft className="mr-2 size-4" />
+          <BlurImage
+            src="/_static/logo.png"
+            height={40}
+            width={40}
+            alt="logo"
+            className="place-items-center justify-center"
+          />
           Back
         </>
       </Link>

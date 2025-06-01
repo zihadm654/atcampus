@@ -1,30 +1,53 @@
 "use server";
 
+import { headers } from "next/headers";
 import { APIError } from "better-auth/api";
 
 import { auth, ErrorCode } from "@/lib/auth";
+import streamServerClient from "@/lib/stream";
+import { generateUsername } from "@/lib/utils";
 import { registerSchema, TRegister } from "@/lib/validations/auth";
 
 export async function signUpEmailAction(data: TRegister) {
+  const headersList = await headers();
+
+  const session = await auth.api.getSession({
+    headers: headersList,
+  });
+
   const result = registerSchema.safeParse(data);
   await new Promise((resolve) => setTimeout(resolve, 1000));
 
   if (!result.success) {
     return { error: result.error.format() };
   }
+
   const { name, email, password } = result.data;
+  const generatedUsername = generateUsername(name);
 
   try {
-    await auth.api.signUpEmail({
+    // Register the user with Better Auth and get the response
+    const response = await auth.api.signUpEmail({
       body: {
         name,
         email,
         password,
+        username: generatedUsername,
       },
     });
+
+    // If we have a userId in the response, register with Stream
+    if (response?.user.id) {
+      await streamServerClient.upsertUser({
+        id: response.user.id,
+        username: generatedUsername,
+        name,
+      });
+    }
+
     return {
       success: true,
-      message: "Registation successful. Welcome to our site.",
+      message: "Registration successful. Welcome to our site.",
     };
   } catch (err) {
     if (err instanceof APIError) {

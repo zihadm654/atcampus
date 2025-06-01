@@ -20,7 +20,6 @@ interface UserNameFormProps {
 }
 
 export function UserNameForm({ user }: UserNameFormProps) {
-  // const { update } = useSession();
   const [updated, setUpdated] = useState(false);
   const [isPending, startTransition] = useTransition();
   const updateUserNameWithId = updateUserName.bind(null, user.id);

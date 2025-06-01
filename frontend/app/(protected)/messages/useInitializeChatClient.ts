@@ -1,25 +1,27 @@
 import { useEffect, useState } from "react";
 import { StreamChat } from "stream-chat";
 
-import { env } from "@/env.mjs";
 import { useSession } from "@/lib/auth-client";
 import kyInstance from "@/lib/ky";
 
 export default function useInitializeChatClient() {
   const { data: session } = useSession();
-  const user = session?.user;
+  if (!session) {
+    return null;
+  }
+  const user = session.user;
   const [chatClient, setChatClient] = useState<StreamChat | null>(null);
-  if (!user) return null;
+
   useEffect(() => {
-    const client = StreamChat.getInstance(env.NEXT_PUBLIC_STREAM_KEY);
+    const client = StreamChat.getInstance(process.env.NEXT_PUBLIC_STREAM_KEY!);
 
     client
       .connectUser(
         {
           id: user.id,
-          username: user?.username || undefined,
+          username: user.username ?? undefined,
           name: user.name,
-          image: user?.image || undefined,
+          image: user.image ?? undefined,
         },
         async () =>
           kyInstance

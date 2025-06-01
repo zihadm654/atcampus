@@ -161,9 +161,9 @@ model Like {
 model Follow {
   id          String @id @default(cuid()) @map("_id")
   followerId  String
-  follower    User   @relation("UserFollowers", fields: [followerId], references: [id], onDelete: Cascade)
+  follower    User   @relation("UserFollowings", fields: [followerId], references: [id], onDelete: Cascade)
   followingId String
-  following   User   @relation("UserFollowings", fields: [followingId], references: [id], onDelete: Cascade)
+  following   User   @relation("UserFollowers", fields: [followingId], references: [id], onDelete: Cascade)
 
   @@unique([followerId, followingId])
   @@map(name: "follows")

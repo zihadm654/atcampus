@@ -1,6 +1,7 @@
 "use client";
 
 import { useContext } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useSelectedLayoutSegment } from "next/navigation";
 
@@ -49,69 +50,23 @@ export function NavBar({ scroll = false }: NavBarProps) {
       >
         <div className="flex gap-6 md:gap-10">
           <Link href="/" className="text-primary flex items-center space-x-1.5">
-            <Icons.logo />
+            <Image
+              src="/_static/logo.png"
+              alt="logo"
+              height={30}
+              width={30}
+              className=""
+            />
             <span className="font-urban hidden text-xl font-bold md:block">
               {siteConfig.name}
             </span>
           </Link>
-
-          {/* {links && links.length > 0 ? (
-            <nav className="hidden gap-6 md:flex">
-              {links?.map((item, index) => (
-                <Link
-                  key={index}
-                  href={item.disabled ? "#" : item.href}
-                  prefetch={true}
-                  className={cn(
-                    "hover:text-foreground/80 flex items-center text-lg font-medium transition-colors sm:text-sm",
-                    item.href.startsWith(`/${selectedLayout}`)
-                      ? "text-foreground"
-                      : "text-foreground/60",
-                    item.disabled && "cursor-not-allowed opacity-80",
-                  )}
-                >
-                  {item.title}
-                </Link>
-              ))}
-            </nav>
-          ) : null} */}
           <SearchField />
         </div>
 
         <div className="flex items-center space-x-3">
           <ModeToggle />
           {/* right header for docs */}
-
-          {/* {session ? (
-            <Link
-              href={
-                session.user.role === "INSTITUTION" ? "/admin" : "/dashboard"
-              }
-              className="hidden md:block"
-            >
-              <Button
-                className="gap-2 px-5"
-                variant="default"
-                size="sm"
-                rounded="full"
-              >
-                <span>Dashboard</span>
-              </Button>
-            </Link>
-          ) : !session ? (
-            <Button
-              className="hidden gap-2 px-5 md:flex"
-              variant="default"
-              size="sm"
-              rounded="full"
-              onClick={() => setShowSignInModal(true)}
-            >
-              <span>Sign In</span>
-              <Icons.arrowRight className="size-4" />
-            </Button>
-          ) : (
-            <Skeleton className="hidden h-9 w-28 rounded-full lg:flex" />
-          )} */}
           {session?.user ? (
             <>
               <UserAccountNav />

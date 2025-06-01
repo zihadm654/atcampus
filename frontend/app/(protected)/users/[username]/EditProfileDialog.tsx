@@ -47,7 +47,7 @@ export default function EditProfileDialog({
   const form = useForm<UpdateUserProfileValues>({
     resolver: zodResolver(updateUserProfileSchema),
     defaultValues: {
-      displayName: user.displayUsername!,
+      name: user.name,
       bio: user.bio || "",
     },
   });
@@ -96,7 +96,7 @@ export default function EditProfileDialog({
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
             <FormField
               control={form.control}
-              name="displayName"
+              name="name"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Display name</FormLabel>

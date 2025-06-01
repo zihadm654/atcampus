@@ -43,6 +43,7 @@ export function UserAccountNav() {
         onSuccess: () => {
           toast.success("You’ve logged out. See you soon!");
           router.push("/login");
+          setIsPending(false);
         },
       },
     });
@@ -110,12 +111,12 @@ export function UserAccountNav() {
 
               <li className="text-foreground hover:bg-muted rounded-lg">
                 <Link
-                  href="/"
+                  href={`/users/${user.username}`}
                   onClick={closeDrawer}
                   className="flex w-full items-center gap-3 px-2.5 py-2"
                 >
                   <LayoutDashboard className="size-4" />
-                  <p className="text-sm">Dashboard</p>
+                  <p className="text-sm">Profile</p>
                 </Link>
               </li>
 
@@ -132,8 +133,7 @@ export function UserAccountNav() {
 
               <li
                 className="text-foreground hover:bg-muted rounded-lg"
-                onClick={(event) => {
-                  event.preventDefault();
+                onClick={() => {
                   handleClick();
                 }}
               >

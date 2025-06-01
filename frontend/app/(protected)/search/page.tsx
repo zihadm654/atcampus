@@ -23,7 +23,7 @@ export default async function Page({ searchParams }: PageProps) {
     <main className="flex w-full min-w-0 gap-5">
       <div className="w-full min-w-0 space-y-5">
         <div className="bg-card rounded-2xl p-5 shadow-sm">
-          <h1 className="line-clamp-2 text-center text-2xl font-bold break-all">
+          <h1 className="line-clamp-2 text-center text-xl font-bold break-all">
             Search results for &quot;{q}&quot;
           </h1>
         </div>
