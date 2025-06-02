@@ -4,16 +4,14 @@ import {
   useMutation,
   useQueryClient,
 } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 import { PostsPage } from "@/types/types";
 import { useSession } from "@/lib/auth-client";
-import { useToast } from "@/components/ui/use-toast";
 
 import { submitPost } from "./actions";
 
 export function useSubmitPostMutation() {
-  const { toast } = useToast();
-
   const queryClient = useQueryClient();
 
   const { data: session } = useSession();
@@ -61,16 +59,11 @@ export function useSubmitPostMutation() {
         },
       });
 
-      toast({
-        description: "Post created",
-      });
+      toast.success("Post created");
     },
     onError(error) {
       console.error(error);
-      toast({
-        variant: "destructive",
-        description: "Failed to post. Please try again.",
-      });
+      toast("Failed to post. Please try again.");
     },
   });
 

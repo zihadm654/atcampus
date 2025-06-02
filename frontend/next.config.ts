@@ -7,7 +7,7 @@ const nextConfig: NextConfig = {
   experimental: {
     staleTimes: {
       dynamic: 30,
-      // static: 180,
+      static: 180,
     },
   },
   serverExternalPackages: ["@node-rs/argon2"],
@@ -27,7 +27,7 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: "https",
-        hostname: "ufs.io",
+        hostname: "utfs.io",
         pathname: `/a/${env.NEXT_PUBLIC_UPLOADTHING_APP_ID}/*`,
       },
     ],

@@ -2,9 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { redirect } from "next/navigation";
 import { LayoutDashboard, Lock, LogOut, Settings } from "lucide-react";
-import { useFormStatus } from "react-dom";
 import { toast } from "sonner";
 import { Drawer } from "vaul";
 
@@ -19,14 +18,11 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { UserAvatar } from "@/components/shared/user-avatar";
 
-import { SignOutButton } from "../auth/sign-out-button";
-
 export function UserAccountNav() {
   const { data: session } = useSession();
   const user = session?.user;
 
   const [isPending, setIsPending] = useState(false);
-  const router = useRouter();
 
   async function handleClick() {
     await signOut({
@@ -42,8 +38,8 @@ export function UserAccountNav() {
         },
         onSuccess: () => {
           toast.success("You’ve logged out. See you soon!");
-          router.push("/login");
           setIsPending(false);
+          redirect("/login");
         },
       },
     });

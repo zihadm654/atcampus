@@ -5,15 +5,13 @@ import {
   useMutation,
   useQueryClient,
 } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 import { PostsPage } from "@/types/types";
 
-import { useToast } from "../ui/use-toast";
 import { deletePost } from "./actions";
 
 export function useDeletePostMutation() {
-  const { toast } = useToast();
-
   const queryClient = useQueryClient();
 
   const router = useRouter();
@@ -41,9 +39,7 @@ export function useDeletePostMutation() {
         },
       );
 
-      toast({
-        description: "Post deleted",
-      });
+      toast.success("Post deleted");
 
       if (pathname === `/posts/${deletedPost.id}`) {
         router.push(`/users/${deletedPost.user.username}`);
@@ -51,10 +47,7 @@ export function useDeletePostMutation() {
     },
     onError(error) {
       console.error(error);
-      toast({
-        variant: "destructive",
-        description: "Failed to delete post. Please try again.",
-      });
+      toast.error("Failed to delete post. Please try again.");
     },
   });
 

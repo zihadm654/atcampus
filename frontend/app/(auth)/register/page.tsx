@@ -22,6 +22,7 @@ export default function RegisterPage() {
           "absolute top-4 right-4 md:top-8 md:right-8",
         )}
       >
+        <Icons.chevronLeft className="mr-2 h-4 w-4" />
         Login
       </Link>
       <div className="bg-muted hidden h-full place-items-center lg:grid">

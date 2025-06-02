@@ -24,6 +24,12 @@ export default function LoginPage() {
         )}
       >
         <>
+          <Icons.chevronLeft className="mr-2 h-4 w-4" />
+          Back
+        </>
+      </Link>
+      <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
+        <div className="flex flex-col space-y-2 text-center">
           <BlurImage
             src="/_static/logo1.png"
             height={40}
@@ -31,12 +37,6 @@ export default function LoginPage() {
             alt="logo"
             className="place-items-center justify-center"
           />
-          Back
-        </>
-      </Link>
-      <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
-        <div className="flex flex-col space-y-2 text-center">
-          <Icons.logo className="mx-auto size-6" />
           <h1 className="text-2xl font-semibold tracking-tight">
             Welcome back
           </h1>

@@ -66,11 +66,11 @@ export default function Post({ post }: PostProps) {
       <Linkify>
         <div className="break-words whitespace-pre-line">{post.content}</div>
       </Linkify>
-      {/* <Suspense fallback="loading">
+      <Suspense fallback="loading">
         {post?.attachments && post?.attachments.length > 0 ? (
           <MediaPreviews attachments={post?.attachments} />
         ) : null}
-      </Suspense> */}
+      </Suspense>
       <hr className="text-muted-foreground" />
       <div className="flex justify-between gap-5">
         <div className="flex items-center gap-5">

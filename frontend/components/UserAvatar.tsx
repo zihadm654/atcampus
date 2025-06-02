@@ -15,7 +15,7 @@ export default function UserAvatar({
 }: UserAvatarProps) {
   return (
     <Image
-      src={avatarUrl || ""}
+      src={avatarUrl || "/_static/avatars/shadcn.jpeg"}
       alt="User avatar"
       width={size ?? 48}
       height={size ?? 48}
