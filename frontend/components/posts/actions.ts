@@ -24,3 +24,15 @@ export async function deletePost(id: string) {
 
   return deletedPost;
 }
+
+export async function getPosts() {
+  const posts = await prisma.post.findMany({
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+  if (posts.length === 0) {
+    return [];
+  }
+  return posts;
+}

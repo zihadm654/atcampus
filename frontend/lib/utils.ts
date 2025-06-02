@@ -15,7 +15,7 @@ export function constructMetadata({
   title = siteConfig.name,
   description = siteConfig.description,
   image = siteConfig.ogImage,
-  icons = "/favicon.ico",
+  icons = "/_static/favicon.ico",
   noIndex = false,
 }: {
   title?: string;
@@ -31,12 +31,13 @@ export function constructMetadata({
       "Next.js",
       "React",
       "Prisma",
-      "Neon",
-      "Auth.js",
+      "MongoDB",
+      "Tailwind CSS",
+      "Better-auth",
       "shadcn ui",
-      "Resend",
-      "React Email",
-      "Stripe",
+      "Register",
+      "Login",
+      "atCampus",
     ],
     authors: [
       {

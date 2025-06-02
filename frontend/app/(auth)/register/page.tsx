@@ -18,12 +18,12 @@ export default function RegisterPage() {
       <Link
         href="/login"
         className={cn(
-          buttonVariants({ variant: "ghost" }),
+          buttonVariants({ variant: "outline", size: "sm" }),
           "absolute top-4 right-4 md:top-8 md:right-8",
         )}
       >
-        <Icons.chevronLeft className="mr-2 h-4 w-4" />
         Login
+        <Icons.chevronRight className="mr-2 h-4 w-4" />
       </Link>
       <div className="bg-muted hidden h-full place-items-center lg:grid">
         <BlurImage
@@ -36,7 +36,14 @@ export default function RegisterPage() {
       </div>
       <div className="lg:p-8">
         <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
-          <div className="flex flex-col space-y-2 text-center">
+          <div className="flex flex-col items-center space-y-2 text-center">
+            <BlurImage
+              src="/_static/logo1.png"
+              height={40}
+              width={40}
+              alt="logo"
+              className="place-items-center justify-self-center"
+            />
             <h1 className="text-2xl font-semibold tracking-tight">
               Create an account
             </h1>

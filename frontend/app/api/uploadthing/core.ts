@@ -1,6 +1,7 @@
 import { createUploadthing, type FileRouter } from "uploadthing/next";
 import { UploadThingError, UTApi } from "uploadthing/server";
 
+import { env } from "@/env.mjs";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/session";
 import streamServerClient from "@/lib/stream";
@@ -21,12 +22,17 @@ export const ourFileRouter = {
 
       if (oldAvatarUrl) {
         // Assuming the new URL format is /a/{key}
-        const key = oldAvatarUrl.split("/a/")[1];
+        const key = oldAvatarUrl.split(
+          `/a/${env.NEXT_PUBLIC_UPLOADTHING_APP_ID}`,
+        )[1];
 
         await new UTApi().deleteFiles(key);
       }
 
-      const newAvatarUrl = file.url.replace("/f/", "/a/");
+      const newAvatarUrl = file.url.replace(
+        "/f/",
+        `/a/${env.NEXT_PUBLIC_UPLOADTHING_APP_ID}`,
+      );
 
       await Promise.all([
         prisma.user.update({
@@ -59,7 +65,10 @@ export const ourFileRouter = {
     .onUploadComplete(async ({ file }) => {
       const media = await prisma.media.create({
         data: {
-          url: file.url.replace("/f/", "/a/"),
+          url: file.url.replace(
+            "/f/",
+            `/a/${env.NEXT_PUBLIC_UPLOADTHING_APP_ID}`,
+          ),
           type: file.type.startsWith("image") ? "IMAGE" : "VIDEO",
         },
       });

@@ -29,13 +29,13 @@ export default function LoginPage() {
         </>
       </Link>
       <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
-        <div className="flex flex-col space-y-2 text-center">
+        <div className="flex flex-col items-center justify-center space-y-2 text-center">
           <BlurImage
             src="/_static/logo1.png"
             height={40}
             width={40}
             alt="logo"
-            className="place-items-center justify-center"
+            className="place-items-center justify-self-center"
           />
           <h1 className="text-2xl font-semibold tracking-tight">
             Welcome back

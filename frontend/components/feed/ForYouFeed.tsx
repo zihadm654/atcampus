@@ -31,7 +31,6 @@ export default function ForYouFeed() {
   });
 
   const posts = data?.pages.flatMap((page) => page.posts) || [];
-  console.log(posts, "for-you");
   if (status === "pending") {
     return <PostsLoadingSkeleton />;
   }
