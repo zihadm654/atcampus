@@ -54,17 +54,6 @@ export default async function MenuBar({ className }: MenuBarProps) {
       <Button
         variant="ghost"
         className="flex items-center justify-start gap-3"
-        title="Bookmarks"
-        asChild
-      >
-        <Link href="/bookmarks">
-          <Bookmark />
-          <span className="hidden lg:inline">Bookmarks</span>
-        </Link>
-      </Button>
-      <Button
-        variant="ghost"
-        className="flex items-center justify-start gap-3"
         title="Courses"
         asChild
       >
@@ -82,6 +71,17 @@ export default async function MenuBar({ className }: MenuBarProps) {
         <Link href="/jobs">
           <Briefcase />
           <span className="hidden lg:inline">Jobs</span>
+        </Link>
+      </Button>
+      <Button
+        variant="ghost"
+        className="flex items-center justify-start gap-3"
+        title="Bookmarks"
+        asChild
+      >
+        <Link href="/bookmarks">
+          <Bookmark />
+          <span className="hidden lg:inline">Bookmarks</span>
         </Link>
       </Button>
     </div>

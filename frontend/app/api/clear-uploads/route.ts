@@ -13,7 +13,6 @@ export async function GET(req: Request) {
         { status: 401 },
       );
     }
-
     const unusedMedia = await prisma.media.findMany({
       where: {
         postId: null,
@@ -31,12 +30,9 @@ export async function GET(req: Request) {
       },
     });
 
-    new UTApi().deleteFiles(
-      unusedMedia.map(
-        (m) => m.url.split(`/a/${env.NEXT_PUBLIC_UPLOADTHING_APP_ID}/`)[1],
-      ),
-    );
+    new UTApi().deleteFiles(unusedMedia.map((m) => m.url));
 
+    // Delete records from database
     await prisma.media.deleteMany({
       where: {
         id: {

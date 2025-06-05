@@ -8,8 +8,8 @@ import streamServerClient from "@/lib/stream";
 
 const f = createUploadthing();
 export const ourFileRouter = {
-  imageUploader: f({
-    image: { maxFileSize: "512KB" },
+  avatar: f({
+    image: { maxFileSize: "512KB", maxFileCount: 1 },
   })
     .middleware(async () => {
       const user = await getCurrentUser();
@@ -22,17 +22,12 @@ export const ourFileRouter = {
 
       if (oldAvatarUrl) {
         // Assuming the new URL format is /a/{key}
-        const key = oldAvatarUrl.split(
-          `/a/${env.NEXT_PUBLIC_UPLOADTHING_APP_ID}`,
-        )[1];
+        const key = oldAvatarUrl.split(`/f/`)[1];
 
         await new UTApi().deleteFiles(key);
       }
 
-      const newAvatarUrl = file.url.replace(
-        "/f/",
-        `/a/${env.NEXT_PUBLIC_UPLOADTHING_APP_ID}`,
-      );
+      const newAvatarUrl = file.ufsUrl;
 
       await Promise.all([
         prisma.user.update({
@@ -65,10 +60,7 @@ export const ourFileRouter = {
     .onUploadComplete(async ({ file }) => {
       const media = await prisma.media.create({
         data: {
-          url: file.url.replace(
-            "/f/",
-            `/a/${env.NEXT_PUBLIC_UPLOADTHING_APP_ID}`,
-          ),
+          url: file.ufsUrl,
           type: file.type.startsWith("image") ? "IMAGE" : "VIDEO",
         },
       });

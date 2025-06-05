@@ -12,6 +12,7 @@ import { cn, formatRelativeDate } from "@/lib/utils";
 
 import Comments from "../comments/Comments";
 import Linkify from "../feed/Linkify";
+import BlurImage from "../shared/blur-image";
 import { UserAvatar } from "../shared/user-avatar";
 import UserTooltip from "../UserTooltip";
 import BookmarkButton from "./BookmarkButton";
@@ -66,11 +67,9 @@ export default function Post({ post }: PostProps) {
       <Linkify>
         <div className="break-words whitespace-pre-line">{post.content}</div>
       </Linkify>
-      <Suspense fallback="loading">
-        {post?.attachments && post?.attachments.length > 0 ? (
-          <MediaPreviews attachments={post?.attachments} />
-        ) : null}
-      </Suspense>
+      {post?.attachments && post?.attachments.length > 0 ? (
+        <MediaPreviews attachments={post?.attachments} />
+      ) : null}
       <hr className="text-muted-foreground" />
       <div className="flex justify-between gap-5">
         <div className="flex items-center gap-5">
@@ -122,13 +121,14 @@ interface MediaPreviewProps {
 }
 
 function MediaPreview({ media }: MediaPreviewProps) {
+  console.log(media.url, "url");
   if (media.type === "IMAGE") {
     return (
-      <Image
+      <img
         src={media?.url}
         alt="Attachment"
-        width={500}
-        height={500}
+        // width={500}
+        // height={500}
         className="mx-auto size-fit max-h-[30rem] rounded-2xl"
       />
     );

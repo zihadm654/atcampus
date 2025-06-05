@@ -7,6 +7,10 @@ import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { useDropzone } from "@uploadthing/react";
 import { ImageIcon, Loader2, X } from "lucide-react";
+import {
+  generateClientDropzoneAccept,
+  generatePermittedFileTypes,
+} from "uploadthing/client";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -32,12 +36,16 @@ export default function PostEditor() {
     attachments,
     isUploading,
     uploadProgress,
+    routeConfig,
     removeAttachment,
     reset: resetMediaUploads,
   } = useMediaUpload();
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop: startUpload,
+    accept: generateClientDropzoneAccept(
+      generatePermittedFileTypes(routeConfig).fileTypes,
+    ),
   });
 
   const { onClick, ...rootProps } = getRootProps();

@@ -19,11 +19,11 @@ export default async function SettingsPage() {
   if (!user?.id) redirect("/login");
 
   return (
-    <>
-      {/* <DashboardHeader
+    <div className="flex flex-col gap-4">
+      <DashboardHeader
         heading="Settings"
         text="Manage account and website settings."
-      /> */}
+      />
       <div className="divide-muted divide-y pb-10">
         <UserNameForm user={{ id: user.id, name: user.name || "" }} />
         {/* <UserRoleForm user={{ id: user.id, role: user.role }} /> */}
@@ -34,6 +34,6 @@ export default async function SettingsPage() {
         </div>
         <DeleteAccountSection />
       </div>
-    </>
+    </div>
   );
 }

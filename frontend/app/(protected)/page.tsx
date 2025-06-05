@@ -20,22 +20,9 @@ export default function Home() {
         <Suspense fallback={<SkeletonSection />}>
           <PostEditor />
         </Suspense>
-        <Tabs defaultValue="for-you">
-          <TabsList>
-            <TabsTrigger value="for-you">For you</TabsTrigger>
-            <TabsTrigger value="following">Following</TabsTrigger>
-          </TabsList>
-          <TabsContent value="for-you">
-            <Suspense fallback={<SkeletonSection />}>
-              <ForYouFeed />
-            </Suspense>
-          </TabsContent>
-          <Suspense fallback={<SkeletonSection />}>
-            <TabsContent value="following">
-              <FollowingFeed />
-            </TabsContent>
-          </Suspense>
-        </Tabs>
+        <Suspense fallback={<SkeletonSection />}>
+          <ForYouFeed />
+        </Suspense>
       </div>
       <Suspense fallback={<SkeletonSection />}>
         <TrendsSidebar />
