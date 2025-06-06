@@ -42,7 +42,7 @@ export function useDeletePostMutation() {
       toast.success("Post deleted");
 
       if (pathname === `/posts/${deletedPost.id}`) {
-        router.push(`/users/${deletedPost.user.username}`);
+        router.push(`/${deletedPost.user.username}`);
       }
     },
     onError(error) {

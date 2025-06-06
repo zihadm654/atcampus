@@ -107,7 +107,7 @@ export function UserAccountNav() {
 
               <li className="text-foreground hover:bg-muted rounded-lg">
                 <Link
-                  href={`/users/${user.username}`}
+                  href={`/${user.username}`}
                   onClick={closeDrawer}
                   className="flex w-full items-center gap-3 px-2.5 py-2"
                 >
@@ -182,7 +182,7 @@ export function UserAccountNav() {
 
         <DropdownMenuItem asChild>
           <Link
-            href={`/users/${user.username}`}
+            href={`/${user.username}`}
             className="flex items-center space-x-2.5"
           >
             <LayoutDashboard className="size-4" />

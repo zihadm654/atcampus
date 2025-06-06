@@ -86,10 +86,7 @@ async function UserInfoSidebar({ user }: UserInfoSidebarProps) {
     <div className="bg-card space-y-5 rounded-2xl p-5 shadow-sm">
       <div className="text-xl font-bold">About this user</div>
       <UserTooltip user={user}>
-        <Link
-          href={`/users/${user.username}`}
-          className="flex items-center gap-3"
-        >
+        <Link href={`/${user.username}`} className="flex items-center gap-3">
           <UserAvatar avatarUrl={user.image} className="flex-none" />
           <div>
             <p className="line-clamp-1 font-semibold break-all hover:underline">

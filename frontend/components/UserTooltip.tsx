@@ -38,7 +38,7 @@ export default function UserTooltip({ children, user }: UserTooltipProps) {
         <TooltipContent>
           <div className="flex max-w-80 flex-col gap-3 px-1 py-2.5 break-words md:min-w-52">
             <div className="flex items-center justify-between gap-2">
-              <Link href={`/users/${user.username}`}>
+              <Link href={`/${user.username}`}>
                 <UserAvatar user={user} />
               </Link>
               {loggedInUser?.id !== user.id && (
@@ -46,7 +46,7 @@ export default function UserTooltip({ children, user }: UserTooltipProps) {
               )}
             </div>
             <div>
-              <Link href={`/users/${user.username}`}>
+              <Link href={`/${user.username}`}>
                 <div className="text-lg font-semibold hover:underline">
                   {user.displayUsername}
                 </div>
