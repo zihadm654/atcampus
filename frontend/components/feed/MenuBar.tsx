@@ -1,57 +1,87 @@
+import { Fragment } from "react";
 import Link from "next/link";
+import { SidebarNavItem } from "@/types";
 import { Bookmark, Briefcase, GraduationCap, Home } from "lucide-react";
 
-import { prisma } from "@/lib/db";
-import { getCurrentUser } from "@/lib/session";
-import streamServerClient from "@/lib/stream";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
-import MessagesButton from "./MessagesButton";
-import NotificationsButton from "./NotificationsButton";
+import { Icons } from "../shared/icons";
+import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 
 interface MenuBarProps {
   className?: string;
+  links: SidebarNavItem[];
 }
 
-export default async function MenuBar({ className }: MenuBarProps) {
-  const user = await getCurrentUser();
-
-  if (!user) return null;
-
-  const [unreadNotificationsCount, unreadMessagesCount] = await Promise.all([
-    prisma.notification.count({
-      where: {
-        recipientId: user.id,
-        read: false,
-      },
-    }),
-    await streamServerClient
-      .getUnreadCount(user.id)
-      .then((result) => result.total_unread_count)
-      .catch((error) => {
-        console.warn("Failed to get unread count from Stream:", error.message);
-        return 0;
-      }),
-  ]);
-
+export default async function MenuBar({ className, links }: MenuBarProps) {
   return (
     <div className={className}>
+      <nav className="flex flex-1 flex-col gap-8 px-4 pt-4">
+        {links?.map((section) => (
+          <section key={section.title} className="flex flex-col gap-0.5">
+            {section.items.map((item) => {
+              const Icon = Icons[item.icon || "arrowRight"];
+              return (
+                item.href && (
+                  <Fragment key={`link-fragment-${item.title}`}>
+                    <Link
+                      key={`link-${item.title}`}
+                      href={item.disabled ? "#" : item.href}
+                      className={cn(
+                        "hover:bg-muted flex items-center gap-3 rounded-md p-2 text-sm font-medium",
+                        // path === item.href
+                        //   ? "bg-muted"
+                        //   : "text-muted-foreground hover:text-accent-foreground",
+                        item.disabled &&
+                          "hover:text-muted-foreground cursor-not-allowed opacity-80 hover:bg-transparent",
+                      )}
+                    >
+                      <Icon className="size-5" />
+                      {item.title}
+                    </Link>
+                    {/* <Tooltip key={`tooltip-${item.title}`}>
+                        <TooltipTrigger asChild>
+                          <Link
+                            key={`link-tooltip-${item.title}`}
+                            href={item.disabled ? "#" : item.href}
+                            className={cn(
+                              "hover:bg-muted flex items-center gap-3 rounded-md py-2 text-sm font-medium",
+                              // path === item.href
+                              //   ? "bg-muted"
+                              //   : "text-muted-foreground hover:text-accent-foreground",
+                              item.disabled &&
+                                "hover:text-muted-foreground cursor-not-allowed opacity-80 hover:bg-transparent",
+                            )}
+                          >
+                            <span className="flex size-full items-center justify-center">
+                              <Icon className="size-5" />
+                            </span>
+                          </Link>
+                        </TooltipTrigger>
+                        <TooltipContent side="right">
+                          {item.title}
+                        </TooltipContent>
+                      </Tooltip> */}
+                  </Fragment>
+                )
+              );
+            })}
+          </section>
+        ))}
+      </nav>
       <Button
         variant="ghost"
         className="flex items-center justify-start gap-3"
-        title="Home"
+        title="Connections"
         asChild
       >
-        <Link href="/">
-          <Home />
-          <span className="hidden lg:inline">Home</span>
+        <Link href="/connections">
+          <GraduationCap />
+          <span className="hidden lg:inline">Connections</span>
         </Link>
       </Button>
-      <NotificationsButton
-        initialState={{ unreadCount: unreadNotificationsCount }}
-      />
-      <MessagesButton initialState={{ unreadCount: unreadMessagesCount }} />
-      <Button
+      {/* <Button
         variant="ghost"
         className="flex items-center justify-start gap-3"
         title="Courses"
@@ -83,7 +113,7 @@ export default async function MenuBar({ className }: MenuBarProps) {
           <Bookmark />
           <span className="hidden lg:inline">Bookmarks</span>
         </Link>
-      </Button>
+      </Button> */}
     </div>
   );
 }

@@ -29,7 +29,7 @@ export const sidebarLinks: SidebarNavItem[] = [
       {
         href: "/jobs",
         icon: "billing",
-        title: "Courses",
+        title: "Jobs",
         authorizeOnly: UserRole.STUDENT,
       },
     ],
@@ -44,6 +44,66 @@ export const sidebarLinks: SidebarNavItem[] = [
       //   icon: "messages",
       //   title: "Support",
       //   // authorizeOnly: UserRole.USER,
+      //   disabled: true,
+      // },
+    ],
+  },
+];
+export const menubar: SidebarNavItem[] = [
+  {
+    title: "MENU",
+    items: [
+      {
+        href: "/admin",
+        icon: "laptop",
+        title: "Admin Panel",
+        authorizeOnly: UserRole.INSTITUTION,
+      },
+      {
+        href: "/connections",
+        icon: "users",
+        title: "Connections",
+        authorizeOnly: UserRole.STUDENT,
+      },
+      // { href: "/", icon: "home", title: "Feed" },
+      // {
+      //   href: "/admin/orders",
+      //   icon: "package",
+      //   title: "Orders",
+      //   badge: 2,
+      //   authorizeOnly: UserRole.INSTITUTION,
+      // },
+      {
+        href: "/courses",
+        icon: "bookOpen",
+        title: "Courses",
+        authorizeOnly: UserRole.STUDENT,
+      },
+      {
+        href: "/jobs",
+        icon: "job",
+        title: "Jobs",
+        authorizeOnly: UserRole.STUDENT,
+      },
+      {
+        href: "/researches",
+        icon: "research",
+        title: "Researches",
+        authorizeOnly: UserRole.STUDENT,
+      },
+    ],
+  },
+  {
+    title: "OTHERS",
+    items: [
+      { href: "/bookmarks", icon: "bookmark", title: "Saved Post" },
+      { href: "/savedJob", icon: "bookMarked", title: "Saved Job" },
+      { href: "/savedResearch", icon: "research", title: "Saved Research" },
+      // {
+      //   href: "#",
+      //   icon: "messages",
+      //   title: "Support",
+      // authorizeOnly: UserRole.USER,
       //   disabled: true,
       // },
     ],

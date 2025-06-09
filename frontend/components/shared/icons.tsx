@@ -2,7 +2,10 @@ import {
   AlertTriangle,
   ArrowRight,
   ArrowUpRight,
+  Bookmark,
+  BookMarked,
   BookOpen,
+  BriefcaseBusiness,
   Check,
   ChevronLeft,
   ChevronRight,
@@ -22,6 +25,7 @@ import {
   MessagesSquare,
   Moon,
   MoreVertical,
+  Newspaper,
   Package,
   Plus,
   Puzzle,
@@ -30,6 +34,7 @@ import {
   SunMedium,
   Trash,
   User,
+  Users,
   X,
 } from "lucide-react";
 
@@ -40,7 +45,9 @@ export const Icons = {
   arrowRight: ArrowRight,
   arrowUpRight: ArrowUpRight,
   billing: CreditCard,
+  bookmark: Bookmark,
   bookOpen: BookOpen,
+  bookMarked: BookMarked,
   chevronLeft: ChevronLeft,
   chevronRight: ChevronRight,
   check: Check,
@@ -133,5 +140,8 @@ export const Icons = {
     </svg>
   ),
   user: User,
+  users: Users,
   warning: AlertTriangle,
+  research: Newspaper,
+  job: BriefcaseBusiness,
 };

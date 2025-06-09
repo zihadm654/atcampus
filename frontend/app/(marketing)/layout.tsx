@@ -2,16 +2,18 @@ import { redirect } from "next/navigation";
 
 import { menubar } from "@/config/dashboard";
 import { getCurrentUser } from "@/lib/session";
-import MenuBar from "@/components/feed/MenuBar";
 import { DashboardSidebar } from "@/components/layout/dashboard-sidebar";
+// import { NavMobile } from "@/components/layout/mobile-nav";
 import { NavBar } from "@/components/layout/navbar";
 import { SiteFooter } from "@/components/layout/site-footer";
 
-interface ProtectedLayoutProps {
+interface MarketingLayoutProps {
   children: React.ReactNode;
 }
 
-export default async function Dashboard({ children }: ProtectedLayoutProps) {
+export default async function MarketingLayout({
+  children,
+}: MarketingLayoutProps) {
   const user = await getCurrentUser();
 
   if (!user) redirect("/login");
@@ -23,17 +25,12 @@ export default async function Dashboard({ children }: ProtectedLayoutProps) {
   }));
   return (
     <div className="flex min-h-screen flex-col">
-      <NavBar scroll />
+      <NavBar scroll={true} />
       <div className="relative mx-auto flex w-full max-w-7xl grow gap-5 p-5">
-        {/* <MenuBar
-          className="bg-card sticky top-[5.25rem] hidden h-fit flex-none space-y-3 rounded-2xl px-3 py-5 shadow-sm sm:block lg:px-5 xl:w-80"
-          links={filteredLinks}
-        /> */}
         <DashboardSidebar links={filteredLinks} />
         {children}
       </div>
       <SiteFooter />
-      {/* <MenuBar className="bg-card sticky bottom-0 flex w-full justify-center gap-5 border-t p-3 sm:hidden" /> */}
     </div>
   );
 }

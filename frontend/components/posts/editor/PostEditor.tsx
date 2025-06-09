@@ -111,7 +111,7 @@ export default function PostEditor() {
           removeAttachment={removeAttachment}
         />
       )}
-      <div className="flex items-center justify-end gap-3">
+      <div className="flex items-center justify-between gap-3">
         {isUploading && (
           <>
             <span className="text-sm">{uploadProgress ?? 0}%</span>
@@ -121,6 +121,12 @@ export default function PostEditor() {
         <AddAttachmentsButton
           onFilesSelected={startUpload}
           disabled={isUploading || attachments.length >= 5}
+          name="Image/Video"
+        />
+        <AddAttachmentsButton
+          onFilesSelected={startUpload}
+          disabled={isUploading || attachments.length >= 5}
+          name="Paper"
         />
         <LoadingButton
           onClick={onSubmit}
@@ -138,11 +144,13 @@ export default function PostEditor() {
 interface AddAttachmentsButtonProps {
   onFilesSelected: (files: File[]) => void;
   disabled: boolean;
+  name: string;
 }
 
 function AddAttachmentsButton({
   onFilesSelected,
   disabled,
+  name,
 }: AddAttachmentsButtonProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -150,12 +158,12 @@ function AddAttachmentsButton({
     <>
       <Button
         variant="ghost"
-        size="icon"
-        className="text-primary hover:text-primary"
+        // size="icon"
+        className="text-primary hover:text-primary flex items-center justify-center"
         disabled={disabled}
         onClick={() => fileInputRef.current?.click()}
       >
-        <ImageIcon size={20} />
+        <ImageIcon className="size-6" /> <span>{name}</span>
       </Button>
       <input
         type="file"

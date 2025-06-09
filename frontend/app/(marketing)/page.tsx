@@ -1,8 +1,6 @@
 import { Suspense } from "react";
 
 import { constructMetadata } from "@/lib/utils";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import FollowingFeed from "@/components/feed/FollowingFeed";
 import ForYouFeed from "@/components/feed/ForYouFeed";
 import TrendsSidebar from "@/components/feed/TrendsSidebar";
 import PostEditor from "@/components/posts/editor/PostEditor";

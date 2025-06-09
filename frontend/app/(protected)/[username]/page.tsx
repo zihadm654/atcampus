@@ -7,6 +7,15 @@ import { FollowerInfo, getUserDataSelect, UserData } from "@/types/types";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/session";
 import { formatNumber } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardAction,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import FollowButton from "@/components/feed/FollowButton";
 import FollowerCount from "@/components/feed/FollowerCount";
@@ -72,13 +81,52 @@ export default async function Page({ params }: PageProps) {
       <div className="w-full min-w-0 space-y-5">
         <UserProfile user={user} loggedInUserId={loggedInUser.id} />
         <div className="bg-card rounded-2xl p-2 shadow-sm">
-          <Tabs defaultValue="posts">
+          <Tabs defaultValue="overview">
             <TabsList>
+              <TabsTrigger value="overview">Overview</TabsTrigger>
               <TabsTrigger value="posts">Posts</TabsTrigger>
               <TabsTrigger value="courses">Courses</TabsTrigger>
               <TabsTrigger value="events">Events</TabsTrigger>
               <TabsTrigger value="skills">Skills</TabsTrigger>
             </TabsList>
+            <TabsContent value="overview">
+              <div className="grid grid-cols-2 gap-4">
+                <Card>
+                  <CardHeader className="flex items-center justify-between">
+                    <CardTitle>Skills</CardTitle>
+                    <CardAction>
+                      <Button variant="link">See More</Button>
+                    </CardAction>
+                  </CardHeader>
+                  <CardContent>
+                    <h2>No Content yet</h2>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardHeader className="flex items-center justify-between">
+                    <CardTitle>Courses</CardTitle>
+                    <CardAction>
+                      <Button variant="link">See More</Button>
+                    </CardAction>
+                  </CardHeader>
+                  <CardContent>
+                    <h2>No Content yet</h2>
+                  </CardContent>
+                </Card>
+                <Label className="col-span-2 text-xl">Job & Activities</Label>
+                <Card>
+                  <CardHeader className="flex items-center justify-between">
+                    <CardTitle>Demo</CardTitle>
+                    <CardAction>
+                      <Button variant="link">See More</Button>
+                    </CardAction>
+                  </CardHeader>
+                  <CardContent>
+                    <h2>No Content yet</h2>
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
             <TabsContent value="posts">
               <h2 className="text-center text-xl font-bold">
                 {user.name}&apos;s posts
