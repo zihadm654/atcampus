@@ -163,7 +163,8 @@ function AddAttachmentsButton({
         disabled={disabled}
         onClick={() => fileInputRef.current?.click()}
       >
-        <ImageIcon className="size-6" /> <span>{name}</span>
+        <ImageIcon className="size-6" />{" "}
+        <span className="hidden md:block">{name}</span>
       </Button>
       <input
         type="file"

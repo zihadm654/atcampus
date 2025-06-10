@@ -172,9 +172,6 @@ export function DashboardSidebar({ links }: DashboardSidebarProps) {
                   </section>
                 ))}
               </nav>
-              {/* <div className="mt-auto xl:p-4">
-                {isSidebarExpanded ? <UpgradeCard /> : null}
-              </div> */}
             </div>
           </aside>
         </ScrollArea>
@@ -214,9 +211,6 @@ export function MobileSheetSidebar({ links }: DashboardSidebarProps) {
                     {siteConfig.name}
                   </span>
                 </Link>
-
-                {/* <ProjectSwitcher large /> */}
-
                 {links.map((section) => (
                   <section
                     key={section.title}
@@ -260,10 +254,6 @@ export function MobileSheetSidebar({ links }: DashboardSidebarProps) {
                     })}
                   </section>
                 ))}
-
-                {/* <div className="mt-auto">
-                  <UpgradeCard />
-                </div> */}
               </nav>
             </div>
           </ScrollArea>

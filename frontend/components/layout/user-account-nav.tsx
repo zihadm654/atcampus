@@ -3,7 +3,17 @@
 import { useState } from "react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { LayoutDashboard, Lock, LogOut, Settings } from "lucide-react";
+import {
+  Check,
+  LayoutDashboard,
+  Lock,
+  LogOut,
+  Monitor,
+  Moon,
+  Settings,
+  Sun,
+} from "lucide-react";
+import { useTheme } from "next-themes";
 import { toast } from "sonner";
 import { Drawer } from "vaul";
 
@@ -13,7 +23,11 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuPortal,
   DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { UserAvatar } from "@/components/shared/user-avatar";
@@ -49,6 +63,7 @@ export function UserAccountNav() {
   const closeDrawer = () => {
     setOpen(false);
   };
+  const { theme, setTheme } = useTheme();
 
   const { isMobile } = useMediaQuery();
 
@@ -199,6 +214,31 @@ export function UserAccountNav() {
             <p className="text-sm">Settings</p>
           </Link>
         </DropdownMenuItem>
+        <DropdownMenuSub>
+          <DropdownMenuSubTrigger>
+            <Monitor className="mr-2 size-4" />
+            Theme
+          </DropdownMenuSubTrigger>
+          <DropdownMenuPortal>
+            <DropdownMenuSubContent>
+              <DropdownMenuItem onClick={() => setTheme("system")}>
+                <Monitor className="mr-2 size-4" />
+                System default
+                {theme === "system" && <Check className="ms-2 size-4" />}
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setTheme("light")}>
+                <Sun className="mr-2 size-4" />
+                Light
+                {theme === "light" && <Check className="ms-2 size-4" />}
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setTheme("dark")}>
+                <Moon className="mr-2 size-4" />
+                Dark
+                {theme === "dark" && <Check className="ms-2 size-4" />}
+              </DropdownMenuItem>
+            </DropdownMenuSubContent>
+          </DropdownMenuPortal>
+        </DropdownMenuSub>
         <DropdownMenuSeparator />
         <DropdownMenuItem
           className="cursor-pointer"

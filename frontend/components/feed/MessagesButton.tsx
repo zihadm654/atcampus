@@ -15,10 +15,20 @@ interface MessagesButtonProps {
 export default function MessagesButton({ initialState }: MessagesButtonProps) {
   const { data } = useQuery({
     queryKey: ["unread-messages-count"],
-    queryFn: () =>
-      kyInstance.get("/api/messages/unread-count").json<MessageCountInfo>(),
+    queryFn: async () => {
+      try {
+        return await kyInstance
+          .get("/api/messages/unread-count")
+          .json<MessageCountInfo>();
+      } catch (error) {
+        console.error("Error fetching unread messages count:", error);
+        return { unreadCount: 0 };
+      }
+    },
     initialData: initialState,
-    refetchInterval: 60 * 1000,
+    refetchInterval: 30000, // Refetch every 30 seconds
+    refetchOnWindowFocus: true,
+    staleTime: 20000, // Consider data stale after 20 seconds
   });
 
   return (
@@ -37,7 +47,6 @@ export default function MessagesButton({ initialState }: MessagesButtonProps) {
             </span>
           )}
         </div>
-        <span className="hidden lg:inline">Messages</span>
       </Link>
     </Button>
   );

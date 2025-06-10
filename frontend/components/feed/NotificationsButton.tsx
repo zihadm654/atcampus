@@ -17,12 +17,20 @@ export default function NotificationsButton({
 }: NotificationsButtonProps) {
   const { data } = useQuery({
     queryKey: ["unread-notification-count"],
-    queryFn: () =>
-      kyInstance
-        .get("/api/notifications/unread-count")
-        .json<NotificationCountInfo>(),
+    queryFn: async () => {
+      try {
+        return await kyInstance
+          .get("/api/notifications/unread-count")
+          .json<NotificationCountInfo>();
+      } catch (error) {
+        console.error("Error fetching unread notifications count:", error);
+        return { unreadCount: 0 };
+      }
+    },
     initialData: initialState,
-    refetchInterval: 60 * 1000,
+    refetchInterval: 30000, // Refetch every 30 seconds
+    refetchOnWindowFocus: true,
+    staleTime: 20000, // Consider data stale after 20 seconds
   });
 
   return (
@@ -41,7 +49,6 @@ export default function NotificationsButton({
             </span>
           )}
         </div>
-        <span className="hidden lg:inline">Notifications</span>
       </Link>
     </Button>
   );

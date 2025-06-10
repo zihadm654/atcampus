@@ -90,7 +90,7 @@ export default async function Page({ params }: PageProps) {
               <TabsTrigger value="skills">Skills</TabsTrigger>
             </TabsList>
             <TabsContent value="overview">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-4 max-md:grid-cols-1">
                 <Card>
                   <CardHeader className="flex items-center justify-between">
                     <CardTitle>Skills</CardTitle>

@@ -16,9 +16,9 @@ import { ModalContext } from "@/components/modals/providers";
 import { Icons } from "@/components/shared/icons";
 import MaxWidthWrapper from "@/components/shared/max-width-wrapper";
 
+import MessagesButton from "../feed/MessagesButton";
+import NotificationsButton from "../feed/NotificationsButton";
 import SearchField from "../feed/SearchField";
-import Activity from "./activity";
-import { ModeToggle } from "./mode-toggle";
 import { UserAccountNav } from "./user-account-nav";
 
 // import { Skeleton } from "../ui/skeleton";
@@ -92,20 +92,11 @@ export function NavBar({ scroll = false }: NavBarProps) {
           </nav>
         ) : null}
         <div className="flex items-center justify-end space-x-3">
-          <ModeToggle />
           {/* right header for docs */}{" "}
           {session?.user ? (
             <>
-              {/* <Suspense
-                fallback={
-                  <div className="flex items-center gap-2">
-                    <Skeleton className="h-10 w-[100px]" />
-                    <Skeleton className="h-10 w-[100px]" />
-                  </div>
-                }
-              >
-                <Activity />
-              </Suspense> */}
+              <NotificationsButton initialState={{ unreadCount: 0 }} />
+              <MessagesButton initialState={{ unreadCount: 0 }} />
               <UserAccountNav />
             </>
           ) : !session ? (
