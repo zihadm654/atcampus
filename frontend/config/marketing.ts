@@ -8,6 +8,11 @@ export const marketingConfig: MarketingConfig = {
       icon: "home",
     },
     {
+      title: "Jobs",
+      href: "/jobs",
+      icon: "job",
+    },
+    {
       title: "Bookmarks",
       href: "/bookmarks",
       icon: "bookmark",

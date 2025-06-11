@@ -6,7 +6,7 @@ export const sidebarLinks: SidebarNavItem[] = [
     title: "MENU",
     items: [
       {
-        href: "/admin",
+        href: "/admin/dashboard",
         icon: "laptop",
         title: "Admin Panel",
         authorizeOnly: UserRole.INSTITUTION,
@@ -54,42 +54,25 @@ export const menubar: SidebarNavItem[] = [
     title: "MENU",
     items: [
       {
-        href: "/admin",
-        icon: "laptop",
-        title: "Admin Panel",
-        authorizeOnly: UserRole.INSTITUTION,
-      },
-      {
         href: "/connections",
         icon: "users",
         title: "Connections",
-        authorizeOnly: UserRole.STUDENT,
       },
       // { href: "/", icon: "home", title: "Feed" },
-      // {
-      //   href: "/admin/orders",
-      //   icon: "package",
-      //   title: "Orders",
-      //   badge: 2,
-      //   authorizeOnly: UserRole.INSTITUTION,
-      // },
       {
         href: "/courses",
         icon: "bookOpen",
         title: "Courses",
-        authorizeOnly: UserRole.STUDENT,
       },
       {
         href: "/jobs",
         icon: "job",
         title: "Jobs",
-        authorizeOnly: UserRole.STUDENT,
       },
       {
         href: "/researches",
         icon: "research",
         title: "Researches",
-        authorizeOnly: UserRole.STUDENT,
       },
     ],
   },

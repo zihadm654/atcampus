@@ -12,8 +12,15 @@ datasource db {
 
 enum UserRole {
   STUDENT
-  ORGANIZATION
+  PROFESSOR
   INSTITUTION
+  ORGANIZATION
+}
+
+enum ApplicationStatus {
+  pending
+  accepted
+  rejected
 }
 
 model Account {
@@ -59,18 +66,24 @@ model Session {
 }
 
 model User {
-  id              String  @id @default(cuid()) @map("_id")
-  displayUsername String?
+  id          String  @id @default(cuid()) @map("_id")
+  instituteId String?
 
-  name          String
-  email         String   @unique
-  emailVerified Boolean
-  image         String?
-  coverImage    String?
-  bio           String?
-  institution   String?
-  role          UserRole @default(STUDENT)
-  twoFactor     Boolean  @default(false)
+  name            String
+  email           String    @unique
+  emailVerified   Boolean
+  image           String?
+  coverImage      String?
+  bio             String?
+  institution     String?
+  currentSeamster Int?
+  role            UserRole  @default(STUDENT)
+  twoFactor       Boolean   @default(false)
+  username        String?
+  displayUsername String?
+  banned          Boolean?
+  banReason       String?
+  banExpires      DateTime?
 
   createdAt DateTime @default(now()) @map(name: "created_at")
   updatedAt DateTime @default(now()) @map(name: "updated_at")
@@ -84,29 +97,131 @@ model User {
   followings            Follow[]       @relation("UserFollowings")
   block                 Block[]        @relation("BlocksSent")
   blockBy               Block[]        @relation("BlocksReceived")
-  stories               Story?
-  Block                 Block[]
   TwoFactor             TwoFactor[]
   receivedNotifications Notification[] @relation("Recipient")
   issuedNotifications   Notification[] @relation("Issuer")
   bookmarks             Bookmark[]
-
-  username   String?
-  banned     Boolean?
-  banReason  String?
-  banExpires DateTime?
+  job                   Job[]
+  company               Company[]
+  application           Application[]
+  research              Research[]
+  saveJob               SaveJob[]
 
   @@unique([username])
   @@map(name: "users")
 }
 
+model Research {
+  id String @id @default(cuid()) @map("_id")
+
+  title       String
+  description String
+  content     String
+
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @default(now()) @map(name: "updated_at")
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+
+  comments            Comment[]
+  likes               Like[]
+  linkedNotifications Notification[]
+  attachments         Media[]
+
+  @@map(name: "researches")
+}
+
+model Skill {
+  id      String   @id @default(cuid()) @map("_id")
+  title   String
+  content String[]
+
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @default(now()) @map(name: "updated_at")
+  Job       Job[]
+
+  @@map(name: "skills")
+}
+
+model Job {
+  id              String   @id @default(cuid()) @map("_id")
+  title           String
+  description     String
+  startDate       DateTime
+  endDate         DateTime
+  weeklyHours     Int
+  requirements    String[]
+  salary          Float
+  location        String
+  type            String
+  experienceLevel String
+  duration        Int
+
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @default(now()) @map(name: "updated_at")
+
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId  String
+  skill   Skill  @relation(fields: [skillId], references: [id])
+  skillId String
+
+  comments            Comment[]
+  likes               Like[]
+  linkedNotifications Notification[]
+  attachments         Media[]
+  company             Company[]
+  application         Application[]
+  saveJob             SaveJob[]
+
+  @@map(name: "jobs")
+}
+
+model Company {
+  id String @id @default(cuid()) @map("_id")
+
+  name        String
+  description String?
+  website     String?
+  location    String?
+  logo        String?
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+  jobId  String
+  job    Job    @relation(fields: [jobId], references: [id])
+
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @default(now()) @map(name: "updated_at")
+
+  @@map(name: "companies")
+}
+
+model Application {
+  id String @id @default(cuid()) @map("_id")
+
+  applicantId String
+  applicant   User   @relation(fields: [applicantId], references: [id])
+  jobId       String
+  job         Job    @relation(fields: [jobId], references: [id])
+
+  status ApplicationStatus @default(pending)
+
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @default(now()) @map(name: "updated_at")
+
+  @@map(name: "applications")
+}
+
 model Post {
-  id        String   @id @default(cuid()) @map("_id")
-  content   String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId    String
+  id      String @id @default(cuid()) @map("_id")
+  content String
+
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @default(now()) @map(name: "updated_at")
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
 
   comments            Comment[]
   likes               Like[]
@@ -118,13 +233,21 @@ model Post {
 }
 
 model Media {
-  id     String    @id @default(cuid()) @map("_id")
-  postId String?
-  post   Post?     @relation(fields: [postId], references: [id], onDelete: SetNull)
-  type   MediaType
-  url    String
+  id       String    @id @default(cuid()) @map("_id")
+  type     MediaType
+  url      String
+  fileKey  String?
+  fileSize Int?
 
-  createdAt DateTime @default(now())
+  postId     String?
+  post       Post?     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  job        Job?      @relation(fields: [jobId], references: [id])
+  jobId      String?
+  research   Research? @relation(fields: [researchId], references: [id])
+  researchId String?
+
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @default(now()) @map(name: "updated_at")
 
   @@map(name: "post_media")
 }
@@ -137,22 +260,32 @@ enum MediaType {
 model Comment {
   id      String @id @default(cuid()) @map("_id")
   content String
-  userId  String
-  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  postId  String
-  post    Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
 
-  createdAt DateTime @default(now())
+  userId     String
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  postId     String
+  post       Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
+  job        Job?      @relation(fields: [jobId], references: [id])
+  jobId      String?
+  research   Research? @relation(fields: [researchId], references: [id])
+  researchId String?
+
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @default(now()) @map(name: "updated_at")
 
   @@map("comments")
 }
 
 model Like {
-  id     String @id @default(cuid()) @map("_id")
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  postId String
-  post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
+  id         String    @id @default(cuid()) @map("_id")
+  userId     String
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  postId     String
+  post       Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
+  job        Job?      @relation(fields: [jobId], references: [id])
+  jobId      String?
+  research   Research? @relation(fields: [researchId], references: [id])
+  researchId String?
 
   @@unique([userId, postId])
   @@map(name: "likes")
@@ -170,28 +303,18 @@ model Follow {
 }
 
 model Block {
-  id        String   @id @default(cuid()) @map("_id")
-  createdAt DateTime @default(now())
-  blocker   User     @relation("BlocksSent", fields: [blockerId], references: [id], onDelete: Cascade)
+  id String @id @default(cuid()) @map("_id")
+
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @default(now()) @map(name: "updated_at")
+
+  blocker   User   @relation("BlocksSent", fields: [blockerId], references: [id], onDelete: Cascade)
   blockerId String
-  blocked   User     @relation("BlocksReceived", fields: [blockedId], references: [id], onDelete: Cascade)
+  blocked   User   @relation("BlocksReceived", fields: [blockedId], references: [id], onDelete: Cascade)
   blockedId String
-  User      User?    @relation(fields: [userId], references: [id])
-  userId    String?
 
   @@unique([blockerId, blockedId])
   @@map(name: "blocks")
-}
-
-model Story {
-  id        String   @id @default(cuid()) @map("_id")
-  createdAt DateTime @default(now())
-  expiresAt DateTime
-  img       String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId    String   @unique
-
-  @@map(name: "stories")
 }
 
 model Verification {
@@ -224,10 +347,25 @@ model Bookmark {
   postId String
   post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
 
-  createdAt DateTime @default(now())
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @default(now()) @map(name: "updated_at")
 
   @@unique([userId, postId])
   @@map(name: "bookmarks")
+}
+
+model SaveJob {
+  id     String  @id @default(cuid()) @map("_id")
+  userId String
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  job    Job?    @relation(fields: [jobId], references: [id])
+  jobId  String?
+
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @default(now()) @map(name: "updated_at")
+
+  @@unique([userId, jobId])
+  @@map(name: "save_jobs")
 }
 
 model Notification {
@@ -238,10 +376,15 @@ model Notification {
   issuer      User             @relation("Issuer", fields: [issuerId], references: [id], onDelete: Cascade)
   postId      String?
   post        Post?            @relation(fields: [postId], references: [id], onDelete: Cascade)
+  job         Job?             @relation(fields: [jobId], references: [id])
+  jobId       String?
+  research    Research?        @relation(fields: [researchId], references: [id])
+  researchId  String?
   type        NotificationType
   read        Boolean          @default(false)
 
-  createdAt DateTime @default(now())
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @default(now()) @map(name: "updated_at")
 
   @@map(name: "notifications")
 }

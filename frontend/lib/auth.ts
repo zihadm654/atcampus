@@ -103,7 +103,7 @@ const options = {
           const ADMIN_EMAILS = process.env.ADMIN_EMAILS?.split(";") ?? [];
 
           if (ADMIN_EMAILS.includes(user.email)) {
-            return { data: { ...user, role: "ADMIN" } };
+            return { data: { ...user, role: "INSTITUTION" } };
           }
 
           return { data: user };
@@ -114,13 +114,13 @@ const options = {
   user: {
     additionalFields: {
       role: {
-        type: ["STUDENT", "INSTITUTION", "ORGANIZATION"],
+        type: ["STUDENT", "PROFESSOR", "INSTITUTION", "ORGANIZATION"],
         input: false,
       },
     },
   },
   session: {
-    expiresIn: 60 * 60 * 24 * 60,
+    expiresIn: 30 * 24 * 60 * 60,
     updateAge: 60 * 60 * 24,
     cookieCache: {
       enabled: true,
@@ -142,17 +142,13 @@ const options = {
       clientId: String(env.GOOGLE_CLIENT_ID),
       clientSecret: String(env.GOOGLE_CLIENT_SECRET),
     },
-    github: {
-      clientId: String(env.GITHUB_CLIENT_ID),
-      clientSecret: String(env.GITHUB_CLIENT_SECRET),
-    },
   },
   plugins: [
     nextCookies(),
     username(),
     admin({
       defaultRole: "STUDENT",
-      adminRoles: ["INSTITUTION", "ORGANIZATION"],
+      adminRoles: ["INSTITUTION", "PROFESSOR", "ORGANIZATION"],
       ac,
       roles,
     }),

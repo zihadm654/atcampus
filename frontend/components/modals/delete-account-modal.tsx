@@ -5,6 +5,7 @@ import {
   useMemo,
   useState,
 } from "react";
+import { deleteUserAction } from "@/actions/delete-user.action";
 import { toast } from "sonner";
 
 import { useSession } from "@/lib/auth-client";
@@ -21,32 +22,20 @@ function DeleteAccountModal({
   setShowDeleteAccountModal: Dispatch<SetStateAction<boolean>>;
 }) {
   const { data: session } = useSession();
+  const user = session?.user;
+  if (!user) return null;
   const [deleting, setDeleting] = useState(false);
 
   async function deleteAccount() {
     setDeleting(true);
-    await fetch(`/api/user`, {
-      method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    }).then(async (res) => {
-      if (res.status === 200) {
-        // delay to allow for the route change to complete
-        await new Promise((resolve) =>
-          setTimeout(() => {
-            // signOut({
-            //   callbackUrl: `${window.location.origin}/`,
-            // });
-            resolve(null);
-          }, 500),
-        );
-      } else {
-        setDeleting(false);
-        const error = await res.text();
-        throw error;
-      }
-    });
+    const res = await deleteUserAction({ userId: user?.id! });
+
+    if (res.error) {
+      toast.error(res.error);
+    } else {
+      toast.success("User deleted successfully");
+    }
+    setDeleting(false);
   }
 
   return (
@@ -103,10 +92,7 @@ function DeleteAccountModal({
           />
         </div>
 
-        <Button
-          // variant={deleting ? "disable" : "destructive"}
-          disabled={deleting}
-        >
+        <Button variant={"destructive"} disabled={deleting}>
           Confirm delete account
         </Button>
       </form>

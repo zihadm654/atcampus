@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { updateUserRole, type FormData } from "@/actions/update-user-role";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { User, UserRole } from "@prisma/client";
@@ -8,8 +9,8 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 
-import { useSession } from "@/lib/auth-client";
-import { userRoleSchema } from "@/lib/validations/user";
+import { admin, useSession } from "@/lib/auth-client";
+import { TUserRole, userRoleSchema } from "@/lib/validations/user";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -35,32 +36,64 @@ interface UserNameFormProps {
 
 export function UserRoleForm({ user }: UserNameFormProps) {
   const [updated, setUpdated] = useState(false);
-  const [isPending, startTransition] = useTransition();
-  const updateUserRoleWithId = updateUserRole.bind(null, user.id);
+  // const [isPending, startTransition] = useTransition();
+  const [isPending, setIsPending] = useState(false);
+
+  // const updateUserRoleWithId = updateUserRole.bind(null, user.id);
 
   const roles = Object.values(UserRole);
   const [role, setRole] = useState(user.role);
 
-  const form = useForm<FormData>({
+  const form = useForm<TUserRole>({
     resolver: zodResolver(userRoleSchema),
     values: {
       role: role,
     },
   });
+  const router = useRouter();
 
-  const onSubmit = (data: any) => {
-    startTransition(async () => {
-      const { status } = await updateUserRoleWithId(data);
-
-      if (status !== "success") {
-        toast.error("Something went wrong.", {
-          description: "Your role was not updated. Please try again.",
-        });
-      } else {
-        setUpdated(false);
-        toast.success("Your role has been updated.");
-      }
+  const onSubmit = async (data: TUserRole) => {
+    const canChangeRole = await admin.hasPermission({
+      permissions: {
+        user: ["set-role"],
+      },
     });
+
+    if (!canChangeRole.error) {
+      return toast.error("Forbidden");
+    }
+
+    await admin.setRole({
+      userId: user?.id,
+      role: data.role,
+      fetchOptions: {
+        onRequest: () => {
+          setIsPending(true);
+        },
+        onResponse: () => {
+          setIsPending(false);
+        },
+        onError: (ctx) => {
+          toast.error(ctx.error.message);
+        },
+        onSuccess: () => {
+          toast.success("User role updated");
+          router.refresh();
+        },
+      },
+    });
+    // startTransition(async () => {
+    //   const { status } = await updateUserRoleWithId(data);
+
+    //   if (status !== "success") {
+    //     toast.error("Something went wrong.", {
+    //       description: "Your role was not updated. Please try again.",
+    //     });
+    //   } else {
+    //     setUpdated(false);
+    //     toast.success("Your role has been updated.");
+    //   }
+    // });
   };
 
   return (
@@ -82,10 +115,11 @@ export function UserRoleForm({ user }: UserNameFormProps) {
                     onValueChange={(value: UserRole) => {
                       setUpdated(user.role !== value);
                       setRole(value);
-                      // field.onChange;
+                      field.onChange;
                     }}
                     name={field.name}
                     defaultValue={user.role}
+                    disabled={role === "INSTITUTION" || isPending}
                   >
                     <FormControl>
                       <SelectTrigger className="w-full">
@@ -106,7 +140,7 @@ export function UserRoleForm({ user }: UserNameFormProps) {
             />
             <Button
               type="submit"
-              // variant={updated ? "default" : "disable"}
+              variant="default"
               disabled={isPending || !updated}
               className="w-[67px] shrink-0 px-0 sm:w-[130px]"
             >

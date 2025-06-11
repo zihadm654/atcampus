@@ -49,11 +49,11 @@ export function NavBar({ scroll = false }: NavBarProps) {
       }`}
     >
       <MaxWidthWrapper
-        className="grid h-14 grid-cols-3 gap-4 py-4 max-md:grid-cols-2"
+        className="grid grid-cols-3 gap-4 space-x-4 py-2 max-md:grid-cols-2"
         // large={documentation}
       >
-        <div className="flex gap-3 md:gap-6">
-          <Link href="/" className="text-primary flex items-center space-x-1.5">
+        <div className="flex items-center gap-2 md:gap-4">
+          <Link href="/" className="text-primary flex items-center space-x-2">
             <Image
               src="/_static/logo1.png"
               alt="logo"
@@ -65,7 +65,7 @@ export function NavBar({ scroll = false }: NavBarProps) {
           <SearchField />
         </div>
         {links && links.length > 0 ? (
-          <nav className="hidden items-center gap-6 md:flex">
+          <nav className="flex items-center justify-start gap-2 space-x-4 max-md:order-3 max-md:col-span-2 max-md:justify-around">
             {links?.map((item) => {
               const Icon = Icons[item.icon || "arrowRight"];
               return (
@@ -91,7 +91,7 @@ export function NavBar({ scroll = false }: NavBarProps) {
             })}
           </nav>
         ) : null}
-        <div className="flex items-center justify-end space-x-3">
+        <div className="flex items-center justify-end space-x-2">
           {/* right header for docs */}{" "}
           {session?.user ? (
             <>

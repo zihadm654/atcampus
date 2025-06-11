@@ -5,12 +5,10 @@ import { auth } from "@/lib/auth";
 import { getCurrentUser } from "@/lib/session";
 import { constructMetadata } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { DashboardHeader } from "@/components/dashboard/header";
-import { ChangePasswordForm } from "@/components/forms/change-password-form";
-import { UpdateUserForm } from "@/components/forms/update-user-form";
 import { ReturnButton } from "@/components/auth/return-button";
-import { EmptyPlaceholder } from "@/components/shared/empty-placeholder";
 import { SignOutButton } from "@/components/auth/sign-out-button";
+import { DashboardHeader } from "@/components/dashboard/header";
+import { UpdateUserForm } from "@/components/forms/update-user-form";
 
 export const metadata = constructMetadata({
   title: "Dashboard – SaaS Starter",
@@ -31,7 +29,7 @@ export default async function DashboardPage() {
     },
   });
   return (
-    <>
+    <main className="flex flex-col gap-4">
       <DashboardHeader
         heading="Dashboard"
         text={`Current Role : — Change your role in settings.`}
@@ -87,14 +85,6 @@ export default async function DashboardPage() {
           <UpdateUserForm name={user.name} image={user.image ?? ""} />
         </div>
       </div>
-      {/* <EmptyPlaceholder>
-        <EmptyPlaceholder.Icon name="post" />
-        <EmptyPlaceholder.Title>No content created</EmptyPlaceholder.Title>
-        <EmptyPlaceholder.Description>
-          You don&apos;t have any content yet. Start creating content.
-        </EmptyPlaceholder.Description>
-        <Button>Add Content</Button>
-      </EmptyPlaceholder> */}
-    </>
+    </main>
   );
 }

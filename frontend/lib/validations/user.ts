@@ -8,3 +8,4 @@ export const userNameSchema = z.object({
 export const userRoleSchema = z.object({
   role: z.nativeEnum(UserRole),
 });
+export type TUserRole = z.infer<typeof userRoleSchema>;

@@ -9,8 +9,7 @@ import {
   PlaceholderDeleteUserButton,
 } from "@/components/auth/delete-user-button";
 import { ReturnButton } from "@/components/auth/return-button";
-
-// import { UserRoleSelect } from "@/components/user-role-select";
+import { UserRoleSelect } from "@/components/user-role-select";
 
 export default async function Page() {
   const session = await getCurrentUser();
@@ -80,10 +79,10 @@ export default async function Page() {
                 <td className="px-4 py-2">{user.name}</td>
                 <td className="px-4 py-2">{user.email}</td>
                 <td className="px-4 py-2 text-center">
-                  {/* <UserRoleSelect
+                  <UserRoleSelect
                     userId={user.id}
                     role={user.role as UserRole}
-                  /> */}
+                  />
                 </td>
                 <td className="px-4 py-2 text-center">
                   {user.role === "STUDENT" ? (

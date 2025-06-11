@@ -1,5 +1,5 @@
 import { createAccessControl } from "better-auth/plugins/access";
-import { defaultStatements, adminAc } from "better-auth/plugins/admin/access";
+import { adminAc, defaultStatements } from "better-auth/plugins/admin/access";
 
 const statements = {
   ...defaultStatements,
@@ -9,11 +9,18 @@ const statements = {
 export const ac = createAccessControl(statements);
 
 export const roles = {
-  USER: ac.newRole({
+  STUDENT: ac.newRole({
+    posts: ["create", "read", "update:own", "delete:own"],
+    ...adminAc.statements,
+  }),
+  PROFESSOR: ac.newRole({
     posts: ["create", "read", "update:own", "delete:own"],
   }),
-
-  ADMIN: ac.newRole({
+  INSTITUTION: ac.newRole({
+    posts: ["create", "read", "update", "delete", "update:own", "delete:own"],
+    ...adminAc.statements,
+  }),
+  ORGANIZATION: ac.newRole({
     posts: ["create", "read", "update", "delete", "update:own", "delete:own"],
     ...adminAc.statements,
   }),

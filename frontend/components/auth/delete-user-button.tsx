@@ -1,10 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { TrashIcon } from "lucide-react";
 import { deleteUserAction } from "@/actions/delete-user.action";
+import { TrashIcon } from "lucide-react";
 import { toast } from "sonner";
+
+import { Button } from "@/components/ui/button";
 
 interface DeleteUserButtonProps {
   userId: string;
@@ -28,6 +29,7 @@ export const DeleteUserButton = ({ userId }: DeleteUserButtonProps) => {
   return (
     <Button
       size="icon"
+      type="submit"
       variant="destructive"
       className="size-7 rounded-sm"
       onClick={handleClick}
