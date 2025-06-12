@@ -62,13 +62,87 @@ export function getPostDataInclude(loggedInUserId: string) {
     },
   } satisfies Prisma.PostInclude;
 }
+export function getJobDataInclude(loggedInUserId: string) {
+  return {
+    user: {
+      select: getUserDataSelect(loggedInUserId),
+    },
+    attachments: true,
+    likes: {
+      where: {
+        userId: loggedInUserId,
+      },
+      select: {
+        userId: true,
+      },
+    },
+    saveJob: {
+      where: {
+        userId: loggedInUserId,
+      },
+      select: {
+        userId: true,
+      },
+    },
+    _count: {
+      select: {
+        likes: true,
+        comments: true,
+      },
+    },
+  } satisfies Prisma.JobInclude;
+}
+export function getResearchDataInclude(loggedInUserId: string) {
+  return {
+    user: {
+      select: getUserDataSelect(loggedInUserId),
+    },
+    attachments: true,
+    likes: {
+      where: {
+        userId: loggedInUserId,
+      },
+      select: {
+        userId: true,
+      },
+    },
+    saveResearch: {
+      where: {
+        userId: loggedInUserId,
+      },
+      select: {
+        userId: true,
+      },
+    },
+    _count: {
+      select: {
+        likes: true,
+        comments: true,
+      },
+    },
+  } satisfies Prisma.ResearchInclude;
+}
 
 export type PostData = Prisma.PostGetPayload<{
   include: ReturnType<typeof getPostDataInclude>;
 }>;
+export type JobData = Prisma.JobGetPayload<{
+  include: ReturnType<typeof getJobDataInclude>;
+}>;
+export type ResearchData = Prisma.ResearchGetPayload<{
+  include: ReturnType<typeof getResearchDataInclude>;
+}>;
 
 export interface PostsPage {
   posts: PostData[];
+  nextCursor: string | null;
+}
+export interface SaveJobsPage {
+  jobs: JobData[];
+  nextCursor: string | null;
+}
+export interface SaveResearchsPage {
+  researchs: ResearchData[];
   nextCursor: string | null;
 }
 

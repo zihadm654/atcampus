@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 
-import { getPostDataInclude, PostsPage } from "@/types/types";
+import { getJobDataInclude, SaveJobsPage } from "@/types/types";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/session";
 
@@ -16,13 +16,13 @@ export async function GET(req: NextRequest) {
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const bookmarks = await prisma.bookmark.findMany({
+    const saveJobs = await prisma.saveJob.findMany({
       where: {
         userId: user.id,
       },
       include: {
-        post: {
-          include: getPostDataInclude(user.id),
+        job: {
+          include: getJobDataInclude(user.id),
         },
       },
       orderBy: {
@@ -33,10 +33,10 @@ export async function GET(req: NextRequest) {
     });
 
     const nextCursor =
-      bookmarks.length > pageSize ? bookmarks[pageSize].id : null;
+      saveJobs.length > pageSize ? saveJobs[pageSize].id : null;
 
-    const data: PostsPage = {
-      posts: bookmarks.slice(0, pageSize).map((bookmark) => bookmark.post),
+    const data: SaveJobsPage = {
+      jobs: saveJobs.slice(0, pageSize).map((bookmark) => bookmark.job),
       nextCursor,
     };
 

@@ -11,7 +11,6 @@ export const ac = createAccessControl(statements);
 export const roles = {
   STUDENT: ac.newRole({
     posts: ["create", "read", "update:own", "delete:own"],
-    ...adminAc.statements,
   }),
   PROFESSOR: ac.newRole({
     posts: ["create", "read", "update:own", "delete:own"],
@@ -21,7 +20,6 @@ export const roles = {
     ...adminAc.statements,
   }),
   ORGANIZATION: ac.newRole({
-    posts: ["create", "read", "update", "delete", "update:own", "delete:own"],
-    ...adminAc.statements,
+    posts: ["create", "read", "update:own", "delete:own"],
   }),
 };

@@ -106,6 +106,7 @@ model User {
   application           Application[]
   research              Research[]
   saveJob               SaveJob[]
+  saveResearch          SaveResearch[]
 
   @@unique([username])
   @@map(name: "users")
@@ -128,6 +129,7 @@ model Research {
   likes               Like[]
   linkedNotifications Notification[]
   attachments         Media[]
+  saveResearch        SaveResearch[]
 
   @@map(name: "researches")
 }
@@ -163,7 +165,7 @@ model Job {
 
   user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId  String
-  skill   Skill  @relation(fields: [skillId], references: [id])
+  skill   Skill  @relation(fields: [skillId], references: [id], onDelete: Cascade)
   skillId String
 
   comments            Comment[]
@@ -282,12 +284,12 @@ model Like {
   user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   postId     String
   post       Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
-  job        Job?      @relation(fields: [jobId], references: [id])
+  job        Job?      @relation(fields: [jobId], references: [id], onDelete: Cascade)
   jobId      String?
-  research   Research? @relation(fields: [researchId], references: [id])
+  research   Research? @relation(fields: [researchId], references: [id], onDelete: Cascade)
   researchId String?
 
-  @@unique([userId, postId])
+  @@unique([userId, postId, jobId, researchId])
   @@map(name: "likes")
 }
 
@@ -355,17 +357,31 @@ model Bookmark {
 }
 
 model SaveJob {
-  id     String  @id @default(cuid()) @map("_id")
+  id     String @id @default(cuid()) @map("_id")
   userId String
-  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  job    Job?    @relation(fields: [jobId], references: [id])
-  jobId  String?
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  job    Job    @relation(fields: [jobId], references: [id])
+  jobId  String
 
   createdAt DateTime @default(now()) @map(name: "created_at")
   updatedAt DateTime @default(now()) @map(name: "updated_at")
 
   @@unique([userId, jobId])
   @@map(name: "save_jobs")
+}
+
+model SaveResearch {
+  id         String   @id @default(cuid()) @map("_id")
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  researchId String
+  research   Research @relation(fields: [researchId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @default(now()) @map(name: "updated_at")
+
+  @@unique([userId, researchId])
+  @@map(name: "save_researches")
 }
 
 model Notification {
