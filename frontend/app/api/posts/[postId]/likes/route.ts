@@ -75,9 +75,11 @@ export async function POST(
     await prisma.$transaction([
       prisma.like.upsert({
         where: {
-          userId_postId: {
+          userId_postId_jobId_researchId: {
             userId: loggedInUser.id,
             postId,
+            jobId: "",
+            researchId: "",
           },
         },
         create: {
