@@ -4,7 +4,7 @@ import { menubar } from "@/config/dashboard";
 import { getCurrentUser } from "@/lib/session";
 import { DashboardSidebar } from "@/components/layout/dashboard-sidebar";
 // import { NavMobile } from "@/components/layout/mobile-nav";
-import { NavBar } from "@/components/layout/navbar";
+import { NavBarServer } from "@/components/layout/navbar-server";
 import { SiteFooter } from "@/components/layout/site-footer";
 
 interface MarketingLayoutProps {
@@ -25,8 +25,8 @@ export default async function MarketingLayout({
   }));
   return (
     <div className="flex min-h-screen flex-col">
-      <NavBar scroll={true} />
-      <div className="relative mx-auto flex w-full max-w-7xl grow gap-5 p-5">
+      <NavBarServer scroll={true} />
+      <div className="relative mx-auto flex w-full max-w-7xl grow gap-5 p-5 max-md:gap-2 max-md:p-2">
         <DashboardSidebar links={filteredLinks} />
         {children}
       </div>

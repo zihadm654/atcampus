@@ -67,9 +67,9 @@ export default function Post({ post }: PostProps) {
       <Linkify>
         <div className="break-words whitespace-pre-line">{post.content}</div>
       </Linkify>
-      {post?.attachments && post?.attachments.length > 0 ? (
-        <MediaPreviews attachments={post?.attachments} />
-      ) : null}
+      {!!post.attachments.length && (
+        <MediaPreviews attachments={post.attachments} />
+      )}
       <hr className="text-muted-foreground" />
       <div className="flex justify-between gap-5">
         <div className="flex items-center gap-5">
@@ -111,7 +111,9 @@ function MediaPreviews({ attachments }: MediaPreviewsProps) {
         attachments.length > 1 && "sm:grid sm:grid-cols-2",
       )}
     >
-      {attachments?.map((m) => <MediaPreview key={m.id} media={m} />)}
+      {attachments.map((m) => (
+        <MediaPreview key={m.id} media={m} />
+      ))}
     </div>
   );
 }
@@ -124,11 +126,11 @@ function MediaPreview({ media }: MediaPreviewProps) {
   console.log(media.url, "url");
   if (media.type === "IMAGE") {
     return (
-      <img
-        src={media?.url}
+      <BlurImage
+        src={media.url}
         alt="Attachment"
-        // width={500}
-        // height={500}
+        width={500}
+        height={500}
         className="mx-auto size-fit max-h-[30rem] rounded-2xl"
       />
     );

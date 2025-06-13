@@ -1,18 +1,16 @@
 "use client";
 
-import { Fragment, Suspense, useContext } from "react";
+import { Fragment } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 import { marketingConfig } from "@/config/marketing";
-import { siteConfig } from "@/config/site";
 import { useSession } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
 import { useScroll } from "@/hooks/use-scroll";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ModalContext } from "@/components/modals/providers";
 import { Icons } from "@/components/shared/icons";
 import MaxWidthWrapper from "@/components/shared/max-width-wrapper";
 
@@ -21,23 +19,20 @@ import NotificationsButton from "../feed/NotificationsButton";
 import SearchField from "../feed/SearchField";
 import { UserAccountNav } from "./user-account-nav";
 
-// import { Skeleton } from "../ui/skeleton";
-
 interface NavBarProps {
   scroll?: boolean;
   large?: boolean;
+  initialNotificationCount: number;
+  initialMessageCount: number;
 }
 
-export function NavBar({ scroll = false }: NavBarProps) {
+export function NavBar({
+  scroll = false,
+  initialNotificationCount,
+  initialMessageCount,
+}: NavBarProps) {
   const scrolled = useScroll(75);
   const { data: session } = useSession();
-  // const { setShowSignInModal } = useContext(ModalContext);
-
-  // const selectedLayout = useSelectedLayoutSegment();
-
-  // const configMap = {
-  //   // docs: docsConfig.mainNav,
-  // };
 
   const links = marketingConfig.mainNav;
   const path = usePathname();
@@ -49,7 +44,7 @@ export function NavBar({ scroll = false }: NavBarProps) {
       }`}
     >
       <MaxWidthWrapper
-        className="grid grid-cols-3 gap-4 space-x-4 py-2 max-md:grid-cols-2"
+        className="grid grid-cols-3 gap-4 space-x-4 gap-y-0 pt-2 max-md:grid-cols-2 max-md:gap-2"
         // large={documentation}
       >
         <div className="flex items-center gap-2 md:gap-4">
@@ -57,15 +52,16 @@ export function NavBar({ scroll = false }: NavBarProps) {
             <Image
               src="/_static/logo1.png"
               alt="logo"
-              height={30}
-              width={30}
+              height={50}
+              width={50}
+              priority
               className=""
             />
           </Link>
           <SearchField />
         </div>
         {links && links.length > 0 ? (
-          <nav className="flex items-center justify-start gap-2 space-x-4 max-md:order-3 max-md:col-span-2 max-md:justify-around">
+          <nav className="flex items-center justify-start gap-2 space-x-10 max-md:order-3 max-md:col-span-2 max-md:justify-around">
             {links?.map((item) => {
               const Icon = Icons[item.icon || "arrowRight"];
               return (
@@ -95,8 +91,12 @@ export function NavBar({ scroll = false }: NavBarProps) {
           {/* right header for docs */}{" "}
           {session?.user ? (
             <>
-              <NotificationsButton initialState={{ unreadCount: 0 }} />
-              <MessagesButton initialState={{ unreadCount: 0 }} />
+              <NotificationsButton
+                initialState={{ unreadCount: initialNotificationCount }}
+              />
+              <MessagesButton
+                initialState={{ unreadCount: initialMessageCount }}
+              />
               <UserAccountNav />
             </>
           ) : !session ? (

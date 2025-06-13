@@ -1,7 +1,5 @@
 import type { NextConfig } from "next";
 
-import { env } from "./env.mjs";
-
 const nextConfig: NextConfig = {
   /* config options here */
   experimental: {
@@ -27,8 +25,19 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: "https",
-        hostname: `${env.NEXT_PUBLIC_UPLOADTHING_APP_ID}.ufs.sh`,
-        pathname: `/f/*`,
+        hostname: "uploadthing.com",
+        pathname: "/f/**",
+      },
+      {
+        protocol: "https",
+        hostname: "utfs.io",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        // This pattern will match any subdomain of ufs.sh
+        hostname: "*.ufs.sh",
+        pathname: "/f/**",
       },
     ],
   },

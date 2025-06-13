@@ -155,14 +155,14 @@ async function UserProfile({ user, loggedInUserId }: UserProfileProps) {
   };
 
   return (
-    <div className="bg-card h-fit w-full space-y-5 rounded-2xl p-5 shadow-sm">
+    <div className="bg-card h-fit w-full space-y-2 rounded-2xl p-5 shadow-sm">
       <UserAvatar
         avatarUrl={user.image}
         size={250}
         className="mx-auto size-full max-h-60 max-w-60 rounded-full"
       />
-      <div className="flex flex-wrap gap-3 sm:flex-nowrap">
-        <div className="me-auto space-y-3">
+      <div className="flex flex-wrap gap-2 sm:flex-nowrap">
+        <div className="me-auto space-y-2">
           <div>
             <h1 className="text-3xl font-bold">{user.name}</h1>
             <div className="text-muted-foreground">@{user.username}</div>
@@ -186,11 +186,37 @@ async function UserProfile({ user, loggedInUserId }: UserProfileProps) {
       </div>
       {user.bio && (
         <>
-          <hr />
           <Linkify>
-            <div className="overflow-hidden break-words whitespace-pre-line">
+            <p className="overflow-hidden break-words whitespace-pre-line">
               {user.bio}
-            </div>
+            </p>
+          </Linkify>
+        </>
+      )}
+      {user.institution && (
+        <>
+          <Linkify>
+            <p className="overflow-hidden break-words whitespace-pre-line">
+              Institution: {user.institution}
+            </p>
+          </Linkify>
+        </>
+      )}
+      {user.instituteId && (
+        <>
+          <Linkify>
+            <p className="overflow-hidden break-words whitespace-pre-line">
+              Institute Id: {user.instituteId}
+            </p>
+          </Linkify>
+        </>
+      )}
+      {user.currentSeamster && (
+        <>
+          <Linkify>
+            <p className="overflow-hidden break-words whitespace-pre-line">
+              Seamester: {user.currentSeamster}th
+            </p>
           </Linkify>
         </>
       )}

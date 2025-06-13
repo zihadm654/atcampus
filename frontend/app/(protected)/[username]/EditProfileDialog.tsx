@@ -49,6 +49,9 @@ export default function EditProfileDialog({
     defaultValues: {
       name: user.name,
       bio: user.bio || "",
+      institution: user.institution || "",
+      instituteId: user.instituteId || "",
+      currentSeamster: user.currentSeamster || 0,
     },
   });
 
@@ -117,6 +120,51 @@ export default function EditProfileDialog({
                     <Textarea
                       placeholder="Tell us a little bit about yourself"
                       className="resize-none"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="institution"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Institution</FormLabel>
+                  <FormControl>
+                    <Input placeholder="institution name" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="instituteId"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Institute Id</FormLabel>
+                  <FormControl>
+                    <Input placeholder="institution id" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="currentSeamster"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Current Seamester</FormLabel>
+                  <FormControl>
+                    <Input
+                      min={0}
+                      max={100}
+                      type="number"
+                      placeholder="current seamester"
                       {...field}
                     />
                   </FormControl>

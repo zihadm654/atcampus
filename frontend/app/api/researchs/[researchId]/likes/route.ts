@@ -16,33 +16,33 @@ export async function GET(
 
     const research = await prisma.research.findUnique({
       where: { id: researchId },
-      select: {
-        likes: {
-          where: {
-            userId: loggedInUser.id,
-          },
-          select: {
-            userId: true,
-          },
-        },
-        _count: {
-          select: {
-            likes: true,
-          },
-        },
-      },
+      // select: {
+      //   likes: {
+      //     where: {
+      //       userId: loggedInUser.id,
+      //     },
+      //     select: {
+      //       userId: true,
+      //     },
+      //   },
+      //   _count: {
+      //     select: {
+      //       likes: true,
+      //     },
+      //   },
+      // },
     });
 
     if (!research) {
       return Response.json({ error: "research not found" }, { status: 404 });
     }
 
-    const data: LikeInfo = {
-      likes: research._count.likes,
-      isLikedByUser: !!research.likes.length,
-    };
+    // const data: LikeInfo = {
+    //   likes: research._count.likes,
+    //   isLikedByUser: !!research.likes.length,
+    // };
 
-    return Response.json(data);
+    return Response.json("hello");
   } catch (error) {
     console.error(error);
     return Response.json({ error: "Internal server error" }, { status: 500 });
@@ -72,37 +72,33 @@ export async function POST(
       return Response.json({ error: "research not found" }, { status: 404 });
     }
 
-    await prisma.$transaction([
-      prisma.like.upsert({
-        where: {
-          userId_postId_jobId_researchId: {
-            userId: loggedInUser.id,
-            researchId,
-            jobId: "",
-            postId: "",
-          },
-        },
-        create: {
-          userId: loggedInUser.id,
-          researchId,
-          jobId: "",
-          postId: "",
-        },
-        update: {},
-      }),
-      ...(loggedInUser.id !== research.userId
-        ? [
-            prisma.notification.create({
-              data: {
-                issuerId: loggedInUser.id,
-                recipientId: research.userId,
-                researchId,
-                type: "LIKE",
-              },
-            }),
-          ]
-        : []),
-    ]);
+    // await prisma.$transaction([
+    //   prisma.like.upsert({
+    //     where: {
+    //       userId_researchId: {
+    //         userId: loggedInUser.id,
+    //         researchId,
+    //       },
+    //     },
+    //     create: {
+    //       userId: loggedInUser.id,
+    //       researchId,
+    //     },
+    //     update: {},
+    //   }),
+    //   ...(loggedInUser.id !== research.userId
+    //     ? [
+    //         prisma.notification.create({
+    //           data: {
+    //             issuerId: loggedInUser.id,
+    //             recipientId: research.userId,
+    //             researchId,
+    //             type: "LIKE",
+    //           },
+    //         }),
+    //       ]
+    //     : []),
+    // ]);
 
     return new Response();
   } catch (error) {
@@ -138,7 +134,7 @@ export async function DELETE(
       prisma.like.deleteMany({
         where: {
           userId: loggedInUser.id,
-          researchId,
+          // researchId,
         },
       }),
       prisma.notification.deleteMany({

@@ -7,6 +7,9 @@ export function getUserDataSelect(loggedInUserId: string) {
     username: true,
     name: true,
     bio: true,
+    institution: true,
+    instituteId: true,
+    currentSeamster: true,
     image: true,
     email: true,
     displayUsername: true,
@@ -68,14 +71,14 @@ export function getJobDataInclude(loggedInUserId: string) {
       select: getUserDataSelect(loggedInUserId),
     },
     attachments: true,
-    likes: {
-      where: {
-        userId: loggedInUserId,
-      },
-      select: {
-        userId: true,
-      },
-    },
+    // likes: {
+    //   where: {
+    //     userId: loggedInUserId,
+    //   },
+    //   select: {
+    //     userId: true,
+    //   },
+    // },
     saveJob: {
       where: {
         userId: loggedInUserId,
@@ -86,7 +89,7 @@ export function getJobDataInclude(loggedInUserId: string) {
     },
     _count: {
       select: {
-        likes: true,
+        // likes: true,
         comments: true,
       },
     },
@@ -98,14 +101,14 @@ export function getResearchDataInclude(loggedInUserId: string) {
       select: getUserDataSelect(loggedInUserId),
     },
     attachments: true,
-    likes: {
-      where: {
-        userId: loggedInUserId,
-      },
-      select: {
-        userId: true,
-      },
-    },
+    // likes: {
+    //   where: {
+    //     userId: loggedInUserId,
+    //   },
+    //   select: {
+    //     userId: true,
+    //   },
+    // },
     saveResearch: {
       where: {
         userId: loggedInUserId,
@@ -116,7 +119,7 @@ export function getResearchDataInclude(loggedInUserId: string) {
     },
     _count: {
       select: {
-        likes: true,
+        // likes: true,
         comments: true,
       },
     },

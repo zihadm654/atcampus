@@ -93,13 +93,13 @@ model User {
   posts                 Post[]
   comments              Comment[]
   likes                 Like[]
-  followers             Follow[]       @relation("UserFollowers")
-  followings            Follow[]       @relation("UserFollowings")
-  block                 Block[]        @relation("BlocksSent")
-  blockBy               Block[]        @relation("BlocksReceived")
+  followers             Follow[]           @relation("UserFollowers")
+  followings            Follow[]           @relation("UserFollowings")
+  block                 Block[]            @relation("BlocksSent")
+  blockBy               Block[]            @relation("BlocksReceived")
   TwoFactor             TwoFactor[]
-  receivedNotifications Notification[] @relation("Recipient")
-  issuedNotifications   Notification[] @relation("Issuer")
+  receivedNotifications Notification[]     @relation("Recipient")
+  issuedNotifications   Notification[]     @relation("Issuer")
   bookmarks             Bookmark[]
   job                   Job[]
   company               Company[]
@@ -107,6 +107,15 @@ model User {
   research              Research[]
   saveJob               SaveJob[]
   saveResearch          SaveResearch[]
+  education             Education[]
+  experience            Experience[]
+  courses               Course[]
+  enrollments           Enrollment[]
+  userSkills            UserSkill[]
+  skillEndorsements     SkillEndorsement[]
+  profileViewsBy        ProfileView[]      @relation("ViewerProfile")
+  profileViews          ProfileView[]      @relation("ViewedProfile")
+  contentViews          ContentView[]
 
   @@unique([username])
   @@map(name: "users")
@@ -126,10 +135,10 @@ model Research {
   userId String
 
   comments            Comment[]
-  likes               Like[]
   linkedNotifications Notification[]
   attachments         Media[]
   saveResearch        SaveResearch[]
+  views               ContentView[]
 
   @@map(name: "researches")
 }
@@ -141,7 +150,9 @@ model Skill {
 
   createdAt DateTime @default(now()) @map(name: "created_at")
   updatedAt DateTime @default(now()) @map(name: "updated_at")
-  Job       Job[]
+
+  jobs       Job[]
+  userSkills UserSkill[]
 
   @@map(name: "skills")
 }
@@ -159,9 +170,8 @@ model Job {
   type            String
   experienceLevel String
   duration        Int
-
-  createdAt DateTime @default(now()) @map(name: "created_at")
-  updatedAt DateTime @default(now()) @map(name: "updated_at")
+  createdAt       DateTime @default(now()) @map(name: "created_at")
+  updatedAt       DateTime @default(now()) @map(name: "updated_at")
 
   user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId  String
@@ -169,12 +179,12 @@ model Job {
   skillId String
 
   comments            Comment[]
-  likes               Like[]
   linkedNotifications Notification[]
   attachments         Media[]
   company             Company[]
   application         Application[]
   saveJob             SaveJob[]
+  views               ContentView[]
 
   @@map(name: "jobs")
 }
@@ -230,6 +240,7 @@ model Post {
   linkedNotifications Notification[]
   attachments         Media[]
   bookmarks           Bookmark[]
+  views               ContentView[]
 
   @@map(name: "posts")
 }
@@ -279,17 +290,16 @@ model Comment {
 }
 
 model Like {
-  id         String    @id @default(cuid()) @map("_id")
-  userId     String
-  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  postId     String
-  post       Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
-  job        Job?      @relation(fields: [jobId], references: [id], onDelete: Cascade)
-  jobId      String?
-  research   Research? @relation(fields: [researchId], references: [id], onDelete: Cascade)
-  researchId String?
+  id     String @id @default(cuid()) @map("_id")
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  postId String
+  post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
 
-  @@unique([userId, postId, jobId, researchId])
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
+
+  @@unique([userId, postId], map: "userId_postId")
   @@map(name: "likes")
 }
 
@@ -409,4 +419,186 @@ enum NotificationType {
   LIKE
   FOLLOW
   COMMENT
+}
+
+model Education {
+  id String @id @default(cuid()) @map("_id")
+
+  institution String
+  degree      String
+  field       String
+  startDate   DateTime
+  endDate     DateTime?
+  grade       String?
+  description String?
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @default(now()) @map(name: "updated_at")
+
+  @@map(name: "education")
+}
+
+model Experience {
+  id String @id @default(cuid()) @map("_id")
+
+  title       String
+  company     String
+  location    String?
+  type        String // Full-time, Part-time, Internship, etc.
+  startDate   DateTime
+  endDate     DateTime?
+  current     Boolean   @default(false)
+  description String?
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @default(now()) @map(name: "updated_at")
+
+  @@map(name: "experiences")
+}
+
+model Course {
+  id String @id @default(cuid()) @map("_id")
+
+  title       String
+  description String
+  code        String?
+  credits     Int?
+  level       String? // Undergraduate, Graduate, etc.
+  department  String?
+  duration    Int? // in weeks
+  status      String  @default("draft") // draft, published, archived
+
+  professorId String
+  professor   User   @relation(fields: [professorId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @default(now()) @map(name: "updated_at")
+
+  enrollments   Enrollment[]
+  announcements CourseAnnouncement[]
+  materials     CourseMaterial[]
+
+  @@map(name: "courses")
+}
+
+model Enrollment {
+  id String @id @default(cuid()) @map("_id")
+
+  status   String  @default("enrolled") // enrolled, completed, dropped
+  progress Float   @default(0)
+  grade    String?
+
+  courseId  String
+  course    Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  studentId String
+  student   User   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @default(now()) @map(name: "updated_at")
+
+  @@unique([courseId, studentId])
+  @@map(name: "enrollments")
+}
+
+model CourseAnnouncement {
+  id String @id @default(cuid()) @map("_id")
+
+  title    String
+  content  String
+  priority String? // normal, important, urgent
+
+  courseId String
+  course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @default(now()) @map(name: "updated_at")
+
+  @@map(name: "course_announcements")
+}
+
+model CourseMaterial {
+  id String @id @default(cuid()) @map("_id")
+
+  title   String
+  type    String // document, video, link, etc.
+  content String?
+  fileUrl String?
+  order   Int     @default(0)
+
+  courseId String
+  course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @default(now()) @map(name: "updated_at")
+
+  @@map(name: "course_materials")
+}
+
+model UserSkill {
+  id String @id @default(cuid()) @map("_id")
+
+  skillId           String
+  skill             Skill  @relation(fields: [skillId], references: [id], onDelete: Cascade)
+  userId            String
+  user              User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  level             Int    @default(1) // 1-5 scale
+  yearsOfExperience Int?
+
+  endorsements SkillEndorsement[]
+
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @default(now()) @map(name: "updated_at")
+
+  @@unique([userId, skillId])
+  @@map(name: "user_skills")
+}
+
+model SkillEndorsement {
+  id String @id @default(cuid()) @map("_id")
+
+  userSkillId String
+  userSkill   UserSkill @relation(fields: [userSkillId], references: [id], onDelete: Cascade)
+  endorserId  String
+  endorser    User      @relation(fields: [endorserId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map(name: "created_at")
+
+  @@unique([userSkillId, endorserId])
+  @@map(name: "skill_endorsements")
+}
+
+model ProfileView {
+  id String @id @default(cuid()) @map("_id")
+
+  viewerId  String
+  viewer    User   @relation("ViewerProfile", fields: [viewerId], references: [id], onDelete: Cascade)
+  profileId String
+  profile   User   @relation("ViewedProfile", fields: [profileId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map(name: "created_at")
+
+  @@map(name: "profile_views")
+}
+
+model ContentView {
+  id String @id @default(cuid()) @map("_id")
+
+  viewerId   String
+  viewer     User      @relation(fields: [viewerId], references: [id], onDelete: Cascade)
+  postId     String?
+  post       Post?     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  researchId String?
+  research   Research? @relation(fields: [researchId], references: [id], onDelete: Cascade)
+  jobId      String?
+  job        Job?      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map(name: "created_at")
+
+  @@map(name: "content_views")
 }
