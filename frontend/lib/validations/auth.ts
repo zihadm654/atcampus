@@ -1,5 +1,7 @@
 import * as z from "zod";
 
+import { VALID_DOMAINS } from "../utils";
+
 export const userAuthSchema = z.object({
   email: z.string().email(),
 });
@@ -8,33 +10,22 @@ export enum UserRole {
   STUDENT = "STUDENT",
   ORGANIZATION = "ORGANIZATION",
   INSTITUTION = "INSTITUTION",
+  PROFESSOR = "PROFESSOR",
 }
 
-export const registerSchema = z
-  .object({
-    role: z.nativeEnum(UserRole), // Make role optional initially
-    name: z.string().trim().min(3, "name is required").max(255),
-    email: z.string().trim().email().min(3, "email is required"),
-    password: z.string().trim().min(8, "password is required"),
-    confirmPassword: z.string().trim().min(8),
-  })
-  .refine(
-    (data) => {
-      // If password is provided, confirmPassword must also be provided
-      if (data.password && !data.confirmPassword) {
-        return false;
-      }
-      return true;
-    },
-    {
-      message: "Confirm password is required",
-      path: ["confirmPassword"],
-    },
-  )
-  .refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords do not match",
-    path: ["confirmPassword"],
-  });
+export const registerSchema = z.object({
+  role: z.nativeEnum(UserRole), // Make role optional initially
+  instituteId: z.coerce.string().min(3, "instituteId is required"),
+  institution: z.string().trim().min(3, "institution is required"),
+  name: z.string().trim().min(3, "username is required").max(255),
+  email: z
+    .string()
+    .trim()
+    .email()
+    .min(3, "email is required")
+    .refine((email) => VALID_DOMAINS().includes(email.split("@")[1])),
+  password: z.string().trim().min(8, "password is required"),
+});
 
 export type TRegister = z.infer<typeof registerSchema>;
 export const loginSchema = z.object({

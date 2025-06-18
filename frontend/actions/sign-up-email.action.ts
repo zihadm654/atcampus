@@ -22,7 +22,7 @@ export async function signUpEmailAction(data: TRegister) {
     return { error: result.error.format() };
   }
 
-  const { name, email, password } = result.data;
+  const { name, email, password, institution, role, instituteId } = result.data;
   const generatedUsername = generateUsername(name);
 
   try {
@@ -30,9 +30,12 @@ export async function signUpEmailAction(data: TRegister) {
     const response = await auth.api.signUpEmail({
       body: {
         name,
+        username: generatedUsername,
         email,
         password,
-        username: generatedUsername,
+        role,
+        institution,
+        instituteId,
       },
     });
 
@@ -40,8 +43,7 @@ export async function signUpEmailAction(data: TRegister) {
     if (response?.user.id) {
       await streamServerClient.upsertUser({
         id: response.user.id,
-        username: generatedUsername,
-        name,
+        name: response.user.name,
       });
     }
 

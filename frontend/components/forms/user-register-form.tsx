@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { signUpEmailAction } from "@/actions/sign-up-email.action";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Briefcase, GraduationCap, HomeIcon } from "lucide-react";
-import { Controller, useForm } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
 import { signIn } from "@/lib/auth-client";
@@ -23,12 +23,23 @@ import {
 } from "@/components/ui/select";
 import { Icons } from "@/components/shared/icons";
 
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "../ui/form";
+
 interface UserRegisterFormProps {
   className?: string;
 }
 
 const roleIcons: Record<UserRole, React.ElementType> = {
   STUDENT: GraduationCap,
+  PROFESSOR: GraduationCap,
   ORGANIZATION: Briefcase,
   INSTITUTION: HomeIcon, // Or UsersIcon if HomeIcon is not suitable
 };
@@ -37,23 +48,16 @@ interface UserAuthFormProps extends React.HTMLAttributes<HTMLDivElement> {}
 
 export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
   const [currentStep, setCurrentStep] = React.useState(1);
-  const {
-    control, // Added control for Select component
-    register,
-    reset,
-    handleSubmit,
-    formState: { errors, isValid }, // Added isValid for step validation
-    trigger, // Added trigger to manually trigger validation
-    watch, // Added watch to observe form values
-  } = useForm<TRegister>({
+  const form = useForm<TRegister>({
     resolver: zodResolver(registerSchema),
     mode: "onChange", // Validate on change for better UX
     defaultValues: {
       email: "",
       password: "",
-      confirmPassword: "",
       name: "",
-      role: undefined, // Default to undefined or a specific role if preferred
+      role: UserRole.STUDENT, // Default to undefined or a specific role if preferred
+      instituteId: undefined,
+      institution: "",
     },
   });
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
@@ -61,11 +65,9 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
 
   const router = useRouter();
 
-  const role = watch("role");
-
+  const role = form.watch("role");
   async function onSubmit(data: TRegister) {
     setIsLoading(true);
-
     try {
       const result = await signUpEmailAction(data);
 
@@ -76,7 +78,7 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
           toast.error("Please check the form for errors");
         }
       } else if (result.success) {
-        reset();
+        form.reset();
         router.push("/register/success");
         toast.success(
           result.message || "Verification link has been sent to your mail",
@@ -97,7 +99,7 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
     }
     // Add more steps and fields to validate as needed
 
-    const isValidStep = await trigger(fieldsToValidate);
+    const isValidStep = await form.trigger(fieldsToValidate);
     if (isValidStep) {
       setCurrentStep((prev) => prev + 1);
     }
@@ -106,149 +108,177 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
   const prevStep = () => {
     setCurrentStep((prev) => prev - 1);
   };
-
+  React.useEffect(() => {
+    const subscription = form.watch((value, { name, type }) =>
+      console.log(value, name, type),
+    );
+    return () => subscription.unsubscribe();
+  }, [form]);
   return (
     <div className={cn("grid gap-6", className)} {...props}>
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <div className="grid gap-4">
-          {currentStep === 1 && (
-            <div className="grid gap-1 place-self-center">
-              <Label htmlFor="role">Choose Your Role</Label>
-              <Controller
-                name="role"
-                control={control}
-                rules={{ required: "Role is required" }} // Add required rule
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)}>
+          <div className="grid gap-4">
+            {currentStep === 1 && (
+              <div className="grid gap-1 place-self-center">
+                <FormField
+                  name="role"
+                  control={form.control}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel htmlFor="role">Choose Your Role</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                        disabled={isLoading || isGoogleLoading}
+                      >
+                        <FormControl>
+                          <SelectTrigger id="role">
+                            <SelectValue placeholder="Select your role" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {Object.values(UserRole).map((roleValue) => {
+                            const IconComponent = roleIcons[roleValue];
+                            return (
+                              <SelectItem key={roleValue} value={roleValue}>
+                                <div className="flex items-center">
+                                  {IconComponent && (
+                                    <IconComponent className="mr-2 h-4 w-4" />
+                                  )}
+                                  {roleValue.charAt(0).toUpperCase() +
+                                    roleValue.slice(1).toLowerCase()}
+                                </div>
+                              </SelectItem>
+                            );
+                          })}
+                        </SelectContent>
+                      </Select>
+                      <FormDescription>Select your role</FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            )}
+          </div>
+          {currentStep === 2 && (
+            <div className="grid grid-cols-1 gap-1 pb-1">
+              <FormField
+                control={form.control}
+                name="name"
                 render={({ field }) => (
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                    disabled={isLoading || isGoogleLoading}
-                  >
-                    <SelectTrigger id="role">
-                      <SelectValue placeholder="Select your role" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {Object.values(UserRole).map((roleValue) => {
-                        const IconComponent = roleIcons[roleValue];
-                        return (
-                          <SelectItem key={roleValue} value={roleValue}>
-                            <div className="flex items-center">
-                              {IconComponent && (
-                                <IconComponent className="mr-2 h-4 w-4" />
-                              )}
-                              {roleValue.charAt(0).toUpperCase() +
-                                roleValue.slice(1).toLowerCase()}
-                            </div>
-                          </SelectItem>
-                        );
-                      })}
-                    </SelectContent>
-                  </Select>
+                  <FormItem className="grid gap-1">
+                    <FormLabel htmlFor="name">username</FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        id="name"
+                        placeholder="john"
+                        autoCapitalize="none"
+                        autoComplete="name"
+                        autoCorrect="off"
+                        disabled={isLoading || isGoogleLoading}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
                 )}
               />
-              {errors?.role && (
-                <p className="px-1 text-xs text-red-600">
-                  {errors.role.message}
-                </p>
-              )}
+              <FormField
+                control={form.control}
+                name="instituteId"
+                render={({ field }) => (
+                  <FormItem className="grid gap-1">
+                    <FormLabel htmlFor="instituteId">InstituteId</FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        id="instituteId"
+                        placeholder="0910203"
+                        type="number"
+                        autoCapitalize="none"
+                        autoComplete="instituteId"
+                        autoCorrect="off"
+                        disabled={isLoading || isGoogleLoading}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="institution"
+                render={({ field }) => (
+                  <FormItem className="grid gap-1">
+                    <FormLabel htmlFor="institution">Institution</FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        id="institution"
+                        placeholder="college/university name"
+                        autoCapitalize="none"
+                        autoComplete="institution"
+                        autoCorrect="off"
+                        disabled={isLoading || isGoogleLoading}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem className="grid gap-1">
+                    <FormLabel htmlFor="email">Email</FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        id="email"
+                        placeholder="example@example.edu"
+                        autoCapitalize="none"
+                        autoComplete="email"
+                        autoCorrect="off"
+                        disabled={isLoading || isGoogleLoading}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem className="grid gap-1">
+                    <FormLabel htmlFor="password">Password</FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        id="password"
+                        placeholder="********"
+                        type="password"
+                        autoCapitalize="none"
+                        autoComplete="none"
+                        autoCorrect="off"
+                        disabled={isLoading || isGoogleLoading}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </div>
           )}
-
-          {currentStep === 2 && (
-            <>
-              <div className="grid gap-1">
-                <Label className="sr-only" htmlFor="name">
-                  Name
-                </Label>
-                <Input
-                  id="name"
-                  placeholder="John Doe"
-                  type="text"
-                  autoCapitalize="none"
-                  autoComplete="name"
-                  autoCorrect="off"
-                  disabled={isLoading || isGoogleLoading}
-                  {...register("name", { required: "Name is required" })}
-                />
-                {errors?.name && (
-                  <p className="px-1 text-xs text-red-600">
-                    {errors.name.message}
-                  </p>
-                )}
-              </div>
-              <div className="grid gap-1">
-                <Label className="sr-only" htmlFor="email">
-                  Email
-                </Label>
-                <Input
-                  id="email"
-                  placeholder="example@gamil.com"
-                  type="email"
-                  autoCapitalize="none"
-                  autoComplete="email"
-                  autoCorrect="off"
-                  disabled={isLoading || isGoogleLoading}
-                  {...register("email", { required: "Email is required" })}
-                />
-                {errors?.email && (
-                  <p className="px-1 text-xs text-red-600">
-                    {errors.email.message}
-                  </p>
-                )}
-              </div>
-              <div className="grid gap-1">
-                <Label className="sr-only" htmlFor="password">
-                  Password
-                </Label>
-                <Input
-                  id="password"
-                  placeholder="********"
-                  type="password"
-                  autoCapitalize="none"
-                  autoComplete="new-password" // Use new-password for password managers
-                  autoCorrect="off"
-                  disabled={isLoading || isGoogleLoading}
-                  {...register("password", {
-                    required: "Password is required",
-                  })}
-                />
-                {errors?.password && (
-                  <p className="px-1 text-xs text-red-600">
-                    {errors?.password?.message}
-                  </p>
-                )}
-              </div>
-              <div className="grid gap-1">
-                <Label className="sr-only" htmlFor="confirm-password">
-                  Confirm Password
-                </Label>
-                <Input
-                  id="confirm-password"
-                  placeholder="********"
-                  type="password"
-                  autoCapitalize="none"
-                  autoComplete="new-password"
-                  autoCorrect="off"
-                  disabled={isLoading || isGoogleLoading}
-                  {...register("confirmPassword", {
-                    required: "Confirm password is required",
-                  })}
-                />
-                {errors?.confirmPassword && (
-                  <p className="px-1 text-xs text-red-600">
-                    {errors?.confirmPassword?.message}
-                  </p>
-                )}
-              </div>
-            </>
-          )}
-
           <div className="flex items-center justify-between gap-1">
             {currentStep > 1 && (
               <Button
                 type="button"
                 onClick={prevStep}
-                className={cn(buttonVariants({ variant: "outline" }))}
+                className={cn(buttonVariants({ variant: "ghost" }))}
                 disabled={isLoading}
               >
                 Previous
@@ -258,7 +288,7 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
               <Button
                 type="button"
                 onClick={nextStep}
-                className={cn(buttonVariants())}
+                className={cn(buttonVariants({ variant: "ghost" }))}
                 disabled={isLoading || (currentStep === 1 && !role)}
               >
                 Next
@@ -268,7 +298,7 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
               <Button
                 type="submit"
                 className={cn(buttonVariants())}
-                disabled={isLoading || !isValid} // Disable if form is not valid
+                // disabled={isLoading || !isValid} // Disable if form is not valid
               >
                 {isLoading && (
                   <Icons.spinner className="mr-2 size-4 animate-spin" />
@@ -277,8 +307,8 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
               </Button>
             )}
           </div>
-        </div>
-      </form>
+        </form>
+      </Form>
       <div className="relative">
         <div className="absolute inset-0 flex items-center">
           <span className="w-full border-t" />

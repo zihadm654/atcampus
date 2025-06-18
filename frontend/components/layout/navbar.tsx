@@ -61,7 +61,7 @@ export function NavBar({
           <SearchField />
         </div>
         {links && links.length > 0 ? (
-          <nav className="flex items-center justify-start gap-2 space-x-10 max-md:order-3 max-md:col-span-2 max-md:justify-around">
+          <nav className="flex items-center justify-start gap-2 space-x-6 max-md:order-3 max-md:col-span-2 max-md:justify-around">
             {links?.map((item) => {
               const Icon = Icons[item.icon || "arrowRight"];
               return (
@@ -80,7 +80,7 @@ export function NavBar({
                     )}
                   >
                     <Icon className="size-6.5" />
-                    {/* {item.title} */}
+                    <span className="hidden lg:block">{item.title}</span>
                   </Link>
                 </Fragment>
               );

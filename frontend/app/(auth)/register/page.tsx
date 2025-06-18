@@ -14,7 +14,7 @@ export const metadata = {
 
 export default function RegisterPage() {
   return (
-    <div className="container grid h-screen w-screen flex-col items-center justify-center lg:max-w-none lg:grid-cols-2 lg:px-0">
+    <div className="container h-screen w-screen flex-col items-center justify-center lg:px-0">
       <Link
         href="/login"
         className={cn(
@@ -25,53 +25,42 @@ export default function RegisterPage() {
         Login
         <Icons.chevronRight className="mr-2 h-4 w-4" />
       </Link>
-      <div className="bg-muted hidden h-full place-items-center lg:grid">
-        <BlurImage
-          src="/_static/logo1.png"
-          height={100}
-          width={100}
-          alt="logo"
-          className="place-items-center justify-center"
-        />
-      </div>
-      <div className="lg:p-8">
-        <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
-          <div className="flex flex-col items-center space-y-2 text-center">
-            <BlurImage
-              src="/_static/logo1.png"
-              height={40}
-              width={40}
-              alt="logo"
-              className="place-items-center justify-self-center"
-            />
-            <h1 className="text-2xl font-semibold tracking-tight">
-              Create an account
-            </h1>
-            <p className="text-muted-foreground text-sm">
-              Enter your email below to create your account
-            </p>
-          </div>
-          <Suspense>
-            <UserAuthForm />
-          </Suspense>
-          <p className="text-muted-foreground px-8 text-center text-sm">
-            By clicking continue, you agree to our{" "}
-            <Link
-              href="/terms"
-              className="hover:text-brand underline underline-offset-4"
-            >
-              Terms of Service
-            </Link>{" "}
-            and{" "}
-            <Link
-              href="/privacy"
-              className="hover:text-brand underline underline-offset-4"
-            >
-              Privacy Policy
-            </Link>
-            .
+      <div className="mx-auto flex h-full w-full flex-col justify-center space-y-6 sm:w-[350px]">
+        <div className="flex flex-col items-center space-y-2 text-center">
+          <BlurImage
+            src="/_static/logo1.png"
+            height={40}
+            width={40}
+            alt="logo"
+            className="place-items-center justify-self-center"
+          />
+          <h1 className="text-2xl font-semibold tracking-tight">
+            Create an account
+          </h1>
+          <p className="text-muted-foreground text-sm">
+            Enter your email below to create your account
           </p>
         </div>
+        <Suspense>
+          <UserAuthForm />
+        </Suspense>
+        <p className="text-muted-foreground px-8 text-center text-sm">
+          By clicking continue, you agree to our{" "}
+          <Link
+            href="/terms"
+            className="hover:text-brand underline underline-offset-4"
+          >
+            Terms of Service
+          </Link>{" "}
+          and{" "}
+          <Link
+            href="/privacy"
+            className="hover:text-brand underline underline-offset-4"
+          >
+            Privacy Policy
+          </Link>
+          .
+        </p>
       </div>
     </div>
   );

@@ -1,8 +1,21 @@
 import { Metadata } from "next";
+import Link from "next/link";
 import { redirect } from "next/navigation";
+import {
+  Briefcase,
+  Building,
+  Calendar,
+  Clock,
+  DollarSign,
+  MapPin,
+  Search,
+} from "lucide-react";
 
 import { getCurrentUser } from "@/lib/session";
 import { constructMetadata } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import JobFeed from "@/components/feed/JobFeed";
 
 export const metadata: Metadata = constructMetadata({
   title: "Supplement Jobs - AtCampus",
@@ -17,97 +30,60 @@ export default async function JobsPage() {
 
   return (
     <div className="flex w-full flex-col gap-6">
-      <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-bold">Supplement Jobs</h1>
-        <p className="text-muted-foreground">
-          Find and apply for supplement jobs to gain practical experience
-        </p>
+      {/* Header with gradient background */}
+      <div className="rounded-xl bg-gradient-to-r from-blue-500/80 to-indigo-600/80 p-6 text-white shadow-md">
+        <div className="flex flex-col gap-3">
+          <div className="flex items-center gap-2">
+            <Briefcase className="h-6 w-6" />
+            <h1 className="text-3xl font-bold">Supplement Jobs</h1>
+          </div>
+          <p className="max-w-2xl text-white/90">
+            Find and apply for supplement jobs to gain practical experience and
+            enhance your skills while studying
+          </p>
+
+          {/* Search bar */}
+          <div className="mt-4 flex w-full max-w-md items-center gap-2 rounded-lg bg-white/10 p-1 backdrop-blur-sm">
+            <div className="flex h-10 w-full items-center gap-2 rounded-md bg-white px-3 text-gray-800">
+              <Search className="h-4 w-4 text-gray-500" />
+              <input
+                type="text"
+                placeholder="Search for jobs..."
+                className="h-full w-full border-0 bg-transparent outline-none placeholder:text-gray-400"
+              />
+            </div>
+            <Button
+              size="sm"
+              className="h-10 rounded-md bg-blue-700 hover:bg-blue-800"
+            >
+              Search
+            </Button>
+          </div>
+        </div>
       </div>
 
-      {/* Job listings will be implemented here */}
-      <div className="flex flex-col gap-4">
-        <div className="bg-card flex flex-col rounded-lg border p-6 shadow-sm">
-          <div className="flex items-start justify-between">
-            <div>
-              <h3 className="text-xl font-semibold">Research Assistant</h3>
-              <p className="text-muted-foreground">
-                Department of Computer Science
-              </p>
-            </div>
-            <span className="bg-primary/10 text-primary rounded-full px-3 py-1 text-sm font-medium">
-              Part-time
-            </span>
-          </div>
-          <p className="my-4">
-            Assist faculty with ongoing research projects in machine learning
-            and data analysis.
-          </p>
-          <div className="flex items-center gap-4 text-sm">
-            <span className="flex items-center gap-1">
-              <span className="font-medium">Location:</span> On Campus
-            </span>
-            <span className="flex items-center gap-1">
-              <span className="font-medium">Hours:</span> 10-15 hrs/week
-            </span>
-            <span className="flex items-center gap-1">
-              <span className="font-medium">Pay:</span> $15/hr
-            </span>
-          </div>
-        </div>
+      {/* Filters */}
+      <div className="flex flex-wrap items-center gap-2">
+        <Button variant="outline" size="sm" className="rounded-full">
+          All Jobs
+        </Button>
+        <Button variant="outline" size="sm" className="rounded-full">
+          On Campus
+        </Button>
+        <Button variant="outline" size="sm" className="rounded-full">
+          Remote
+        </Button>
+        <Button variant="outline" size="sm" className="rounded-full">
+          Part-time
+        </Button>
+        <Button variant="outline" size="sm" className="rounded-full">
+          Full-time
+        </Button>
+      </div>
 
-        <div className="bg-card flex flex-col rounded-lg border p-6 shadow-sm">
-          <div className="flex items-start justify-between">
-            <div>
-              <h3 className="text-xl font-semibold">Teaching Assistant</h3>
-              <p className="text-muted-foreground">School of Business</p>
-            </div>
-            <span className="bg-primary/10 text-primary rounded-full px-3 py-1 text-sm font-medium">
-              Part-time
-            </span>
-          </div>
-          <p className="my-4">
-            Support professors in grading assignments and conducting tutorial
-            sessions for undergraduate courses.
-          </p>
-          <div className="flex items-center gap-4 text-sm">
-            <span className="flex items-center gap-1">
-              <span className="font-medium">Location:</span> Hybrid
-            </span>
-            <span className="flex items-center gap-1">
-              <span className="font-medium">Hours:</span> 8-12 hrs/week
-            </span>
-            <span className="flex items-center gap-1">
-              <span className="font-medium">Pay:</span> $18/hr
-            </span>
-          </div>
-        </div>
-
-        <div className="bg-card flex flex-col rounded-lg border p-6 shadow-sm">
-          <div className="flex items-start justify-between">
-            <div>
-              <h3 className="text-xl font-semibold">Library Assistant</h3>
-              <p className="text-muted-foreground">University Library</p>
-            </div>
-            <span className="bg-primary/10 text-primary rounded-full px-3 py-1 text-sm font-medium">
-              Part-time
-            </span>
-          </div>
-          <p className="my-4">
-            Help with circulation desk duties, shelving books, and assisting
-            students with research resources.
-          </p>
-          <div className="flex items-center gap-4 text-sm">
-            <span className="flex items-center gap-1">
-              <span className="font-medium">Location:</span> On Campus
-            </span>
-            <span className="flex items-center gap-1">
-              <span className="font-medium">Hours:</span> 12-20 hrs/week
-            </span>
-            <span className="flex items-center gap-1">
-              <span className="font-medium">Pay:</span> $14/hr
-            </span>
-          </div>
-        </div>
+      {/* Job listings */}
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <JobFeed />
       </div>
     </div>
   );

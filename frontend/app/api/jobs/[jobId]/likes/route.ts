@@ -16,33 +16,33 @@ export async function GET(
 
     const job = await prisma.job.findUnique({
       where: { id: jobId },
-      // select: {
-      //   likes: {
-      //     where: {
-      //       userId: loggedInUser.id,
-      //     },
-      //     select: {
-      //       userId: true,
-      //     },
-      //   },
-      //   _count: {
-      //     select: {
-      //       likes: true,
-      //     },
-      //   },
-      // },
+      select: {
+        likes: {
+          where: {
+            userId: loggedInUser.id,
+          },
+          select: {
+            userId: true,
+          },
+        },
+        _count: {
+          select: {
+            likes: true,
+          },
+        },
+      },
     });
 
     if (!job) {
-      return Response.json({ error: "job not found" }, { status: 404 });
+      return Response.json({ error: "Job not found" }, { status: 404 });
     }
 
-    // const data: LikeInfo = {
-    //   likes: job._count.likes,
-    //   isLikedByUser: !!job.likes.length,
-    // };
+    const data: LikeInfo = {
+      likes: job._count.likes,
+      isLikedByUser: !!job.likes.length,
+    };
 
-    return Response.json("heelo");
+    return Response.json(data);
   } catch (error) {
     console.error(error);
     return Response.json({ error: "Internal server error" }, { status: 500 });
@@ -69,35 +69,36 @@ export async function POST(
     });
 
     if (!job) {
-      return Response.json({ error: "job not found" }, { status: 404 });
+      return Response.json({ error: "Job not found" }, { status: 404 });
     }
-    // await prisma.$transaction([
-    //   prisma.like.upsert({
-    //     where: {
-    //       userId_jobId: {
-    //         userId: loggedInUser.id,
-    //         jobId,
-    //       },
-    //     },
-    //     create: {
-    //       userId: loggedInUser.id,
-    //       jobId,
-    //     },
-    //     update: {},
-    //   }),
-    //   ...(loggedInUser.id !== job.userId
-    //     ? [
-    //         prisma.notification.create({
-    //           data: {
-    //             issuerId: loggedInUser.id,
-    //             recipientId: job.userId,
-    //             jobId,
-    //             type: "LIKE",
-    //           },
-    //         }),
-    //       ]
-    //     : []),
-    // ]);
+
+    await prisma.$transaction([
+      prisma.like.upsert({
+        where: {
+          userId_jobId: {
+            userId: loggedInUser.id,
+            jobId,
+          },
+        },
+        create: {
+          userId: loggedInUser.id,
+          jobId,
+        },
+        update: {},
+      }),
+      ...(loggedInUser.id !== job.userId
+        ? [
+            prisma.notification.create({
+              data: {
+                issuerId: loggedInUser.id,
+                recipientId: job.userId,
+                jobId,
+                type: "LIKE",
+              },
+            }),
+          ]
+        : []),
+    ]);
 
     return new Response();
   } catch (error) {
@@ -129,31 +130,24 @@ export async function DELETE(
       return Response.json({ error: "Job not found" }, { status: 404 });
     }
 
-    try {
-      await prisma.$transaction([
-        prisma.like.deleteMany({
-          where: {
-            userId: loggedInUser.id,
-            // jobId,
-          },
-        }),
-        prisma.notification.deleteMany({
-          where: {
-            issuerId: loggedInUser.id,
-            recipientId: job.userId,
-            jobId,
-            type: "LIKE",
-          },
-        }),
-      ]);
-      return new Response(null, { status: 200 });
-    } catch (error) {
-      // If the like doesn't exist, that's fine - just return success
-      if (error.code === "P2025") {
-        return new Response(null, { status: 200 });
-      }
-      throw error;
-    }
+    await prisma.$transaction([
+      prisma.like.deleteMany({
+        where: {
+          userId: loggedInUser.id,
+          jobId,
+        },
+      }),
+      prisma.notification.deleteMany({
+        where: {
+          issuerId: loggedInUser.id,
+          recipientId: job.userId,
+          jobId,
+          type: "LIKE",
+        },
+      }),
+    ]);
+
+    return new Response(null, { status: 200 });
   } catch (error) {
     console.error(error);
     return Response.json({ error: "Internal server error" }, { status: 500 });

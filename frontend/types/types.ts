@@ -71,14 +71,14 @@ export function getJobDataInclude(loggedInUserId: string) {
       select: getUserDataSelect(loggedInUserId),
     },
     attachments: true,
-    // likes: {
-    //   where: {
-    //     userId: loggedInUserId,
-    //   },
-    //   select: {
-    //     userId: true,
-    //   },
-    // },
+    likes: {
+      where: {
+        userId: loggedInUserId,
+      },
+      select: {
+        userId: true,
+      },
+    },
     saveJob: {
       where: {
         userId: loggedInUserId,
@@ -89,7 +89,7 @@ export function getJobDataInclude(loggedInUserId: string) {
     },
     _count: {
       select: {
-        // likes: true,
+        likes: true,
         comments: true,
       },
     },
@@ -101,14 +101,14 @@ export function getResearchDataInclude(loggedInUserId: string) {
       select: getUserDataSelect(loggedInUserId),
     },
     attachments: true,
-    // likes: {
-    //   where: {
-    //     userId: loggedInUserId,
-    //   },
-    //   select: {
-    //     userId: true,
-    //   },
-    // },
+    likes: {
+      where: {
+        userId: loggedInUserId,
+      },
+      select: {
+        userId: true,
+      },
+    },
     saveResearch: {
       where: {
         userId: loggedInUserId,
@@ -119,7 +119,7 @@ export function getResearchDataInclude(loggedInUserId: string) {
     },
     _count: {
       select: {
-        // likes: true,
+        likes: true,
         comments: true,
       },
     },
@@ -140,12 +140,12 @@ export interface PostsPage {
   posts: PostData[];
   nextCursor: string | null;
 }
-export interface SaveJobsPage {
+export interface JobsPage {
   jobs: JobData[];
   nextCursor: string | null;
 }
-export interface SaveResearchsPage {
-  researchs: ResearchData[];
+export interface ResearchesPage {
+  researches: ResearchData[];
   nextCursor: string | null;
 }
 
@@ -202,6 +202,12 @@ export interface LikeInfo {
 
 export interface BookmarkInfo {
   isBookmarkedByUser: boolean;
+}
+export interface SaveJobInfo {
+  isSaveJobByUser: boolean;
+}
+export interface SaveResearchInfo {
+  isSaveResearchByUser: boolean;
 }
 
 export interface NotificationCountInfo {

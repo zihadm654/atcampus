@@ -1,4 +1,4 @@
-import "@/styles/globals.css";
+import "@/app/globals.css";
 
 import { fontGeist, fontHeading, fontSans, fontUrban } from "@/assets/fonts";
 import ReactQueryProvider from "@/utils/ReactQueryProvider";

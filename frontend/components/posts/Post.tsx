@@ -10,12 +10,12 @@ import { PostData } from "@/types/types";
 import { useSession } from "@/lib/auth-client";
 import { cn, formatRelativeDate } from "@/lib/utils";
 
-import Comments from "../comments/Comments";
 import Linkify from "../feed/Linkify";
 import BlurImage from "../shared/blur-image";
 import { UserAvatar } from "../shared/user-avatar";
 import UserTooltip from "../UserTooltip";
 import BookmarkButton from "./BookmarkButton";
+import Comments from "./comments/Comments";
 import LikeButton from "./LikeButton";
 import PostMoreButton from "./PostMoreButton";
 

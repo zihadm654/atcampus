@@ -15,9 +15,6 @@ export async function NavBarServer({
 }: NavBarWrapperProps) {
   const user = await getCurrentUser();
 
-  // let notificationCount = 0;
-  // let messageCount = 0;
-
   if (!user) return null;
 
   const [unreadNotificationsCount, unreadMessagesCount] = await Promise.all([

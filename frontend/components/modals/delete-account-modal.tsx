@@ -5,6 +5,7 @@ import {
   useMemo,
   useState,
 } from "react";
+import { redirect } from "next/navigation";
 import { deleteUserAction } from "@/actions/delete-user.action";
 import { toast } from "sonner";
 
@@ -22,13 +23,13 @@ function DeleteAccountModal({
   setShowDeleteAccountModal: Dispatch<SetStateAction<boolean>>;
 }) {
   const { data: session } = useSession();
-  const user = session?.user;
-  if (!user) return null;
+  if (!session) return redirect("/login");
+  const userId = session.user.id;
   const [deleting, setDeleting] = useState(false);
 
   async function deleteAccount() {
     setDeleting(true);
-    const res = await deleteUserAction({ userId: user?.id! });
+    const res = await deleteUserAction({ userId: userId });
 
     if (res.error) {
       toast.error(res.error);

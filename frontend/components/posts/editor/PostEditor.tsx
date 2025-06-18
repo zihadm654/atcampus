@@ -12,6 +12,7 @@ import {
   ImageIcon,
   Loader2,
   RefreshCw,
+  StickyNote,
   X,
 } from "lucide-react";
 import {
@@ -242,14 +243,26 @@ export default function PostEditor() {
             <Button
               type="button"
               variant="ghost"
-              size="icon"
               className="text-muted-foreground"
               onClick={(e) =>
                 onClick?.(e as unknown as React.MouseEvent<HTMLDivElement>)
               }
               disabled={isUploading}
             >
-              <ImageIcon className="h-5 w-5" />
+              <ImageIcon className="size-6" />
+              <span>Attachment</span>
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              className="text-muted-foreground"
+              onClick={(e) =>
+                onClick?.(e as unknown as React.MouseEvent<HTMLDivElement>)
+              }
+              disabled={isUploading}
+            >
+              <StickyNote className="size-6" />
+              <span>Paper</span>
             </Button>
 
             <LoadingButton

@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 
-import { getJobDataInclude, SaveJobsPage } from "@/types/types";
+import { getJobDataInclude, JobsPage } from "@/types/types";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/session";
 
@@ -35,7 +35,7 @@ export async function GET(req: NextRequest) {
     const nextCursor =
       saveJobs.length > pageSize ? saveJobs[pageSize].id : null;
 
-    const data: SaveJobsPage = {
+    const data: JobsPage = {
       jobs: saveJobs.slice(0, pageSize).map((bookmark) => bookmark.job),
       nextCursor,
     };

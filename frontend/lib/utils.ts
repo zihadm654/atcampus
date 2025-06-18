@@ -99,8 +99,10 @@ export function slugify(input: string): string {
 }
 
 export const generateUsername = (name: string) => {
+  const nameParts = name.split(/\s+/);
+  const truncatedName = nameParts.slice(0, 5).join(" ");
   const randomNumbers = Math.floor(1000 + Math.random() * 9000); // Generate a random 4-digit number
-  return `${name.replace(/\s+/g, "").toLowerCase()}${randomNumbers}`;
+  return `${truncatedName.replace(/\s+/g, "").toLowerCase()}${randomNumbers}`;
 };
 export const VALID_DOMAINS = () => {
   const domains = ["gmail.com", "yahoo.com", "outlook.com"];

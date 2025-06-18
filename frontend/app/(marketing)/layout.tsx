@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 
 import { menubar } from "@/config/dashboard";
 import { getCurrentUser } from "@/lib/session";
+import TrendsSidebar from "@/components/feed/TrendsSidebar";
 import { DashboardSidebar } from "@/components/layout/dashboard-sidebar";
 // import { NavMobile } from "@/components/layout/mobile-nav";
 import { NavBarServer } from "@/components/layout/navbar-server";
@@ -29,6 +30,7 @@ export default async function MarketingLayout({
       <div className="relative mx-auto flex w-full max-w-7xl grow gap-5 p-5 max-md:gap-2 max-md:p-2">
         <DashboardSidebar links={filteredLinks} />
         {children}
+        <TrendsSidebar />
       </div>
       <SiteFooter />
     </div>

@@ -13,9 +13,14 @@ export const marketingConfig: MarketingConfig = {
       icon: "job",
     },
     {
-      title: "Bookmarks",
-      href: "/bookmarks",
-      icon: "bookmark",
+      href: "/courses",
+      icon: "bookOpen",
+      title: "Courses",
+    },
+    {
+      href: "/researches",
+      icon: "research",
+      title: "Researches",
     },
   ],
 };

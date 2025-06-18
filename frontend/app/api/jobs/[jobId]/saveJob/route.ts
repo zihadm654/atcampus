@@ -1,4 +1,4 @@
-import { BookmarkInfo } from "@/types/types";
+import { SaveJobInfo } from "@/types/types";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/session";
 
@@ -23,8 +23,8 @@ export async function GET(
       },
     });
 
-    const data: BookmarkInfo = {
-      isBookmarkedByUser: !!saveJob,
+    const data: SaveJobInfo = {
+      isSaveJobByUser: !!saveJob,
     };
 
     return Response.json(data);

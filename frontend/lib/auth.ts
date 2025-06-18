@@ -48,7 +48,7 @@ const options = {
       hash: hashPassword,
       verify: verifyPassword,
     },
-    requireEmailVerification: true,
+    requireEmailVerification: false,
     sendResetPassword: async ({ user, url }) => {
       await sendEmailAction({
         to: user.email,
@@ -113,9 +113,17 @@ const options = {
   },
   user: {
     additionalFields: {
+      institution: {
+        type: "string",
+        input: true,
+      },
+      instituteId: {
+        type: "string",
+        input: true,
+      },
       role: {
         type: ["STUDENT", "PROFESSOR", "INSTITUTION", "ORGANIZATION"],
-        input: false,
+        input: true,
       },
     },
   },

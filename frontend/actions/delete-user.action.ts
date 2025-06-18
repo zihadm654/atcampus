@@ -14,15 +14,10 @@ export async function deleteUserAction({ userId }: { userId: string }) {
   const session = await getCurrentUser();
   if (!session) throw new Error("Unauthorized");
 
-  if (session.role !== "INSTITUTION" || session.id === userId) {
-    throw new Error("Forbidden");
-  }
-
   try {
     await prisma.user.delete({
       where: {
         id: userId,
-        role: "INSTITUTION",
       },
     });
 

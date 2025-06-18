@@ -134,7 +134,8 @@ model Research {
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId String
 
-  comments            Comment[]
+  comments            Comment[] // Add onDelete: Cascade if desired, though this is on the Comment side
+  likes               Like[] // Add onDelete: Cascade if desired, though this is on the Like side
   linkedNotifications Notification[]
   attachments         Media[]
   saveResearch        SaveResearch[]
@@ -178,7 +179,8 @@ model Job {
   skill   Skill  @relation(fields: [skillId], references: [id], onDelete: Cascade)
   skillId String
 
-  comments            Comment[]
+  comments            Comment[] // Add onDelete: Cascade if desired
+  likes               Like[] // Add onDelete: Cascade if desired
   linkedNotifications Notification[]
   attachments         Media[]
   company             Company[]
@@ -254,7 +256,7 @@ model Media {
 
   postId     String?
   post       Post?     @relation(fields: [postId], references: [id], onDelete: Cascade)
-  job        Job?      @relation(fields: [jobId], references: [id])
+  job        Job?      @relation(fields: [jobId], references: [id], onDelete: Cascade)
   jobId      String?
   research   Research? @relation(fields: [researchId], references: [id])
   researchId String?
@@ -276,11 +278,11 @@ model Comment {
 
   userId     String
   user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  postId     String
-  post       Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
-  job        Job?      @relation(fields: [jobId], references: [id])
+  postId     String? // Changed to optional
+  post       Post?     @relation(fields: [postId], references: [id], onDelete: Cascade) // onDelete: Cascade is good here
+  job        Job?      @relation(fields: [jobId], references: [id], onDelete: Cascade) // Consider onDelete: Cascade if a Job deletion should remove its comments
   jobId      String?
-  research   Research? @relation(fields: [researchId], references: [id])
+  research   Research? @relation(fields: [researchId], references: [id], onDelete: Cascade) // Consider onDelete: Cascade
   researchId String?
 
   createdAt DateTime @default(now()) @map(name: "created_at")
@@ -290,16 +292,22 @@ model Comment {
 }
 
 model Like {
-  id     String @id @default(cuid()) @map("_id")
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  postId String
-  post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
+  id         String    @id @default(cuid()) @map("_id")
+  userId     String
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  postId     String?
+  post       Post?     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  jobId      String?
+  job        Job?      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  researchId String?
+  research   Research? @relation(fields: [researchId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now()) @map(name: "created_at")
   updatedAt DateTime @updatedAt @map(name: "updated_at")
 
   @@unique([userId, postId], map: "userId_postId")
+  @@unique([userId, jobId], map: "userId_jobId")
+  @@unique([userId, researchId], map: "userId_researchId")
   @@map(name: "likes")
 }
 
@@ -339,6 +347,7 @@ model Verification {
   createdAt DateTime?
   updatedAt DateTime?
 
+  @@index([identifier])
   @@map("verifications")
 }
 
@@ -349,6 +358,7 @@ model TwoFactor {
   userId      String
   user        User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@index([secret])
   @@map("twoFactor")
 }
 
@@ -602,3 +612,8 @@ model ContentView {
 
   @@map(name: "content_views")
 }
+
+// In Comment model, the relation to Post already has onDelete: Cascade
+// You might want to ensure this is consistent for Job and Research relations if they become non-optional
+// However, since they are optional, the current setup is fine, but deletion must be handled in application code
+// or by making the relations non-optional and adding onDelete: Cascade.

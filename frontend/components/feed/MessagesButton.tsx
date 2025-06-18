@@ -40,7 +40,7 @@ export default function MessagesButton({ initialState }: MessagesButtonProps) {
     >
       <Link href="/messages">
         <div className="relative">
-          <Mail />
+          <Mail className="size-5" />
           {!!data.unreadCount && (
             <span className="bg-primary text-primary-foreground absolute -top-1 -right-1 rounded-full px-1 text-xs font-medium tabular-nums">
               {data.unreadCount}
