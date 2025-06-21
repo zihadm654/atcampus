@@ -72,19 +72,24 @@ export async function POST(
       return Response.json({ error: "Post not found" }, { status: 404 });
     }
 
+    // Check if the user already liked this post
+    const existingLike = await prisma.like.findFirst({
+      where: {
+        userId: loggedInUser.id,
+        postId,
+      },
+    });
+
+    if (existingLike) {
+      return Response.json({ message: "Already liked" }, { status: 200 });
+    }
+
     await prisma.$transaction([
-      prisma.like.upsert({
-        where: {
-          userId_postId: {
-            userId: loggedInUser.id,
-            postId,
-          },
-        },
-        create: {
+      prisma.like.create({
+        data: {
           userId: loggedInUser.id,
           postId,
         },
-        update: {},
       }),
       ...(loggedInUser.id !== post.userId
         ? [
@@ -100,7 +105,7 @@ export async function POST(
         : []),
     ]);
 
-    return new Response();
+    return Response.json({ message: "Liked successfully" }, { status: 200 });
   } catch (error) {
     console.error(error);
     return Response.json({ error: "Internal server error" }, { status: 500 });
@@ -130,11 +135,22 @@ export async function DELETE(
       return Response.json({ error: "Post not found" }, { status: 404 });
     }
 
+    // Find the like to delete
+    const like = await prisma.like.findFirst({
+      where: {
+        userId: loggedInUser.id,
+        postId,
+      },
+    });
+
+    if (!like) {
+      return Response.json({ message: "Like not found" }, { status: 404 });
+    }
+
     await prisma.$transaction([
-      prisma.like.deleteMany({
+      prisma.like.delete({
         where: {
-          userId: loggedInUser.id,
-          postId,
+          id: like.id,
         },
       }),
       prisma.notification.deleteMany({
@@ -147,7 +163,7 @@ export async function DELETE(
       }),
     ]);
 
-    return new Response();
+    return Response.json({ message: "Unliked successfully" }, { status: 200 });
   } catch (error) {
     console.error(error);
     return Response.json({ error: "Internal server error" }, { status: 500 });

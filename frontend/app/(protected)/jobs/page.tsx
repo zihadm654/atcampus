@@ -63,21 +63,26 @@ export default async function JobsPage() {
       </div>
 
       {/* Filters */}
-      <div className="flex flex-wrap items-center gap-2">
-        <Button variant="outline" size="sm" className="rounded-full">
-          All Jobs
-        </Button>
-        <Button variant="outline" size="sm" className="rounded-full">
-          On Campus
-        </Button>
-        <Button variant="outline" size="sm" className="rounded-full">
-          Remote
-        </Button>
-        <Button variant="outline" size="sm" className="rounded-full">
-          Part-time
-        </Button>
-        <Button variant="outline" size="sm" className="rounded-full">
-          Full-time
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <Button variant="outline" size="sm" className="rounded-full">
+            All Jobs
+          </Button>
+          <Button variant="outline" size="sm" className="rounded-full">
+            On Campus
+          </Button>
+          <Button variant="outline" size="sm" className="rounded-full">
+            Remote
+          </Button>
+          <Button variant="outline" size="sm" className="rounded-full">
+            Part-time
+          </Button>
+          <Button variant="outline" size="sm" className="rounded-full">
+            Full-time
+          </Button>
+        </div>
+        <Button variant="link" size="sm" className="rounded-xl">
+          <Link href="/jobs/createJob">Create Job</Link>
         </Button>
       </div>
 

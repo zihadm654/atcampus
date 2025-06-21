@@ -305,9 +305,9 @@ model Like {
   createdAt DateTime @default(now()) @map(name: "created_at")
   updatedAt DateTime @updatedAt @map(name: "updated_at")
 
-  @@unique([userId, postId], map: "userId_postId")
-  @@unique([userId, jobId], map: "userId_jobId")
-  @@unique([userId, researchId], map: "userId_researchId")
+  // Replace the three separate unique constraints with a single compound index
+  // that ensures a user can only like one content item once
+  @@unique([userId, postId, jobId, researchId])
   @@map(name: "likes")
 }
 

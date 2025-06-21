@@ -165,7 +165,6 @@ export function CreateJobForm({ user }: CreateJobFormProps) {
               name="startDate"
               render={() => (
                 <FormItem className="w-full">
-                  <FormLabel>Job Posting deadline</FormLabel>
                   <FormControl>
                     <DatePickerWithRange range={range} setRange={setRange} />
                   </FormControl>
