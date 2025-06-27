@@ -13,6 +13,7 @@ import {
   CreditCard,
   File,
   FileText,
+  GraduationCap,
   HelpCircle,
   Home,
   Image,
@@ -36,6 +37,7 @@ import {
   User,
   Users,
   X,
+  Zap,
 } from "lucide-react";
 
 export type Icon = LucideIcon;
@@ -144,4 +146,6 @@ export const Icons = {
   warning: AlertTriangle,
   research: Newspaper,
   job: BriefcaseBusiness,
+  edu: GraduationCap,
+  skill: Zap,
 };

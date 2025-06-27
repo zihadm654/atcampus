@@ -13,7 +13,6 @@ import { cn } from "@/lib/utils";
 import { registerSchema, TRegister, UserRole } from "@/lib/validations/auth";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -56,8 +55,8 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
       password: "",
       name: "",
       role: UserRole.STUDENT, // Default to undefined or a specific role if preferred
-      instituteId: undefined,
       institution: "",
+      instituteId: "",
     },
   });
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
@@ -120,7 +119,7 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
         <form onSubmit={form.handleSubmit(onSubmit)}>
           <div className="grid gap-4">
             {currentStep === 1 && (
-              <div className="grid gap-1 place-self-center">
+              <div className="grid gap-2 place-self-center">
                 <FormField
                   name="role"
                   control={form.control}
@@ -163,18 +162,22 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
             )}
           </div>
           {currentStep === 2 && (
-            <div className="grid grid-cols-1 gap-1 pb-1">
+            <div className="grid grid-cols-1 gap-2.5 pb-2">
               <FormField
                 control={form.control}
                 name="name"
                 render={({ field }) => (
                   <FormItem className="grid gap-1">
-                    <FormLabel htmlFor="name">username</FormLabel>
+                    <FormLabel htmlFor="name">Name</FormLabel>
                     <FormControl>
                       <Input
                         {...field}
                         id="name"
-                        placeholder="john"
+                        placeholder={
+                          role === UserRole.STUDENT
+                            ? "full name"
+                            : "organization name"
+                        }
                         autoCapitalize="none"
                         autoComplete="name"
                         autoCorrect="off"
@@ -185,49 +188,77 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
                   </FormItem>
                 )}
               />
-              <FormField
-                control={form.control}
-                name="instituteId"
-                render={({ field }) => (
-                  <FormItem className="grid gap-1">
-                    <FormLabel htmlFor="instituteId">InstituteId</FormLabel>
-                    <FormControl>
-                      <Input
-                        {...field}
-                        id="instituteId"
-                        placeholder="0910203"
-                        type="number"
-                        autoCapitalize="none"
-                        autoComplete="instituteId"
-                        autoCorrect="off"
-                        disabled={isLoading || isGoogleLoading}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="institution"
-                render={({ field }) => (
-                  <FormItem className="grid gap-1">
-                    <FormLabel htmlFor="institution">Institution</FormLabel>
-                    <FormControl>
-                      <Input
-                        {...field}
-                        id="institution"
-                        placeholder="college/university name"
-                        autoCapitalize="none"
-                        autoComplete="institution"
-                        autoCorrect="off"
-                        disabled={isLoading || isGoogleLoading}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              {role === UserRole.STUDENT && (
+                <React.Fragment>
+                  <FormField
+                    control={form.control}
+                    name="instituteId"
+                    render={({ field }) => (
+                      <FormItem className="grid gap-1">
+                        <FormLabel htmlFor="instituteId">Student Id</FormLabel>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            id="instituteId"
+                            placeholder="0910203"
+                            type="number"
+                            autoCapitalize="none"
+                            autoComplete="instituteId"
+                            autoCorrect="off"
+                            disabled={isLoading || isGoogleLoading}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="institution"
+                    render={({ field }) => (
+                      <FormItem className="grid gap-1">
+                        <FormLabel htmlFor="institution">Institution</FormLabel>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            id="institution"
+                            placeholder="college/university name"
+                            autoCapitalize="none"
+                            autoComplete="institution"
+                            autoCorrect="off"
+                            disabled={isLoading || isGoogleLoading}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </React.Fragment>
+              )}
+              {/* {role === UserRole.ORGANIZATION && (
+                <FormField
+                  control={form.control}
+                  name="phoneNumber"
+                  render={({ field }) => (
+                    <FormItem className="grid gap-1">
+                      <FormLabel htmlFor="telephone">Phone Number</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="telephone"
+                          {...field}
+                          id="telephone"
+                          placeholder="05555555555"
+                          autoCapitalize="none"
+                          autoComplete="tel"
+                          autoCorrect="off"
+                          disabled={isLoading || isGoogleLoading}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )} */}
               <FormField
                 control={form.control}
                 name="email"
@@ -238,7 +269,7 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
                       <Input
                         {...field}
                         id="email"
-                        placeholder="example@example.edu"
+                        placeholder="example.edu@gmail.com"
                         autoCapitalize="none"
                         autoComplete="email"
                         autoCorrect="off"
@@ -273,7 +304,7 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
               />
             </div>
           )}
-          <div className="flex items-center justify-between gap-1">
+          <div className="flex items-center justify-between gap-2">
             {currentStep > 1 && (
               <Button
                 type="button"
@@ -288,7 +319,7 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
               <Button
                 type="button"
                 onClick={nextStep}
-                className={cn(buttonVariants({ variant: "ghost" }))}
+                className={cn(buttonVariants({ variant: "ghost" }), "self-end")}
                 disabled={isLoading || (currentStep === 1 && !role)}
               >
                 Next
@@ -298,12 +329,12 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
               <Button
                 type="submit"
                 className={cn(buttonVariants())}
-                // disabled={isLoading || !isValid} // Disable if form is not valid
+                disabled={isLoading} // Disable if form is not valid
               >
                 {isLoading && (
                   <Icons.spinner className="mr-2 size-4 animate-spin" />
                 )}
-                Sign up with Email
+                Sign up
               </Button>
             )}
           </div>

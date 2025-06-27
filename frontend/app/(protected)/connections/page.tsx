@@ -11,6 +11,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import FollowButton from "@/components/feed/FollowButton";
+import BlurImage from "@/components/shared/blur-image";
 import UserTooltip from "@/components/UserTooltip";
 
 async function Connections() {
@@ -38,8 +39,15 @@ async function Connections() {
           (
             connectionUser, // Renamed user to connectionUser for clarity
           ) => (
-            <Card key={connectionUser.id}>
-              <CardContent>
+            <Card className="pt-0" key={connectionUser.id}>
+              <BlurImage
+                src={connectionUser.image || "/_static/avatars/shadcn.jpeg"}
+                width={50}
+                height={50}
+                alt={connectionUser.name}
+                className="h-44 w-full rounded-xl object-cover"
+              />
+              <CardContent className="max-md:px-3">
                 <UserTooltip user={connectionUser}>
                   <Link
                     href={`/${connectionUser.username}`}

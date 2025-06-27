@@ -3,6 +3,7 @@ import {
   customSessionClient,
   inferAdditionalFields,
   magicLinkClient,
+  multiSessionClient,
   twoFactorClient,
   usernameClient,
 } from "better-auth/client/plugins";
@@ -20,6 +21,7 @@ const authClient = createAuthClient({
     magicLinkClient(),
     usernameClient(),
     twoFactorClient(),
+    multiSessionClient(),
   ],
 });
 

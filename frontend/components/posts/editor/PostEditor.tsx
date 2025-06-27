@@ -32,6 +32,8 @@ import useMediaUpload, { Attachment } from "./useMediaUpload";
 
 import "./styles.css";
 
+import { Icons } from "@/components/shared/icons";
+
 interface AttachmentPreviewProps {
   attachment: Attachment;
   onRemove: () => void;
@@ -250,7 +252,7 @@ export default function PostEditor() {
               disabled={isUploading}
             >
               <ImageIcon className="size-6" />
-              <span>Attachment</span>
+              <span>Photos</span>
             </Button>
             <Button
               type="button"
@@ -261,8 +263,8 @@ export default function PostEditor() {
               }
               disabled={isUploading}
             >
-              <StickyNote className="size-6" />
-              <span>Paper</span>
+              <Icons.media className="size-6" />
+              <span>Videos</span>
             </Button>
 
             <LoadingButton

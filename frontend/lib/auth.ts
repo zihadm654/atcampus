@@ -7,6 +7,7 @@ import {
   admin,
   customSession,
   magicLink,
+  multiSession,
   twoFactor,
   username,
 } from "better-auth/plugins";
@@ -160,6 +161,7 @@ const options = {
       ac,
       roles,
     }),
+    multiSession({ maximumSessions: 3 }),
     twoFactor(),
     magicLink({
       sendMagicLink: async ({ email, url }) => {
