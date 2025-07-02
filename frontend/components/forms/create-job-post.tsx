@@ -2,17 +2,24 @@
 
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { User } from "@prisma/client";
-import { XIcon } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
+import { PlusIcon, XIcon } from "lucide-react";
 import { DateRange } from "react-day-picker";
-import { useForm } from "react-hook-form";
+import { useFieldArray, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 
-// import { createJob } from "@/app/actions";
-import { jobSchema, TJob } from "@/lib/validations/job";
+import {
+  ExperienceLevel,
+  jobSchema,
+  JobType,
+  TJob,
+} from "@/lib/validations/job";
 import JobDescriptionEditor from "@/components/editor/richEditor";
+import { createJob } from "@/components/jobs/actions";
 
 import { Button } from "../ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
@@ -42,26 +49,41 @@ interface CreateJobFormProps {
 }
 
 export function CreateJobForm({ user }: CreateJobFormProps) {
+  const router = useRouter();
+  const [range, setRange] = React.useState<DateRange | undefined>(undefined);
+  const [pending, setPending] = useState(false);
   const form = useForm<TJob>({
     resolver: zodResolver(jobSchema),
     defaultValues: {
-      requirements: ["reactjs"],
+      title: "",
       description: "",
       location: "",
-      type: "internship",
-      title: "",
-      salary: 0,
+      weeklyHours: 0,
+      type: JobType.TEMPORARY,
+      experienceLevel: ExperienceLevel.ENTRY,
       duration: 30,
+      salary: 0,
+      requirements: ["reactjs"],
+      startDate: range?.from as Date,
+      endDate: range?.to,
     },
   });
-  const [range, setRange] = React.useState<DateRange | undefined>(undefined);
-  const [pending, setPending] = useState(false);
+  const queryClient = useQueryClient();
+
   async function onSubmit(values: TJob) {
     try {
       setPending(true);
       console.log(values);
-      //   await createJob(values);
-    } catch {
+      const startDate = form.setValue("startDate", range?.from || new Date());
+      const endDate = form.setValue("endDate", range?.to || new Date());
+
+      await createJob(values);
+      toast.success("Job created successfully!");
+      queryClient.invalidateQueries({ queryKey: ["job-feed"] });
+      form.reset();
+      router.push("/jobs");
+    } catch (error) {
+      console.error(error);
       toast.error("Something went wrong. Please try again.");
     } finally {
       setPending(false);
@@ -99,36 +121,71 @@ export function CreateJobForm({ user }: CreateJobFormProps) {
                   </FormItem>
                 )}
               />
-              <FormField
-                control={form.control}
-                name="type"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Employment Type</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select Employment Type" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectGroup>
-                          <SelectLabel>Employment Type</SelectLabel>
-                          <SelectItem value="full-time">Full Time</SelectItem>
-                          <SelectItem value="part-time">Part Time</SelectItem>
-                          <SelectItem value="contract">Contract</SelectItem>
-                          <SelectItem value="internship">Internship</SelectItem>
-                        </SelectGroup>
-                      </SelectContent>
-                    </Select>
+              <div className="flex items-center justify-between gap-2">
+                <FormField
+                  control={form.control}
+                  name="type"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Employment Type</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select Employment Type" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectGroup>
+                            <SelectLabel>Employment Type</SelectLabel>
+                            {Object.values(JobType).map((type) => (
+                              <SelectItem key={type} value={type}>
+                                {type.charAt(0).toUpperCase() +
+                                  type.slice(1).toLowerCase()}
+                              </SelectItem>
+                            ))}
+                          </SelectGroup>
+                        </SelectContent>
+                      </Select>
 
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="experienceLevel"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Experience Level</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select Experience level" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectGroup>
+                            <SelectLabel>Experience Level</SelectLabel>
+                            {Object.values(ExperienceLevel).map((roleValue) => (
+                              <SelectItem key={roleValue} value={roleValue}>
+                                {roleValue.charAt(0).toUpperCase() +
+                                  roleValue.slice(1).toLowerCase()}
+                              </SelectItem>
+                            ))}
+                          </SelectGroup>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
             </div>
 
             <div className="grid gap-6 md:grid-cols-2">
@@ -166,7 +223,11 @@ export function CreateJobForm({ user }: CreateJobFormProps) {
               render={() => (
                 <FormItem className="w-full">
                   <FormControl>
-                    <DatePickerWithRange range={range} setRange={setRange} />
+                    <DatePickerWithRange
+                      form={form}
+                      range={range}
+                      setRange={setRange}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -178,7 +239,31 @@ export function CreateJobForm({ user }: CreateJobFormProps) {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Requirements</FormLabel>
-                  <FormControl></FormControl>
+                  {/* <div className="flex flex-col gap-2">
+                    {fields.map((item, index) => (
+                      <div key={item.id} className="flex items-center gap-2">
+                        <FormControl>
+                          <Input {...field} />
+                        </FormControl>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => remove(index)}
+                        >
+                          <XIcon className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ))}
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="w-full"
+                      onClick={() => append({ value: "" })}
+                    >
+                      <PlusIcon className="mr-2 h-4 w-4" /> Add Requirement
+                    </Button>
+                  </div> */}
                   <FormMessage />
                 </FormItem>
               )}
@@ -201,6 +286,23 @@ export function CreateJobForm({ user }: CreateJobFormProps) {
                     <Input
                       type="number"
                       placeholder="Duration in days"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="weeklyHours"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Weekly Hours</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      placeholder="Weekly Hours"
                       {...field}
                     />
                   </FormControl>

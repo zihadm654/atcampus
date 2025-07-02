@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { UserData } from "@/types/types";
 import { auth } from "@/lib/auth";
+import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/session";
 import { constructMetadata } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -17,9 +19,16 @@ export const metadata = constructMetadata({
 
 export default async function DashboardPage() {
   const user = await getCurrentUser();
-
   if (!user) redirect("/login");
-
+  const applications = await prisma.application.findMany({
+    where: {
+      applicantId: user.id,
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+  console.log(applications, "applications");
   const FULL_POST_ACCESS = await auth.api.userHasPermission({
     body: {
       userId: user.id,
@@ -78,7 +87,41 @@ export default async function DashboardPage() {
         <pre className="overflow-clip text-sm">
           {JSON.stringify(user, null, 2)}
         </pre>
+        <div>
+          <table className="min-w-full table-auto whitespace-nowrap">
+            <thead>
+              <tr className="border-b text-left text-sm">
+                <th className="px-4 py-2">ID</th>
+                <th className="px-4 py-2">Status</th>
+                <th className="px-4 py-2">Applicant</th>
+                <th className="px-4 py-2 text-center">Actions</th>
+              </tr>
+            </thead>
 
+            <tbody>
+              {applications.map((user) => (
+                <tr key={user.id} className="border-b text-left text-sm">
+                  <td className="px-4 py-2">{user.id.slice(0, 8)}</td>
+                  <td className="px-4 py-2">{user.status}</td>
+                  <td className="px-4 py-2">{user.applicantId}</td>
+                  {/* <td className="px-4 py-2 text-center">
+                  <UserRoleSelect
+                    userId={user.id}
+                    role={user.role as UserRole}
+                  />
+                </td> */}
+                  {/* <td className="px-4 py-2 text-center">
+                  {user.role === "STUDENT" ? (
+                    <DeleteUserButton userId={user.id} />
+                  ) : (
+                    <PlaceholderDeleteUserButton />
+                  )}
+                </td> */}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
         <div className="space-y-4 rounded-b-md border border-t-8 border-blue-600 p-4">
           <h2 className="text-2xl font-bold">Update User</h2>
 

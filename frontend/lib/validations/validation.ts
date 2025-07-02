@@ -1,4 +1,5 @@
-import { z } from "zod";
+import { SkillLevel } from "@prisma/client";
+import { nativeEnum, z } from "zod";
 
 const requiredString = z.string().trim().min(1, "Required");
 
@@ -38,3 +39,13 @@ export type UpdateUserProfileValues = z.infer<typeof updateUserProfileSchema>;
 export const createCommentSchema = z.object({
   content: requiredString,
 });
+export const userSkillSchema = z.object({
+  title: requiredString,
+  category: requiredString,
+  level: nativeEnum(SkillLevel),
+  yearsOfExperience: z.coerce
+    .number()
+    .min(0, "at least one year of experience"),
+});
+
+export type TUserSkillSchema = z.infer<typeof userSkillSchema>;

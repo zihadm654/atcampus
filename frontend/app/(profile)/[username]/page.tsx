@@ -16,12 +16,13 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import FollowButton from "@/components/feed/FollowButton";
 import FollowerCount from "@/components/feed/FollowerCount";
 import Linkify from "@/components/feed/Linkify";
 import { Icons } from "@/components/shared/icons";
+import SkillButton from "@/components/skill/SkillButton";
+import UserSkillList from "@/components/skill/UserSkillList";
 import UserAvatar from "@/components/UserAvatar";
 
 import EditProfileButton from "./EditProfileButton";
@@ -130,23 +131,23 @@ export default async function Page({ params }: PageProps) {
                       Skills
                     </CardTitle>
                     <CardAction>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="rounded-full text-blue-600 hover:bg-blue-50 hover:text-blue-800"
-                      >
-                        <span>See More</span>
-                        <Icons.chevronRight className="size-5" />
-                      </Button>
+                      <SkillButton user={user} />
                     </CardAction>
                   </CardHeader>
                   <CardContent className="pt-4">
-                    <div className="flex h-28 items-center justify-center rounded-lg text-gray-500">
-                      <div className="flex flex-col items-center">
-                        <Icons.skill className="size-10" />
-                        No skills added yet
+                    {user.userSkills.length > 0 ? (
+                      <div className="max-h-40 overflow-y-auto">
+                        {/* @ts-expect-error Server Component */}
+                        <UserSkillList skills={user.userSkills} userId={user.id} />
                       </div>
-                    </div>
+                    ) : (
+                      <div className="flex h-28 items-center justify-center rounded-lg text-gray-500">
+                        <div className="flex flex-col items-center">
+                          <Icons.skill className="size-10" />
+                          No skills added yet
+                        </div>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
                 <Card className="overflow-hidden rounded-xl border border-gray-100 shadow-sm transition-all hover:border-gray-200 hover:shadow">
@@ -230,6 +231,36 @@ export default async function Page({ params }: PageProps) {
                 {user.name}&apos;s posts
               </h2>
               <UserPosts userId={user.id} />
+            </TabsContent>
+            <TabsContent value="skills" className="p-6">
+              <div className="grid grid-cols-1 gap-6">
+                <Card className="overflow-hidden rounded-xl border border-gray-100 shadow-sm transition-all hover:border-gray-200 hover:shadow">
+                  <CardHeader className="flex items-center justify-between pb-4">
+                    <CardTitle className="flex items-center text-lg font-medium">
+                      <Icons.skill className="size-7 pr-2" />
+                      Skills
+                    </CardTitle>
+                    <CardAction>
+                      <SkillButton user={user} />
+                    </CardAction>
+                  </CardHeader>
+                  <CardContent className="pt-4">
+                    {user.userSkills.length > 0 ? (
+                      <div className="space-y-4">
+                        {/* @ts-expect-error Server Component */}
+                        <UserSkillList skills={user.userSkills} userId={user.id} />
+                      </div>
+                    ) : (
+                      <div className="flex h-28 items-center justify-center rounded-lg text-gray-500">
+                        <div className="flex flex-col items-center">
+                          <Icons.skill className="size-10" />
+                          No skills added yet
+                        </div>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
             </TabsContent>
           </Tabs>
         </div>

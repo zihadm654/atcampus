@@ -1,6 +1,8 @@
 import { Prisma } from "@prisma/client";
 import type { LiteralStringForUnion, UR } from "stream-chat";
 
+import { prisma } from "@/lib/db";
+
 export function getUserDataSelect(loggedInUserId: string) {
   return {
     id: true,
@@ -14,6 +16,8 @@ export function getUserDataSelect(loggedInUserId: string) {
     email: true,
     displayUsername: true,
     createdAt: true,
+    userSkills: true,
+    application: true,
     followers: {
       where: {
         followerId: loggedInUserId,
@@ -30,9 +34,31 @@ export function getUserDataSelect(loggedInUserId: string) {
     },
   } satisfies Prisma.UserSelect;
 }
+export function getUserSkillDataSelect() {
+  return {
+    id: true,
+    title: true,
+    level: true,
+    yearsOfExperience: true,
+    skillId: true,
+    skill: {
+      select: {
+        category: true,
+      },
+    },
+    _count: {
+      select: {
+        skillEndorsements: true,
+      },
+    },
+  } satisfies Prisma.UserSkillSelect;
+}
 
 export type UserData = Prisma.UserGetPayload<{
   select: ReturnType<typeof getUserDataSelect>;
+}>;
+export type UserSkillData = Prisma.UserSkillGetPayload<{
+  select: ReturnType<typeof getUserSkillDataSelect>;
 }>;
 
 export function getPostDataInclude(loggedInUserId: string) {
@@ -87,6 +113,15 @@ export function getJobDataInclude(loggedInUserId: string) {
         userId: true,
       },
     },
+    application: {
+      // Add this new field
+      where: {
+        applicantId: loggedInUserId,
+      },
+      select: {
+        applicantId: true,
+      },
+    },
     _count: {
       select: {
         likes: true,
@@ -135,6 +170,9 @@ export type JobData = Prisma.JobGetPayload<{
 export type ResearchData = Prisma.ResearchGetPayload<{
   include: ReturnType<typeof getResearchDataInclude>;
 }>;
+export type SkillData = Prisma.UserSkillGetPayload<{
+  include: ReturnType<typeof getSkillDataInclude>;
+}>;
 
 export interface PostsPage {
   posts: PostData[];
@@ -148,8 +186,19 @@ export interface ResearchesPage {
   researches: ResearchData[];
   nextCursor: string | null;
 }
+export interface SkillPage {
+  skills: SkillData[];
+  previousCursor: string | null;
+}
 
 export function getCommentDataInclude(loggedInUserId: string) {
+  return {
+    user: {
+      select: getUserDataSelect(loggedInUserId),
+    },
+  } satisfies Prisma.CommentInclude;
+}
+export function getSkillDataInclude(loggedInUserId: string) {
   return {
     user: {
       select: getUserDataSelect(loggedInUserId),
@@ -206,6 +255,11 @@ export interface BookmarkInfo {
 export interface SaveJobInfo {
   isSaveJobByUser: boolean;
 }
+
+export interface ApplyJobInfo {
+  isAppliedByUser: boolean;
+}
+
 export interface SaveResearchInfo {
   isSaveResearchByUser: boolean;
 }

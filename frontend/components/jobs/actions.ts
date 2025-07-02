@@ -1,8 +1,12 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
+
 import { getJobDataInclude } from "@/types/types";
+import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/session";
+import { jobSchema, TJob } from "@/lib/validations/job";
 
 export async function deleteJob(id: string) {
   const user = await getCurrentUser();
@@ -35,4 +39,39 @@ export async function getJobs() {
     return [];
   }
   return jobs;
+}
+
+export async function createJob(values: TJob) {
+  try {
+    const user = await getCurrentUser();
+
+    if (!user) {
+      throw new Error("Unauthorized");
+    }
+
+    const validatedFields = jobSchema.safeParse(values);
+
+    if (!validatedFields.success) {
+      throw new Error(validatedFields.error.message);
+    }
+
+    const { startDate, endDate, ...rest } = validatedFields.data;
+    const skills = prisma.skill.findMany({});
+    const job = await prisma.job.create({
+      data: {
+        userId: user.id,
+        skillId: "cmckjwozh0000us6sdm3hr984",
+        ...rest,
+        ...(startDate && { startDate }),
+        ...(endDate && { endDate }),
+      },
+    });
+
+    revalidatePath("/jobs");
+
+    return { success: true, data: job };
+  } catch (error) {
+    console.error(error);
+    return { success: false, error: (error as Error).message };
+  }
 }

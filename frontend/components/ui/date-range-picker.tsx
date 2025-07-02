@@ -16,9 +16,11 @@ import {
 export function DatePickerWithRange({
   range,
   setRange,
+  form,
 }: {
   range: DateRange | undefined;
   setRange: React.Dispatch<React.SetStateAction<DateRange | undefined>>;
+  form: any;
 }) {
   return (
     <div className="flex flex-col gap-3">
@@ -45,6 +47,8 @@ export function DatePickerWithRange({
             captionLayout="dropdown"
             onSelect={(range) => {
               setRange(range);
+              form.setValue("startDate", range?.from || undefined);
+              form.setValue("endDate", range?.to || undefined);
             }}
           />
         </PopoverContent>

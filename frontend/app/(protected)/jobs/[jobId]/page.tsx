@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
@@ -6,75 +7,82 @@ import {
   Briefcase,
   Building,
   Calendar,
+  CalendarRange,
   Clock,
   DollarSign,
   GraduationCap,
   Mail,
   MapPin,
   Phone,
+  ShieldCheck,
   User,
 } from "lucide-react";
 
+import { getJobDataInclude } from "@/types/types";
+import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/session";
-import { constructMetadata } from "@/lib/utils";
+import { constructMetadata, formatDate, formatRelativeDate } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardAction,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { JsonToHtml } from "@/components/editor/JsonToHtml";
+import JobMoreButton from "@/components/jobs/JobMoreButton";
+import { Icons } from "@/components/shared/icons";
+import { UserAvatar } from "@/components/shared/user-avatar";
+import SkillButton from "@/components/skill/SkillButton";
+import UserTooltip from "@/components/UserTooltip";
 
-interface JobPageProps {
-  params: Promise<{
-    jobId: string;
-  }>;
+interface PageProps {
+  params: Promise<{ jobId: string }>;
 }
+
+const getJob = cache(async (jobId: string, loggedInUserId: string) => {
+  const job = await prisma.job.findUnique({
+    where: {
+      id: jobId,
+    },
+    include: getJobDataInclude(loggedInUserId),
+  });
+
+  if (!job) notFound();
+
+  return job;
+});
 
 export async function generateMetadata({
   params,
-}: JobPageProps): Promise<Metadata> {
-  // In a real implementation, fetch job data from API/database
-  return constructMetadata({
-    title: `Job Details - AtCampus`,
-    description: "View detailed information about this job opportunity.",
-  });
-}
-
-export default async function JobPage({ params }: JobPageProps) {
+}: PageProps): Promise<Metadata> {
+  const { jobId } = await params;
   const user = await getCurrentUser();
 
-  if (!user) redirect("/login");
+  if (!user) return {};
 
-  // This is a placeholder. In a real implementation, you would fetch job data
-  // based on the jobId parameter
+  const job = await getJob(jobId, user.id);
+
+  return constructMetadata({
+    title: `${job.user.displayUsername}: ${job.description.slice(0, 50)}...`,
+  });
+}
+export default async function JobPage({ params }: PageProps) {
   const { jobId } = await params;
+  const user = await getCurrentUser();
 
-  // Mock job data
-  const job = {
-    id: jobId,
-    title: "Research Assistant",
-    department: "Department of Computer Science",
-    description:
-      "Assist faculty with ongoing research projects in machine learning and data analysis.",
-    responsibilities: [
-      "Collect and preprocess data for research projects",
-      "Implement and test machine learning algorithms",
-      "Assist with literature reviews and documentation",
-      "Participate in weekly research team meetings",
-      "Help prepare research findings for publication",
-    ],
-    qualifications: [
-      "Currently enrolled in Computer Science or related field",
-      "Strong programming skills in Python",
-      "Familiarity with machine learning frameworks (TensorFlow, PyTorch)",
-      "Good understanding of statistics and data analysis",
-      "Excellent communication and documentation skills",
-    ],
-    location: "On Campus",
-    type: "Part-time",
-    hours: "10-15 hrs/week",
-    pay: "$15/hr",
-    deadline: "2023-12-15",
-    contactName: "Dr. Sarah Johnson",
-    contactEmail: "sjohnson@university.edu",
-    contactPhone: "(555) 123-4567",
-  };
+  if (!user) {
+    return (
+      <p className="text-destructive">
+        You&apos;re not authorized to view this page.
+      </p>
+    );
+  }
+
+  const job = await getJob(jobId, user.id);
 
   // If job not found, return 404
   if (!job) {
@@ -83,87 +91,121 @@ export default async function JobPage({ params }: JobPageProps) {
 
   return (
     <div className="flex w-full flex-col gap-6">
-      {/* Back button */}
-      <Link
-        href="/jobs"
-        className="text-muted-foreground hover:text-foreground inline-flex w-fit items-center gap-1 text-sm"
-      >
-        <ArrowLeft className="h-4 w-4" />
-        Back to all jobs
-      </Link>
-
       {/* Header with gradient background */}
       <div className="rounded-xl bg-gradient-to-r from-blue-500/80 to-indigo-600/80 p-6 text-white shadow-md">
-        <div className="flex flex-col gap-4">
-          <div className="flex items-center gap-3">
-            <div className="rounded-full bg-white/20 p-2.5">
-              <Briefcase className="h-6 w-6" />
+        <div>
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <UserTooltip user={job.user}>
+                <Link href={`/${job.user.username}`}>
+                  <UserAvatar user={job?.user} />
+                </Link>
+              </UserTooltip>
+              <UserTooltip user={job?.user}>
+                <Link
+                  href={`/${job.user.username}`}
+                  className="text-md flex items-center gap-1 font-medium hover:underline"
+                >
+                  {job.user.name}
+                  <ShieldCheck className="size-5 text-blue-700" />
+                </Link>
+              </UserTooltip>
+              <Link
+                href={`/jobs/${job.id}`}
+                className="text-muted-foreground block text-sm hover:underline"
+                suppressHydrationWarning
+              >
+                {formatRelativeDate(job.createdAt)}
+              </Link>
             </div>
-            <div>
-              <Badge className="mb-2 bg-blue-700 text-xs font-medium text-white hover:bg-blue-800">
-                {job.type}
-              </Badge>
-              <h1 className="text-3xl font-bold">{job.title}</h1>
-              <div className="flex items-center gap-2 text-white/80">
-                <Building className="h-4 w-4" />
-                <p>{job.department}</p>
-              </div>
-            </div>
+            {job.user.id === user.id && <JobMoreButton job={job} />}
           </div>
 
-          <div className="mt-2 flex flex-wrap gap-4 text-sm">
-            <div className="flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1">
-              <MapPin className="h-4 w-4" />
-              <span>{job.location}</span>
+          <div className="text-md mt-2 gap-4">
+            <div className="flex items-center gap-1.5 rounded-full px-3 py-1">
+              <MapPin className="size-5" />
+              Location: <span>{job.location}</span>
             </div>
-            <div className="flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1">
-              <Clock className="h-4 w-4" />
-              <span>{job.hours}</span>
+            <div className="flex items-center gap-1.5 rounded-full px-3 py-1">
+              <Clock className="size-5" />
+              Duration: <span>{job.weeklyHours}</span>
             </div>
-            <div className="flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1">
-              <DollarSign className="h-4 w-4" />
-              <span>{job.pay}</span>
+            <div className="flex items-center gap-1.5 rounded-full px-3 py-1">
+              <Clock className="size-5" />
+              Weekly Hours: <span>{job.weeklyHours}</span>
             </div>
-            <div className="flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1">
-              <Calendar className="h-4 w-4" />
-              <span>Deadline: {job.deadline}</span>
+            <div className="flex items-center gap-1.5 rounded-full px-3 py-1">
+              <DollarSign className="size-5" />
+              Salary: <span>{job.salary}</span>
+            </div>
+            <div className="flex items-center gap-1.5 rounded-full px-3 py-1">
+              <Calendar className="size-5" />
+              Deadline: <span>{formatDate(job.endDate, "MM/dd/yyyy")}</span>
             </div>
           </div>
         </div>
       </div>
-
-      {/* Main content and sidebar */}
-      <div className="flex w-full flex-col gap-6 lg:flex-row">
-        {/* Main content */}
-        <div className="flex-1 space-y-6">
-          <div className="bg-card rounded-xl border p-6 shadow-sm">
-            <h2 className="mb-4 flex items-center gap-2 text-xl font-semibold">
-              <span className="rounded-full bg-blue-100 p-1.5 text-blue-700">
-                <Briefcase className="h-5 w-5" />
-              </span>
-              Description
-            </h2>
-            <p className="text-muted-foreground">{job.description}</p>
+      <div className="bg-card overflow-hidden rounded-2xl shadow-sm">
+        <Tabs defaultValue="summary">
+          <div className="border-b border-gray-100">
+            <TabsList className="flex w-full justify-between p-0">
+              <TabsTrigger
+                value="summary"
+                className="flex-1 rounded-none border-b-2 border-transparent py-4 transition-all data-[state=active]:border-blue-600 data-[state=active]:text-blue-600"
+              >
+                <Icons.home className="size-5" />
+                Description
+              </TabsTrigger>
+              <TabsTrigger
+                value="requirements"
+                className="flex-1 rounded-none border-b-2 border-transparent py-4 transition-all data-[state=active]:border-blue-600 data-[state=active]:text-blue-600"
+              >
+                <Icons.post className="size-5" />
+                Requirements
+              </TabsTrigger>
+              <TabsTrigger
+                value="qualifications"
+                className="flex-1 rounded-none border-b-2 border-transparent py-4 transition-all data-[state=active]:border-blue-600 data-[state=active]:text-blue-600"
+              >
+                <Icons.post className="size-5" />
+                Qualifications
+              </TabsTrigger>
+            </TabsList>
           </div>
-
-          <div className="bg-card rounded-xl border p-6 shadow-sm">
-            <h2 className="mb-4 flex items-center gap-2 text-xl font-semibold">
-              <span className="rounded-full bg-green-100 p-1.5 text-green-700">
-                <Briefcase className="h-5 w-5" />
-              </span>
-              Responsibilities
-            </h2>
-            <ul className="text-muted-foreground space-y-3">
-              {job.responsibilities.map((item, index) => (
-                <li key={index} className="flex items-start gap-2">
-                  <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-green-500"></span>
-                  <span>{item}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div className="bg-card rounded-xl border p-6 shadow-sm">
+          <TabsContent value="summary" className="p-6">
+            {/* Main content */}
+            <div className="flex-1 space-y-6">
+              <div className="bg-card rounded-xl border p-6 shadow-sm">
+                <h2 className="mb-4 flex items-center gap-2 text-xl font-semibold">
+                  <span className="rounded-full bg-blue-100 p-1.5 text-blue-700">
+                    <Briefcase className="h-5 w-5" />
+                  </span>
+                  Summary
+                </h2>
+                <JsonToHtml json={JSON.parse(job.description)} />
+              </div>
+            </div>
+          </TabsContent>
+          <TabsContent value="requirements" className="mx-auto max-w-2xl p-6">
+            <div className="bg-card rounded-xl border p-6 shadow-sm">
+              <h2 className="mb-4 flex items-center gap-2 text-xl font-semibold">
+                <span className="rounded-full bg-green-100 p-1.5 text-green-700">
+                  <Briefcase className="h-5 w-5" />
+                </span>
+                Responsibilities
+              </h2>
+              <ul className="text-muted-foreground space-y-3">
+                {job.requirements.map((item, index) => (
+                  <li key={index} className="flex items-start gap-2">
+                    <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-green-500"></span>
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </TabsContent>
+          <TabsContent value="qualifications" className="p-6">
+            {/* <div className="bg-card rounded-xl border p-6 shadow-sm">
             <h2 className="mb-4 flex items-center gap-2 text-xl font-semibold">
               <span className="rounded-full bg-purple-100 p-1.5 text-purple-700">
                 <GraduationCap className="h-5 w-5" />
@@ -178,58 +220,9 @@ export default async function JobPage({ params }: JobPageProps) {
                 </li>
               ))}
             </ul>
-          </div>
-        </div>
-
-        {/* Sidebar */}
-        <div className="w-full space-y-6 lg:w-80">
-          <div className="bg-card rounded-xl border p-6 shadow-sm">
-            <h2 className="mb-4 flex items-center gap-2 text-xl font-semibold">
-              <span className="rounded-full bg-blue-100 p-1.5 text-blue-700">
-                <Mail className="h-5 w-5" />
-              </span>
-              Contact Information
-            </h2>
-            <div className="space-y-4">
-              <div className="flex items-center gap-3">
-                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-gray-100">
-                  <User className="h-5 w-5 text-gray-600" />
-                </span>
-                <div>
-                  <p className="text-muted-foreground text-sm">Name</p>
-                  <p className="font-medium">{job.contactName}</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-gray-100">
-                  <Mail className="h-5 w-5 text-gray-600" />
-                </span>
-                <div>
-                  <p className="text-muted-foreground text-sm">Email</p>
-                  <p className="font-medium">{job.contactEmail}</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-gray-100">
-                  <Phone className="h-5 w-5 text-gray-600" />
-                </span>
-                <div>
-                  <p className="text-muted-foreground text-sm">Phone</p>
-                  <p className="font-medium">{job.contactPhone}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex flex-col gap-3">
-            <Button className="w-full bg-blue-600 hover:bg-blue-700">
-              Apply Now
-            </Button>
-            <Button variant="outline" className="w-full">
-              Save Job
-            </Button>
-          </div>
-        </div>
+          </div> */}
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );

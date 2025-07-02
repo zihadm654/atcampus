@@ -10,6 +10,7 @@ import { SaveJobInfo } from "@/types/types";
 import kyInstance from "@/lib/ky";
 import { cn } from "@/lib/utils";
 
+import { Button } from "../ui/button";
 import { useToast } from "../ui/use-toast";
 
 interface BookmarkButtonProps {
@@ -66,13 +67,18 @@ export default function SaveJobButton({
   });
 
   return (
-    <button onClick={() => mutate()} className="flex items-center gap-2">
+    <Button
+      variant="outline"
+      onClick={() => mutate()}
+      className="flex items-center gap-2"
+    >
       <Bookmark
         className={cn(
           "size-5",
           data.isSaveJobByUser && "fill-primary text-primary",
         )}
       />
-    </button>
+      Later
+    </Button>
   );
 }

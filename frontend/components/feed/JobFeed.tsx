@@ -53,7 +53,7 @@ export default function JobFeed() {
   }
   return (
     <InfiniteScrollContainer
-      className="space-y-5"
+      className="grid grid-cols-3 gap-4 space-y-5 max-md:grid-cols-1"
       onBottomReached={() => hasNextPage && !isFetching && fetchNextPage()}
     >
       {jobs.map((job) => (

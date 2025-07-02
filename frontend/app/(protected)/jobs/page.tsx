@@ -81,15 +81,13 @@ export default async function JobsPage() {
             Full-time
           </Button>
         </div>
-        <Button variant="link" size="sm" className="rounded-xl">
+        <Button variant="outline" size="sm" className="rounded-xl">
           <Link href="/jobs/createJob">Create Job</Link>
         </Button>
       </div>
 
       {/* Job listings */}
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-        <JobFeed />
-      </div>
+      <JobFeed />
     </div>
   );
 }

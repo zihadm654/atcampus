@@ -17,12 +17,6 @@ enum UserRole {
   ORGANIZATION
 }
 
-enum ApplicationStatus {
-  pending
-  accepted
-  rejected
-}
-
 model Account {
   id     String @id @default(cuid()) @map("_id")
   userId String
@@ -65,6 +59,31 @@ model Session {
   @@map(name: "sessions")
 }
 
+model Verification {
+  id String @id @default(cuid()) @map("_id")
+
+  identifier String
+  value      String
+  expiresAt  DateTime
+
+  createdAt DateTime?
+  updatedAt DateTime?
+
+  @@index([identifier])
+  @@map("verifications")
+}
+
+model TwoFactor {
+  id          String @id @default(cuid()) @map("_id")
+  secret      String
+  backupCodes String
+  userId      String
+  user        User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([secret])
+  @@map("twoFactor")
+}
+
 model User {
   id          String  @id @default(cuid()) @map("_id")
   instituteId String?
@@ -102,7 +121,6 @@ model User {
   issuedNotifications   Notification[]     @relation("Issuer")
   bookmarks             Bookmark[]
   job                   Job[]
-  company               Company[]
   application           Application[]
   research              Research[]
   saveJob               SaveJob[]
@@ -121,110 +139,60 @@ model User {
   @@map(name: "users")
 }
 
-model Research {
-  id String @id @default(cuid()) @map("_id")
-
-  title       String
-  description String
-  content     String
-
-  createdAt DateTime @default(now()) @map(name: "created_at")
-  updatedAt DateTime @default(now()) @map(name: "updated_at")
-
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId String
-
-  comments            Comment[] // Add onDelete: Cascade if desired, though this is on the Comment side
-  likes               Like[] // Add onDelete: Cascade if desired, though this is on the Like side
-  linkedNotifications Notification[]
-  attachments         Media[]
-  saveResearch        SaveResearch[]
-  views               ContentView[]
-
-  @@map(name: "researches")
-}
-
 model Skill {
-  id      String   @id @default(cuid()) @map("_id")
-  title   String
-  content String[]
+  id                String             @id @default(cuid()) @map("_id")
+  name              String             @unique
+  category          String?            // Added category field
+  userSkills        UserSkill[]
+  skillEndorsements SkillEndorsement[]
 
   createdAt DateTime @default(now()) @map(name: "created_at")
   updatedAt DateTime @default(now()) @map(name: "updated_at")
+  Job       Job[]
 
-  jobs       Job[]
-  userSkills UserSkill[]
-
-  @@map(name: "skills")
+  @@map("skills")
 }
 
-model Job {
-  id              String   @id @default(cuid()) @map("_id")
-  title           String
-  description     String
-  startDate       DateTime
-  endDate         DateTime
-  weeklyHours     Int
-  requirements    String[]
-  salary          Float
-  location        String
-  type            String
-  experienceLevel String
-  duration        Int
-  createdAt       DateTime @default(now()) @map(name: "created_at")
-  updatedAt       DateTime @default(now()) @map(name: "updated_at")
-
-  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+model UserSkill {
+  id      String @id @default(cuid()) @map("_id")
   userId  String
-  skill   Skill  @relation(fields: [skillId], references: [id], onDelete: Cascade)
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   skillId String
+  skill   Skill  @relation(fields: [skillId], references: [id], onDelete: Cascade)
 
-  comments            Comment[] // Add onDelete: Cascade if desired
-  likes               Like[] // Add onDelete: Cascade if desired
-  linkedNotifications Notification[]
-  attachments         Media[]
-  company             Company[]
-  application         Application[]
-  saveJob             SaveJob[]
-  views               ContentView[]
-
-  @@map(name: "jobs")
-}
-
-model Company {
-  id String @id @default(cuid()) @map("_id")
-
-  name        String
-  description String?
-  website     String?
-  location    String?
-  logo        String?
-
-  userId String
-  user   User   @relation(fields: [userId], references: [id])
-  jobId  String
-  job    Job    @relation(fields: [jobId], references: [id])
+  title             String
+  level             SkillLevel
+  yearsOfExperience Int
+  skillEndorsements SkillEndorsement[]
 
   createdAt DateTime @default(now()) @map(name: "created_at")
   updatedAt DateTime @default(now()) @map(name: "updated_at")
 
-  @@map(name: "companies")
+
+  @@map("user_skills")
 }
 
-model Application {
-  id String @id @default(cuid()) @map("_id")
+enum SkillLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+  EXPERT
+}
 
-  applicantId String
-  applicant   User   @relation(fields: [applicantId], references: [id])
-  jobId       String
-  job         Job    @relation(fields: [jobId], references: [id])
-
-  status ApplicationStatus @default(pending)
+model SkillEndorsement {
+  id          String    @id @default(cuid()) @map("_id")
+  userSkillId String
+  userSkill   UserSkill @relation(fields: [userSkillId], references: [id], onDelete: Cascade)
+  endorserId  String
+  endorser    User      @relation(fields: [endorserId], references: [id], onDelete: Cascade)
+  skillId     String
+  skill       Skill     @relation(fields: [skillId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now()) @map(name: "created_at")
   updatedAt DateTime @default(now()) @map(name: "updated_at")
 
-  @@map(name: "applications")
+  @@unique([userSkillId, endorserId])
+  @@map("skill_endorsements")
 }
 
 model Post {
@@ -245,6 +213,20 @@ model Post {
   views               ContentView[]
 
   @@map(name: "posts")
+}
+
+model Bookmark {
+  id     String @id @default(cuid()) @map("_id")
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  postId String
+  post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @default(now()) @map(name: "updated_at")
+
+  @@unique([userId, postId])
+  @@map(name: "bookmarks")
 }
 
 model Media {
@@ -337,43 +319,59 @@ model Block {
   @@map(name: "blocks")
 }
 
-model Verification {
-  id String @id @default(cuid()) @map("_id")
-
-  identifier String
-  value      String
-  expiresAt  DateTime
-
-  createdAt DateTime?
-  updatedAt DateTime?
-
-  @@index([identifier])
-  @@map("verifications")
-}
-
-model TwoFactor {
-  id          String @id @default(cuid()) @map("_id")
-  secret      String
-  backupCodes String
-  userId      String
-  user        User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([secret])
-  @@map("twoFactor")
-}
-
-model Bookmark {
-  id     String @id @default(cuid()) @map("_id")
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  postId String
-  post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
+model Job {
+  id              String   @id @default(cuid()) @map("_id")
+  title           String
+  description     String
+  startDate       DateTime
+  endDate         DateTime
+  weeklyHours     Int
+  requirements    String[]
+  salary          Float
+  location        String
+  type            String
+  experienceLevel String
+  duration        Int
 
   createdAt DateTime @default(now()) @map(name: "created_at")
   updatedAt DateTime @default(now()) @map(name: "updated_at")
 
-  @@unique([userId, postId])
-  @@map(name: "bookmarks")
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId  String
+  skill   Skill  @relation(fields: [skillId], references: [id], onDelete: Cascade)
+  skillId String
+
+  comments            Comment[] // Add onDelete: Cascade if desired
+  likes               Like[] // Add onDelete: Cascade if desired
+  linkedNotifications Notification[]
+  attachments         Media[]
+  application         Application[]
+  saveJob             SaveJob[]
+  views               ContentView[]
+
+  @@map(name: "jobs")
+}
+
+enum ApplicationStatus {
+  pending
+  accepted
+  rejected
+}
+
+model Application {
+  id String @id @default(cuid()) @map("_id")
+
+  applicantId String
+  applicant   User   @relation(fields: [applicantId], references: [id])
+  jobId       String
+  job         Job    @relation(fields: [jobId], references: [id])
+
+  status ApplicationStatus @default(pending)
+
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @default(now()) @map(name: "updated_at")
+
+  @@map(name: "applications")
 }
 
 model SaveJob {
@@ -388,6 +386,29 @@ model SaveJob {
 
   @@unique([userId, jobId])
   @@map(name: "save_jobs")
+}
+
+model Research {
+  id String @id @default(cuid()) @map("_id")
+
+  title       String
+  description String
+  content     String
+
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @default(now()) @map(name: "updated_at")
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+
+  comments            Comment[] // Add onDelete: Cascade if desired, though this is on the Comment side
+  likes               Like[] // Add onDelete: Cascade if desired, though this is on the Like side
+  linkedNotifications Notification[]
+  attachments         Media[]
+  saveResearch        SaveResearch[]
+  views               ContentView[]
+
+  @@map(name: "researches")
 }
 
 model SaveResearch {
@@ -550,39 +571,6 @@ model CourseMaterial {
   @@map(name: "course_materials")
 }
 
-model UserSkill {
-  id String @id @default(cuid()) @map("_id")
-
-  skillId           String
-  skill             Skill  @relation(fields: [skillId], references: [id], onDelete: Cascade)
-  userId            String
-  user              User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  level             Int    @default(1) // 1-5 scale
-  yearsOfExperience Int?
-
-  endorsements SkillEndorsement[]
-
-  createdAt DateTime @default(now()) @map(name: "created_at")
-  updatedAt DateTime @default(now()) @map(name: "updated_at")
-
-  @@unique([userId, skillId])
-  @@map(name: "user_skills")
-}
-
-model SkillEndorsement {
-  id String @id @default(cuid()) @map("_id")
-
-  userSkillId String
-  userSkill   UserSkill @relation(fields: [userSkillId], references: [id], onDelete: Cascade)
-  endorserId  String
-  endorser    User      @relation(fields: [endorserId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now()) @map(name: "created_at")
-
-  @@unique([userSkillId, endorserId])
-  @@map(name: "skill_endorsements")
-}
-
 model ProfileView {
   id String @id @default(cuid()) @map("_id")
 
@@ -612,8 +600,3 @@ model ContentView {
 
   @@map(name: "content_views")
 }
-
-// In Comment model, the relation to Post already has onDelete: Cascade
-// You might want to ensure this is consistent for Job and Research relations if they become non-optional
-// However, since they are optional, the current setup is fine, but deletion must be handled in application code
-// or by making the relations non-optional and adding onDelete: Cascade.
