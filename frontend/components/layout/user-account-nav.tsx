@@ -110,7 +110,7 @@ export function UserAccountNav() {
               {user.role === "INSTITUTION" ? (
                 <li className="text-foreground hover:bg-muted rounded-lg">
                   <Link
-                    href="/admin/dashboard"
+                    href="/admin"
                     onClick={closeDrawer}
                     className="flex w-full items-center gap-3 px-2.5 py-2"
                   >
@@ -188,10 +188,7 @@ export function UserAccountNav() {
 
         {user.role === "INSTITUTION" ? (
           <DropdownMenuItem asChild>
-            <Link
-              href="/admin/dashboard"
-              className="flex items-center space-x-2.5"
-            >
+            <Link href="/admin" className="flex items-center space-x-2.5">
               <Lock className="size-4" />
               <p className="text-sm">Admin</p>
             </Link>

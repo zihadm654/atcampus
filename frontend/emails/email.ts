@@ -4,7 +4,7 @@ import { Resend } from "resend";
 import { env } from "@/env.mjs";
 import { siteConfig } from "@/config/site";
 
-import { getUserByEmail } from "./user";
+import { getUserByEmail } from "../actions/user";
 
 export const resend = new Resend(env.RESEND_API_KEY);
 

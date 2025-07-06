@@ -1,4 +1,6 @@
 import { sendEmailAction } from "@/actions/send-email.action";
+import { reactInvitationEmail } from "@/emails/invitation";
+import { reactResetPasswordEmail } from "@/emails/reset-password";
 import { betterAuth, type BetterAuthOptions } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { APIError, createAuthMiddleware } from "better-auth/api";
@@ -8,6 +10,7 @@ import {
   customSession,
   magicLink,
   multiSession,
+  organization,
   twoFactor,
   username,
 } from "better-auth/plugins";
@@ -17,6 +20,8 @@ import { hashPassword, verifyPassword } from "@/lib/argon2";
 import { prisma } from "@/lib/db";
 import { ac, roles } from "@/lib/permissions";
 import { normalizeName, VALID_DOMAINS } from "@/lib/utils";
+
+import transporter from "./nodemailer";
 
 const options = {
   database: prismaAdapter(prisma, {
@@ -50,14 +55,14 @@ const options = {
       verify: verifyPassword,
     },
     requireEmailVerification: false,
-    sendResetPassword: async ({ user, url }) => {
-      await sendEmailAction({
+    async sendResetPassword({ user, url }) {
+      await transporter.sendMail({
         to: user.email,
         subject: "Reset your password",
-        meta: {
-          description: "Please click the link below to reset your password.",
-          link: String(url),
-        },
+        react: reactResetPasswordEmail({
+          username: user.email,
+          resetLink: url,
+        }),
       });
     },
   },
@@ -139,6 +144,7 @@ const options = {
   account: {
     accountLinking: {
       enabled: false,
+      trustedProviders: ["google", "github", "demo-app"],
     },
   },
   advanced: {
@@ -161,8 +167,39 @@ const options = {
       ac,
       roles,
     }),
+    organization({
+      async sendInvitationEmail(data) {
+        await transporter.sendMail({
+          to: data.email,
+          subject: "You've been invited to join an organization",
+          react: reactInvitationEmail({
+            username: data.email,
+            invitedByUsername: data.inviter.user.name,
+            invitedByEmail: data.inviter.user.email,
+            teamName: data.organization.name,
+            inviteLink:
+              process.env.NODE_ENV === "development"
+                ? `http://localhost:3000/accept-invitation/${data.id}`
+                : `${
+                    process.env.BETTER_AUTH_URL ||
+                    "https://demo.better-auth.com"
+                  }/accept-invitation/${data.id}`,
+          }),
+        });
+      },
+    }),
     multiSession({ maximumSessions: 3 }),
-    twoFactor(),
+    twoFactor({
+      otpOptions: {
+        async sendOTP({ user, otp }) {
+          await transporter.sendMail({
+            to: user.email,
+            subject: "Your OTP",
+            html: `Your OTP is ${otp}`,
+          });
+        },
+      },
+    }),
     magicLink({
       sendMagicLink: async ({ email, url }) => {
         await sendEmailAction({
@@ -188,6 +225,7 @@ export const auth = betterAuth({
           expiresAt: session.expiresAt,
           token: session.token,
           userAgent: session.userAgent,
+          impersonatedBy: session.impersonatedBy,
         },
         user: {
           id: user.id,

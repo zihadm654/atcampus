@@ -40,12 +40,12 @@ export async function signUpEmailAction(data: TRegister) {
     });
 
     // If we have a userId in the response, register with Stream
-    if (response?.user.id) {
-      await streamServerClient.upsertUser({
-        id: response.user.id,
-        name: response.user.name,
-      });
-    }
+    // if (response?.user.id) {
+    //   await streamServerClient.upsertUser({
+    //     id: response.user.id,
+    //     name: response.user.name,
+    //   });
+    // }
 
     return {
       success: true,
