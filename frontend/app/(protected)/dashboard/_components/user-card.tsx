@@ -1,8 +1,5 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import Image from "next/image";
-import { useRouter } from "next/navigation";
 import {
   Edit,
   Fingerprint,
@@ -17,26 +14,26 @@ import {
   StopCircle,
   Trash,
   X,
-} from "lucide-react";
-import QRCode from "react-qr-code";
-import { toast } from "sonner";
-import { UAParser } from "ua-parser-js";
-
-import { Session } from "@/types/auth-types";
-import { authClient as client, signOut, useSession } from "@/lib/auth-client";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+} from 'lucide-react';
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+import QRCode from 'react-qr-code';
+import { toast } from 'sonner';
+import { UAParser } from 'ua-parser-js';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
-import CopyButton from "@/components/ui/copy-button";
+} from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
+import CopyButton from '@/components/ui/copy-button';
 import {
   Dialog,
   DialogContent,
@@ -45,10 +42,10 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { PasswordInput } from "@/components/ui/password-input";
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { PasswordInput } from '@/components/ui/password-input';
 import {
   Table,
   TableBody,
@@ -56,20 +53,22 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from '@/components/ui/table';
+import { authClient as client, signOut, useSession } from '@/lib/auth-client';
+import type { Session } from '@/types/auth-types';
 
 export default function UserCard(props: {
   session: Session | null;
-  activeSessions: Session["session"][];
+  activeSessions: Session['session'][];
 }) {
   const router = useRouter();
   const { data, isPending } = useSession();
   const session = data || props.session;
   const [isTerminating, setIsTerminating] = useState<string>();
   const [isPendingTwoFa, setIsPendingTwoFa] = useState<boolean>(false);
-  const [twoFaPassword, setTwoFaPassword] = useState<string>("");
+  const [twoFaPassword, setTwoFaPassword] = useState<string>('');
   const [twoFactorDialog, setTwoFactorDialog] = useState<boolean>(false);
-  const [twoFactorVerifyURI, setTwoFactorVerifyURI] = useState<string>("");
+  const [twoFactorVerifyURI, setTwoFactorVerifyURI] = useState<string>('');
   const [isSignOut, setIsSignOut] = useState<boolean>(false);
   const [emailVerificationPending, setEmailVerificationPending] =
     useState<boolean>(false);
@@ -88,17 +87,17 @@ export default function UserCard(props: {
             <div className="flex items-center gap-4">
               <Avatar className="hidden h-9 w-9 sm:flex">
                 <AvatarImage
-                  src={session?.user.image || undefined}
                   alt="Avatar"
                   className="object-cover"
+                  src={session?.user.image || undefined}
                 />
                 <AvatarFallback>{session?.user.name.charAt(0)}</AvatarFallback>
               </Avatar>
               <div className="grid">
                 <div className="flex items-center gap-1">
-                  <p className="text-sm leading-none font-medium">
+                  <p className="font-medium text-sm leading-none">
                     {session?.user.name}
-                  </p>{" "}
+                  </p>{' '}
                 </div>
                 <p className="text-sm">{session?.user.email}</p>
               </div>
@@ -115,13 +114,11 @@ export default function UserCard(props: {
               verification email. If you haven't received the email, click the
               button below to resend.
               <Button
-                size="sm"
-                variant="secondary"
                 className="mt-2"
                 onClick={async () => {
                   await client.sendVerificationEmail(
                     {
-                      email: session?.user.email || "",
+                      email: session?.user.email || '',
                     },
                     {
                       onRequest(context) {
@@ -132,17 +129,19 @@ export default function UserCard(props: {
                         setEmailVerificationPending(false);
                       },
                       onSuccess() {
-                        toast.success("Verification email sent successfully");
+                        toast.success('Verification email sent successfully');
                         setEmailVerificationPending(false);
                       },
-                    },
+                    }
                   );
                 }}
+                size="sm"
+                variant="secondary"
               >
                 {emailVerificationPending ? (
-                  <Loader2 size={15} className="animate-spin" />
+                  <Loader2 className="animate-spin" size={15} />
                 ) : (
-                  "Resend Verification Email"
+                  'Resend Verification Email'
                 )}
               </Button>
             </AlertDescription>
@@ -150,23 +149,23 @@ export default function UserCard(props: {
         )}
 
         <div className="flex w-max flex-col gap-1 border-l-2 px-2">
-          <p className="text-xs font-medium">Active Sessions</p>
+          <p className="font-medium text-xs">Active Sessions</p>
           {activeSessions
             .filter((session) => session.userAgent)
             .map((session) => {
               return (
                 <div key={session.id}>
-                  <div className="flex items-center gap-2 text-sm font-medium text-black dark:text-white">
-                    {new UAParser(session.userAgent || "").getDevice().type ===
-                    "mobile" ? (
+                  <div className="flex items-center gap-2 font-medium text-black text-sm dark:text-white">
+                    {new UAParser(session.userAgent || '').getDevice().type ===
+                      'mobile' ? (
                       <LucidePhone />
                     ) : (
                       <Laptop size={16} />
                     )}
-                    {new UAParser(session.userAgent || "").getOS().name},{" "}
-                    {new UAParser(session.userAgent || "").getBrowser().name}
+                    {new UAParser(session.userAgent || '').getOS().name},{' '}
+                    {new UAParser(session.userAgent || '').getBrowser().name}
                     <button
-                      className="border-muted-foreground cursor-pointer text-xs text-red-500 underline opacity-80"
+                      className="cursor-pointer border-muted-foreground text-red-500 text-xs underline opacity-80"
                       onClick={async () => {
                         setIsTerminating(session.id);
                         const res = await client.revokeSession({
@@ -176,7 +175,7 @@ export default function UserCard(props: {
                         if (res.error) {
                           toast.error(res.error.message);
                         } else {
-                          toast.success("Session terminated successfully");
+                          toast.success('Session terminated successfully');
                           removeActiveSession(session.id);
                         }
                         if (session.id === props.session?.session.id)
@@ -185,11 +184,11 @@ export default function UserCard(props: {
                       }}
                     >
                       {isTerminating === session.id ? (
-                        <Loader2 size={15} className="animate-spin" />
+                        <Loader2 className="animate-spin" size={15} />
                       ) : session.id === props.session?.session.id ? (
-                        "Sign Out"
+                        'Sign Out'
                       ) : (
-                        "Terminate"
+                        'Terminate'
                       )}
                     </button>
                   </div>
@@ -204,7 +203,7 @@ export default function UserCard(props: {
               {!!session?.user.twoFactorEnabled && (
                 <Dialog>
                   <DialogTrigger asChild>
-                    <Button variant="outline" className="gap-2">
+                    <Button className="gap-2" variant="outline">
                       <QrCode size={16} />
                       <span className="text-xs md:text-sm">Scan QR Code</span>
                     </Button>
@@ -235,17 +234,17 @@ export default function UserCard(props: {
                     ) : (
                       <div className="flex flex-col gap-2">
                         <PasswordInput
-                          value={twoFaPassword}
                           onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                             setTwoFaPassword(e.target.value)
                           }
                           placeholder="Enter Password"
+                          value={twoFaPassword}
                         />
                         <Button
                           onClick={async () => {
                             if (twoFaPassword.length < 8) {
                               toast.error(
-                                "Password must be at least 8 characters",
+                                'Password must be at least 8 characters'
                               );
                               return;
                             }
@@ -257,9 +256,9 @@ export default function UserCard(props: {
                                 onSuccess(context) {
                                   setTwoFactorVerifyURI(context.data.totpURI);
                                 },
-                              },
+                              }
                             );
-                            setTwoFaPassword("");
+                            setTwoFaPassword('');
                           }}
                         >
                           Show QR Code
@@ -269,13 +268,13 @@ export default function UserCard(props: {
                   </DialogContent>
                 </Dialog>
               )}
-              <Dialog open={twoFactorDialog} onOpenChange={setTwoFactorDialog}>
+              <Dialog onOpenChange={setTwoFactorDialog} open={twoFactorDialog}>
                 <DialogTrigger asChild>
                   <Button
-                    variant={
-                      session?.user.twoFactorEnabled ? "destructive" : "outline"
-                    }
                     className="gap-2"
+                    variant={
+                      session?.user.twoFactorEnabled ? 'destructive' : 'outline'
+                    }
                   >
                     {session?.user.twoFactorEnabled ? (
                       <ShieldOff size={16} />
@@ -284,8 +283,8 @@ export default function UserCard(props: {
                     )}
                     <span className="text-xs md:text-sm">
                       {session?.user.twoFactorEnabled
-                        ? "Disable 2FA"
-                        : "Enable 2FA"}
+                        ? 'Disable 2FA'
+                        : 'Enable 2FA'}
                     </span>
                   </Button>
                 </DialogTrigger>
@@ -293,13 +292,13 @@ export default function UserCard(props: {
                   <DialogHeader>
                     <DialogTitle>
                       {session?.user.twoFactorEnabled
-                        ? "Disable 2FA"
-                        : "Enable 2FA"}
+                        ? 'Disable 2FA'
+                        : 'Enable 2FA'}
                     </DialogTitle>
                     <DialogDescription>
                       {session?.user.twoFactorEnabled
-                        ? "Disable the second factor authentication from your account"
-                        : "Enable 2FA to secure your account"}
+                        ? 'Disable the second factor authentication from your account'
+                        : 'Enable 2FA to secure your account'}
                     </DialogDescription>
                   </DialogHeader>
 
@@ -312,11 +311,11 @@ export default function UserCard(props: {
                         Scan the QR code with your TOTP app
                       </Label>
                       <Input
-                        value={twoFaPassword}
                         onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                           setTwoFaPassword(e.target.value)
                         }
                         placeholder="Enter OTP"
+                        value={twoFaPassword}
                       />
                     </div>
                   ) : (
@@ -324,11 +323,11 @@ export default function UserCard(props: {
                       <Label htmlFor="password">Password</Label>
                       <PasswordInput
                         id="password"
-                        placeholder="Password"
-                        value={twoFaPassword}
                         onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                           setTwoFaPassword(e.target.value)
                         }
+                        placeholder="Password"
+                        value={twoFaPassword}
                       />
                     </div>
                   )}
@@ -337,20 +336,19 @@ export default function UserCard(props: {
                       disabled={isPendingTwoFa}
                       onClick={async () => {
                         if (twoFaPassword.length < 8 && !twoFactorVerifyURI) {
-                          toast.error("Password must be at least 8 characters");
+                          toast.error('Password must be at least 8 characters');
                           return;
                         }
                         setIsPendingTwoFa(true);
                         if (session?.user.twoFactorEnabled) {
                           const res = await client.twoFactor.disable({
-                            //@ts-ignore
                             password: twoFaPassword,
                             fetchOptions: {
                               onError(context) {
                                 toast.error(context.error.message);
                               },
                               onSuccess() {
-                                toast("2FA disabled successfully");
+                                toast('2FA disabled successfully');
                                 setTwoFactorDialog(false);
                               },
                             },
@@ -362,14 +360,14 @@ export default function UserCard(props: {
                               fetchOptions: {
                                 onError(context) {
                                   setIsPendingTwoFa(false);
-                                  setTwoFaPassword("");
+                                  setTwoFaPassword('');
                                   toast.error(context.error.message);
                                 },
                                 onSuccess() {
-                                  toast("2FA enabled successfully");
-                                  setTwoFactorVerifyURI("");
+                                  toast('2FA enabled successfully');
+                                  setTwoFactorVerifyURI('');
                                   setIsPendingTwoFa(false);
-                                  setTwoFaPassword("");
+                                  setTwoFaPassword('');
                                   setTwoFactorDialog(false);
                                 },
                               },
@@ -391,15 +389,15 @@ export default function UserCard(props: {
                           });
                         }
                         setIsPendingTwoFa(false);
-                        setTwoFaPassword("");
+                        setTwoFaPassword('');
                       }}
                     >
                       {isPendingTwoFa ? (
-                        <Loader2 size={15} className="animate-spin" />
+                        <Loader2 className="animate-spin" size={15} />
                       ) : session?.user.twoFactorEnabled ? (
-                        "Disable 2FA"
+                        'Disable 2FA'
                       ) : (
-                        "Enable 2FA"
+                        'Enable 2FA'
                       )}
                     </Button>
                   </DialogFooter>
@@ -414,22 +412,22 @@ export default function UserCard(props: {
         {session?.session.impersonatedBy ? (
           <Button
             className="z-10 gap-2"
-            variant="secondary"
+            disabled={isSignOut}
             onClick={async () => {
               setIsSignOut(true);
               await client.admin.stopImpersonating();
               setIsSignOut(false);
-              toast.info("Impersonation stopped successfully");
-              router.push("/admin");
+              toast.info('Impersonation stopped successfully');
+              router.push('/admin');
             }}
-            disabled={isSignOut}
+            variant="secondary"
           >
             <span className="text-sm">
               {isSignOut ? (
-                <Loader2 size={15} className="animate-spin" />
+                <Loader2 className="animate-spin" size={15} />
               ) : (
                 <div className="flex items-center gap-2">
-                  <StopCircle size={16} color="red" />
+                  <StopCircle color="red" size={16} />
                   Stop Impersonation
                 </div>
               )}
@@ -438,23 +436,23 @@ export default function UserCard(props: {
         ) : (
           <Button
             className="z-10 gap-2"
-            variant="secondary"
+            disabled={isSignOut}
             onClick={async () => {
               setIsSignOut(true);
               await signOut({
                 fetchOptions: {
                   onSuccess() {
-                    router.push("/");
+                    router.push('/');
                   },
                 },
               });
               setIsSignOut(false);
             }}
-            disabled={isSignOut}
+            variant="secondary"
           >
             <span className="text-sm">
               {isSignOut ? (
-                <Loader2 size={15} className="animate-spin" />
+                <Loader2 className="animate-spin" size={15} />
               ) : (
                 <div className="flex items-center gap-2">
                   <LogOut size={16} />
@@ -479,26 +477,26 @@ async function convertImageToBase64(file: File): Promise<string> {
 }
 
 function ChangePassword() {
-  const [currentPassword, setCurrentPassword] = useState<string>("");
-  const [newPassword, setNewPassword] = useState<string>("");
-  const [confirmPassword, setConfirmPassword] = useState<string>("");
+  const [currentPassword, setCurrentPassword] = useState<string>('');
+  const [newPassword, setNewPassword] = useState<string>('');
+  const [confirmPassword, setConfirmPassword] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
   const [open, setOpen] = useState<boolean>(false);
   const [signOutDevices, setSignOutDevices] = useState<boolean>(false);
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog onOpenChange={setOpen} open={open}>
       <DialogTrigger asChild>
-        <Button className="z-10 gap-2" variant="outline" size="sm">
+        <Button className="z-10 gap-2" size="sm" variant="outline">
           <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="1em"
             height="1em"
             viewBox="0 0 24 24"
+            width="1em"
+            xmlns="http://www.w3.org/2000/svg"
           >
             <path
-              fill="currentColor"
               d="M2.5 18.5v-1h19v1zm.535-5.973l-.762-.442l.965-1.693h-1.93v-.884h1.93l-.965-1.642l.762-.443L4 9.066l.966-1.643l.761.443l-.965 1.642h1.93v.884h-1.93l.965 1.693l-.762.442L4 10.835zm8 0l-.762-.442l.966-1.693H9.308v-.884h1.93l-.965-1.642l.762-.443L12 9.066l.966-1.643l.761.443l-.965 1.642h1.93v.884h-1.93l.965 1.693l-.762.442L12 10.835zm8 0l-.762-.442l.966-1.693h-1.931v-.884h1.93l-.965-1.642l.762-.443L20 9.066l.966-1.643l.761.443l-.965 1.642h1.93v.884h-1.93l.965 1.693l-.762.442L20 10.835z"
-            ></path>
+              fill="currentColor"
+            />
           </svg>
           <span className="text-muted-foreground text-sm">Change Password</span>
         </Button>
@@ -511,31 +509,31 @@ function ChangePassword() {
         <div className="grid gap-2">
           <Label htmlFor="current-password">Current Password</Label>
           <PasswordInput
+            autoComplete="new-password"
             id="current-password"
-            value={currentPassword}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
               setCurrentPassword(e.target.value)
             }
-            autoComplete="new-password"
             placeholder="Password"
+            value={currentPassword}
           />
           <Label htmlFor="new-password">New Password</Label>
           <PasswordInput
-            value={newPassword}
+            autoComplete="new-password"
             onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
               setNewPassword(e.target.value)
             }
-            autoComplete="new-password"
             placeholder="New Password"
+            value={newPassword}
           />
           <Label htmlFor="password">Confirm Password</Label>
           <PasswordInput
-            value={confirmPassword}
+            autoComplete="new-password"
             onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
               setConfirmPassword(e.target.value)
             }
-            autoComplete="new-password"
             placeholder="Confirm Password"
+            value={confirmPassword}
           />
           <div className="flex items-center gap-2">
             <Checkbox
@@ -550,38 +548,38 @@ function ChangePassword() {
           <Button
             onClick={async () => {
               if (newPassword !== confirmPassword) {
-                toast.error("Passwords do not match");
+                toast.error('Passwords do not match');
                 return;
               }
               if (newPassword.length < 8) {
-                toast.error("Password must be at least 8 characters");
+                toast.error('Password must be at least 8 characters');
                 return;
               }
               setLoading(true);
               const res = await client.changePassword({
-                newPassword: newPassword,
-                currentPassword: currentPassword,
+                newPassword,
+                currentPassword,
                 revokeOtherSessions: signOutDevices,
               });
               setLoading(false);
               if (res.error) {
                 toast.error(
                   res.error.message ||
-                    "Couldn't change your password! Make sure it's correct",
+                  "Couldn't change your password! Make sure it's correct"
                 );
               } else {
                 setOpen(false);
-                toast.success("Password changed successfully");
-                setCurrentPassword("");
-                setNewPassword("");
-                setConfirmPassword("");
+                toast.success('Password changed successfully');
+                setCurrentPassword('');
+                setNewPassword('');
+                setConfirmPassword('');
               }
             }}
           >
             {loading ? (
-              <Loader2 size={15} className="animate-spin" />
+              <Loader2 className="animate-spin" size={15} />
             ) : (
-              "Change Password"
+              'Change Password'
             )}
           </Button>
         </DialogFooter>
@@ -610,9 +608,9 @@ function EditUserDialog() {
   const [open, setOpen] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog onOpenChange={setOpen} open={open}>
       <DialogTrigger asChild>
-        <Button size="sm" className="gap-2" variant="secondary">
+        <Button className="gap-2" size="sm" variant="secondary">
           <Edit size={13} />
           Edit User
         </Button>
@@ -626,12 +624,12 @@ function EditUserDialog() {
           <Label htmlFor="name">Full Name</Label>
           <Input
             id="name"
-            type="name"
-            placeholder={data?.user.name}
-            required
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
               setName(e.target.value);
             }}
+            placeholder={data?.user.name}
+            required
+            type="name"
           />
           <div className="grid gap-2">
             <Label htmlFor="image">Profile Image</Label>
@@ -639,20 +637,20 @@ function EditUserDialog() {
               {imagePreview && (
                 <div className="relative h-16 w-16 overflow-hidden rounded-sm">
                   <Image
-                    src={imagePreview}
                     alt="Profile preview"
                     layout="fill"
                     objectFit="cover"
+                    src={imagePreview}
                   />
                 </div>
               )}
               <div className="flex w-full items-center gap-2">
                 <Input
-                  id="image"
-                  type="file"
                   accept="image/*"
+                  className="w-full text-muted-foreground"
+                  id="image"
                   onChange={handleImageChange}
-                  className="text-muted-foreground w-full"
+                  type="file"
                 />
                 {imagePreview && (
                   <X
@@ -677,14 +675,14 @@ function EditUserDialog() {
                 name: name ? name : undefined,
                 fetchOptions: {
                   onSuccess: () => {
-                    toast.success("User updated successfully");
+                    toast.success('User updated successfully');
                   },
                   onError: (error) => {
                     toast.error(error.error.message);
                   },
                 },
               });
-              setName("");
+              setName('');
               router.refresh();
               setImage(null);
               setImagePreview(null);
@@ -693,9 +691,9 @@ function EditUserDialog() {
             }}
           >
             {isLoading ? (
-              <Loader2 size={15} className="animate-spin" />
+              <Loader2 className="animate-spin" size={15} />
             ) : (
-              "Update"
+              'Update'
             )}
           </Button>
         </DialogFooter>

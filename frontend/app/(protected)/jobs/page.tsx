@@ -1,6 +1,3 @@
-import { Metadata } from "next";
-import Link from "next/link";
-import { redirect } from "next/navigation";
 import {
   Briefcase,
   Building,
@@ -9,24 +6,26 @@ import {
   DollarSign,
   MapPin,
   Search,
-} from "lucide-react";
-
-import { getCurrentUser } from "@/lib/session";
-import { constructMetadata } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import JobFeed from "@/components/feed/JobFeed";
+} from 'lucide-react';
+import type { Metadata } from 'next';
+import Link from 'next/link';
+import { redirect } from 'next/navigation';
+import JobFeed from '@/components/feed/JobFeed';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { getCurrentUser } from '@/lib/session';
+import { constructMetadata } from '@/lib/utils';
 
 export const metadata: Metadata = constructMetadata({
-  title: "Supplement Jobs - AtCampus",
+  title: 'Supplement Jobs - AtCampus',
   description:
-    "Find and apply for supplement jobs to gain practical experience.",
+    'Find and apply for supplement jobs to gain practical experience.',
 });
 
 export default async function JobsPage() {
   const user = await getCurrentUser();
 
-  if (!user) redirect("/login");
+  if (!user) redirect('/login');
 
   return (
     <div className="flex w-full flex-col gap-6">
@@ -35,7 +34,7 @@ export default async function JobsPage() {
         <div className="flex flex-col gap-3">
           <div className="flex items-center gap-2">
             <Briefcase className="h-6 w-6" />
-            <h1 className="text-3xl font-bold">Supplement Jobs</h1>
+            <h1 className="font-bold text-3xl">Supplement Jobs</h1>
           </div>
           <p className="max-w-2xl text-white/90">
             Find and apply for supplement jobs to gain practical experience and
@@ -47,15 +46,12 @@ export default async function JobsPage() {
             <div className="flex h-10 w-full items-center gap-2 rounded-md bg-white px-3 text-gray-800">
               <Search className="h-4 w-4 text-gray-500" />
               <input
-                type="text"
-                placeholder="Search for jobs..."
                 className="h-full w-full border-0 bg-transparent outline-none placeholder:text-gray-400"
+                placeholder="Search for jobs..."
+                type="text"
               />
             </div>
-            <Button
-              size="sm"
-              className="h-10 rounded-md bg-blue-700 hover:bg-blue-800"
-            >
+            <Button className="h-10 rounded-md hover:bg-blue-800" size="sm">
               Search
             </Button>
           </div>
@@ -65,23 +61,23 @@ export default async function JobsPage() {
       {/* Filters */}
       <div className="flex items-center justify-between gap-2">
         <div className="flex flex-wrap items-center gap-2">
-          <Button variant="outline" size="sm" className="rounded-full">
+          <Button className="rounded-full" size="sm" variant="outline">
             All Jobs
           </Button>
-          <Button variant="outline" size="sm" className="rounded-full">
+          <Button className="rounded-full" size="sm" variant="outline">
             On Campus
           </Button>
-          <Button variant="outline" size="sm" className="rounded-full">
+          <Button className="rounded-full" size="sm" variant="outline">
             Remote
           </Button>
-          <Button variant="outline" size="sm" className="rounded-full">
+          <Button className="rounded-full" size="sm" variant="outline">
             Part-time
           </Button>
-          <Button variant="outline" size="sm" className="rounded-full">
+          <Button className="rounded-full" size="sm" variant="outline">
             Full-time
           </Button>
         </div>
-        <Button variant="outline" size="sm" className="rounded-xl">
+        <Button className="rounded-xl" size="sm" variant="outline">
           <Link href="/jobs/createJob">Create Job</Link>
         </Button>
       </div>

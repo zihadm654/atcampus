@@ -12,14 +12,6 @@ export const sidebarLinks: SidebarNavItem[] = [
         authorizeOnly: UserRole.INSTITUTION,
       },
       { href: "/", icon: "home", title: "Feed" },
-      // { href: "/dashboard/charts", icon: "lineChart", title: "Charts" },
-      // {
-      //   href: "/admin/orders",
-      //   icon: "package",
-      //   title: "Orders",
-      //   badge: 2,
-      //   authorizeOnly: UserRole.INSTITUTION,
-      // },
       {
         href: "/courses",
         icon: "bookOpen",

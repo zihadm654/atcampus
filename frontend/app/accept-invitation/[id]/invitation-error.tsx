@@ -1,7 +1,7 @@
-import Link from "next/link";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle } from 'lucide-react';
+import Link from 'next/link';
 
-import { Button } from "@/components/ui/button";
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
@@ -9,14 +9,14 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
+} from '@/components/ui/card';
 
 export function InvitationError() {
   return (
     <Card className="mx-auto w-full max-w-md">
       <CardHeader>
         <div className="flex items-center space-x-2">
-          <AlertCircle className="text-destructive h-6 w-6" />
+          <AlertCircle className="h-6 w-6 text-destructive" />
           <CardTitle className="text-destructive text-xl">
             Invitation Error
           </CardTitle>
@@ -26,15 +26,15 @@ export function InvitationError() {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <p className="text-muted-foreground mb-4 text-sm">
+        <p className="mb-4 text-muted-foreground text-sm">
           The invitation you're trying to access is either invalid or you don't
           have the correct permissions. Please check your email for a valid
           invitation or contact the person who sent it.
         </p>
       </CardContent>
       <CardFooter>
-        <Link href="/" className="w-full">
-          <Button variant="outline" className="w-full">
+        <Link className="w-full" href="/">
+          <Button className="w-full" variant="outline">
             Go back to home
           </Button>
         </Link>

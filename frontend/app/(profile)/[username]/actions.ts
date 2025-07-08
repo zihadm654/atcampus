@@ -1,23 +1,25 @@
-"use server";
+'use server';
 
-import { getUserDataSelect } from "@/types/types";
-import { prisma } from "@/lib/db";
-import { getCurrentUser } from "@/lib/session";
-import streamServerClient from "@/lib/stream";
+import { prisma } from '@/lib/db';
+import { getCurrentUser } from '@/lib/session';
+import streamServerClient from '@/lib/stream';
 import {
+  type UpdateUserProfileValues,
   updateUserProfileSchema,
-  UpdateUserProfileValues,
-} from "@/lib/validations/validation";
+} from '@/lib/validations/validation';
+import { getUserDataSelect } from '@/types/types';
 
 export async function updateUserProfile(values: UpdateUserProfileValues) {
   const validatedValues = updateUserProfileSchema.parse(values);
 
   const user = await getCurrentUser();
 
-  if (!user) throw new Error("Unauthorized");
+  if (!user) {
+    throw new Error('Unauthorized');
+  }
 
   const updatedUser = await prisma.$transaction(async (tx) => {
-    const updatedUser = await tx.user.update({
+    const updateUser = await tx.user.update({
       where: { id: user.id },
       data: validatedValues,
       select: getUserDataSelect(user.id),
@@ -28,7 +30,7 @@ export async function updateUserProfile(values: UpdateUserProfileValues) {
         name: validatedValues.name,
       },
     });
-    return updatedUser;
+    return updateUser;
   });
 
   return updatedUser;

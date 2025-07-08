@@ -1,7 +1,5 @@
-import { Prisma } from "@prisma/client";
-import type { LiteralStringForUnion, UR } from "stream-chat";
-
-import { prisma } from "@/lib/db";
+import type { Prisma } from '@prisma/client';
+import type { LiteralStringForUnion, UR } from 'stream-chat';
 
 export function getUserDataSelect(loggedInUserId: string) {
   return {

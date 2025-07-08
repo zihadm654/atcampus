@@ -1,10 +1,8 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { UserRole } from "@prisma/client";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { format } from "date-fns";
+import { UserRole } from '@prisma/client';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { format } from 'date-fns';
 import {
   Calendar as CalendarIcon,
   Loader2,
@@ -12,36 +10,36 @@ import {
   RefreshCw,
   Trash,
   UserCircle,
-} from "lucide-react";
-import { toast } from "sonner";
-
-import { authClient } from "@/lib/auth-client";
-import { cn } from "@/lib/utils";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+} from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+import { toast } from 'sonner';
+import { ReturnButton } from '@/components/auth/return-button';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover";
+} from '@/components/ui/popover';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from '@/components/ui/select';
 import {
   Table,
   TableBody,
@@ -49,9 +47,10 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { ReturnButton } from "@/components/auth/return-button";
-import { UserRoleSelect } from "@/components/user-role-select";
+} from '@/components/ui/table';
+import { UserRoleSelect } from '@/components/user-role-select';
+import { authClient } from '@/lib/auth-client';
+import { cn } from '@/lib/utils';
 
 type User = {
   id: string;
@@ -70,33 +69,33 @@ export default function AdminDashboard() {
     name: string;
     role: UserRole;
   }>({
-    email: "",
-    password: "",
-    name: "",
+    email: '',
+    password: '',
+    name: '',
     role: UserRole.STUDENT,
   });
   const [isLoading, setIsLoading] = useState<string | undefined>();
   const [isBanDialogOpen, setIsBanDialogOpen] = useState(false);
   const [banForm, setBanForm] = useState({
-    userId: "",
-    reason: "",
+    userId: '',
+    reason: '',
     expirationDate: undefined as Date | undefined,
   });
 
   const { data: users, isLoading: isUsersLoading } = useQuery({
-    queryKey: ["users"],
+    queryKey: ['users'],
     queryFn: async () => {
       const data = await authClient.admin.listUsers(
         {
           query: {
             limit: 10,
-            sortBy: "createdAt",
-            sortDirection: "desc",
+            sortBy: 'createdAt',
+            sortDirection: 'desc',
           },
         },
         {
           throw: true,
-        },
+        }
       );
       return data?.users || [];
     },
@@ -104,7 +103,7 @@ export default function AdminDashboard() {
 
   const handleCreateUser = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading("create");
+    setIsLoading('create');
     try {
       await authClient.admin.createUser({
         email: newUser.email,
@@ -112,14 +111,14 @@ export default function AdminDashboard() {
         name: newUser.name,
         role: newUser.role,
       });
-      toast.success("User created successfully");
-      setNewUser({ email: "", password: "", name: "", role: "STUDENT" });
+      toast.success('User created successfully');
+      setNewUser({ email: '', password: '', name: '', role: 'STUDENT' });
       setIsDialogOpen(false);
       queryClient.invalidateQueries({
-        queryKey: ["users"],
+        queryKey: ['users'],
       });
     } catch (error: any) {
-      toast.error(error.message || "Failed to create user");
+      toast.error(error.message || 'Failed to create user');
     } finally {
       setIsLoading(undefined);
     }
@@ -129,12 +128,12 @@ export default function AdminDashboard() {
     setIsLoading(`delete-${id}`);
     try {
       await Promise.all([authClient.admin.removeUser({ userId: id })]);
-      toast.success("User deleted successfully");
+      toast.success('User deleted successfully');
       queryClient.invalidateQueries({
-        queryKey: ["users"],
+        queryKey: ['users'],
       });
     } catch (error: any) {
-      toast.error(error.message || "Failed to delete user");
+      toast.error(error.message || 'Failed to delete user');
     } finally {
       setIsLoading(undefined);
     }
@@ -144,9 +143,9 @@ export default function AdminDashboard() {
     setIsLoading(`revoke-${id}`);
     try {
       await authClient.admin.revokeUserSessions({ userId: id });
-      toast.success("Sessions revoked for user");
+      toast.success('Sessions revoked for user');
     } catch (error: any) {
-      toast.error(error.message || "Failed to revoke sessions");
+      toast.error(error.message || 'Failed to revoke sessions');
     } finally {
       setIsLoading(undefined);
     }
@@ -156,10 +155,10 @@ export default function AdminDashboard() {
     setIsLoading(`impersonate-${id}`);
     try {
       await authClient.admin.impersonateUser({ userId: id });
-      toast.success("Impersonated user");
-      router.push("/dashboard");
+      toast.success('Impersonated user');
+      router.push('/dashboard');
     } catch (error: any) {
-      toast.error(error.message || "Failed to impersonate user");
+      toast.error(error.message || 'Failed to impersonate user');
     } finally {
       setIsLoading(undefined);
     }
@@ -170,20 +169,20 @@ export default function AdminDashboard() {
     setIsLoading(`ban-${banForm.userId}`);
     try {
       if (!banForm.expirationDate) {
-        throw new Error("Expiration date is required");
+        throw new Error('Expiration date is required');
       }
       await authClient.admin.banUser({
         userId: banForm.userId,
         banReason: banForm.reason,
-        banExpiresIn: banForm.expirationDate.getTime() - new Date().getTime(),
+        banExpiresIn: banForm.expirationDate.getTime() - Date.now(),
       });
-      toast.success("User banned successfully");
+      toast.success('User banned successfully');
       setIsBanDialogOpen(false);
       queryClient.invalidateQueries({
-        queryKey: ["users"],
+        queryKey: ['users'],
       });
     } catch (error: any) {
-      toast.error(error.message || "Failed to ban user");
+      toast.error(error.message || 'Failed to ban user');
     } finally {
       setIsLoading(undefined);
     }
@@ -195,7 +194,7 @@ export default function AdminDashboard() {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="text-2xl">Admin Dashboard</CardTitle>
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <Dialog onOpenChange={setIsDialogOpen} open={isDialogOpen}>
             <DialogTrigger asChild>
               <Button>
                 <Plus className="mr-2 h-4 w-4" /> Create User
@@ -205,49 +204,49 @@ export default function AdminDashboard() {
               <DialogHeader>
                 <DialogTitle>Create New User</DialogTitle>
               </DialogHeader>
-              <form onSubmit={handleCreateUser} className="space-y-4">
+              <form className="space-y-4" onSubmit={handleCreateUser}>
                 <div>
                   <Label htmlFor="email">Email</Label>
                   <Input
                     id="email"
-                    type="email"
-                    value={newUser.email}
                     onChange={(e) =>
                       setNewUser({ ...newUser, email: e.target.value })
                     }
                     required
+                    type="email"
+                    value={newUser.email}
                   />
                 </div>
                 <div>
                   <Label htmlFor="password">Password</Label>
                   <Input
                     id="password"
-                    type="password"
-                    value={newUser.password}
                     onChange={(e) =>
                       setNewUser({ ...newUser, password: e.target.value })
                     }
                     required
+                    type="password"
+                    value={newUser.password}
                   />
                 </div>
                 <div>
                   <Label htmlFor="name">Name</Label>
                   <Input
                     id="name"
-                    value={newUser.name}
                     onChange={(e) =>
                       setNewUser({ ...newUser, name: e.target.value })
                     }
                     required
+                    value={newUser.name}
                   />
                 </div>
                 <div>
                   <Label htmlFor="role">Role</Label>
                   <Select
-                    value={newUser.role}
                     onValueChange={(value) =>
                       setNewUser({ ...newUser, role: value as UserRole })
                     }
+                    value={newUser.role}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select role" />
@@ -267,37 +266,37 @@ export default function AdminDashboard() {
                   </Select>
                 </div>
                 <Button
-                  type="submit"
                   className="w-full"
-                  disabled={isLoading === "create"}
+                  disabled={isLoading === 'create'}
+                  type="submit"
                 >
-                  {isLoading === "create" ? (
+                  {isLoading === 'create' ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                       Creating...
                     </>
                   ) : (
-                    "Create User"
+                    'Create User'
                   )}
                 </Button>
               </form>
             </DialogContent>
           </Dialog>
-          <Dialog open={isBanDialogOpen} onOpenChange={setIsBanDialogOpen}>
+          <Dialog onOpenChange={setIsBanDialogOpen} open={isBanDialogOpen}>
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>Ban User</DialogTitle>
               </DialogHeader>
-              <form onSubmit={handleBanUser} className="space-y-4">
+              <form className="space-y-4" onSubmit={handleBanUser}>
                 <div>
                   <Label htmlFor="reason">Reason</Label>
                   <Input
                     id="reason"
-                    value={banForm.reason}
                     onChange={(e) =>
                       setBanForm({ ...banForm, reason: e.target.value })
                     }
                     required
+                    value={banForm.reason}
                   />
                 </div>
                 <div className="flex flex-col space-y-1.5">
@@ -305,16 +304,16 @@ export default function AdminDashboard() {
                   <Popover>
                     <PopoverTrigger asChild>
                       <Button
-                        id="expirationDate"
-                        variant={"outline"}
                         className={cn(
-                          "w-full justify-start text-left font-normal",
-                          !banForm.expirationDate && "text-muted-foreground",
+                          'w-full justify-start text-left font-normal',
+                          !banForm.expirationDate && 'text-muted-foreground'
                         )}
+                        id="expirationDate"
+                        variant={'outline'}
                       >
                         <CalendarIcon className="mr-2 h-4 w-4" />
                         {banForm.expirationDate ? (
-                          format(banForm.expirationDate, "PPP")
+                          format(banForm.expirationDate, 'PPP')
                         ) : (
                           <span>Pick a date</span>
                         )}
@@ -323,18 +322,18 @@ export default function AdminDashboard() {
                     <PopoverContent className="w-auto p-0">
                       <Calendar
                         mode="single"
-                        selected={banForm.expirationDate}
                         onSelect={(date) =>
                           setBanForm({ ...banForm, expirationDate: date })
                         }
+                        selected={banForm.expirationDate}
                       />
                     </PopoverContent>
                   </Popover>
                 </div>
                 <Button
-                  type="submit"
                   className="w-full"
                   disabled={isLoading === `ban-${banForm.userId}`}
+                  type="submit"
                 >
                   {isLoading === `ban-${banForm.userId}` ? (
                     <>
@@ -342,7 +341,7 @@ export default function AdminDashboard() {
                       Banning...
                     </>
                   ) : (
-                    "Ban User"
+                    'Ban User'
                   )}
                 </Button>
               </form>
@@ -372,8 +371,8 @@ export default function AdminDashboard() {
                     <TableCell>{user.name}</TableCell>
                     <TableCell>
                       <UserRoleSelect
-                        userId={user.id}
                         role={user.role as UserRole}
+                        userId={user.id}
                       />
                     </TableCell>
                     <TableCell>
@@ -386,10 +385,10 @@ export default function AdminDashboard() {
                     <TableCell>
                       <div className="flex space-x-2">
                         <Button
-                          variant="destructive"
-                          size="sm"
+                          disabled={isLoading?.startsWith('delete')}
                           onClick={() => handleDeleteUser(user.id)}
-                          disabled={isLoading?.startsWith("delete")}
+                          size="sm"
+                          variant="destructive"
                         >
                           {isLoading === `delete-${user.id}` ? (
                             <Loader2 className="h-4 w-4 animate-spin" />
@@ -398,10 +397,10 @@ export default function AdminDashboard() {
                           )}
                         </Button>
                         <Button
-                          variant="outline"
-                          size="sm"
+                          disabled={isLoading?.startsWith('revoke')}
                           onClick={() => handleRevokeSessions(user.id)}
-                          disabled={isLoading?.startsWith("revoke")}
+                          size="sm"
+                          variant="outline"
                         >
                           {isLoading === `revoke-${user.id}` ? (
                             <Loader2 className="h-4 w-4 animate-spin" />
@@ -410,10 +409,10 @@ export default function AdminDashboard() {
                           )}
                         </Button>
                         <Button
-                          variant="secondary"
-                          size="sm"
+                          disabled={isLoading?.startsWith('impersonate')}
                           onClick={() => handleImpersonateUser(user.id)}
-                          disabled={isLoading?.startsWith("impersonate")}
+                          size="sm"
+                          variant="secondary"
                         >
                           {isLoading === `impersonate-${user.id}` ? (
                             <Loader2 className="h-4 w-4 animate-spin" />
@@ -425,12 +424,11 @@ export default function AdminDashboard() {
                           )}
                         </Button>
                         <Button
-                          variant="outline"
-                          size="sm"
+                          disabled={isLoading?.startsWith('ban')}
                           onClick={async () => {
                             setBanForm({
                               userId: user.id,
-                              reason: "",
+                              reason: '',
                               expirationDate: undefined,
                             });
                             if (user.banned) {
@@ -443,33 +441,34 @@ export default function AdminDashboard() {
                                   onError(context) {
                                     toast.error(
                                       context.error.message ||
-                                        "Failed to unban user",
+                                      'Failed to unban user'
                                     );
                                     setIsLoading(undefined);
                                   },
                                   onSuccess() {
                                     queryClient.invalidateQueries({
-                                      queryKey: ["users"],
+                                      queryKey: ['users'],
                                     });
-                                    toast.success("User unbanned successfully");
+                                    toast.success('User unbanned successfully');
                                   },
-                                },
+                                }
                               );
                               queryClient.invalidateQueries({
-                                queryKey: ["users"],
+                                queryKey: ['users'],
                               });
                             } else {
                               setIsBanDialogOpen(true);
                             }
                           }}
-                          disabled={isLoading?.startsWith("ban")}
+                          size="sm"
+                          variant="outline"
                         >
                           {isLoading === `ban-${user.id}` ? (
                             <Loader2 className="h-4 w-4 animate-spin" />
                           ) : user.banned ? (
-                            "Unban"
+                            'Unban'
                           ) : (
-                            "Ban"
+                            'Ban'
                           )}
                         </Button>
                       </div>

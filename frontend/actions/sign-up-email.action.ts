@@ -1,20 +1,12 @@
-"use server";
+'use server';
 
-import { headers } from "next/headers";
-import { APIError } from "better-auth/api";
+import { APIError } from 'better-auth/api';
 
-import { auth, ErrorCode } from "@/lib/auth";
-import streamServerClient from "@/lib/stream";
-import { generateUsername } from "@/lib/utils";
-import { registerSchema, TRegister } from "@/lib/validations/auth";
+import { auth, type ErrorCode } from '@/lib/auth';
+import { generateUsername } from '@/lib/utils';
+import { registerSchema, type TRegister } from '@/lib/validations/auth';
 
 export async function signUpEmailAction(data: TRegister) {
-  const headersList = await headers();
-
-  const session = await auth.api.getSession({
-    headers: headersList,
-  });
-
   const result = registerSchema.safeParse(data);
   await new Promise((resolve) => setTimeout(resolve, 1000));
 
@@ -27,7 +19,7 @@ export async function signUpEmailAction(data: TRegister) {
 
   try {
     // Register the user with Better Auth and get the response
-    const response = await auth.api.signUpEmail({
+    await auth.api.signUpEmail({
       body: {
         name,
         username: generatedUsername,
@@ -49,20 +41,20 @@ export async function signUpEmailAction(data: TRegister) {
 
     return {
       success: true,
-      message: "Registration successful. Welcome to our site.",
+      message: 'Registration successful. Welcome to our site.',
     };
   } catch (err) {
     if (err instanceof APIError) {
-      const errCode = err.body ? (err.body.code as ErrorCode) : "UNKNOWN";
+      const errCode = err.body ? (err.body.code as ErrorCode) : 'UNKNOWN';
 
       switch (errCode) {
-        case "USER_ALREADY_EXISTS":
-          return { error: "Oops! Something went wrong. Please try again." };
+        case 'USER_ALREADY_EXISTS':
+          return { error: 'Oops! Something went wrong. Please try again.' };
         default:
           return { error: err.message };
       }
     }
 
-    return { error: "Internal Server Error" };
+    return { error: 'Internal Server Error' };
   }
 }

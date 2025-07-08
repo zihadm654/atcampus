@@ -90,21 +90,21 @@ model User {
   id          String  @id @default(cuid()) @map("_id")
   instituteId String?
 
-  name            String
-  email           String    @unique
-  emailVerified   Boolean
-  image           String?
-  coverImage      String?
-  bio             String?
-  institution     String?
-  currentSeamster Int?
-  role            UserRole  @default(STUDENT)
-  twoFactor       Boolean   @default(false)
-  username        String?
-  displayUsername String?
-  banned          Boolean?
-  banReason       String?
-  banExpires      DateTime?
+  name             String
+  email            String    @unique
+  emailVerified    Boolean
+  image            String?
+  coverImage       String?
+  bio              String?
+  institution      String?
+  currentSeamster  Int?
+  role             UserRole  @default(STUDENT)
+  username         String?
+  displayUsername  String?
+  banned           Boolean?
+  banReason        String?
+  banExpires       DateTime?
+  twoFactorEnabled Boolean?
 
   createdAt DateTime @default(now()) @map(name: "created_at")
   updatedAt DateTime @default(now()) @map(name: "updated_at")
@@ -136,10 +136,9 @@ model User {
   profileViews          ProfileView[]      @relation("ViewedProfile")
   contentViews          ContentView[]
 
-  twoFactorEnabled Boolean?
-  members          Member[]
-  invitations      Invitation[]
-  twofactors       TwoFactor[]
+  members     Member[]
+  invitations Invitation[]
+  twofactors  TwoFactor[]
 
   @@unique([username])
   @@map(name: "users")
@@ -154,7 +153,6 @@ model Skill {
 
   createdAt DateTime @default(now()) @map(name: "created_at")
   updatedAt DateTime @default(now()) @map(name: "updated_at")
-  Job       Job[]
 
   @@map("skills")
 }
@@ -341,10 +339,8 @@ model Job {
   createdAt DateTime @default(now()) @map(name: "created_at")
   updatedAt DateTime @default(now()) @map(name: "updated_at")
 
-  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId  String
-  skill   Skill  @relation(fields: [skillId], references: [id], onDelete: Cascade)
-  skillId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
 
   comments            Comment[] // Add onDelete: Cascade if desired
   likes               Like[] // Add onDelete: Cascade if desired
@@ -398,7 +394,6 @@ model Research {
 
   title       String
   description String
-  content     String
 
   createdAt DateTime @default(now()) @map(name: "created_at")
   updatedAt DateTime @default(now()) @map(name: "updated_at")

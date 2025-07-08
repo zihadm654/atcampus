@@ -3,7 +3,6 @@
 import { revalidatePath } from "next/cache";
 
 import { getJobDataInclude } from "@/types/types";
-import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/session";
 import { jobSchema, TJob } from "@/lib/validations/job";
@@ -56,11 +55,9 @@ export async function createJob(values: TJob) {
     }
 
     const { startDate, endDate, ...rest } = validatedFields.data;
-    const skills = prisma.skill.findMany({});
     const job = await prisma.job.create({
       data: {
         userId: user.id,
-        skillId: "cmckjwozh0000us6sdm3hr984",
         ...rest,
         ...(startDate && { startDate }),
         ...(endDate && { endDate }),
