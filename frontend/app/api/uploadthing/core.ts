@@ -18,7 +18,7 @@ const allowedImageTypes = [
 ];
 
 const allowedVideoTypes = ["video/mp4", "video/webm", "video/quicktime"];
-
+const allowedPdfTypes = ["application/pdf"];
 // Validation schema for file metadata
 const fileMetadataSchema = z.object({
   size: z.number().min(1),
@@ -96,6 +96,46 @@ export const ourFileRouter = {
       } catch (error) {
         await cleanupFailedUpload(file.ufsUrl); // Update cleanup to use ufsUrl
         throw new UploadThingError("Failed to update avatar");
+      }
+    }),
+
+  pdfAttachment: f({
+    pdf: { maxFileSize: "16MB", maxFileCount: 1 },
+  })
+    .middleware(async ({ files }) => {
+      const user = await getCurrentUser();
+      if (!user) throw new UploadThingError("Unauthorized");
+
+      try {
+        const metadata = fileMetadataSchema.parse(files[0]);
+
+        if (metadata.type !== "application/pdf") {
+          throw new UploadThingError(
+            "Invalid file type. Only PDFs are allowed.",
+          );
+        }
+
+        return { user };
+      } catch (error) {
+        if (error instanceof z.ZodError) {
+          throw new UploadThingError("Invalid file metadata");
+        }
+        throw error;
+      }
+    })
+    .onUploadComplete(async ({ file }) => {
+      try {
+        const media = await prisma.media.create({
+          data: {
+            url: file.ufsUrl, // Replace with ufsUrl,
+            type: "PDF",
+          },
+        });
+
+        return { mediaId: media.id };
+      } catch (error) {
+        await cleanupFailedUpload(file.url);
+        throw new UploadThingError("Failed to create media record");
       }
     }),
 

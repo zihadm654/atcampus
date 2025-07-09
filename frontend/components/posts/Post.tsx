@@ -1,7 +1,6 @@
 "use client";
 
-import { Suspense, useState } from "react";
-import Image from "next/image";
+import { useState } from "react";
 import Link from "next/link";
 import { Media } from "@prisma/client";
 import { MessageSquare } from "lucide-react";
@@ -60,7 +59,7 @@ export default function Post({ post }: PostProps) {
         {post.user.id === user.id && (
           <PostMoreButton
             post={post}
-            // className="opacity-0 transition-opacity group-hover/post:opacity-100"
+          // className="opacity-0 transition-opacity group-hover/post:opacity-100"
           />
         )}
       </div>

@@ -7,8 +7,8 @@ import { ResearchesPage } from "@/types/types";
 import kyInstance from "@/lib/ky";
 import InfiniteScrollContainer from "@/components/feed/InfiniteScrollContainer";
 
-import Research from "../researches/Research";
 import ResearchesLoadingSkeleton from "../researches/ResearchesLoadingSkeleton";
+import Research from "../researches/Research";
 
 export default function ResearchFeed() {
   const {

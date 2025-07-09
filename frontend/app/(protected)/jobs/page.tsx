@@ -1,10 +1,5 @@
 import {
   Briefcase,
-  Building,
-  Calendar,
-  Clock,
-  DollarSign,
-  MapPin,
   Search,
 } from 'lucide-react';
 import type { Metadata } from 'next';
@@ -12,7 +7,6 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import JobFeed from '@/components/feed/JobFeed';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { getCurrentUser } from '@/lib/session';
 import { constructMetadata } from '@/lib/utils';
 

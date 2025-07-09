@@ -57,24 +57,29 @@ export default async function ResearchPage() {
           </div>
         </div>
       </div>
-      {/* Filters
-      <div className="flex flex-wrap items-center gap-2">
-        <Button variant="outline" size="sm" className="rounded-full">
-          All Research
+      {/* Filters */}
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <Button className="rounded-full" size="sm" variant="outline">
+            All Jobs
+          </Button>
+          <Button className="rounded-full" size="sm" variant="outline">
+            On Campus
+          </Button>
+          <Button className="rounded-full" size="sm" variant="outline">
+            Remote
+          </Button>
+          <Button className="rounded-full" size="sm" variant="outline">
+            Part-time
+          </Button>
+          <Button className="rounded-full" size="sm" variant="outline">
+            Full-time
+          </Button>
+        </div>
+        <Button className="rounded-xl" size="sm" variant="outline">
+          <Link href="/researches/createResearch">Create Research</Link>
         </Button>
-        <Button variant="outline" size="sm" className="rounded-full">
-          On Campus
-        </Button>
-        <Button variant="outline" size="sm" className="rounded-full">
-          Remote
-        </Button>
-        <Button variant="outline" size="sm" className="rounded-full">
-          Part-time
-        </Button>
-        <Button variant="outline" size="sm" className="rounded-full">
-          Full-time
-        </Button>
-      </div> */}
+      </div>
       {/* Research listings */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
         <ResearchFeed />

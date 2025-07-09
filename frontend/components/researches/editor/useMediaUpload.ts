@@ -1,7 +1,8 @@
-import { useCallback, useEffect, useState } from 'react';
-import { v4 as uuid } from 'uuid';
-import { useToast } from '@/components/ui/use-toast';
-import { useUploadThing } from '@/lib/uploadthing';
+import { useCallback, useEffect, useState } from "react";
+import { v4 as uuid } from "uuid";
+
+import { useUploadThing } from "@/lib/uploadthing";
+import { useToast } from "@/components/ui/use-toast";
 
 export interface Attachment {
   id: string;
@@ -14,19 +15,10 @@ export interface Attachment {
 }
 
 const MAX_FILE_SIZE = {
-  image: 4 * 1024 * 1024, // 4MB
-  video: 64 * 1024 * 1024, // 64MB
+  pdf: 10 * 1024 * 1024, // 10MB
 };
 
-const ALLOWED_IMAGE_TYPES = [
-  'image/jpeg',
-  'image/png',
-  'image/gif',
-  'image/webp',
-  'image/heic',
-];
-
-const ALLOWED_VIDEO_TYPES = ['video/mp4', 'video/webm', 'video/quicktime'];
+const ALLOWED_PDF_TYPES = ["application/pdf"];
 
 export default function useMediaUpload() {
   const { toast } = useToast();
@@ -44,28 +36,21 @@ export default function useMediaUpload() {
   }, [attachments]);
 
   const validateFile = useCallback((file: File) => {
-    if (file.type.startsWith('image/')) {
-      if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
-        return 'Invalid image type. Only JPEG, PNG, GIF, WebP, and HEIC images are allowed.';
+    if (file.type.startsWith("application/")) {
+      if (!ALLOWED_PDF_TYPES.includes(file.type)) {
+        return "Invalid pdf type. Only pdf are allowed.";
       }
-      if (file.size > MAX_FILE_SIZE.image) {
-        return 'Image size exceeds 4MB limit.';
-      }
-    } else if (file.type.startsWith('video/')) {
-      if (!ALLOWED_VIDEO_TYPES.includes(file.type)) {
-        return 'Invalid video type. Only MP4, WebM, and QuickTime videos are allowed.';
-      }
-      if (file.size > MAX_FILE_SIZE.video) {
-        return 'Video size exceeds 64MB limit.';
+      if (file.size > MAX_FILE_SIZE.pdf) {
+        return "pdf size exceeds 10MB limit.";
       }
     } else {
-      return 'Invalid file type. Only images and videos are allowed.';
+      return "Invalid file type. Only pdf are allowed.";
     }
     return null;
   }, []);
 
   const { startUpload, isUploading, routeConfig } = useUploadThing(
-    'attachment',
+    "pdfAttachment",
     {
       onBeforeUploadBegin(files) {
         const validFiles: File[] = [];
@@ -76,13 +61,13 @@ export default function useMediaUpload() {
           if (error) {
             errors[file.name] = error;
           } else {
-            const extension = file.name.split('.').pop();
+            const extension = file.name.split(".").pop();
             const newFile = new File(
               [file],
               `attachment_${uuid()}.${extension}`,
               {
                 type: file.type,
-              }
+              },
             );
             validFiles.push(newFile);
           }
@@ -91,7 +76,7 @@ export default function useMediaUpload() {
         // Show errors if any
         Object.entries(errors).forEach(([filename, error]) => {
           toast({
-            variant: 'destructive',
+            variant: "destructive",
             description: `${filename}: ${error}`,
           });
         });
@@ -103,7 +88,7 @@ export default function useMediaUpload() {
             id: uuid(),
             file,
             isUploading: true,
-            preview: file.type.startsWith('image/')
+            preview: file.type.startsWith("application/")
               ? URL.createObjectURL(file)
               : undefined,
             progress: 0,
@@ -114,7 +99,7 @@ export default function useMediaUpload() {
       },
       onUploadProgress: (progress) => {
         setAttachments((prev) =>
-          prev.map((a) => (a.isUploading ? { ...a, progress } : a))
+          prev.map((a) => (a.isUploading ? { ...a, progress } : a)),
         );
       },
       onUploadError: (error) => {
@@ -122,11 +107,11 @@ export default function useMediaUpload() {
           prev.map((a) =>
             a.isUploading
               ? { ...a, isUploading: false, error: error.message }
-              : a
-          )
+              : a,
+          ),
         );
         toast({
-          variant: 'destructive',
+          variant: "destructive",
           description: error.message,
         });
       },
@@ -142,33 +127,33 @@ export default function useMediaUpload() {
               isUploading: false,
               progress: 100,
             };
-          })
+          }),
         );
       },
-    }
+    },
   );
 
   const handleStartUpload = useCallback(
     (files: File[]) => {
       if (isUploading) {
         toast({
-          variant: 'destructive',
-          description: 'Please wait for the current upload to finish.',
+          variant: "destructive",
+          description: "Please wait for the current upload to finish.",
         });
         return;
       }
 
-      if (attachments.length + files.length > 5) {
+      if (attachments.length + files.length > 2) {
         toast({
-          variant: 'destructive',
-          description: 'You can only upload up to 5 attachments per post.',
+          variant: "destructive",
+          description: "You can only upload up to 2 attachments per post.",
         });
         return;
       }
 
       startUpload(files);
     },
-    [attachments.length, isUploading, startUpload, toast]
+    [attachments.length, isUploading, startUpload, toast],
   );
 
   const removeAttachment = useCallback((attachmentId: string) => {
@@ -199,7 +184,7 @@ export default function useMediaUpload() {
         startUpload([attachment.file]);
       }
     },
-    [attachments, startUpload]
+    [attachments, startUpload],
   );
 
   return {

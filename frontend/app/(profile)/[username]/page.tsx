@@ -321,7 +321,7 @@ async function UserProfile({ user, loggedInUserId }: UserProfileProps) {
       {/* Profile info section */}
       <div className="relative px-6 pb-6">
         {/* Avatar - positioned to overlap the cover photo with enhanced styling */}
-        <div className="absolute -top-16 left-6 rounded-full shadow-lg ring-4 ring-white">
+        <div className="absolute -top-16 max-sm:-top-30 left-6 rounded-full shadow-lg ring-4 ring-white">
           <UserAvatar
             avatarUrl={user.image}
             size={120}
@@ -332,7 +332,7 @@ async function UserProfile({ user, loggedInUserId }: UserProfileProps) {
         {/* Profile content with proper spacing for the avatar */}
         <div className="mt-4 pt-2">
           {/* Name and username with enhanced styling */}
-          <div className="mb-4 pl-36">
+          <div className="mb-4 max-sm:pl-3 pl-36">
             <h1 className="text-2xl font-bold">{user.name}</h1>
             <h5 className="text-muted-foreground flex items-center gap-1">
               <span>@{user.username}</span>
@@ -345,7 +345,7 @@ async function UserProfile({ user, loggedInUserId }: UserProfileProps) {
           </div>
 
           {/* Stats row with enhanced styling */}
-          <div className="mb-6 flex items-center gap-6 rounded-xl p-3 pl-36">
+          <div className="mb-6 flex items-center gap-6 rounded-xl p-3 max-sm:pl-3 pl-36">
             <div className="flex flex-col items-center">
               <span className="font-semibold text-blue-700">
                 {formatNumber(user._count.posts)}
