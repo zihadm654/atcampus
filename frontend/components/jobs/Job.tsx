@@ -38,10 +38,7 @@ export default function Job({ job }: JobProps) {
     }
   };
   return (
-    <article className="group/post bg-card relative space-y-3 rounded-2xl p-5 shadow-sm">
-      {/* Color strip at top */}
-      <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-blue-400 to-indigo-500"></div>
-
+    <article className="group/post bg-card relative space-y-3 rounded-2xl p-5 shadow-sm border">
       {/* Department badge */}
       <div className="absolute top-1 right-1 rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700">
         Profile match

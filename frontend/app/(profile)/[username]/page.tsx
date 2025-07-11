@@ -4,7 +4,12 @@ import { notFound } from "next/navigation";
 import { formatDate } from "date-fns";
 import { CalendarRange, Star } from "lucide-react";
 
-import { FollowerInfo, getUserDataSelect, UserData } from "@/types/types";
+import {
+  FollowerInfo,
+  getJobDataInclude,
+  getUserDataSelect,
+  UserData,
+} from "@/types/types";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/session";
 import { formatNumber } from "@/lib/utils";
@@ -20,6 +25,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import FollowButton from "@/components/feed/FollowButton";
 import FollowerCount from "@/components/feed/FollowerCount";
 import Linkify from "@/components/feed/Linkify";
+import Job from "@/components/jobs/Job";
 import { Icons } from "@/components/shared/icons";
 import SkillButton from "@/components/skill/SkillButton";
 import UserSkillList from "@/components/skill/UserSkillList";
@@ -47,7 +53,23 @@ const getUser = cache(async (username: string, loggedInUserId: string) => {
 
   return user;
 });
-
+const getAppliedJobs = cache(async (userId: string) => {
+  const applications = await prisma.application.findMany({
+    where: {
+      applicantId: userId,
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+    select: {
+      job: {
+        include: getJobDataInclude(userId),
+      },
+      id: true, // Optionally include application id or other fields if needed
+    },
+  });
+  return applications;
+});
 export async function generateMetadata({
   params,
 }: PageProps): Promise<Metadata> {
@@ -76,196 +98,224 @@ export default async function Page({ params }: PageProps) {
   }
 
   const user = await getUser(username, loggedInUser.id);
-
+  const jobs = await getAppliedJobs(loggedInUser.id);
   return (
-    <>
-      <div className="w-full min-w-0 space-y-5">
-        <UserProfile user={user} loggedInUserId={loggedInUser.id} />
-        <div className="bg-card overflow-hidden rounded-2xl shadow-sm">
-          <Tabs defaultValue="overview">
-            <div className="border-b border-gray-100">
-              <TabsList className="flex w-full justify-between p-0">
-                <TabsTrigger
-                  value="overview"
-                  className="flex-1 rounded-none border-b-2 border-transparent py-4 transition-all data-[state=active]:border-blue-600 data-[state=active]:text-blue-600"
-                >
-                  <Icons.home className="size-5" />
-                  Overview
-                </TabsTrigger>
-                <TabsTrigger
-                  value="posts"
-                  className="flex-1 rounded-none border-b-2 border-transparent py-4 transition-all data-[state=active]:border-blue-600 data-[state=active]:text-blue-600"
-                >
-                  <Icons.post className="size-5" />
-                  Posts
-                </TabsTrigger>
-                <TabsTrigger
-                  value="courses"
-                  className="flex-1 rounded-none border-b-2 border-transparent py-4 transition-all data-[state=active]:border-blue-600 data-[state=active]:text-blue-600"
-                >
-                  <Icons.bookOpen className="size-5" />
-                  Courses
-                </TabsTrigger>
-                <TabsTrigger
-                  value="events"
-                  className="flex-1 rounded-none border-b-2 border-transparent py-4 transition-all data-[state=active]:border-blue-600 data-[state=active]:text-blue-600"
-                >
-                  <CalendarRange className="size-5" />
-                  Events
-                </TabsTrigger>
-                <TabsTrigger
-                  value="skills"
-                  className="flex-1 rounded-none border-b-2 border-transparent py-4 transition-all data-[state=active]:border-blue-600 data-[state=active]:text-blue-600"
-                >
-                  <Icons.skill className="size-5" />
-                  Skills
-                </TabsTrigger>
-              </TabsList>
-            </div>
-            <TabsContent value="overview" className="p-6">
-              <div className="grid grid-cols-3 gap-6 max-md:grid-cols-1">
-                <Card className="overflow-hidden rounded-xl border border-gray-100 shadow-sm transition-all hover:border-gray-200 hover:shadow">
-                  <CardHeader className="flex items-center justify-between pb-4">
-                    <CardTitle className="flex items-center text-lg font-medium">
-                      <Icons.skill className="size-7 pr-2" />
-                      Skills
-                    </CardTitle>
-                    <CardAction>
-                      <SkillButton user={user} />
-                    </CardAction>
-                  </CardHeader>
-                  <CardContent className="pt-4">
-                    {user.userSkills.length > 0 ? (
-                      <div className="max-h-40 overflow-y-auto">
-                        {/* @ts-expect-error Server Component */}
-                        <UserSkillList skills={user.userSkills} userId={user.id} />
-                      </div>
-                    ) : (
-                      <div className="flex h-28 items-center justify-center rounded-lg text-gray-500">
-                        <div className="flex flex-col items-center">
-                          <Icons.skill className="size-10" />
-                          No skills added yet
-                        </div>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-                <Card className="overflow-hidden rounded-xl border border-gray-100 shadow-sm transition-all hover:border-gray-200 hover:shadow">
-                  <CardHeader className="flex items-center justify-between pb-4">
-                    <CardTitle className="flex items-center text-lg font-medium">
-                      <Icons.bookOpen className="size-7 pr-2" />
-                      Courses
-                    </CardTitle>
-                    <CardAction>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="rounded-full text-green-600 hover:bg-green-50 hover:text-green-800"
-                      >
-                        <span>See More</span>
-                        <Icons.chevronRight className="size-5" />
-                      </Button>
-                    </CardAction>
-                  </CardHeader>
-                  <CardContent className="pt-4">
-                    <div className="flex h-28 items-center justify-center rounded-lg text-gray-500">
-                      <div className="flex flex-col items-center">
-                        <Icons.bookOpen className="size-10" />
-                        No courses enrolled
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-                <Card className="overflow-hidden rounded-xl border border-gray-100 shadow-sm transition-all hover:border-gray-200 hover:shadow">
-                  <CardHeader className="flex items-center justify-between pb-4">
-                    <CardTitle className="flex items-center text-lg font-medium">
-                      <Star className="size-7 pr-2" />
-                      Achievements
-                    </CardTitle>
-                    <CardAction>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="rounded-full text-amber-600 hover:bg-amber-50 hover:text-amber-800"
-                      >
-                        <span>See More</span>
-                        <Icons.chevronRight className="size-5" />
-                      </Button>
-                    </CardAction>
-                  </CardHeader>
-                  <CardContent className="pt-4">
-                    <div className="flex h-28 items-center justify-center rounded-lg text-gray-500">
-                      <div className="flex flex-col items-center">
-                        <Star className="size-10" />
-                        No achievements yet
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-
-              <div className="mt-8">
-                <h3 className="mb-4 flex items-center text-lg font-medium">
-                  <Icons.job className="size-5" />
-                  Job & Activities
-                </h3>
-                <div className="flex items-center justify-center rounded-xl border border-gray-100 p-8 text-gray-500 shadow-sm">
-                  <div className="flex flex-col items-center">
-                    <Icons.job className="size-10" />
-                    <p>No job or activities added yet</p>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="mt-4 rounded-full"
-                    >
-                      <Icons.add className="size-4" />
-                      Add Experience
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            </TabsContent>
-            <TabsContent value="posts" className="mx-auto max-w-2xl p-6">
-              <h2 className="mb-6 flex items-center text-xl font-medium">
+    <div className="w-full min-w-0 space-y-5">
+      <UserProfile user={user} loggedInUserId={loggedInUser.id} />
+      <div className="bg-card overflow-hidden rounded-2xl shadow-sm">
+        <Tabs defaultValue="overview">
+          <div className="border-b border-gray-100">
+            <TabsList className="flex w-full justify-between p-0">
+              <TabsTrigger
+                value="overview"
+                className="flex-1 rounded-none border-b-2 border-transparent py-4 transition-all data-[state=active]:border-blue-600 data-[state=active]:text-blue-600"
+              >
+                <Icons.home className="size-5" />
+                <span className="hidden md:block">Overview</span>
+              </TabsTrigger>
+              <TabsTrigger
+                value="posts"
+                className="flex-1 rounded-none border-b-2 border-transparent py-4 transition-all data-[state=active]:border-blue-600 data-[state=active]:text-blue-600"
+              >
                 <Icons.post className="size-5" />
-                {user.name}&apos;s posts
-              </h2>
-              <UserPosts userId={user.id} />
-            </TabsContent>
-            <TabsContent value="skills" className="p-6">
-              <div className="grid grid-cols-1 gap-6">
-                <Card className="overflow-hidden rounded-xl border border-gray-100 shadow-sm transition-all hover:border-gray-200 hover:shadow">
-                  <CardHeader className="flex items-center justify-between pb-4">
-                    <CardTitle className="flex items-center text-lg font-medium">
-                      <Icons.skill className="size-7 pr-2" />
-                      Skills
-                    </CardTitle>
-                    <CardAction>
-                      <SkillButton user={user} />
-                    </CardAction>
-                  </CardHeader>
-                  <CardContent className="pt-4">
-                    {user.userSkills.length > 0 ? (
-                      <div className="space-y-4">
-                        {/* @ts-expect-error Server Component */}
-                        <UserSkillList skills={user.userSkills} userId={user.id} />
+                <span className="hidden md:block">Posts</span>
+              </TabsTrigger>
+              <TabsTrigger
+                value="courses"
+                className="flex-1 rounded-none border-b-2 border-transparent py-4 transition-all data-[state=active]:border-blue-600 data-[state=active]:text-blue-600"
+              >
+                <Icons.bookOpen className="size-5" />
+                <span className="hidden md:block">Courses</span>
+              </TabsTrigger>
+              <TabsTrigger
+                value="jobs"
+                className="flex-1 rounded-none border-b-2 border-transparent py-4 transition-all data-[state=active]:border-blue-600 data-[state=active]:text-blue-600"
+              >
+                <Icons.job className="size-5" />
+                <span className="hidden md:block">Job & Activities</span>
+              </TabsTrigger>
+            </TabsList>
+          </div>
+          <TabsContent value="overview" className="space-y-2 p-6">
+            <div className="grid grid-cols-2 gap-2 max-md:grid-cols-1">
+              <Card className="overflow-hidden rounded-xl border border-gray-100 shadow-sm transition-all hover:border-gray-200 hover:shadow">
+                <CardHeader className="flex items-center justify-between pb-2">
+                  <CardTitle className="flex items-center text-lg font-medium">
+                    <Icons.skill className="size-7 pr-2" />
+                    Skills
+                  </CardTitle>
+                  <CardAction>
+                    <SkillButton user={user} />
+                  </CardAction>
+                </CardHeader>
+                <CardContent className="pt-1">
+                  {user.userSkills.length > 0 ? (
+                    <div className="max-h-40 overflow-y-auto">
+                      <UserSkillList
+                        skills={user.userSkills.map((skill) => ({
+                          ...skill,
+                          _count: { skillEndorsements: 0 },
+                          skill: { category: null },
+                        }))}
+                        userId={user.id}
+                      />
+                    </div>
+                  ) : (
+                    <div className="flex h-28 items-center justify-center rounded-lg text-gray-500">
+                      <div className="flex flex-col items-center">
+                        <Icons.skill className="size-10" />
+                        No skills added yet
                       </div>
-                    ) : (
-                      <div className="flex h-28 items-center justify-center rounded-lg text-gray-500">
-                        <div className="flex flex-col items-center">
-                          <Icons.skill className="size-10" />
-                          No skills added yet
-                        </div>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              </div>
-            </TabsContent>
-          </Tabs>
-        </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+              <Card className="overflow-hidden rounded-xl border border-gray-100 shadow-sm transition-all hover:border-gray-200 hover:shadow">
+                <CardHeader className="flex items-center justify-between pb-2">
+                  <CardTitle className="flex items-center text-lg font-medium">
+                    <Icons.bookOpen className="size-7 pr-2" />
+                    Courses
+                  </CardTitle>
+                  <CardAction>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="rounded-full text-green-600 hover:bg-green-50 hover:text-green-800"
+                    >
+                      <span>See More</span>
+                      <Icons.chevronRight className="size-5" />
+                    </Button>
+                  </CardAction>
+                </CardHeader>
+                <CardContent className="pt-4">
+                  <div className="flex h-28 items-center justify-center rounded-lg text-gray-500">
+                    <div className="flex flex-col items-center">
+                      <Icons.bookOpen className="size-10" />
+                      No courses enrolled
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+            <div className="space-y-2">
+              <Card className="overflow-hidden rounded-xl border border-gray-100 shadow-sm transition-all hover:border-gray-200 hover:shadow">
+                <CardHeader className="flex items-center justify-between pb-4">
+                  <CardTitle className="flex items-center text-lg font-medium">
+                    <Icons.job className="mr-2 size-5" />
+                    <span>Job & Activities</span>
+                  </CardTitle>
+                  <CardAction>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="rounded-full text-amber-600 hover:bg-amber-50 hover:text-amber-800"
+                    >
+                      <span>See More</span>
+                      <Icons.chevronRight className="size-5" />
+                    </Button>
+                  </CardAction>
+                </CardHeader>
+                <CardContent className="grid grid-cols-3 gap-2 max-md:grid-cols-1">
+                  {jobs.length > 0 ? (
+                    jobs
+                      .filter((item) => item.job)
+                      .map((item) => <Job key={item.job.id} job={item.job} />)
+                  ) : (
+                    <div className="flex flex-col items-center">
+                      <Icons.job className="size-10" />
+                      <p>No job or activities added yet</p>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="mt-4 rounded-full"
+                      >
+                        <Icons.add className="size-4" />
+                        Add Experience
+                      </Button>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+              <Card className="overflow-hidden rounded-xl border border-gray-100 shadow-sm transition-all hover:border-gray-200 hover:shadow">
+                <CardHeader className="flex items-center justify-between pb-4">
+                  <CardTitle className="flex items-center text-lg font-medium">
+                    <Star className="size-7 pr-2" />
+                    Achievements
+                  </CardTitle>
+                  <CardAction>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="rounded-full text-amber-600 hover:bg-amber-50 hover:text-amber-800"
+                    >
+                      <span>See More</span>
+                      <Icons.chevronRight className="size-5" />
+                    </Button>
+                  </CardAction>
+                </CardHeader>
+                <CardContent className="pt-4">
+                  <div className="flex h-28 items-center justify-center rounded-lg text-gray-500">
+                    <div className="flex flex-col items-center">
+                      <Star className="size-10" />
+                      No achievements yet
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+          <TabsContent value="posts" className="mx-auto max-w-2xl p-6">
+            <h2 className="mb-6 flex items-center text-xl font-medium">
+              <Icons.post className="size-5" />
+              {user.name}&apos;s posts
+            </h2>
+            <UserPosts userId={user.id} />
+          </TabsContent>
+          <TabsContent value="jobs" className="p-4">
+            <div className="grid grid-cols-1 gap-3">
+              <Card className="overflow-hidden rounded-xl border border-gray-100 shadow-sm transition-all hover:border-gray-200 hover:shadow">
+                <CardHeader className="flex items-center justify-between pb-4">
+                  <CardTitle className="flex items-center text-lg font-medium">
+                    <Icons.job className="mr-3 size-5" />
+                    <span>Job & Activities</span>
+                  </CardTitle>
+                  <CardAction>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="rounded-full text-amber-600 hover:bg-amber-50 hover:text-amber-800"
+                    >
+                      <span>See More</span>
+                      <Icons.chevronRight className="size-5" />
+                    </Button>
+                  </CardAction>
+                </CardHeader>
+                <CardContent className="grid grid-cols-3 gap-2 max-md:grid-cols-1">
+                  {jobs.length > 0 ? (
+                    jobs
+                      .filter((item) => item.job)
+                      .map((item) => <Job key={item.job.id} job={item.job} />)
+                  ) : (
+                    <div className="flex flex-col items-center">
+                      <Icons.job className="size-10" />
+                      <p>No job or activities added yet</p>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="mt-4 rounded-full"
+                      >
+                        <Icons.add className="size-4" />
+                        Add Experience
+                      </Button>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+        </Tabs>
       </div>
-    </>
+    </div>
   );
 }
 
@@ -321,7 +371,7 @@ async function UserProfile({ user, loggedInUserId }: UserProfileProps) {
       {/* Profile info section */}
       <div className="relative px-6 pb-6">
         {/* Avatar - positioned to overlap the cover photo with enhanced styling */}
-        <div className="absolute -top-16 max-sm:-top-30 left-6 rounded-full shadow-lg ring-4 ring-white">
+        <div className="absolute -top-16 left-6 rounded-full shadow-lg ring-4 ring-white max-sm:-top-30">
           <UserAvatar
             avatarUrl={user.image}
             size={120}
@@ -332,7 +382,7 @@ async function UserProfile({ user, loggedInUserId }: UserProfileProps) {
         {/* Profile content with proper spacing for the avatar */}
         <div className="mt-4 pt-2">
           {/* Name and username with enhanced styling */}
-          <div className="mb-4 max-sm:pl-3 pl-36">
+          <div className="mb-4 pl-36 max-sm:pl-3">
             <h1 className="text-2xl font-bold">{user.name}</h1>
             <h5 className="text-muted-foreground flex items-center gap-1">
               <span>@{user.username}</span>
@@ -345,7 +395,7 @@ async function UserProfile({ user, loggedInUserId }: UserProfileProps) {
           </div>
 
           {/* Stats row with enhanced styling */}
-          <div className="mb-6 flex items-center gap-6 rounded-xl p-3 max-sm:pl-3 pl-36">
+          <div className="mb-6 flex items-center gap-6 rounded-xl p-3 pl-36 max-sm:pl-3">
             <div className="flex flex-col items-center">
               <span className="font-semibold text-blue-700">
                 {formatNumber(user._count.posts)}

@@ -87,6 +87,3 @@ export function useUpdateProfileMutation() {
 
   return mutation;
 }
-function startAvatarUpload(arg0: File[]): any {
-  throw new Error("Function not implemented.");
-}

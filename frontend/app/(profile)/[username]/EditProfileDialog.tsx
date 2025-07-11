@@ -61,7 +61,7 @@ export default function EditProfileDialog({
 
   async function onSubmit(values: UpdateUserProfileValues) {
     const newAvatarFile = croppedAvatar
-      ? new File([croppedAvatar], `avatar_${user.id}.webp`)
+      ? new File([croppedAvatar], `avatar_${user.id}.webp`, { type: 'image/webp' })
       : undefined;
 
     mutation.mutate(
@@ -80,7 +80,7 @@ export default function EditProfileDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="max-h-[90vh] w-full max-w-md overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Edit profile</DialogTitle>
         </DialogHeader>
@@ -222,13 +222,14 @@ function AvatarInput({ src, onImageCropped }: AvatarInputProps) {
         type="button"
         onClick={() => fileInputRef.current?.click()}
         className="group relative block"
+        aria-label="Change avatar"
       >
         <Image
           src={src}
           alt="Avatar preview"
           width={150}
           height={150}
-          className="size-16 flex-none rounded-full object-cover"
+          className="size-20 flex-none rounded-full border-2 border-gray-200 object-cover shadow"
         />
         <span className="bg-opacity-30 group-hover:bg-opacity-25 absolute inset-0 m-auto flex size-12 items-center justify-center rounded-full bg-black text-white transition-colors duration-200">
           <Camera size={24} />

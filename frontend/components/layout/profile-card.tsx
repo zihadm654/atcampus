@@ -1,8 +1,9 @@
-'use client';
+"use client";
 
-import { useSession } from '@/lib/auth-client';
-import UserAvatar from '../UserAvatar';
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
+import { useSession } from "@/lib/auth-client";
+
+import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
+import UserAvatar from "../UserAvatar";
 
 const ProfileCard = () => {
   const { data: session } = useSession();
@@ -13,7 +14,7 @@ const ProfileCard = () => {
   return (
     <Card className="py-2">
       <CardContent className="flex items-center justify-start gap-2">
-        <UserAvatar avatarUrl={user.image ?? null} size={30} />
+        <UserAvatar avatarUrl={user.image ?? null} size={40} />
         <div className="hidden lg:block">
           <h2 className="font-bold">{user?.name}</h2>
           <p>@{user.username}</p>

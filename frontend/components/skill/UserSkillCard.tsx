@@ -24,26 +24,26 @@ const skillLevelColors = {
 
 export default function UserSkillCard({ skill, userId, currentUserEndorsements = [] }: UserSkillCardProps) {
   const isEndorsed = currentUserEndorsements.includes(skill.id);
-  
+
   return (
     <Card className="overflow-hidden">
-      <CardContent className="p-4">
+      <CardContent>
         <div className="flex items-start justify-between">
           <div className="space-y-2">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1">
               <h3 className="text-lg font-medium">{skill.title}</h3>
-              <SkillEndorsementButton 
-                skill={skill} 
-                isEndorsed={isEndorsed} 
-                userId={userId} 
+              <SkillEndorsementButton
+                skill={skill}
+                isEndorsed={isEndorsed}
+                userId={userId}
               />
             </div>
-            
-            <div className="flex flex-wrap gap-2">
+
+            <div className="flex flex-wrap gap-1">
               <Badge variant="secondary" className={skillLevelColors[skill.level]}>
                 {skill.level.charAt(0) + skill.level.slice(1).toLowerCase()}
               </Badge>
-              
+
               {skill.yearsOfExperience > 0 && (
                 <Badge variant="outline" className="flex items-center gap-1">
                   <Clock className="h-3 w-3" />
@@ -51,7 +51,7 @@ export default function UserSkillCard({ skill, userId, currentUserEndorsements =
                 </Badge>
               )}
             </div>
-            
+
             {skill._count?.skillEndorsements > 0 && (
               <SkillEndorsementDialog skill={skill} />
             )}

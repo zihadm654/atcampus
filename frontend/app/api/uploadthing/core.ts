@@ -43,7 +43,7 @@ const cleanupFailedUpload = async (fileUrl: string | null) => {
 export const ourFileRouter = {
   avatar: f({
     image: {
-      maxFileSize: "512KB",
+      maxFileSize: "2MB",
       maxFileCount: 1,
     },
   })

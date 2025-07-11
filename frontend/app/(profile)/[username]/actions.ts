@@ -1,13 +1,13 @@
-'use server';
+"use server";
 
-import { prisma } from '@/lib/db';
-import { getCurrentUser } from '@/lib/session';
-import streamServerClient from '@/lib/stream';
+import { getUserDataSelect } from "@/types/types";
+import { prisma } from "@/lib/db";
+import { getCurrentUser } from "@/lib/session";
+import streamServerClient from "@/lib/stream";
 import {
-  type UpdateUserProfileValues,
   updateUserProfileSchema,
-} from '@/lib/validations/validation';
-import { getUserDataSelect } from '@/types/types';
+  type UpdateUserProfileValues,
+} from "@/lib/validations/validation";
 
 export async function updateUserProfile(values: UpdateUserProfileValues) {
   const validatedValues = updateUserProfileSchema.parse(values);
@@ -15,7 +15,7 @@ export async function updateUserProfile(values: UpdateUserProfileValues) {
   const user = await getCurrentUser();
 
   if (!user) {
-    throw new Error('Unauthorized');
+    throw new Error("Unauthorized");
   }
 
   const updatedUser = await prisma.$transaction(async (tx) => {

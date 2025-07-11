@@ -1,7 +1,7 @@
-// import "cropperjs/dist/cropper.css";
+import { useRef, useState } from "react";
+import ReactCrop, { type Crop } from "react-image-crop";
 
-import { useRef } from "react";
-import { Cropper, ReactCropperElement } from "react-cropper";
+import "react-image-crop/dist/ReactCrop.css";
 
 import { Button } from "../ui/button";
 import {
@@ -25,34 +25,71 @@ export default function CropImageDialog({
   onCropped,
   onClose,
 }: CropImageDialogProps) {
-  const cropperRef = useRef<ReactCropperElement>(null);
+  const [crop, setCrop] = useState<Crop>();
+  const [completedCrop, setCompletedCrop] = useState<Crop>();
+  const imgRef = useRef<HTMLImageElement>(null);
 
-  function crop() {
-    const cropper = cropperRef.current?.cropper;
-    if (!cropper) return;
-    cropper.getCroppedCanvas().toBlob((blob) => onCropped(blob), "image/webp");
-    onClose();
+  function onCrop() {
+    if (!completedCrop || !imgRef.current) {
+      onCropped(null);
+      onClose();
+      return;
+    }
+    const image = imgRef.current;
+    const canvas = document.createElement("canvas");
+    const scaleX = image.naturalWidth / image.width;
+    const scaleY = image.naturalHeight / image.height;
+    canvas.width = completedCrop.width * scaleX;
+    canvas.height = completedCrop.height * scaleY;
+    const ctx = canvas.getContext("2d");
+
+    if (!ctx) {
+      onCropped(null);
+      onClose();
+      return;
+    }
+
+    ctx.drawImage(
+      image,
+      completedCrop.x * scaleX,
+      completedCrop.y * scaleY,
+      completedCrop.width * scaleX,
+      completedCrop.height * scaleY,
+      0,
+      0,
+      completedCrop.width * scaleX,
+      completedCrop.height * scaleY,
+    );
+
+    canvas.toBlob(
+      (blob) => {
+        onCropped(blob);
+        onClose();
+      },
+      "image/webp",
+      0.95,
+    );
   }
 
   return (
     <Dialog open onOpenChange={onClose}>
-      <DialogContent>
+      <DialogContent className="max-h-[90vh] w-full max-w-md overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Crop image</DialogTitle>
         </DialogHeader>
-        <Cropper
-          src={src}
-          aspectRatio={cropAspectRatio}
-          guides={false}
-          zoomable={false}
-          ref={cropperRef}
-          className="mx-auto size-fit"
-        />
+        <ReactCrop
+          crop={crop}
+          onChange={(_, percentCrop) => setCrop(percentCrop)}
+          onComplete={(c) => setCompletedCrop(c)}
+          aspect={cropAspectRatio}
+        >
+          <img ref={imgRef} src={src} className="w-full" />
+        </ReactCrop>
         <DialogFooter>
           <Button variant="secondary" onClick={onClose}>
             Cancel
           </Button>
-          <Button onClick={crop}>Crop</Button>
+          <Button onClick={onCrop}>Crop</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

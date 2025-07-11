@@ -61,7 +61,7 @@ export default function UserSkillList({ skills, userId }: UserSkillListProps) {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-1 grid grid-cols-2 max-md:grid-cols-1 gap-1">
       {skills.map((skill) => (
         <UserSkillCard
           key={skill.id}
