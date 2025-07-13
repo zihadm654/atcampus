@@ -110,19 +110,6 @@ export default function Job({ job }: JobProps) {
       </div>
       <hr className="text-muted-foreground" />
       <div className="flex justify-between gap-5">
-        <div className="flex items-center gap-5">
-          {/* <LikeButton
-            jobId={job.id}
-            initialState={{
-              likes: job._count.likes,
-              isLikedByUser: job.likes.some((like) => like.userId === user.id),
-            }}
-          /> */}
-          <CommentButton
-            job={job}
-            onClick={() => setShowComments(!showComments)}
-          />
-        </div>
         <BookmarkButton
           postId={job.id}
           initialState={{
@@ -132,7 +119,6 @@ export default function Job({ job }: JobProps) {
           }}
         />
       </div>
-      {/* {showComments && <Comments post={job} />} */}
     </article>
   );
 }
@@ -187,20 +173,4 @@ function MediaPreview({ media }: MediaPreviewProps) {
   }
 
   return <p className="text-destructive">Unsupported media type</p>;
-}
-
-interface CommentButtonProps {
-  job: JobData;
-  onClick: () => void;
-}
-
-function CommentButton({ job, onClick }: CommentButtonProps) {
-  return (
-    <button onClick={onClick} className="flex items-center gap-2">
-      <MessageSquare className="size-5" />
-      <span className="text-sm font-medium tabular-nums">
-        {job._count.comments} <span className="hidden sm:inline">comments</span>
-      </span>
-    </button>
-  );
 }

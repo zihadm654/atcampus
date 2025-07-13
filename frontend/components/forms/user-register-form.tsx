@@ -31,6 +31,7 @@ import {
   FormLabel,
   FormMessage,
 } from "../ui/form";
+import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
 
 interface UserRegisterFormProps {
   className?: string;
@@ -38,12 +39,11 @@ interface UserRegisterFormProps {
 
 const roleIcons: Record<UserRole, React.ElementType> = {
   STUDENT: GraduationCap,
-  PROFESSOR: GraduationCap,
   ORGANIZATION: Briefcase,
   INSTITUTION: HomeIcon, // Or UsersIcon if HomeIcon is not suitable
 };
 
-interface UserAuthFormProps extends React.HTMLAttributes<HTMLDivElement> {}
+interface UserAuthFormProps extends React.HTMLAttributes<HTMLDivElement> { }
 
 export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
   const [currentStep, setCurrentStep] = React.useState(1);
@@ -125,34 +125,37 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
                   control={form.control}
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel htmlFor="role">Choose Your Role</FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                        disabled={isLoading || isGoogleLoading}
-                      >
-                        <FormControl>
-                          <SelectTrigger id="role">
-                            <SelectValue placeholder="Select your role" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {Object.values(UserRole).map((roleValue) => {
-                            const IconComponent = roleIcons[roleValue];
-                            return (
-                              <SelectItem key={roleValue} value={roleValue}>
-                                <div className="flex items-center">
-                                  {IconComponent && (
-                                    <IconComponent className="mr-2 h-4 w-4" />
-                                  )}
-                                  {roleValue.charAt(0).toUpperCase() +
-                                    roleValue.slice(1).toLowerCase()}
-                                </div>
-                              </SelectItem>
-                            );
-                          })}
-                        </SelectContent>
-                      </Select>
+                      <FormLabel htmlFor="role" className="text-2xl">Choose Your Role</FormLabel>
+                      <FormControl>
+                        <RadioGroup
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                          className="flex items-center justify-center space-x-3 max-md:space-x-1.5"
+                        >
+                          <FormItem className="flex items-center gap-3 border p-5 rounded-xl">
+                            <FormControl>
+                              <RadioGroupItem value="STUDENT" />
+                            </FormControl>
+                            <FormLabel className="font-normal">
+                              STUDENT
+                            </FormLabel>
+                          </FormItem>
+                          <FormItem className="flex items-center gap-3 border p-5 rounded-xl">
+                            <FormControl>
+                              <RadioGroupItem value="ORGANIZATION" />
+                            </FormControl>
+                            <FormLabel className="font-normal">
+                              ORGANIZATION
+                            </FormLabel>
+                          </FormItem>
+                          <FormItem className="flex items-center gap-3 border p-5 rounded-xl">
+                            <FormControl>
+                              <RadioGroupItem value="INSTITUTION" />
+                            </FormControl>
+                            <FormLabel className="font-normal">INSTITUTION</FormLabel>
+                          </FormItem>
+                        </RadioGroup>
+                      </FormControl>
                       <FormDescription>Select your role</FormDescription>
                       <FormMessage />
                     </FormItem>

@@ -10,11 +10,12 @@ export enum UserRole {
   STUDENT = "STUDENT",
   ORGANIZATION = "ORGANIZATION",
   INSTITUTION = "INSTITUTION",
-  PROFESSOR = "PROFESSOR",
 }
 
 export const registerSchema = z.object({
-  role: z.nativeEnum(UserRole), // Make role optional initially
+  role: z.enum(["STUDENT", "ORGANIZATION", "INSTITUTION"], {
+    required_error: "You need to select a notification type.",
+  }),
   instituteId: z.coerce.string().min(3, "instituteId is required"),
   institution: z.string().trim().min(3, "institution is required"),
   name: z.string().trim().min(3, "username is required").max(255),

@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import { applyJob } from "@/actions/appllication";
 import { Media } from "@prisma/client";
@@ -38,7 +37,7 @@ export default function Job({ job }: JobProps) {
     }
   };
   return (
-    <article className="group/post bg-card relative space-y-3 rounded-2xl p-5 shadow-sm border">
+    <article className="group/post bg-card relative space-y-3 rounded-2xl border p-5 shadow-sm">
       {/* Department badge */}
       <div className="absolute top-1 right-1 rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700">
         Profile match
@@ -62,10 +61,10 @@ export default function Job({ job }: JobProps) {
             </UserTooltip>
             <Link
               href={`/jobs/${job.id}`}
-              className="text-muted-foreground block text-sm hover:underline"
+              className="text-muted-foreground block text-sm hover:underline space-x-1"
               suppressHydrationWarning
             >
-              {/* <span className="text-black">@{job.user.username}</span>{" "} */}
+              <span className="text-gray-600">@{job.user.username}</span>{" "}
               {formatRelativeDate(job.createdAt)}
             </Link>
           </div>
@@ -75,6 +74,7 @@ export default function Job({ job }: JobProps) {
       <h3 className="text-xl font-semibold">
         <Link href={`/jobs/${job.id}`}>{job.title}</Link>
       </h3>
+      <p>{job.summary}</p>
       {!!job.attachments.length && (
         <MediaPreviews attachments={job.attachments} />
       )}
@@ -88,16 +88,16 @@ export default function Job({ job }: JobProps) {
           {job.type}
         </Badge>
       </div>
-      <div className="grid grid-cols-2 gap-2">
-        <h4 className="flex items-center gap-1.5">
+      <div className="grid grid-cols-2 gap-1">
+        <h4 className="flex items-center gap-1">
           <Clock className="size-4 text-gray-500" />
           <span>{job.weeklyHours} hrs/week</span>
         </h4>
-        <h4 className="flex items-center gap-1.5">
+        <h4 className="flex items-center gap-1">
           Salary: <span>${job.salary}</span>
         </h4>
       </div>
-      <div className="flex items-center gap-1.5 px-1 py-1">
+      <div className="flex items-center gap-1 px-1 py-1">
         <Calendar className="size-4" />
         <span>Deadline: {formatDate(job.endDate, "MM/dd/yyyy")}</span>
       </div>

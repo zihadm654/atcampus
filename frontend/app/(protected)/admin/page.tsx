@@ -1,8 +1,10 @@
-'use client';
+"use client";
 
-import { UserRole } from '@prisma/client';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { format } from 'date-fns';
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { UserRole } from "@prisma/client";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { format } from "date-fns";
 import {
   Calendar as CalendarIcon,
   Loader2,
@@ -10,36 +12,36 @@ import {
   RefreshCw,
   Trash,
   UserCircle,
-} from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import { useState } from 'react';
-import { toast } from 'sonner';
-import { ReturnButton } from '@/components/auth/return-button';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Calendar } from '@/components/ui/calendar';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+} from "lucide-react";
+import { toast } from "sonner";
+
+import { authClient } from "@/lib/auth-client";
+import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '@/components/ui/popover';
+} from "@/components/ui/popover";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
+} from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -47,10 +49,9 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
-import { UserRoleSelect } from '@/components/user-role-select';
-import { authClient } from '@/lib/auth-client';
-import { cn } from '@/lib/utils';
+} from "@/components/ui/table";
+import { ReturnButton } from "@/components/auth/return-button";
+import { UserRoleSelect } from "@/components/user-role-select";
 
 type User = {
   id: string;
@@ -69,33 +70,33 @@ export default function AdminDashboard() {
     name: string;
     role: UserRole;
   }>({
-    email: '',
-    password: '',
-    name: '',
+    email: "",
+    password: "",
+    name: "",
     role: UserRole.STUDENT,
   });
   const [isLoading, setIsLoading] = useState<string | undefined>();
   const [isBanDialogOpen, setIsBanDialogOpen] = useState(false);
   const [banForm, setBanForm] = useState({
-    userId: '',
-    reason: '',
+    userId: "",
+    reason: "",
     expirationDate: undefined as Date | undefined,
   });
 
   const { data: users, isLoading: isUsersLoading } = useQuery({
-    queryKey: ['users'],
+    queryKey: ["users"],
     queryFn: async () => {
       const data = await authClient.admin.listUsers(
         {
           query: {
             limit: 10,
-            sortBy: 'createdAt',
-            sortDirection: 'desc',
+            sortBy: "createdAt",
+            sortDirection: "desc",
           },
         },
         {
           throw: true,
-        }
+        },
       );
       return data?.users || [];
     },
@@ -103,7 +104,7 @@ export default function AdminDashboard() {
 
   const handleCreateUser = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading('create');
+    setIsLoading("create");
     try {
       await authClient.admin.createUser({
         email: newUser.email,
@@ -111,14 +112,14 @@ export default function AdminDashboard() {
         name: newUser.name,
         role: newUser.role,
       });
-      toast.success('User created successfully');
-      setNewUser({ email: '', password: '', name: '', role: 'STUDENT' });
+      toast.success("User created successfully");
+      setNewUser({ email: "", password: "", name: "", role: "STUDENT" });
       setIsDialogOpen(false);
       queryClient.invalidateQueries({
-        queryKey: ['users'],
+        queryKey: ["users"],
       });
     } catch (error: any) {
-      toast.error(error.message || 'Failed to create user');
+      toast.error(error.message || "Failed to create user");
     } finally {
       setIsLoading(undefined);
     }
@@ -128,12 +129,12 @@ export default function AdminDashboard() {
     setIsLoading(`delete-${id}`);
     try {
       await Promise.all([authClient.admin.removeUser({ userId: id })]);
-      toast.success('User deleted successfully');
+      toast.success("User deleted successfully");
       queryClient.invalidateQueries({
-        queryKey: ['users'],
+        queryKey: ["users"],
       });
     } catch (error: any) {
-      toast.error(error.message || 'Failed to delete user');
+      toast.error(error.message || "Failed to delete user");
     } finally {
       setIsLoading(undefined);
     }
@@ -143,9 +144,9 @@ export default function AdminDashboard() {
     setIsLoading(`revoke-${id}`);
     try {
       await authClient.admin.revokeUserSessions({ userId: id });
-      toast.success('Sessions revoked for user');
+      toast.success("Sessions revoked for user");
     } catch (error: any) {
-      toast.error(error.message || 'Failed to revoke sessions');
+      toast.error(error.message || "Failed to revoke sessions");
     } finally {
       setIsLoading(undefined);
     }
@@ -155,10 +156,10 @@ export default function AdminDashboard() {
     setIsLoading(`impersonate-${id}`);
     try {
       await authClient.admin.impersonateUser({ userId: id });
-      toast.success('Impersonated user');
-      router.push('/dashboard');
+      toast.success("Impersonated user");
+      router.push("/dashboard");
     } catch (error: any) {
-      toast.error(error.message || 'Failed to impersonate user');
+      toast.error(error.message || "Failed to impersonate user");
     } finally {
       setIsLoading(undefined);
     }
@@ -169,20 +170,20 @@ export default function AdminDashboard() {
     setIsLoading(`ban-${banForm.userId}`);
     try {
       if (!banForm.expirationDate) {
-        throw new Error('Expiration date is required');
+        throw new Error("Expiration date is required");
       }
       await authClient.admin.banUser({
         userId: banForm.userId,
         banReason: banForm.reason,
         banExpiresIn: banForm.expirationDate.getTime() - Date.now(),
       });
-      toast.success('User banned successfully');
+      toast.success("User banned successfully");
       setIsBanDialogOpen(false);
       queryClient.invalidateQueries({
-        queryKey: ['users'],
+        queryKey: ["users"],
       });
     } catch (error: any) {
-      toast.error(error.message || 'Failed to ban user');
+      toast.error(error.message || "Failed to ban user");
     } finally {
       setIsLoading(undefined);
     }
@@ -259,24 +260,21 @@ export default function AdminDashboard() {
                       <SelectItem value={UserRole.ORGANIZATION}>
                         Organization
                       </SelectItem>
-                      <SelectItem value={UserRole.PROFESSOR}>
-                        Professor
-                      </SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <Button
                   className="w-full"
-                  disabled={isLoading === 'create'}
+                  disabled={isLoading === "create"}
                   type="submit"
                 >
-                  {isLoading === 'create' ? (
+                  {isLoading === "create" ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                       Creating...
                     </>
                   ) : (
-                    'Create User'
+                    "Create User"
                   )}
                 </Button>
               </form>
@@ -305,15 +303,15 @@ export default function AdminDashboard() {
                     <PopoverTrigger asChild>
                       <Button
                         className={cn(
-                          'w-full justify-start text-left font-normal',
-                          !banForm.expirationDate && 'text-muted-foreground'
+                          "w-full justify-start text-left font-normal",
+                          !banForm.expirationDate && "text-muted-foreground",
                         )}
                         id="expirationDate"
-                        variant={'outline'}
+                        variant={"outline"}
                       >
                         <CalendarIcon className="mr-2 h-4 w-4" />
                         {banForm.expirationDate ? (
-                          format(banForm.expirationDate, 'PPP')
+                          format(banForm.expirationDate, "PPP")
                         ) : (
                           <span>Pick a date</span>
                         )}
@@ -341,7 +339,7 @@ export default function AdminDashboard() {
                       Banning...
                     </>
                   ) : (
-                    'Ban User'
+                    "Ban User"
                   )}
                 </Button>
               </form>
@@ -385,7 +383,7 @@ export default function AdminDashboard() {
                     <TableCell>
                       <div className="flex space-x-2">
                         <Button
-                          disabled={isLoading?.startsWith('delete')}
+                          disabled={isLoading?.startsWith("delete")}
                           onClick={() => handleDeleteUser(user.id)}
                           size="sm"
                           variant="destructive"
@@ -397,7 +395,7 @@ export default function AdminDashboard() {
                           )}
                         </Button>
                         <Button
-                          disabled={isLoading?.startsWith('revoke')}
+                          disabled={isLoading?.startsWith("revoke")}
                           onClick={() => handleRevokeSessions(user.id)}
                           size="sm"
                           variant="outline"
@@ -409,7 +407,7 @@ export default function AdminDashboard() {
                           )}
                         </Button>
                         <Button
-                          disabled={isLoading?.startsWith('impersonate')}
+                          disabled={isLoading?.startsWith("impersonate")}
                           onClick={() => handleImpersonateUser(user.id)}
                           size="sm"
                           variant="secondary"
@@ -424,11 +422,11 @@ export default function AdminDashboard() {
                           )}
                         </Button>
                         <Button
-                          disabled={isLoading?.startsWith('ban')}
+                          disabled={isLoading?.startsWith("ban")}
                           onClick={async () => {
                             setBanForm({
                               userId: user.id,
-                              reason: '',
+                              reason: "",
                               expirationDate: undefined,
                             });
                             if (user.banned) {
@@ -441,20 +439,20 @@ export default function AdminDashboard() {
                                   onError(context) {
                                     toast.error(
                                       context.error.message ||
-                                      'Failed to unban user'
+                                        "Failed to unban user",
                                     );
                                     setIsLoading(undefined);
                                   },
                                   onSuccess() {
                                     queryClient.invalidateQueries({
-                                      queryKey: ['users'],
+                                      queryKey: ["users"],
                                     });
-                                    toast.success('User unbanned successfully');
+                                    toast.success("User unbanned successfully");
                                   },
-                                }
+                                },
                               );
                               queryClient.invalidateQueries({
-                                queryKey: ['users'],
+                                queryKey: ["users"],
                               });
                             } else {
                               setIsBanDialogOpen(true);
@@ -466,9 +464,9 @@ export default function AdminDashboard() {
                           {isLoading === `ban-${user.id}` ? (
                             <Loader2 className="h-4 w-4 animate-spin" />
                           ) : user.banned ? (
-                            'Unban'
+                            "Unban"
                           ) : (
-                            'Ban'
+                            "Ban"
                           )}
                         </Button>
                       </div>

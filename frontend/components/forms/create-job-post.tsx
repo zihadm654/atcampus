@@ -1,35 +1,40 @@
-'use client';
+"use client";
 
-import { zodResolver } from '@hookform/resolvers/zod';
-import type { User } from '@prisma/client';
-import { useQueryClient } from '@tanstack/react-query';
-import { useRouter } from 'next/navigation';
-import React, { useEffect, useState } from 'react';
-import type { DateRange } from 'react-day-picker';
-import { useForm } from 'react-hook-form';
-import { toast } from 'sonner';
-import JobDescriptionEditor from '@/components/editor/richEditor';
-import { createJob } from '@/components/jobs/actions';
+import React, { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { zodResolver } from "@hookform/resolvers/zod";
+import type { User } from "@prisma/client";
+import { useQueryClient } from "@tanstack/react-query";
+import { format } from "date-fns";
+import { CalendarIcon } from "lucide-react";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
+
+import { cn } from "@/lib/utils";
 import {
   ExperienceLevel,
-  JobType,
   jobSchema,
+  JobType,
   type TJob,
-} from '@/lib/validations/job';
+} from "@/lib/validations/job";
+import JobDescriptionEditor from "@/components/editor/richEditor";
+import { createJob } from "@/components/jobs/actions";
 
-import { Button } from '../ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
-import { DatePickerWithRange } from '../ui/date-range-picker';
+import { Button } from "../ui/button";
+import { Calendar } from "../ui/calendar";
+import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
-} from '../ui/form';
-import { Input } from '../ui/input';
-import MultipleSelector, { type Option } from '../ui/multi-select';
+} from "../ui/form";
+import { Input } from "../ui/input";
+import MultipleSelector, { type Option } from "../ui/multi-select";
+import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import {
   Select,
   SelectContent,
@@ -38,42 +43,41 @@ import {
   SelectLabel,
   SelectTrigger,
   SelectValue,
-} from '../ui/select';
+} from "../ui/select";
+import { Textarea } from "../ui/textarea";
 
 interface CreateJobFormProps {
   user?: User;
 }
 const OPTIONS: Option[] = [
-  { label: 'nextjs', value: 'nextjs' },
-  { label: 'React', value: 'react' },
-  { label: 'Remix', value: 'remix' },
-  { label: 'Vite', value: 'vite' },
-  { label: 'Nuxt', value: 'nuxt' },
-  { label: 'Vue', value: 'vue' },
-  { label: 'Svelte', value: 'svelte' },
-  { label: 'Angular', value: 'angular' },
-  { label: 'Ember', value: 'ember', disable: true },
-  { label: 'Gatsby', value: 'gatsby', disable: true },
-  { label: 'Astro', value: 'astro' },
+  { label: "nextjs", value: "nextjs" },
+  { label: "React", value: "react" },
+  { label: "Remix", value: "remix" },
+  { label: "Vite", value: "vite" },
+  { label: "Nuxt", value: "nuxt" },
+  { label: "Vue", value: "vue" },
+  { label: "Svelte", value: "svelte" },
+  { label: "Angular", value: "angular" },
+  { label: "Ember", value: "ember", disable: true },
+  { label: "Gatsby", value: "gatsby", disable: true },
+  { label: "Astro", value: "astro" },
 ];
 export function CreateJobForm({ user }: CreateJobFormProps) {
   const router = useRouter();
-  const [range, setRange] = React.useState<DateRange | undefined>(undefined);
   const [pending, setPending] = useState(false);
   const form = useForm<TJob>({
     resolver: zodResolver(jobSchema),
     defaultValues: {
-      title: '',
-      description: '',
-      location: '',
+      title: "",
+      summary: "",
+      description: "",
+      location: "",
       weeklyHours: 0,
-      type: JobType.TEMPORARY,
+      type: JobType.INTERSHIP,
       experienceLevel: ExperienceLevel.ENTRY,
-      duration: 30,
       salary: 0,
       requirements: [],
-      startDate: range?.from as Date,
-      endDate: range?.to,
+      endDate: new Date(),
     },
   });
   const queryClient = useQueryClient();
@@ -82,17 +86,15 @@ export function CreateJobForm({ user }: CreateJobFormProps) {
     try {
       setPending(true);
       console.log(values);
-      const startDate = form.setValue('startDate', range?.from || new Date());
-      const endDate = form.setValue('endDate', range?.to || new Date());
 
       await createJob(values);
-      toast.success('Job created successfully!');
-      queryClient.invalidateQueries({ queryKey: ['job-feed'] });
+      toast.success("Job created successfully!");
+      queryClient.invalidateQueries({ queryKey: ["job-feed"] });
       form.reset();
-      router.push('/jobs');
+      router.push("/jobs");
     } catch (error) {
       console.error(error);
-      toast.error('Something went wrong. Please try again.');
+      toast.error("Something went wrong. Please try again.");
     } finally {
       setPending(false);
     }
@@ -100,7 +102,7 @@ export function CreateJobForm({ user }: CreateJobFormProps) {
 
   useEffect(() => {
     const subscription = form.watch((value, { name, type }) =>
-      console.log(value, name, type)
+      console.log(value, name, type),
     );
     return () => subscription.unsubscribe();
   }, [form]);
@@ -124,6 +126,19 @@ export function CreateJobForm({ user }: CreateJobFormProps) {
                     <FormLabel>Job Title</FormLabel>
                     <FormControl>
                       <Input placeholder="Job Title" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="summary"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Summary</FormLabel>
+                    <FormControl>
+                      <Textarea placeholder="job summary" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -227,16 +242,42 @@ export function CreateJobForm({ user }: CreateJobFormProps) {
             />
             <FormField
               control={form.control}
-              name="startDate"
-              render={() => (
-                <FormItem className="w-full">
-                  <FormControl>
-                    <DatePickerWithRange
-                      form={form}
-                      range={range}
-                      setRange={setRange}
-                    />
-                  </FormControl>
+              name="endDate"
+              render={({ field }) => (
+                <FormItem className="flex flex-col">
+                  <FormLabel>Date of birth</FormLabel>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <FormControl>
+                        <Button
+                          variant={"outline"}
+                          className={cn(
+                            "w-[240px] pl-3 text-left font-normal",
+                            !field.value && "text-muted-foreground",
+                          )}
+                        >
+                          {field.value ? (
+                            format(field.value, "PPP")
+                          ) : (
+                            <span>Pick a date</span>
+                          )}
+                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={field.value}
+                        onSelect={field.onChange}
+                        disabled={(date) =>
+                          date < new Date() || date < new Date("1900-01-01")
+                        }
+                        captionLayout="dropdown"
+                      />
+                    </PopoverContent>
+                  </Popover>
+                  <FormDescription>Job Deadline.</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -257,12 +298,12 @@ export function CreateJobForm({ user }: CreateJobFormProps) {
                       }
                       onChange={(selectedOptions: Option[]) =>
                         field.onChange(
-                          selectedOptions.map((option) => option.value)
+                          selectedOptions.map((option) => option.value),
                         )
                       }
                       placeholder="Select frameworks you like..."
                       value={OPTIONS.filter((option) =>
-                        field.value.includes(option.value)
+                        field.value.includes(option.value),
                       )}
                     />
                   </FormControl>
@@ -278,23 +319,25 @@ export function CreateJobForm({ user }: CreateJobFormProps) {
             <CardTitle>Duration</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            <FormField
-              control={form.control}
-              name="duration"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Duration</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="Duration in days"
-                      type="number"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            {JobType.INTERSHIP && (
+              <FormField
+                control={form.control}
+                name="duration"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Duration</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="Duration in days"
+                        type="number"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
             <FormField
               control={form.control}
               name="weeklyHours"
@@ -332,7 +375,7 @@ export function CreateJobForm({ user }: CreateJobFormProps) {
           </CardContent>
         </Card>
         <Button className="w-full" disabled={pending} type="submit">
-          {pending ? 'Submitting...' : 'Continue'}
+          {pending ? "Submitting..." : "Continue"}
         </Button>
       </form>
     </Form>

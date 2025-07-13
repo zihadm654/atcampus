@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image, { StaticImageData } from "next/image";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Camera } from "lucide-react";
@@ -58,20 +58,59 @@ export default function EditProfileDialog({
   const mutation = useUpdateProfileMutation();
 
   const [croppedAvatar, setCroppedAvatar] = useState<Blob | null>(null);
+  const [croppedCover, setCroppedCover] = useState<Blob | null>(null);
+
+  const [avatarPreviewUrl, setAvatarPreviewUrl] = useState<string>(
+    user.image || "",
+  );
+  const [coverPreviewUrl, setCoverPreviewUrl] = useState<string>(
+    user.coverImage || "",
+  );
+
+  useEffect(() => {
+    if (croppedAvatar) {
+      const url = URL.createObjectURL(croppedAvatar);
+      setAvatarPreviewUrl(url);
+      return () => URL.revokeObjectURL(url);
+    } else if (user.image) {
+      setAvatarPreviewUrl(user.image);
+    }
+  }, [croppedAvatar, user.image]);
+
+  useEffect(() => {
+    if (croppedCover) {
+      const url = URL.createObjectURL(croppedCover);
+      setCoverPreviewUrl(url);
+      return () => URL.revokeObjectURL(url);
+    } else if (user.coverImage) {
+      setCoverPreviewUrl(user.coverImage);
+    }
+  }, [croppedCover, user.coverImage]);
 
   async function onSubmit(values: UpdateUserProfileValues) {
     const newAvatarFile = croppedAvatar
-      ? new File([croppedAvatar], `avatar_${user.id}.webp`, { type: 'image/webp' })
+      ? new File([croppedAvatar], `avatar_${user.id}.webp`, {
+          type: "image/webp",
+        })
+      : undefined;
+    const newCoverFile = croppedCover
+      ? new File([croppedCover], `cover_${user.id}.webp`, {
+          type: "image/webp",
+        })
       : undefined;
 
     mutation.mutate(
       {
         values,
         avatar: newAvatarFile,
+        coverImage: newCoverFile,
       },
       {
         onSuccess: () => {
           setCroppedAvatar(null);
+          setCroppedCover(null);
+          setAvatarPreviewUrl(user.image || "");
+          setCoverPreviewUrl(user.coverImage || "");
           onOpenChange(false);
         },
       },
@@ -87,14 +126,18 @@ export default function EditProfileDialog({
         <div className="space-y-1.5">
           <Label>Avatar</Label>
           <AvatarInput
-            src={
-              croppedAvatar
-                ? URL.createObjectURL(croppedAvatar)
-                : user.image || ""
-            }
+            src={avatarPreviewUrl}
             onImageCropped={setCroppedAvatar}
           />
         </div>
+        <div className="space-y-1.5">
+          <Label>Cover Image</Label>
+          <CoverImageInput
+            src={coverPreviewUrl}
+            onImageCropped={setCroppedCover}
+          />
+        </div>
+
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
             <FormField
@@ -230,6 +273,7 @@ function AvatarInput({ src, onImageCropped }: AvatarInputProps) {
           width={150}
           height={150}
           className="size-20 flex-none rounded-full border-2 border-gray-200 object-cover shadow"
+          key={typeof src === "string" ? src : src.src} // Use string URL as key
         />
         <span className="bg-opacity-30 group-hover:bg-opacity-25 absolute inset-0 m-auto flex size-12 items-center justify-center rounded-full bg-black text-white transition-colors duration-200">
           <Camera size={24} />
@@ -239,6 +283,75 @@ function AvatarInput({ src, onImageCropped }: AvatarInputProps) {
         <CropImageDialog
           src={URL.createObjectURL(imageToCrop)}
           cropAspectRatio={1}
+          onCropped={onImageCropped}
+          onClose={() => {
+            setImageToCrop(undefined);
+            if (fileInputRef.current) {
+              fileInputRef.current.value = "";
+            }
+          }}
+        />
+      )}
+    </>
+  );
+}
+
+// CoverImageInput is similar to AvatarInput but with a 3:1 aspect ratio and larger preview
+function CoverImageInput({
+  src,
+  onImageCropped,
+}: {
+  src: string | StaticImageData;
+  onImageCropped: (blob: Blob | null) => void;
+}) {
+  const [imageToCrop, setImageToCrop] = useState<File>();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  function onImageSelected(image: File | undefined) {
+    if (!image) return;
+    Resizer.imageFileResizer(
+      image,
+      1800,
+      600,
+      "WEBP",
+      100,
+      0,
+      (uri) => setImageToCrop(uri as File),
+      "file",
+    );
+  }
+
+  return (
+    <>
+      <input
+        type="file"
+        accept="image/*"
+        onChange={(e) => onImageSelected(e.target.files?.[0])}
+        ref={fileInputRef}
+        className="sr-only hidden"
+      />
+      <button
+        type="button"
+        onClick={() => fileInputRef.current?.click()}
+        className="group relative block w-full"
+        aria-label="Change cover image"
+      >
+        <Image
+          src={src}
+          alt="Cover preview"
+          width={600}
+          height={200}
+          className="h-32 w-full rounded-lg border-2 border-gray-200 object-cover shadow"
+          key={typeof src === "string" ? src : src.src} // Use string URL as key
+        />
+        <span className="bg-opacity-30 group-hover:bg-opacity-25 absolute inset-0 m-auto flex items-center justify-center rounded-lg bg-black text-white transition-colors duration-200">
+          <Camera size={32} />
+        </span>
+      </button>
+      {imageToCrop && (
+        <CropImageDialog
+          src={URL.createObjectURL(imageToCrop)}
+          cropAspectRatio={3}
           onCropped={onImageCropped}
           onClose={() => {
             setImageToCrop(undefined);

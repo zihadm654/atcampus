@@ -54,13 +54,10 @@ export async function createJob(values: TJob) {
       throw new Error(validatedFields.error.message);
     }
 
-    const { startDate, endDate, ...rest } = validatedFields.data;
     const job = await prisma.job.create({
       data: {
         userId: user.id,
-        ...rest,
-        ...(startDate && { startDate }),
-        ...(endDate && { endDate }),
+        ...validatedFields.data,
       },
     });
 

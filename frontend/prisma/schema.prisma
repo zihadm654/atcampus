@@ -12,7 +12,6 @@ datasource db {
 
 enum UserRole {
   STUDENT
-  PROFESSOR
   INSTITUTION
   ORGANIZATION
 }
@@ -22,9 +21,8 @@ model Account {
   userId String
 
   createdAt DateTime @default(now()) @map(name: "created_at")
-  updatedAt DateTime @default(now()) @map(name: "updated_at")
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   accountId             String
   providerId            String
@@ -87,8 +85,7 @@ model TwoFactor {
 }
 
 model User {
-  id          String  @id @default(cuid()) @map("_id")
-  instituteId String?
+  id String @id @default(cuid()) @map("_id")
 
   name             String
   email            String    @unique
@@ -96,6 +93,7 @@ model User {
   image            String?
   coverImage       String?
   bio              String?
+  instituteId      String?
   institution      String?
   currentSeamster  Int?
   role             UserRole  @default(STUDENT)
@@ -107,7 +105,7 @@ model User {
   twoFactorEnabled Boolean?
 
   createdAt DateTime @default(now()) @map(name: "created_at")
-  updatedAt DateTime @default(now()) @map(name: "updated_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
 
   accounts              Account[]
   sessions              Session[]
@@ -139,6 +137,10 @@ model User {
   members     Member[]
   invitations Invitation[]
   twofactors  TwoFactor[]
+  schools     School[]
+  faculties   Faculty[]
+  events      Event[]
+  clubs       Club[]
 
   @@unique([username])
   @@map(name: "users")
@@ -152,7 +154,7 @@ model Skill {
   skillEndorsements SkillEndorsement[]
 
   createdAt DateTime @default(now()) @map(name: "created_at")
-  updatedAt DateTime @default(now()) @map(name: "updated_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
 
   @@map("skills")
 }
@@ -170,7 +172,7 @@ model UserSkill {
   skillEndorsements SkillEndorsement[]
 
   createdAt DateTime @default(now()) @map(name: "created_at")
-  updatedAt DateTime @default(now()) @map(name: "updated_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
 
   @@map("user_skills")
 }
@@ -178,7 +180,6 @@ model UserSkill {
 enum SkillLevel {
   BEGINNER
   INTERMEDIATE
-  ADVANCED
   EXPERT
 }
 
@@ -192,7 +193,7 @@ model SkillEndorsement {
   skill       Skill     @relation(fields: [skillId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now()) @map(name: "created_at")
-  updatedAt DateTime @default(now()) @map(name: "updated_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
 
   @@unique([userSkillId, endorserId])
   @@map("skill_endorsements")
@@ -203,7 +204,7 @@ model Post {
   content String
 
   createdAt DateTime @default(now()) @map(name: "created_at")
-  updatedAt DateTime @default(now()) @map(name: "updated_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
 
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId String
@@ -226,7 +227,7 @@ model Bookmark {
   post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now()) @map(name: "created_at")
-  updatedAt DateTime @default(now()) @map(name: "updated_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
 
   @@unique([userId, postId])
   @@map(name: "bookmarks")
@@ -247,7 +248,7 @@ model Media {
   researchId String?
 
   createdAt DateTime @default(now()) @map(name: "created_at")
-  updatedAt DateTime @default(now()) @map(name: "updated_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
 
   @@map(name: "post_media")
 }
@@ -262,38 +263,28 @@ model Comment {
   id      String @id @default(cuid()) @map("_id")
   content String
 
-  userId     String
-  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  postId     String? // Changed to optional
-  post       Post?     @relation(fields: [postId], references: [id], onDelete: Cascade) // onDelete: Cascade is good here
-  job        Job?      @relation(fields: [jobId], references: [id], onDelete: Cascade) // Consider onDelete: Cascade if a Job deletion should remove its comments
-  jobId      String?
-  research   Research? @relation(fields: [researchId], references: [id], onDelete: Cascade) // Consider onDelete: Cascade
-  researchId String?
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  postId String // Changed to optional
+  post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade) // onDelete: Cascade is good here
 
   createdAt DateTime @default(now()) @map(name: "created_at")
-  updatedAt DateTime @default(now()) @map(name: "updated_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
 
   @@map("comments")
 }
 
 model Like {
-  id         String    @id @default(cuid()) @map("_id")
-  userId     String
-  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  postId     String?
-  post       Post?     @relation(fields: [postId], references: [id], onDelete: Cascade)
-  jobId      String?
-  job        Job?      @relation(fields: [jobId], references: [id], onDelete: Cascade)
-  researchId String?
-  research   Research? @relation(fields: [researchId], references: [id], onDelete: Cascade)
+  id String @id @default(cuid()) @map("_id")
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  postId String
+  post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now()) @map(name: "created_at")
   updatedAt DateTime @updatedAt @map(name: "updated_at")
 
-  // Replace the three separate unique constraints with a single compound index
-  // that ensures a user can only like one content item once
-  @@unique([userId, postId, jobId, researchId])
   @@map(name: "likes")
 }
 
@@ -312,11 +303,10 @@ model Block {
   id String @id @default(cuid()) @map("_id")
 
   createdAt DateTime @default(now()) @map(name: "created_at")
-  updatedAt DateTime @default(now()) @map(name: "updated_at")
-
-  blocker   User   @relation("BlocksSent", fields: [blockerId], references: [id], onDelete: Cascade)
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
+  blocker   User     @relation("BlocksSent", fields: [blockerId], references: [id], onDelete: Cascade)
   blockerId String
-  blocked   User   @relation("BlocksReceived", fields: [blockedId], references: [id], onDelete: Cascade)
+  blocked   User     @relation("BlocksReceived", fields: [blockedId], references: [id], onDelete: Cascade)
   blockedId String
 
   @@unique([blockerId, blockedId])
@@ -327,7 +317,7 @@ model Job {
   id              String   @id @default(cuid()) @map("_id")
   title           String
   description     String
-  startDate       DateTime
+  summary         String
   endDate         DateTime
   weeklyHours     Int
   requirements    String[]
@@ -335,16 +325,13 @@ model Job {
   location        String
   type            String
   experienceLevel String
-  duration        Int
+  duration        Int?
 
   createdAt DateTime @default(now()) @map(name: "created_at")
-  updatedAt DateTime @default(now()) @map(name: "updated_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
 
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId String
-
-  comments            Comment[] // Add onDelete: Cascade if desired
-  likes               Like[] // Add onDelete: Cascade if desired
   linkedNotifications Notification[]
   attachments         Media[]
   application         Application[]
@@ -371,7 +358,7 @@ model Application {
   status ApplicationStatus @default(pending)
 
   createdAt DateTime @default(now()) @map(name: "created_at")
-  updatedAt DateTime @default(now()) @map(name: "updated_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
 
   @@map(name: "applications")
 }
@@ -384,7 +371,7 @@ model SaveJob {
   jobId  String
 
   createdAt DateTime @default(now()) @map(name: "created_at")
-  updatedAt DateTime @default(now()) @map(name: "updated_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
 
   @@unique([userId, jobId])
   @@map(name: "save_jobs")
@@ -397,13 +384,10 @@ model Research {
   description String
 
   createdAt DateTime @default(now()) @map(name: "created_at")
-  updatedAt DateTime @default(now()) @map(name: "updated_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
 
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId String
-
-  comments            Comment[] // Add onDelete: Cascade if desired, though this is on the Comment side
-  likes               Like[] // Add onDelete: Cascade if desired, though this is on the Like side
   linkedNotifications Notification[]
   attachments         Media[]
   saveResearch        SaveResearch[]
@@ -420,7 +404,7 @@ model SaveResearch {
   research   Research @relation(fields: [researchId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now()) @map(name: "created_at")
-  updatedAt DateTime @default(now()) @map(name: "updated_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
 
   @@unique([userId, researchId])
   @@map(name: "save_researches")
@@ -442,7 +426,7 @@ model Notification {
   read        Boolean          @default(false)
 
   createdAt DateTime @default(now()) @map(name: "created_at")
-  updatedAt DateTime @default(now()) @map(name: "updated_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
 
   @@map(name: "notifications")
 }
@@ -451,6 +435,8 @@ enum NotificationType {
   LIKE
   FOLLOW
   COMMENT
+  POST
+  APPLICATION
 }
 
 model Education {
@@ -468,7 +454,7 @@ model Education {
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now()) @map(name: "created_at")
-  updatedAt DateTime @default(now()) @map(name: "updated_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
 
   @@map(name: "education")
 }
@@ -489,7 +475,7 @@ model Experience {
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now()) @map(name: "created_at")
-  updatedAt DateTime @default(now()) @map(name: "updated_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
 
   @@map(name: "experiences")
 }
@@ -499,18 +485,19 @@ model Course {
 
   title       String
   description String
-  code        String?
+  code        String
   credits     Int?
   level       String? // Undergraduate, Graduate, etc.
-  department  String?
   duration    Int? // in weeks
   status      String  @default("draft") // draft, published, archived
 
-  professorId String
-  professor   User   @relation(fields: [professorId], references: [id], onDelete: Cascade)
+  facultyId String?
+  faculty   Faculty? @relation(fields: [facultyId], references: [id])
+  studentId String
+  student   User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now()) @map(name: "created_at")
-  updatedAt DateTime @default(now()) @map(name: "updated_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
 
   enrollments   Enrollment[]
   announcements CourseAnnouncement[]
@@ -532,7 +519,7 @@ model Enrollment {
   student   User   @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now()) @map(name: "created_at")
-  updatedAt DateTime @default(now()) @map(name: "updated_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
 
   @@unique([courseId, studentId])
   @@map(name: "enrollments")
@@ -549,7 +536,7 @@ model CourseAnnouncement {
   course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now()) @map(name: "created_at")
-  updatedAt DateTime @default(now()) @map(name: "updated_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
 
   @@map(name: "course_announcements")
 }
@@ -567,7 +554,7 @@ model CourseMaterial {
   course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now()) @map(name: "created_at")
-  updatedAt DateTime @default(now()) @map(name: "updated_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
 
   @@map(name: "course_materials")
 }
@@ -616,14 +603,25 @@ model Organization {
   @@map(name: "organization")
 }
 
+enum MemberRole {
+  ADMIN
+  MEMBER
+  PROFESSOR
+}
+
 model Member {
-  id             String       @id @default(cuid()) @map("_id")
+  id String @id @default(cuid()) @map("_id")
+
   organizationId String
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   userId         String
   user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  role           String
-  createdAt      DateTime
+
+  ProfessorProfile ProfessorProfile[]
+  role             MemberRole
+
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
 
   @@map(name: "member")
 }
@@ -640,4 +638,93 @@ model Invitation {
   user           User         @relation(fields: [inviterId], references: [id], onDelete: Cascade)
 
   @@map(name: "invitation")
+}
+
+model School {
+  id          String  @id @default(cuid()) @map("_id")
+  name        String
+  slug        String? @unique
+  description String?
+  coverPhoto  String?
+  logo        String?
+
+  createdAt   DateTime @default(now()) @map(name: "created_at")
+  updatedAt   DateTime @updatedAt @map(name: "updated_at")
+  instituteId String
+  institute   User     @relation(fields: [instituteId], references: [id], onDelete: Cascade)
+
+  faculty Faculty[]
+
+  @@map(name: "schools")
+}
+
+model Faculty {
+  id          String  @id @default(cuid()) @map("_id")
+  name        String
+  slug        String? @unique
+  description String?
+  coverPhoto  String?
+  logo        String?
+
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
+
+  schoolId String
+  school   School @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  memberId String
+  member   User   @relation(fields: [memberId], references: [id], onDelete: Cascade)
+
+  Course Course[]
+
+  @@map(name: "faculties")
+}
+
+model ProfessorProfile {
+  id String @id @default(cuid()) @map("_id")
+
+  title             String? // e.g., "Assistant Professor", "Full Professor"
+  department        String?
+  office            String?
+  website           String?
+  researchInterests String[]
+
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
+
+  professorId String
+  professor   Member @relation(fields: [professorId], references: [id], onDelete: Cascade)
+
+  @@map("professor_profiles")
+}
+
+model Event {
+  id String @id @default(cuid()) @map("_id")
+
+  name        String
+  description String
+  startDate   DateTime
+  location    String
+  coverPhoto  String?
+
+  createdAt      DateTime @default(now()) @map(name: "created_at")
+  updatedAt      DateTime @updatedAt @map(name: "updated_at")
+  organizationId String
+  organization   User?    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@map(name: "events")
+}
+
+model Club {
+  id String @id @default(cuid()) @map("_id")
+
+  name        String
+  description String
+  coverPhoto  String?
+
+  createdAt      DateTime @default(now()) @map(name: "created_at")
+  updatedAt      DateTime @updatedAt @map(name: "updated_at")
+  organizationId String
+  organization   User?    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@map(name: "clubs")
 }

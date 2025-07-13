@@ -1,5 +1,5 @@
-import type { Prisma } from '@prisma/client';
-import type { LiteralStringForUnion, UR } from 'stream-chat';
+import type { Prisma } from "@prisma/client";
+import type { LiteralStringForUnion, UR } from "stream-chat";
 
 export function getUserDataSelect(loggedInUserId: string) {
   return {
@@ -11,6 +11,7 @@ export function getUserDataSelect(loggedInUserId: string) {
     instituteId: true,
     currentSeamster: true,
     image: true,
+    coverImage: true,
     email: true,
     displayUsername: true,
     createdAt: true,
@@ -95,14 +96,6 @@ export function getJobDataInclude(loggedInUserId: string) {
       select: getUserDataSelect(loggedInUserId),
     },
     attachments: true,
-    likes: {
-      where: {
-        userId: loggedInUserId,
-      },
-      select: {
-        userId: true,
-      },
-    },
     saveJob: {
       where: {
         userId: loggedInUserId,
@@ -120,12 +113,6 @@ export function getJobDataInclude(loggedInUserId: string) {
         applicantId: true,
       },
     },
-    _count: {
-      select: {
-        likes: true,
-        comments: true,
-      },
-    },
   } satisfies Prisma.JobInclude;
 }
 export function getResearchDataInclude(loggedInUserId: string) {
@@ -134,26 +121,12 @@ export function getResearchDataInclude(loggedInUserId: string) {
       select: getUserDataSelect(loggedInUserId),
     },
     attachments: true,
-    likes: {
-      where: {
-        userId: loggedInUserId,
-      },
-      select: {
-        userId: true,
-      },
-    },
     saveResearch: {
       where: {
         userId: loggedInUserId,
       },
       select: {
         userId: true,
-      },
-    },
-    _count: {
-      select: {
-        likes: true,
-        comments: true,
       },
     },
   } satisfies Prisma.ResearchInclude;

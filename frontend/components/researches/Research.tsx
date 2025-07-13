@@ -1,9 +1,8 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import { Media } from "@prisma/client";
-import { MessageSquare, ShieldCheck } from "lucide-react";
+import { ShieldCheck } from "lucide-react";
 
 import { ResearchData } from "@/types/types";
 import { useSession } from "@/lib/auth-client";
@@ -13,8 +12,6 @@ import BlurImage from "../shared/blur-image";
 import { UserAvatar } from "../shared/user-avatar";
 import UserTooltip from "../UserTooltip";
 import ResearchMoreButton from "./ResearchMoreButton";
-import LikeButton from "./LikeButton";
-import Comments from "./comments/Comments";
 import SaveResearchButton from "./SaveResearchButton";
 
 interface ResearchProps {
@@ -27,7 +24,6 @@ export default function Research({ research }: ResearchProps) {
   if (!user) {
     return null;
   }
-  const [showComments, setShowComments] = useState(false);
 
   return (
     <article className="group/post bg-card relative space-y-3 rounded-2xl p-5 shadow-sm">
@@ -61,7 +57,9 @@ export default function Research({ research }: ResearchProps) {
             </Link>
           </div>
         </div>
-        {research.user.id === user.id && <ResearchMoreButton research={research} />}
+        {research.user.id === user.id && (
+          <ResearchMoreButton research={research} />
+        )}
       </div>
       <h3 className="text-xl font-semibold">
         <Link href={`/researches/${research.id}`}>{research.title}</Link>
@@ -71,19 +69,6 @@ export default function Research({ research }: ResearchProps) {
       )}
       <hr className="text-muted-foreground" />
       <div className="flex justify-between gap-5">
-        <div className="flex items-center gap-5">
-          <LikeButton
-            researchId={research.id}
-            initialState={{
-              likes: research._count.likes,
-              isLikedByUser: research.likes.some((like) => like.userId === user.id),
-            }}
-          />
-          <CommentButton
-            research={research}
-            onClick={() => setShowComments(!showComments)}
-          />
-        </div>
         <SaveResearchButton
           researchId={research.id}
           initialState={{
@@ -93,7 +78,6 @@ export default function Research({ research }: ResearchProps) {
           }}
         />
       </div>
-      {showComments && <Comments research={research} />}
     </article>
   );
 }
@@ -148,21 +132,4 @@ function MediaPreview({ media }: MediaPreviewProps) {
   }
 
   return <p className="text-destructive">Unsupported media type</p>;
-}
-
-interface CommentButtonProps {
-  research: ResearchData;
-  onClick: () => void;
-}
-
-function CommentButton({ research, onClick }: CommentButtonProps) {
-  return (
-    <button onClick={onClick} className="flex items-center gap-2">
-      <MessageSquare className="size-5" />
-      <span className="text-sm font-medium tabular-nums">
-        {research._count.comments}{" "}
-        <span className="hidden sm:inline">comments</span>
-      </span>
-    </button>
-  );
 }

@@ -1,8 +1,10 @@
-import { cache } from "react";
+import { cache, Fragment } from "react";
 import { Metadata } from "next";
+import Image from "next/image";
 import { notFound } from "next/navigation";
+import { UserRole } from "@prisma/client";
 import { formatDate } from "date-fns";
-import { CalendarRange, Star } from "lucide-react";
+import { Star } from "lucide-react";
 
 import {
   FollowerInfo,
@@ -108,32 +110,66 @@ export default async function Page({ params }: PageProps) {
             <TabsList className="flex w-full justify-between p-0">
               <TabsTrigger
                 value="overview"
-                className="flex-1 rounded-none border-b-2 border-transparent py-4 transition-all data-[state=active]:border-blue-600 data-[state=active]:text-blue-600"
+                className="flex-1 rounded-xl border-b-2 border-transparent py-4 transition-all data-[state=active]:border-blue-600 data-[state=active]:text-blue-600"
               >
                 <Icons.home className="size-5" />
                 <span className="hidden md:block">Overview</span>
               </TabsTrigger>
               <TabsTrigger
                 value="posts"
-                className="flex-1 rounded-none border-b-2 border-transparent py-4 transition-all data-[state=active]:border-blue-600 data-[state=active]:text-blue-600"
+                className="flex-1 rounded-xl border-b-2 border-transparent py-4 transition-all data-[state=active]:border-blue-600 data-[state=active]:text-blue-600"
               >
                 <Icons.post className="size-5" />
                 <span className="hidden md:block">Posts</span>
               </TabsTrigger>
               <TabsTrigger
-                value="courses"
-                className="flex-1 rounded-none border-b-2 border-transparent py-4 transition-all data-[state=active]:border-blue-600 data-[state=active]:text-blue-600"
+                value={`${UserRole.INSTITUTION ? "schools" : "courses"}`}
+                className="flex-1 rounded-xl border-b-2 border-transparent py-4 transition-all data-[state=active]:border-blue-600 data-[state=active]:text-blue-600"
               >
-                <Icons.bookOpen className="size-5" />
-                <span className="hidden md:block">Courses</span>
+                {UserRole.INSTITUTION ? (
+                  <Fragment>
+                    <Icons.school className="size-5" />
+                    <span className="hidden md:block">Schools</span>
+                  </Fragment>
+                ) : (
+                  <Fragment>
+                    <Icons.bookOpen className="size-5" />
+                    <span className="hidden md:block">Courses</span>
+                  </Fragment>
+                )}
               </TabsTrigger>
               <TabsTrigger
-                value="jobs"
-                className="flex-1 rounded-none border-b-2 border-transparent py-4 transition-all data-[state=active]:border-blue-600 data-[state=active]:text-blue-600"
+                value={`${UserRole.INSTITUTION ? "clubs" : "jobs"}`}
+                className="flex-1 rounded-xl border-b-2 border-transparent py-4 transition-all data-[state=active]:border-blue-600 data-[state=active]:text-blue-600"
               >
-                <Icons.job className="size-5" />
-                <span className="hidden md:block">Job & Activities</span>
+                {UserRole.INSTITUTION ? (
+                  <Fragment>
+                    <Icons.bookOpen className="size-5" />
+                    <span className="hidden md:block">Clubs</span>
+                  </Fragment>
+                ) : (
+                  <Fragment>
+                    <Icons.job className="size-5" />
+                    <span className="hidden md:block">Job & Activities</span>
+                  </Fragment>
+                )}
               </TabsTrigger>
+              <TabsTrigger
+                value="research"
+                className="flex-1 rounded-xl border-b-2 border-transparent py-4 transition-all data-[state=active]:border-blue-600 data-[state=active]:text-blue-600"
+              >
+                <Icons.bookMarked className="size-5" />
+                <span className="hidden md:block">Research</span>
+              </TabsTrigger>
+              {UserRole.INSTITUTION ? (
+                <TabsTrigger
+                  value="events"
+                  className="flex-1 rounded-xl border-b-2 border-transparent py-4 transition-all data-[state=active]:border-blue-600 data-[state=active]:text-blue-600"
+                >
+                  <Icons.event className="size-5" />
+                  <span className="hidden md:block">Events</span>
+                </TabsTrigger>
+              ) : null}
             </TabsList>
           </div>
           <TabsContent value="overview" className="space-y-2 p-6">
@@ -221,7 +257,7 @@ export default async function Page({ params }: PageProps) {
                       .filter((item) => item.job)
                       .map((item) => <Job key={item.job.id} job={item.job} />)
                   ) : (
-                    <div className="flex flex-col items-center">
+                    <div className="flex flex-col items-center justify-center">
                       <Icons.job className="size-10" />
                       <p>No job or activities added yet</p>
                       <Button
@@ -313,6 +349,48 @@ export default async function Page({ params }: PageProps) {
               </Card>
             </div>
           </TabsContent>
+          <TabsContent value="research" className="p-4">
+            <div className="grid grid-cols-1 gap-3">
+              <Card className="overflow-hidden rounded-xl border border-gray-100 shadow-sm transition-all hover:border-gray-200 hover:shadow">
+                <CardHeader className="flex items-center justify-between pb-4">
+                  <CardTitle className="flex items-center text-lg font-medium">
+                    <Icons.bookMarked className="mr-3 size-5" />
+                    <span>Research</span>
+                  </CardTitle>
+                  <CardAction>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="rounded-full text-amber-600 hover:bg-amber-50 hover:text-amber-800"
+                    >
+                      <span>See More</span>
+                      <Icons.chevronRight className="size-5" />
+                    </Button>
+                  </CardAction>
+                </CardHeader>
+                <CardContent className="grid grid-cols-3 gap-2 max-md:grid-cols-1">
+                  {jobs.length > 0 ? (
+                    jobs
+                      .filter((item) => item.job)
+                      .map((item) => <Job key={item.job.id} job={item.job} />)
+                  ) : (
+                    <div className="flex flex-col items-center">
+                      <Icons.job className="size-10" />
+                      <p>No job or activities added yet</p>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="mt-4 rounded-full"
+                      >
+                        <Icons.add className="size-4" />
+                        Add Experience
+                      </Button>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
         </Tabs>
       </div>
     </div>
@@ -335,28 +413,19 @@ async function UserProfile({ user, loggedInUserId }: UserProfileProps) {
   return (
     <div className="bg-card h-fit w-full overflow-hidden rounded-2xl shadow-sm">
       {/* Cover photo area with enhanced gradient */}
-      <div className="relative h-48 w-full bg-gradient-to-r from-blue-400 via-indigo-300 to-purple-400">
+      <div className="relative h-48 w-full">
+        {user.coverImage ? (
+          <Image
+            src={user.coverImage}
+            alt="Cover Image"
+            fill
+            className="object-cover"
+          />
+        ) : (
+          <div className="h-full w-full bg-gradient-to-r from-blue-400 via-indigo-300 to-purple-400" />
+        )}
         {/* Decorative pattern overlay */}
-        <div className="absolute inset-0 opacity-20 mix-blend-overlay">
-          <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
-            <defs>
-              <pattern
-                id="pattern"
-                width="40"
-                height="40"
-                patternUnits="userSpaceOnUse"
-              >
-                <path
-                  d="M0 20 L40 20 M20 0 L20 40"
-                  stroke="white"
-                  strokeWidth="1"
-                  fill="none"
-                />
-              </pattern>
-            </defs>
-            <rect width="100%" height="100%" fill="url(#pattern)" />
-          </svg>
-        </div>
+        <div className="absolute inset-0 bg-black opacity-20 mix-blend-overlay" />
 
         {/* Profile actions positioned on top right */}
         <div className="absolute top-4 right-4 z-10">
@@ -417,18 +486,7 @@ async function UserProfile({ user, loggedInUserId }: UserProfileProps) {
           {user.bio ? (
             <div className="mb-6 rounded-xl border border-gray-100 p-4 shadow-sm">
               <div className="mb-2 flex items-center">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="mr-2 h-5 w-5 text-blue-600"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2h-1V9a1 1 0 00-1-1z"
-                    clipRule="evenodd"
-                  />
-                </svg>
+                <Icons.info className="mr-2 size-6 text-green-600" />
                 <h3 className="font-medium">About</h3>
               </div>
               <Linkify>
@@ -443,15 +501,15 @@ async function UserProfile({ user, loggedInUserId }: UserProfileProps) {
           {(user.institution || user.instituteId || user.currentSeamster) && (
             <div className="flex flex-col gap-2 rounded-xl border border-gray-100 px-4 py-2 shadow-sm">
               <div className="mb-3 flex items-center">
-                <Icons.edu className="mr-2 size-7 text-green-600" />
-                <h3 className="font-medium">Education</h3>
+                <Icons.edu className="mr-2 size-6 text-green-600" />
+                <h3 className="font-medium">Academic Info</h3>
               </div>
 
               <div className="space-y-1">
                 {user.institution && (
                   <div className="flex items-center gap-2">
                     <div className="rounded-lg p-2">
-                      <Icons.edu className="size-7" />
+                      <Icons.edu className="size-6 text-green-600" />
                     </div>
                     <div>
                       <span className="font-medium">{user.institution}</span>
@@ -463,18 +521,7 @@ async function UserProfile({ user, loggedInUserId }: UserProfileProps) {
                 {user.instituteId && (
                   <div className="flex items-center gap-2">
                     <div className="rounded-lg p-2">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-5 w-5 text-green-600"
-                        viewBox="0 0 20 20"
-                        fill="currentColor"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M10 2a1 1 0 00-1 1v1a1 1 0 002 0V3a1 1 0 00-1-1zM4 4h3a3 3 0 006 0h3a2 2 0 012 2v9a2 2 0 01-2 2H4a2 2 0 01-2-2V6a2 2 0 012-2zm2.5 7a1.5 1.5 0 100-3 1.5 1.5 0 000 3zm2.45 4a2.5 2.5 0 10-4.9 0h4.9zM12 9a1 1 0 100 2h3a1 1 0 100-2h-3zm-1 4a1 1 0 011-1h2a1 1 0 110 2h-2a1 1 0 01-1-1z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
+                      <Icons.card className="size-6 text-green-600" />
                     </div>
                     <div>
                       <span className="font-medium">{user.instituteId}</span>

@@ -10,27 +10,47 @@ export const applyJob = async (jobId: string) => {
   if (!user) throw new Error("Unauthorized");
 
   try {
+    // Check if user already applied
     const existingApplication = await prisma.application.findFirst({
       where: {
         applicantId: user.id,
-        jobId: jobId,
+        jobId,
       },
     });
-
     if (existingApplication) {
-      // Optionally, handle the case where the user has already applied
-      // For now, we'll just return and not create a duplicate application
       return { success: false, message: "Already applied to this job." };
     }
 
-    await prisma.application.create({
-      data: {
-        applicantId: user.id,
-        jobId: jobId,
-        status: "pending", // Default status
-      },
+    // Fetch job to get the creator's userId
+    const job = await prisma.job.findUnique({
+      where: { id: jobId },
+      select: { userId: true },
     });
+    if (!job) {
+      return { success: false, message: "Job not found." };
+    }
+    if (job.userId === user.id) {
+      return { success: false, message: "You cannot apply to your own job." };
+    }
 
+    // Use a transaction to create application and notification atomically
+    await prisma.$transaction(async (tx) => {
+      await tx.application.create({
+        data: {
+          applicantId: user.id,
+          jobId,
+          status: "pending",
+        },
+      });
+      await tx.notification.create({
+        data: {
+          issuerId: user.id,
+          recipientId: job.userId,
+          type: "APPLICATION", // Use a specific type for job applications
+          // Optionally add more fields (jobId, message, etc.)
+        },
+      });
+    });
     revalidatePath("/jobs");
     return {
       success: true,

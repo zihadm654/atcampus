@@ -19,6 +19,10 @@ const allowedImageTypes = [
 
 const allowedVideoTypes = ["video/mp4", "video/webm", "video/quicktime"];
 const allowedPdfTypes = ["application/pdf"];
+
+// Allowed cover image types (reuse image types for now)
+const allowedCoverImageTypes = allowedImageTypes;
+
 // Validation schema for file metadata
 const fileMetadataSchema = z.object({
   size: z.number().min(1),
@@ -98,7 +102,61 @@ export const ourFileRouter = {
         throw new UploadThingError("Failed to update avatar");
       }
     }),
+  coverImage: f({
+    image: {
+      maxFileSize: "2MB",
+      maxFileCount: 1,
+    },
+  })
+    .middleware(async ({ files }) => {
+      const user = await getCurrentUser();
+      if (!user) throw new UploadThingError("Unauthorized");
 
+      try {
+        // Validate file metadata
+        const metadata = fileMetadataSchema.parse(files[0]);
+
+        // Validate image type
+        if (!allowedCoverImageTypes.includes(metadata.type)) {
+          throw new UploadThingError(
+            "Invalid file type. Only JPEG, PNG, GIF, WebP, and HEIC images are allowed for cover images.",
+          );
+        }
+
+        return { user };
+      } catch (error) {
+        if (error instanceof z.ZodError) {
+          throw new UploadThingError("Invalid file metadata");
+        }
+        throw error;
+      }
+    })
+    .onUploadComplete(async ({ metadata, file }) => {
+      try {
+        // Fetch the user from the database to get the current coverImage
+        const dbUser = await prisma.user.findUnique({
+          where: { id: metadata.user.id },
+          select: { coverImage: true },
+        });
+        const oldCoverUrl = dbUser?.coverImage;
+
+        if (oldCoverUrl) {
+          await cleanupFailedUpload(oldCoverUrl);
+        }
+
+        const newCoverUrl = file.ufsUrl;
+
+        await prisma.user.update({
+          where: { id: metadata.user.id },
+          data: { coverImage: newCoverUrl },
+        });
+
+        return { coverImageUrl: newCoverUrl };
+      } catch (error) {
+        await cleanupFailedUpload(file.ufsUrl);
+        throw new UploadThingError("Failed to update cover image");
+      }
+    }),
   pdfAttachment: f({
     pdf: { maxFileSize: "16MB", maxFileCount: 1 },
   })
