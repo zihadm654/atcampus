@@ -33,8 +33,30 @@ export const updateUserProfileSchema = z.object({
   institution: z.string().max(100, "Must be at most 100 characters").optional(),
   instituteId: z.string().optional(),
 });
+// Define schema for school
+export const schoolSchema = z.object({
+  id: z.string().optional(),
+  name: z.string().min(1),
+  slug: z.string().min(1),
+  description: z.string().optional(),
+  faculties: z.array(
+    z.object({
+      id: z.string().optional(),
+      name: z.string().min(1),
+      description: z.string().optional(),
+    }),
+  ),
+});
+
+export type TSchool = z.infer<typeof schoolSchema>;
 
 export type UpdateUserProfileValues = z.infer<typeof updateUserProfileSchema>;
+export const updateUserSchoolSchema = z.object({
+  name: requiredString,
+  description: requiredString,
+});
+
+export type UpdateUserSchoolValues = z.infer<typeof updateUserSchoolSchema>;
 
 export const createCommentSchema = z.object({
   content: requiredString,

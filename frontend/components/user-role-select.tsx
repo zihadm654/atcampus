@@ -58,8 +58,7 @@ export const UserRoleSelect = ({ userId, role }: UserRoleSelectProps) => {
       className="px-3 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-50"
     >
       <option value="STUDENT">STUDENT</option>
-      <option value="PROFESSOR">PROFESSOR</option>
-      <option value="INSTITUTION">INSTTITUTION</option>
+      <option value="INSTITUTION">INSTITUTION</option>
       <option value="ORGANIZATION">ORGANIZATION</option>
     </select>
   );

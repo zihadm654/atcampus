@@ -1,16 +1,17 @@
 "use client";
 
 import Link from "next/link";
-import { Media } from "@prisma/client";
 import { ShieldCheck } from "lucide-react";
+import { toast } from "sonner";
 
 import { ResearchData } from "@/types/types";
 import { useSession } from "@/lib/auth-client";
-import { cn, formatRelativeDate } from "@/lib/utils";
+import { formatRelativeDate } from "@/lib/utils";
 
-import BlurImage from "../shared/blur-image";
 import { UserAvatar } from "../shared/user-avatar";
+import { Button } from "../ui/button";
 import UserTooltip from "../UserTooltip";
+import { sendCollaborationRequest } from "./collaboration-actions";
 import ResearchMoreButton from "./ResearchMoreButton";
 import SaveResearchButton from "./SaveResearchButton";
 
@@ -24,7 +25,14 @@ export default function Research({ research }: ResearchProps) {
   if (!user) {
     return null;
   }
-
+  const handleCollaborationRequest = async () => {
+    const res = await sendCollaborationRequest(research.id);
+    if (!res.success) {
+      toast(res.message);
+    } else {
+      toast(res.message);
+    }
+  };
   return (
     <article className="group/post bg-card relative space-y-3 rounded-2xl p-5 shadow-sm">
       {/* Color strip at top */}
@@ -64,11 +72,19 @@ export default function Research({ research }: ResearchProps) {
       <h3 className="text-xl font-semibold">
         <Link href={`/researches/${research.id}`}>{research.title}</Link>
       </h3>
-      {!!research.attachments.length && (
-        <MediaPreviews attachments={research.attachments} />
-      )}
       <hr className="text-muted-foreground" />
       <div className="flex justify-between gap-5">
+        {research.user.id !== user.id && (
+          <Button
+            onClick={handleCollaborationRequest}
+            disabled={research.collaborators.some((c) => c.id === user.id)}
+          >
+            {research.collaborators.some((c) => c.id === user.id) &&
+            research.collaborationRequests.some((c) => c.id === user.id)
+              ? "Already Requested"
+              : "Request Collaboration"}
+          </Button>
+        )}
         <SaveResearchButton
           researchId={research.id}
           initialState={{
@@ -80,56 +96,4 @@ export default function Research({ research }: ResearchProps) {
       </div>
     </article>
   );
-}
-
-interface MediaPreviewsProps {
-  attachments: Media[];
-}
-
-function MediaPreviews({ attachments }: MediaPreviewsProps) {
-  return (
-    <div
-      className={cn(
-        "flex flex-col gap-3",
-        attachments.length > 1 && "sm:grid sm:grid-cols-2",
-      )}
-    >
-      {attachments.map((m) => (
-        <MediaPreview key={m.id} media={m} />
-      ))}
-    </div>
-  );
-}
-
-interface MediaPreviewProps {
-  media: Media;
-}
-
-function MediaPreview({ media }: MediaPreviewProps) {
-  console.log(media.url, "url");
-  if (media.type === "IMAGE") {
-    return (
-      <BlurImage
-        src={media.url}
-        alt="Attachment"
-        width={500}
-        height={500}
-        className="mx-auto size-fit max-h-[30rem] rounded-2xl"
-      />
-    );
-  }
-
-  if (media.type === "VIDEO") {
-    return (
-      <div>
-        <video
-          src={media?.url}
-          controls
-          className="mx-auto size-fit max-h-[30rem] rounded-2xl"
-        />
-      </div>
-    );
-  }
-
-  return <p className="text-destructive">Unsupported media type</p>;
 }

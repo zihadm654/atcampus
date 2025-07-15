@@ -33,7 +33,7 @@ export default function AccountSwitcher({ sessions }: { sessions: Session[] }) {
           role="combobox"
           aria-expanded={open}
           aria-label="Select a user"
-          className="w-[250px] justify-between"
+          className="justify-between"
         >
           <Avatar className="mr-2 h-6 w-6">
             <AvatarImage
@@ -46,7 +46,7 @@ export default function AccountSwitcher({ sessions }: { sessions: Session[] }) {
           <ChevronDown className="ml-auto h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[250px] p-0">
+      <PopoverContent className="p-0">
         <Command>
           <CommandList>
             <CommandGroup heading="Current Account">

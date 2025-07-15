@@ -44,7 +44,7 @@ export async function createJob(values: TJob) {
   try {
     const user = await getCurrentUser();
 
-    if (!user) {
+    if (user?.role !== "ORGANIZATION" && !user) {
       throw new Error("Unauthorized");
     }
 

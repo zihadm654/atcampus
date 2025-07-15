@@ -232,7 +232,7 @@ interface AvatarInputProps {
   onImageCropped: (blob: Blob | null) => void;
 }
 
-function AvatarInput({ src, onImageCropped }: AvatarInputProps) {
+export function AvatarInput({ src, onImageCropped }: AvatarInputProps) {
   const [imageToCrop, setImageToCrop] = useState<File>();
 
   const fileInputRef = useRef<HTMLInputElement>(null);

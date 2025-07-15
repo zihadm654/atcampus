@@ -1,25 +1,23 @@
-import {
-  Briefcase,
-  Search,
-} from 'lucide-react';
-import type { Metadata } from 'next';
-import Link from 'next/link';
-import { redirect } from 'next/navigation';
-import JobFeed from '@/components/feed/JobFeed';
-import { Button } from '@/components/ui/button';
-import { getCurrentUser } from '@/lib/session';
-import { constructMetadata } from '@/lib/utils';
+import type { Metadata } from "next";
+import Link from "next/link";
+import { redirect } from "next/navigation";
+import { Briefcase, Search } from "lucide-react";
+
+import { getCurrentUser } from "@/lib/session";
+import { constructMetadata } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import JobFeed from "@/components/feed/JobFeed";
 
 export const metadata: Metadata = constructMetadata({
-  title: 'Supplement Jobs - AtCampus',
+  title: "Supplement Jobs - AtCampus",
   description:
-    'Find and apply for supplement jobs to gain practical experience.',
+    "Find and apply for supplement jobs to gain practical experience.",
 });
 
 export default async function JobsPage() {
   const user = await getCurrentUser();
 
-  if (!user) redirect('/login');
+  if (!user) redirect("/login");
 
   return (
     <div className="flex w-full flex-col gap-6">
@@ -71,9 +69,11 @@ export default async function JobsPage() {
             Full-time
           </Button>
         </div>
-        <Button className="rounded-xl" size="sm" variant="outline">
-          <Link href="/jobs/createJob">Create Job</Link>
-        </Button>
+        {user.role === "ORGANIZATION" ? (
+          <Button className="rounded-xl" size="sm" variant="outline">
+            <Link href="/jobs/createJob">Create Job</Link>
+          </Button>
+        ) : null}
       </div>
 
       {/* Job listings */}

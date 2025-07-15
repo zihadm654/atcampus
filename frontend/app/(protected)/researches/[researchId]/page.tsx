@@ -33,6 +33,10 @@ import {
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { JsonToHtml } from "@/components/editor/JsonToHtml";
+import {
+  AcceptCollaborationButton,
+  DeclineCollaborationButton,
+} from "@/components/researches/CollaborationButtons";
 import ResearchMoreButton from "@/components/researches/ResearchMoreButton";
 import { Icons } from "@/components/shared/icons";
 import { UserAvatar } from "@/components/shared/user-avatar";
@@ -123,7 +127,12 @@ export default async function ResearchPage({ params }: PageProps) {
               <ResearchMoreButton research={research} />
             )}
           </div>
-
+          {research.collaborators.map((collab) => (
+            <div key={collab.id} className="flex items-center gap-2">
+              <UserAvatar user={collab} />
+              <span>{collab.name}</span>
+            </div>
+          ))}
           <div className="text-md mt-2 gap-4"></div>
         </div>
       </div>
@@ -157,7 +166,7 @@ export default async function ResearchPage({ params }: PageProps) {
           <TabsContent className="p-6" value="summary">
             {/* Main content */}
             <div className="flex-1 space-y-6">
-              <div className="bg-card rounded-xl border p-6 shadow-sm">
+              <div className="bg-card rounded-xl border p-3 shadow-sm">
                 <h2 className="mb-4 flex items-center gap-2 text-xl font-semibold">
                   <span className="rounded-full bg-blue-100 p-1.5 text-blue-700">
                     <Briefcase className="h-5 w-5" />
@@ -166,6 +175,38 @@ export default async function ResearchPage({ params }: PageProps) {
                 </h2>
                 <JsonToHtml json={JSON.parse(research.description)} />
               </div>
+              {research.user.id === user.id &&
+                research.collaborationRequests.length > 0 && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Pending Collaboration Requests</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      {research.collaborationRequests.map(
+                        (req) =>
+                          req.status === "PENDING" && (
+                            <div
+                              key={req.id}
+                              className="flex items-center justify-between mb-2"
+                            >
+                              <div className="flex items-center gap-2">
+                                <UserAvatar user={req.requester} />
+                                <span>
+                                  {req.requester.name} wants to collaborate
+                                </span>
+                              </div>
+                              <div>
+                                <AcceptCollaborationButton requestId={req.id} />
+                                <DeclineCollaborationButton
+                                  requestId={req.id}
+                                />
+                              </div>
+                            </div>
+                          ),
+                      )}
+                    </CardContent>
+                  </Card>
+                )}
             </div>
             {research.attachments.map((item) => (
               <object

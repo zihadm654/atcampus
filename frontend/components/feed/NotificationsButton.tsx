@@ -44,7 +44,7 @@ export default function NotificationsButton({
         <div className="relative">
           <Bell className="size-5" />
           {!!data.unreadCount && (
-            <span className="bg-primary text-accent-foreground absolute -top-1 -right-1 rounded-full px-1 text-xs font-medium tabular-nums">
+            <span className="bg-primary text-shadow-accent-foreground absolute -top-1 -right-1 rounded-full px-1 text-xs font-medium tabular-nums">
               {data.unreadCount}
             </span>
           )}

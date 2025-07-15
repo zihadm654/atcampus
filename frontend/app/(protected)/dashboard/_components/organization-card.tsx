@@ -1,13 +1,20 @@
-'use client';
+"use client";
 
-import { ChevronDownIcon, Loader2, MailPlus, PlusIcon } from 'lucide-react';
-import Image from 'next/image';
-import { useEffect, useState } from 'react';
-import { toast } from 'sonner';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import CopyButton from '@/components/ui/copy-button';
+import { useEffect, useState } from "react";
+import Image from "next/image";
+import { ChevronDownIcon, Loader2, MailPlus, PlusIcon } from "lucide-react";
+import { toast } from "sonner";
+
+import type { ActiveOrganization, Session } from "@/types/auth-types";
+import {
+  organization,
+  useListOrganizations,
+  useSession,
+} from "@/lib/auth-client";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import CopyButton from "@/components/ui/copy-button";
 import {
   Dialog,
   DialogClose,
@@ -17,28 +24,23 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@/components/ui/dialog';
+} from "@/components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+} from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import {
-  organization,
-  useListOrganizations,
-  useSession,
-} from '@/lib/auth-client';
-import type { ActiveOrganization, Session } from '@/types/auth-types';
+} from "@/components/ui/select";
+import { AvatarInput } from "@/app/(profile)/[username]/_components/EditProfileDialog";
 
 export function OrganizationCard(props: {
   session: Session | null;
@@ -46,12 +48,12 @@ export function OrganizationCard(props: {
 }) {
   const organizations = useListOrganizations();
   const [optimisticOrg, setOptimisticOrg] = useState<ActiveOrganization | null>(
-    props.activeOrganization
+    props.activeOrganization,
   );
   const [isRevoking, setIsRevoking] = useState<string[]>([]);
   const inviteVariants = {
     hidden: { opacity: 0, height: 0 },
-    visible: { opacity: 1, height: 'auto' },
+    visible: { opacity: 1, height: "auto" },
     exit: { opacity: 0, height: 0 },
   };
 
@@ -59,7 +61,7 @@ export function OrganizationCard(props: {
   const session = data || props.session;
 
   const currentMember = optimisticOrg?.members.find(
-    (member) => member.userId === session?.user.id
+    (member) => member.userId === session?.user.id,
   );
 
   return (
@@ -71,8 +73,8 @@ export function OrganizationCard(props: {
             <DropdownMenuTrigger asChild>
               <div className="flex cursor-pointer items-center gap-1">
                 <p className="text-sm">
-                  <span className="font-bold" />{' '}
-                  {optimisticOrg?.name || 'Personal'}
+                  <span className="font-bold" />{" "}
+                  {optimisticOrg?.name || "Personal"}
                 </p>
 
                 <ChevronDownIcon />
@@ -115,7 +117,7 @@ export function OrganizationCard(props: {
             </DropdownMenuContent>
           </DropdownMenu>
           <div>
-            <CreateOrganizationDialog />
+            <CreateOrganizationDialog currentMember={currentMember} />
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -125,11 +127,11 @@ export function OrganizationCard(props: {
               src={optimisticOrg?.logo || undefined}
             />
             <AvatarFallback className="rounded-none">
-              {optimisticOrg?.name?.charAt(0) || 'P'}
+              {optimisticOrg?.name?.charAt(0) || "P"}
             </AvatarFallback>
           </Avatar>
           <div>
-            <p>{optimisticOrg?.name || 'Personal'}</p>
+            <p>{optimisticOrg?.name || "Personal"}</p>
             <p className="text-muted-foreground text-xs">
               {optimisticOrg?.members.length || 1} members
             </p>
@@ -165,9 +167,9 @@ export function OrganizationCard(props: {
                       </p>
                     </div>
                   </div>
-                  {member.role !== 'owner' &&
-                    (currentMember?.role === 'owner' ||
-                      currentMember?.role === 'admin') && (
+                  {member.role !== "owner" &&
+                    (currentMember?.role === "owner" ||
+                      currentMember?.role === "admin") && (
                       <Button
                         onClick={() => {
                           organization.removeMember({
@@ -177,7 +179,7 @@ export function OrganizationCard(props: {
                         size="sm"
                         variant="destructive"
                       >
-                        {currentMember?.id === member.id ? 'Leave' : 'Remove'}
+                        {currentMember?.id === member.id ? "Leave" : "Remove"}
                       </Button>
                     )}
                 </div>
@@ -206,7 +208,7 @@ export function OrganizationCard(props: {
             </p>
             <div className="flex flex-col gap-2">
               {optimisticOrg?.invitations
-                .filter((invitation) => invitation.status === 'pending')
+                .filter((invitation) => invitation.status === "pending")
                 .map((invitation) => (
                   <div
                     className="flex items-center justify-between"
@@ -232,18 +234,18 @@ export function OrganizationCard(props: {
                               },
                               onSuccess: () => {
                                 toast.message(
-                                  'Invitation revoked successfully'
+                                  "Invitation revoked successfully",
                                 );
                                 setIsRevoking(
                                   isRevoking.filter(
-                                    (id) => id !== invitation.id
-                                  )
+                                    (id) => id !== invitation.id,
+                                  ),
                                 );
                                 setOptimisticOrg({
                                   ...optimisticOrg,
                                   invitations:
                                     optimisticOrg?.invitations.filter(
-                                      (inv) => inv.id !== invitation.id
+                                      (inv) => inv.id !== invitation.id,
                                     ),
                                 });
                               },
@@ -251,11 +253,11 @@ export function OrganizationCard(props: {
                                 toast.error(ctx.error.message);
                                 setIsRevoking(
                                   isRevoking.filter(
-                                    (id) => id !== invitation.id
-                                  )
+                                    (id) => id !== invitation.id,
+                                  ),
                                 );
                               },
-                            }
+                            },
                           );
                         }}
                         size="sm"
@@ -264,7 +266,7 @@ export function OrganizationCard(props: {
                         {isRevoking.includes(invitation.id) ? (
                           <Loader2 className="animate-spin" size={16} />
                         ) : (
-                          'Revoke'
+                          "Revoke"
                         )}
                       </Button>
                       <div>
@@ -305,25 +307,34 @@ export function OrganizationCard(props: {
   );
 }
 
-function CreateOrganizationDialog() {
-  const [name, setName] = useState('');
-  const [slug, setSlug] = useState('');
+function CreateOrganizationDialog({ currentMember }: any) {
+  const [name, setName] = useState("");
+  const [slug, setSlug] = useState("");
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
   const [isSlugEdited, setIsSlugEdited] = useState(false);
   const [logo, setLogo] = useState<string | null>(null);
-
+  const [croppedAvatar, setCroppedAvatar] = useState<Blob | null>(null);
+  const [avatarPreviewUrl, setAvatarPreviewUrl] = useState<string>("");
   useEffect(() => {
     if (!isSlugEdited) {
-      const generatedSlug = name.trim().toLowerCase().replace(/\s+/g, '-');
+      const generatedSlug = name.trim().toLowerCase().replace(/\s+/g, "-");
       setSlug(generatedSlug);
     }
   }, [name, isSlugEdited]);
-
+  useEffect(() => {
+    if (croppedAvatar) {
+      const url = URL.createObjectURL(croppedAvatar);
+      setAvatarPreviewUrl(url);
+      return () => URL.revokeObjectURL(url);
+    } else if (currentMember.user?.image) {
+      setAvatarPreviewUrl(currentMember.user?.image);
+    }
+  }, [croppedAvatar, currentMember?.user.image]);
   useEffect(() => {
     if (open) {
-      setName('');
-      setSlug('');
+      setName("");
+      setSlug("");
       setIsSlugEdited(false);
       setLogo(null);
     }
@@ -375,7 +386,7 @@ function CreateOrganizationDialog() {
               value={slug}
             />
           </div>
-          <div className="flex flex-col gap-2">
+          {/* <div className="flex flex-col gap-2">
             <Label>Logo</Label>
             <Input accept="image/*" onChange={handleLogoChange} type="file" />
             {logo && (
@@ -389,6 +400,13 @@ function CreateOrganizationDialog() {
                 />
               </div>
             )}
+          </div> */}
+          <div className="space-y-1.5">
+            <Label>Avatar</Label>
+            <AvatarInput
+              src={avatarPreviewUrl}
+              onImageCropped={setCroppedAvatar}
+            />
           </div>
         </div>
         <DialogFooter>
@@ -398,8 +416,8 @@ function CreateOrganizationDialog() {
               setLoading(true);
               await organization.create(
                 {
-                  name,
-                  slug,
+                  name: name,
+                  slug: slug,
                   logo: logo || undefined,
                 },
                 {
@@ -407,21 +425,21 @@ function CreateOrganizationDialog() {
                     setLoading(false);
                   },
                   onSuccess: () => {
-                    toast.success('Organization created successfully');
+                    toast.success("Organization created successfully");
                     setOpen(false);
                   },
                   onError: (error) => {
                     toast.error(error.error.message);
                     setLoading(false);
                   },
-                }
+                },
               );
             }}
           >
             {loading ? (
               <Loader2 className="animate-spin" size={16} />
             ) : (
-              'Create'
+              "Create"
             )}
           </Button>
         </DialogFooter>
@@ -438,8 +456,8 @@ function InviteMemberDialog({
   optimisticOrg: ActiveOrganization | null;
 }) {
   const [open, setOpen] = useState(false);
-  const [email, setEmail] = useState('');
-  const [role, setRole] = useState('member');
+  const [email, setEmail] = useState("");
+  const [role, setRole] = useState("member");
   const [loading, setLoading] = useState(false);
   return (
     <Dialog>
@@ -480,8 +498,8 @@ function InviteMemberDialog({
               disabled={loading}
               onClick={async () => {
                 const invite = organization.inviteMember({
-                  email,
-                  role: role as 'member',
+                  email: email,
+                  role: role as "member",
                   fetchOptions: {
                     throw: true,
                     onSuccess: (ctx) => {
@@ -498,8 +516,8 @@ function InviteMemberDialog({
                   },
                 });
                 toast.promise(invite, {
-                  loading: 'Inviting member...',
-                  success: 'Member invited successfully',
+                  loading: "Inviting member...",
+                  success: "Member invited successfully",
                   error: (error) => error.error.message,
                 });
               }}

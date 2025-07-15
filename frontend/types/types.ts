@@ -7,6 +7,7 @@ export function getUserDataSelect(loggedInUserId: string) {
     username: true,
     name: true,
     bio: true,
+    role: true,
     institution: true,
     instituteId: true,
     currentSeamster: true,
@@ -128,6 +129,16 @@ export function getResearchDataInclude(loggedInUserId: string) {
       select: {
         userId: true,
       },
+    },
+    collaborationRequests: {
+      include: {
+        requester: {
+          select: getUserDataSelect(loggedInUserId),
+        },
+      },
+    },
+    collaborators: {
+      select: getUserDataSelect(loggedInUserId),
     },
   } satisfies Prisma.ResearchInclude;
 }

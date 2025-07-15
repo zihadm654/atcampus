@@ -61,3 +61,26 @@ export const applyJob = async (jobId: string) => {
     throw new Error("Failed to apply for job.");
   }
 };
+
+export const updateApplicationStatus = async (
+  applicationId: string,
+  newStatus: "pending" | "accepted" | "rejected",
+) => {
+  const user = await getCurrentUser();
+  if (!user || user.role !== "ORGANIZATION") throw new Error("Unauthorized");
+
+  const application = await prisma.application.findUnique({
+    where: { id: applicationId },
+    include: { job: true },
+  });
+  if (!application || application.job.userId !== user.id)
+    throw new Error("Unauthorized or application not found");
+
+  await prisma.application.update({
+    where: { id: applicationId },
+    data: { status: newStatus },
+  });
+
+  revalidatePath("/dashboard");
+  return { success: true, message: "Status updated successfully." };
+};
