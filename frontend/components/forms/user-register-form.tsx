@@ -13,13 +13,6 @@ import { cn } from "@/lib/utils";
 import { registerSchema, TRegister, UserRole } from "@/lib/validations/auth";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Icons } from "@/components/shared/icons";
 
 import {
@@ -43,7 +36,7 @@ const roleIcons: Record<UserRole, React.ElementType> = {
   INSTITUTION: HomeIcon, // Or UsersIcon if HomeIcon is not suitable
 };
 
-interface UserAuthFormProps extends React.HTMLAttributes<HTMLDivElement> { }
+interface UserAuthFormProps extends React.HTMLAttributes<HTMLDivElement> {}
 
 export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
   const [currentStep, setCurrentStep] = React.useState(1);
@@ -125,18 +118,21 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
                   control={form.control}
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel htmlFor="role" className="text-2xl">Choose Your Role</FormLabel>
+                      <FormLabel htmlFor="role" className="text-2xl">
+                        Choose Your Role
+                      </FormLabel>
                       <FormControl>
                         <RadioGroup
                           onValueChange={field.onChange}
                           defaultValue={field.value}
-                          className="flex items-center justify-center space-x-3 max-md:space-x-1.5"
+                          className="flex items-center justify-center space-x-3 max-md:space-x-1.5 flex-wrap"
                         >
                           <FormItem className="flex items-center gap-3 border p-5 rounded-xl">
                             <FormControl>
                               <RadioGroupItem value="STUDENT" />
                             </FormControl>
-                            <FormLabel className="font-normal">
+                            <FormLabel className="font-normal flex flex-col items-center justify-center">
+                              <GraduationCap className="size-7" />
                               STUDENT
                             </FormLabel>
                           </FormItem>
@@ -144,7 +140,8 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
                             <FormControl>
                               <RadioGroupItem value="ORGANIZATION" />
                             </FormControl>
-                            <FormLabel className="font-normal">
+                            <FormLabel className="font-normal flex flex-col items-center justify-center">
+                              <Briefcase className="size-7" />
                               ORGANIZATION
                             </FormLabel>
                           </FormItem>
@@ -152,7 +149,10 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
                             <FormControl>
                               <RadioGroupItem value="INSTITUTION" />
                             </FormControl>
-                            <FormLabel className="font-normal">INSTITUTION</FormLabel>
+                            <FormLabel className="font-normal flex flex-col items-center justify-center">
+                              <HomeIcon className="size-7" />
+                              INSTITUTION
+                            </FormLabel>
                           </FormItem>
                         </RadioGroup>
                       </FormControl>

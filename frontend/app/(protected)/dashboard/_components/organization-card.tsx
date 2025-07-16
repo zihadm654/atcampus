@@ -307,7 +307,7 @@ export function OrganizationCard(props: {
   );
 }
 
-function CreateOrganizationDialog({ currentMember }: any) {
+function CreateOrganizationDialog({ currentMember }) {
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
   const [loading, setLoading] = useState(false);
@@ -316,21 +316,29 @@ function CreateOrganizationDialog({ currentMember }: any) {
   const [logo, setLogo] = useState<string | null>(null);
   const [croppedAvatar, setCroppedAvatar] = useState<Blob | null>(null);
   const [avatarPreviewUrl, setAvatarPreviewUrl] = useState<string>("");
+
+  // Defensive: handle undefined currentMember and currentMember.user
+  const userImage = currentMember && currentMember.user ? currentMember.user.image : undefined;
+
   useEffect(() => {
     if (!isSlugEdited) {
       const generatedSlug = name.trim().toLowerCase().replace(/\s+/g, "-");
       setSlug(generatedSlug);
     }
   }, [name, isSlugEdited]);
+
   useEffect(() => {
     if (croppedAvatar) {
       const url = URL.createObjectURL(croppedAvatar);
       setAvatarPreviewUrl(url);
       return () => URL.revokeObjectURL(url);
-    } else if (currentMember.user?.image) {
-      setAvatarPreviewUrl(currentMember.user?.image);
+    } else if (userImage) {
+      setAvatarPreviewUrl(userImage);
+    } else {
+      setAvatarPreviewUrl("");
     }
-  }, [croppedAvatar, currentMember?.user.image]);
+  }, [croppedAvatar, userImage]);
+
   useEffect(() => {
     if (open) {
       setName("");

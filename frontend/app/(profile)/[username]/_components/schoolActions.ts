@@ -1,9 +1,10 @@
-'use server';
+"use server";
 
+import { Prisma } from "@prisma/client";
 import { z } from "zod";
+
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/session";
-import { Prisma } from '@prisma/client';
 
 // Remove all user profile related imports and schemas
 // Keep only school and faculty schemas and actions
@@ -32,7 +33,10 @@ export async function createSchool(values: z.infer<typeof createSchoolSchema>) {
     });
     return school;
   } catch (error) {
-    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2002"
+    ) {
       throw new Error("A school with this slug already exists.");
     }
     throw error;
@@ -42,14 +46,16 @@ export async function createSchool(values: z.infer<typeof createSchoolSchema>) {
 const updateSchoolSchema = createSchoolSchema.extend({ id: z.string() });
 
 export async function updateSchool(values: z.infer<typeof updateSchoolSchema>) {
-  const validatedValues = updateSchoolSchema.parse(values);
   const user = await getCurrentUser();
+  const validatedValues = updateSchoolSchema.parse(values);
+  const { id, ...dataToUpdate } = updateSchoolSchema.parse(values);
+
   if (!user || user.role !== "INSTITUTION") {
     throw new Error("Unauthorized");
   }
   const school = await prisma.school.update({
-    where: { id: validatedValues.id, instituteId: user.id },
-    data: validatedValues,
+    where: { id: id, instituteId: user.id },
+    data: dataToUpdate,
   });
   return school;
 }
@@ -85,10 +91,23 @@ export async function createFaculty(
     where: { id: validatedValues.schoolId, instituteId: user.id },
   });
   if (!school) throw new Error("School not found");
-  const faculty = await prisma.faculty.create({
-    data: validatedValues,
-  });
-  return faculty;
+  try {
+    const faculty = await prisma.faculty.create({
+      data: {
+        ...validatedValues,
+        slug: validatedValues.slug || validatedValues.name.toLowerCase().replace(/[^a-z0-9-]+/g, '-').replace(/^-*|-*$/g, ''),
+      },
+    });
+    return faculty;
+  } catch (error) {
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2002"
+    ) {
+      throw new Error("A faculty with this slug already exists.");
+    }
+    throw error;
+  }
 }
 
 const updateFacultySchema = createFacultySchema.extend({ id: z.string() });

@@ -1,6 +1,7 @@
 import { sendEmailAction } from "@/actions/send-email.action";
 import { reactInvitationEmail } from "@/emails/invitation";
 import { reactResetPasswordEmail } from "@/emails/reset-password";
+import { render } from "@react-email/components";
 import { betterAuth, type BetterAuthOptions } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { APIError, createAuthMiddleware } from "better-auth/api";
@@ -59,10 +60,12 @@ const options = {
       await transporter.sendMail({
         to: user.email,
         subject: "Reset your password",
-        react: reactResetPasswordEmail({
-          username: user.email,
-          resetLink: url,
-        }),
+        htnl: await render(
+          reactResetPasswordEmail({
+            username: user.email,
+            resetLink: url,
+          }),
+        ),
       });
     },
   },
@@ -172,19 +175,21 @@ const options = {
         await transporter.sendMail({
           to: data.email,
           subject: "You've been invited to join an organization",
-          react: reactInvitationEmail({
-            username: data.email,
-            invitedByUsername: data.inviter.user.name,
-            invitedByEmail: data.inviter.user.email,
-            teamName: data.organization.name,
-            inviteLink:
-              process.env.NODE_ENV === "development"
-                ? `http://localhost:3000/accept-invitation/${data.id}`
-                : `${
-                    process.env.BETTER_AUTH_URL ||
-                    "https://demo.better-auth.com"
-                  }/accept-invitation/${data.id}`,
-          }),
+          html: await render(
+            reactInvitationEmail({
+              username: data.email,
+              invitedByUsername: data.inviter.user.name,
+              invitedByEmail: data.inviter.user.email,
+              teamName: data.organization.name,
+              inviteLink:
+                process.env.NODE_ENV === "development"
+                  ? `http://localhost:3000/accept-invitation/${data.id}`
+                  : `${
+                      process.env.BETTER_AUTH_URL ||
+                      process.env.NEXT_PUBLIC_APP_URL
+                    }/accept-invitation/${data.id}`,
+            }),
+          ),
         });
       },
     }),
