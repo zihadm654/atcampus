@@ -16,6 +16,10 @@ export const roles = {
     posts: ["create", "read", "update:own", "delete:own"],
   }),
   INSTITUTION: ac.newRole({
+    posts: ["create", "read", "update:own", "delete:own"],
+    ...adminAc.statements,
+  }),
+  ADMIN: ac.newRole({
     posts: ["create", "read", "update", "delete", "update:own", "delete:own"],
     ...adminAc.statements,
   }),

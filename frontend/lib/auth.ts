@@ -112,10 +112,17 @@ const options = {
           const ADMIN_EMAILS = process.env.ADMIN_EMAILS?.split(";") ?? [];
 
           if (ADMIN_EMAILS.includes(user.email)) {
-            return { data: { ...user, role: "INSTITUTION" } };
+            return { data: { ...user, role: "ADMIN" } };
           }
 
-          return { data: user };
+          if (
+            (user as any).role === "INSTITUTION" ||
+            (user as any).role === "ORGANIZATION"
+          ) {
+            return { data: { ...user, status: "PENDING" } };
+          }
+
+          return { data: { ...user, status: "ACTIVE" } };
         },
       },
     },
@@ -131,13 +138,39 @@ const options = {
         input: true,
       },
       role: {
-        type: ["STUDENT", "PROFESSOR", "INSTITUTION", "ORGANIZATION"],
+        type: ["STUDENT", "PROFESSOR", "INSTITUTION", "ORGANIZATION", "ADMIN"],
+        input: true,
+      },
+      status: {
+        type: ["PENDING", "ACTIVE", "REJECTED"],
+        input: true,
+      },
+      phone: {
+        type: "string",
         input: true,
       },
     },
   },
+  // signIn: {
+  //   emailAndPassword: {
+  //     async success({ user, ctx }) {
+  //       if (user.status === "PENDING") {
+  //         throw new APIError("UNAUTHORIZED", {
+  //           message: "Your account is pending approval.",
+  //           redirect: "/pending-approval",
+  //         });
+  //       }
+  //       if (user.status === "REJECTED") {
+  //         throw new APIError("UNAUTHORIZED", {
+  //           message: "Your account has been rejected.",
+  //           redirect: "/rejected-account",
+  //         });
+  //       }
+  //     },
+  //   },
+  // },
   session: {
-    expiresIn: 30 * 24 * 60 * 60,
+    expiresIn: 60 * 60 * 24 * 7,
     updateAge: 60 * 60 * 24,
     cookieCache: {
       enabled: true,
@@ -166,7 +199,7 @@ const options = {
     username(),
     admin({
       defaultRole: "STUDENT",
-      adminRoles: ["INSTITUTION", "PROFESSOR", "ORGANIZATION"],
+      adminRoles: ["ADMIN"],
       ac,
       roles,
     }),
@@ -242,6 +275,7 @@ export const auth = betterAuth({
           createdAt: user.createdAt,
           updatedAt: user.updatedAt,
           role: user.role,
+          status: user.status,
           emailVerified: user.emailVerified,
           twoFactorEnabled: user.twoFactorEnabled,
           banned: user.banned,

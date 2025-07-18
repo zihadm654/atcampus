@@ -31,7 +31,7 @@ export const UserRoleSelect = ({ userId, role }: UserRoleSelectProps) => {
 
     await admin.setRole({
       userId,
-      role: newRole,
+      role: newRole as "STUDENT" | "PROFESSOR" | "INSTITUTION" | "ORGANIZATION",
       fetchOptions: {
         onRequest: () => {
           setIsPending(true);
@@ -54,7 +54,7 @@ export const UserRoleSelect = ({ userId, role }: UserRoleSelectProps) => {
     <select
       value={role}
       onChange={handleChange}
-      disabled={role === "INSTITUTION" || isPending}
+      disabled={role === "ADMIN" || isPending}
       className="px-3 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-50"
     >
       <option value="STUDENT">STUDENT</option>

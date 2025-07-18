@@ -66,7 +66,7 @@ export default async function DashboardPage() {
         <div className="flex items-center justify-between gap-2">
           <ReturnButton href="/" label="Home" />
           <div className="flex items-center gap-2">
-            {user?.role === "INSTITUTION" && (
+            {user?.role === "ADMIN" && (
               <Button asChild size="sm">
                 <Link href="/admin">Admin Dashboard</Link>
               </Button>

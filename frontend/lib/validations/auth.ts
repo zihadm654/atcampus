@@ -16,8 +16,12 @@ export const registerSchema = z.object({
   role: z.enum(["STUDENT", "ORGANIZATION", "INSTITUTION"], {
     required_error: "You need to select a notification type.",
   }),
-  instituteId: z.coerce.string().min(3, "instituteId is required"),
-  institution: z.string().trim().min(3, "institution is required"),
+  instituteId: z.coerce.string().optional(),
+  institution: z.string().trim().optional(),
+  phone: z.coerce
+    .string()
+    .refine((phone) => phone.length === 10 || phone.length === 11)
+    .optional(),
   name: z.string().trim().min(3, "username is required").max(255),
   email: z
     .string()

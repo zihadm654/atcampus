@@ -2,7 +2,9 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { UserRole } from "@prisma/client";
+import { updateStatusAction } from "@/actions/update-status.action";
+import { UserRole, UserStatus } from "@prisma/client";
+import { DotsHorizontalIcon } from "@radix-ui/react-icons";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import {
@@ -28,6 +30,12 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -51,7 +59,12 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { ReturnButton } from "@/components/auth/return-button";
+import { DataTable } from "@/components/dashboard/data-table/data-table";
 import { UserRoleSelect } from "@/components/user-role-select";
+
+import { columns } from "./_components/columns";
+import { UsersClient } from "./_components/table";
+import { UsersTable } from "./_components/users-table";
 
 type User = {
   id: string;
@@ -101,7 +114,6 @@ export default function AdminDashboard() {
       return data?.users || [];
     },
   });
-
   const handleCreateUser = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading("create");
@@ -110,7 +122,11 @@ export default function AdminDashboard() {
         email: newUser.email,
         password: newUser.password,
         name: newUser.name,
-        role: newUser.role,
+        role: newUser.role as
+          | "STUDENT"
+          | "PROFESSOR"
+          | "INSTITUTION"
+          | "ORGANIZATION",
       });
       toast.success("User created successfully");
       setNewUser({ email: "", password: "", name: "", role: "STUDENT" });
@@ -188,6 +204,7 @@ export default function AdminDashboard() {
       setIsLoading(undefined);
     }
   };
+  console.log(users, "users");
 
   return (
     <div className="container mx-auto space-y-8 p-4">
@@ -358,6 +375,7 @@ export default function AdminDashboard() {
                   <TableHead>Email</TableHead>
                   <TableHead>Name</TableHead>
                   <TableHead>Role</TableHead>
+                  <TableHead>Status</TableHead>
                   <TableHead>Banned</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
@@ -373,6 +391,7 @@ export default function AdminDashboard() {
                         userId={user.id}
                       />
                     </TableCell>
+                    <TableCell>{user.status}</TableCell>
                     <TableCell>
                       {user.banned ? (
                         <Badge variant="destructive">Yes</Badge>
@@ -469,6 +488,46 @@ export default function AdminDashboard() {
                             "Ban"
                           )}
                         </Button>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              className="flex h-8 w-8 p-0 data-[state=open]:bg-muted"
+                            >
+                              <DotsHorizontalIcon className="h-4 w-4" />
+                              <span className="sr-only">Open menu</span>
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent
+                            align="end"
+                            className="w-[160px]"
+                          >
+                            <DropdownMenuItem
+                              onClick={async () => {
+                                await updateStatusAction(
+                                  user.id,
+                                  UserStatus.ACTIVE,
+                                );
+                                toast.success("User status updated to ACTIVE");
+                              }}
+                            >
+                              Approve
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={async () => {
+                                await updateStatusAction(
+                                  user.id,
+                                  UserStatus.REJECTED,
+                                );
+                                toast.success(
+                                  "User status updated to REJECTED",
+                                );
+                              }}
+                            >
+                              Reject
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </div>
                     </TableCell>
                   </TableRow>
@@ -478,6 +537,11 @@ export default function AdminDashboard() {
           )}
         </CardContent>
       </Card>
+      <h2 className="text-xl font-bold tracking-tight">Admin Dashboard</h2>
+      <p className="text-muted-foreground">
+        Manage user accounts and statuses.
+      </p>
+      {/* <DataTable columns={columns as any} data={users || []} /> */}
     </div>
   );
 }

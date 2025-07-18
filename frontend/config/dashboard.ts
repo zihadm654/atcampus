@@ -9,7 +9,7 @@ export const sidebarLinks: SidebarNavItem[] = [
         href: "/admin",
         icon: "laptop",
         title: "Admin Panel",
-        authorizeOnly: UserRole.INSTITUTION,
+        authorizeOnly: UserRole.ADMIN,
       },
       { href: "/", icon: "home", title: "Feed" },
       {

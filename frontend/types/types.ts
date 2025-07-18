@@ -10,6 +10,7 @@ export function getUserDataSelect(loggedInUserId: string) {
     role: true,
     institution: true,
     instituteId: true,
+    status: true,
     currentSeamster: true,
     image: true,
     coverImage: true,

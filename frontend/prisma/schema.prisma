@@ -15,6 +15,13 @@ enum UserRole {
   INSTITUTION
   ORGANIZATION
   PROFESSOR
+  ADMIN
+}
+
+enum UserStatus {
+  PENDING
+  ACTIVE
+  REJECTED
 }
 
 model Account {
@@ -108,21 +115,23 @@ model User {
   id String @id @default(cuid()) @map("_id")
 
   name             String
-  email            String    @unique
+  email            String     @unique
   emailVerified    Boolean
   image            String?
   coverImage       String?
   bio              String?
   instituteId      String?
   institution      String?
+  phone            String?
   currentSeamster  Int?
-  role             UserRole  @default(STUDENT)
+  role             UserRole   @default(STUDENT)
   username         String?
   displayUsername  String?
   banned           Boolean?
   banReason        String?
   banExpires       DateTime?
   twoFactorEnabled Boolean?
+  status           UserStatus @default(PENDING)
 
   createdAt DateTime @default(now()) @map(name: "created_at")
   updatedAt DateTime @updatedAt @map(name: "updated_at")
