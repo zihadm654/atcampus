@@ -2,7 +2,7 @@ import { sendEmailAction } from "@/actions/send-email.action";
 import { reactInvitationEmail } from "@/emails/invitation";
 import { reactResetPasswordEmail } from "@/emails/reset-password";
 import { render } from "@react-email/components";
-import { betterAuth, type BetterAuthOptions } from "better-auth";
+import { betterAuth, User, type BetterAuthOptions } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { APIError, createAuthMiddleware } from "better-auth/api";
 import { nextCookies } from "better-auth/next-js";
@@ -108,21 +108,25 @@ const options = {
   databaseHooks: {
     user: {
       create: {
-        before: async (user) => {
+        before: async (user: ExtendedUser) => {
           const ADMIN_EMAILS = process.env.ADMIN_EMAILS?.split(";") ?? [];
 
+          let newUserData = { ...user };
+
           if (ADMIN_EMAILS.includes(user.email)) {
-            return { data: { ...user, role: "ADMIN" } };
+            newUserData = { ...newUserData, role: "ADMIN" };
           }
 
           if (
-            (user as any).role === "INSTITUTION" ||
-            (user as any).role === "ORGANIZATION"
+            newUserData.role === "INSTITUTION" ||
+            newUserData.role === "ORGANIZATION"
           ) {
-            return { data: { ...user, status: "PENDING" } };
+            newUserData = { ...newUserData, status: "PENDING" };
+          } else {
+            newUserData = { ...newUserData, status: "ACTIVE" };
           }
 
-          return { data: { ...user, status: "ACTIVE" } };
+          return { data: newUserData };
         },
       },
     },
@@ -151,24 +155,6 @@ const options = {
       },
     },
   },
-  // signIn: {
-  //   emailAndPassword: {
-  //     async success({ user, ctx }) {
-  //       if (user.status === "PENDING") {
-  //         throw new APIError("UNAUTHORIZED", {
-  //           message: "Your account is pending approval.",
-  //           redirect: "/pending-approval",
-  //         });
-  //       }
-  //       if (user.status === "REJECTED") {
-  //         throw new APIError("UNAUTHORIZED", {
-  //           message: "Your account has been rejected.",
-  //           redirect: "/rejected-account",
-  //         });
-  //       }
-  //     },
-  //   },
-  // },
   session: {
     expiresIn: 60 * 60 * 24 * 7,
     updateAge: 60 * 60 * 24,
@@ -288,3 +274,8 @@ export const auth = betterAuth({
 });
 
 export type ErrorCode = keyof typeof auth.$ERROR_CODES | "UNKNOWN";
+interface ExtendedUser extends User {
+  role: "STUDENT" | "PROFESSOR" | "INSTITUTION" | "ORGANIZATION" | "ADMIN";
+  status: "PENDING" | "ACTIVE" | "REJECTED";
+  // ... other additional fields
+}

@@ -112,10 +112,12 @@ export default async function DashboardPage() {
             </Table>
           </Fragment>
         )}
-        <OrganizationCard
-          activeOrganization={JSON.parse(JSON.stringify(organization))}
-          session={JSON.parse(JSON.stringify(session))}
-        />
+        {user?.role === "INSTITUTION" && (
+          <OrganizationCard
+            activeOrganization={JSON.parse(JSON.stringify(organization))}
+            session={JSON.parse(JSON.stringify(session))}
+          />
+        )}
       </div>
     </main>
   );

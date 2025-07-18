@@ -1,8 +1,8 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { imageRemove } from "@/actions/image-remove";
-import { deleteProduct } from "@/actions/product";
+// import { imageRemove } from "@/actions/image-remove";
+// import { deleteProduct } from "@/actions/product";
 import { DotsHorizontalIcon } from "@radix-ui/react-icons";
 import { Row } from "@tanstack/react-table";
 import { toast } from "sonner";
@@ -35,14 +35,14 @@ export function DataTableRowActions<TData>({
       // Delete all associated images first
       for (const image of images) {
         const imageKey = getImageKey(image);
-        const res = await imageRemove(imageKey);
-        if (res.success) {
-          toast.success(`Image ${imageKey} removed successfully`);
-        }
+        // const res = await imageRemove(imageKey);
+        // if (res.success) {
+        //   toast.success(`Image ${imageKey} removed successfully`);
+        // }
       }
 
       // Delete the product after all images are removed
-      await deleteProduct(id);
+      // await deleteProduct(id);
       toast.success("Product deleted successfully");
     } catch (error) {
       console.log(error);

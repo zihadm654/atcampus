@@ -311,10 +311,10 @@ export default function ProfileClient({ user, jobs, loggedInUserId }) {
               </Card>
             </div>
           </TabsContent>
-          <TabsContent value="schools" className="p-4">
+          <TabsContent value="schools" className="p-3">
             <div className="grid grid-cols-1 gap-3">
               <Card className="overflow-hidden rounded-xl border border-gray-100 shadow-sm transition-all hover:border-gray-200 hover:shadow">
-                <CardHeader className="flex items-center justify-between pb-4">
+                <CardHeader className="flex items-center justify-between pb-2">
                   <CardTitle className="flex items-center text-lg font-medium">
                     <Icons.school className="mr-3 size-5" />
                     <span>Schools & Faculties</span>
@@ -336,7 +336,7 @@ export default function ProfileClient({ user, jobs, loggedInUserId }) {
                 </CardHeader>
                 <CardContent className="grid grid-cols-3 gap-2 max-md:grid-cols-1">
                   {user.schools.map((school) => (
-                    <div key={school.id} className="rounded-lg border p-4">
+                    <div key={school.id} className="rounded-lg border p-3">
                       <div className="flex justify-between">
                         <h3 className="font-medium">{school.name}</h3>
                         <div>
@@ -398,7 +398,7 @@ export default function ProfileClient({ user, jobs, loggedInUserId }) {
               </Card>
             </div>
           </TabsContent>
-          <TabsContent value="research" className="p-4">
+          <TabsContent value="research" className="p-3">
             <div className="grid grid-cols-1 gap-3">
               <Card className="overflow-hidden rounded-xl border border-gray-100 shadow-sm transition-all hover:border-gray-200 hover:shadow">
                 <CardHeader className="flex items-center justify-between pb-4">

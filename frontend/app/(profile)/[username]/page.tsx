@@ -101,7 +101,7 @@ export default async function Page({ params }: PageProps) {
     <div className="w-full min-w-0 space-y-5">
       <UserProfile user={user} loggedInUserId={loggedInUser.id} />
       <ProfileClient user={user} jobs={jobs} loggedInUserId={loggedInUser.id} />
-      {user.role === "INSTITUTION" && (
+      {/* {user.role === "INSTITUTION" && (
         <>
           <SchoolList schools={user.schools} />
           <FacultyList
@@ -125,7 +125,7 @@ export default async function Page({ params }: PageProps) {
             )}
           />
         </>
-      )}
+      )} */}
     </div>
   );
 }

@@ -69,33 +69,33 @@ export default function Job({ job }: JobProps) {
         </div>
         {job.user.id === user.id && <JobMoreButton job={job} />}
       </div>
-      <h3 className="text-xl font-semibold">
-        <Link href={`/jobs/${job.id}`}>{job.title}</Link>
-      </h3>
-      <p>{job.summary}</p>
-      <div className="flex items-center space-x-4">
-        <div className="flex items-center gap-1.5">
-          <MapPin className="size-4 text-gray-500" />
-          <span>{job.location}</span>
+      <Link href={`/jobs/${job.id}`}>
+        <h3 className="text-xl font-semibold">{job.title}</h3>
+        <p>{job.summary}</p>
+        <div className="flex items-center space-x-4">
+          <div className="flex items-center gap-1.5">
+            <MapPin className="size-4 text-gray-500" />
+            <span>{job.location}</span>
+          </div>
+          {/* Job type badge */}
+          <Badge className="bg-primary/10 text-primary text-sm font-medium">
+            {job.type}
+          </Badge>
         </div>
-        {/* Job type badge */}
-        <Badge className="bg-primary/10 text-primary text-sm font-medium">
-          {job.type}
-        </Badge>
-      </div>
-      <div className="grid grid-cols-2 gap-1">
-        <h4 className="flex items-center gap-1">
-          <Clock className="size-4 text-gray-500" />
-          <span>{job.weeklyHours} hrs/week</span>
-        </h4>
-        <h4 className="flex items-center gap-1">
-          Salary: <span>${job.salary}</span>
-        </h4>
-      </div>
-      <div className="flex items-center gap-1 px-1 py-1">
-        <Calendar className="size-4" />
-        <span>Deadline: {formatDate(job.endDate, "MM/dd/yyyy")}</span>
-      </div>
+        <div className="grid grid-cols-2 gap-1">
+          <h4 className="flex items-center gap-1">
+            <Clock className="size-4 text-gray-500" />
+            <span>{job.weeklyHours} hrs/week</span>
+          </h4>
+          <h4 className="flex items-center gap-1">
+            Salary: <span>${job.salary}</span>
+          </h4>
+        </div>
+        <div className="flex items-center gap-1 px-1 py-1">
+          <Calendar className="size-4" />
+          <span>Deadline: {formatDate(job.endDate, "MM/dd/yyyy")}</span>
+        </div>
+      </Link>
       <hr className="text-muted-foreground" />
       <div className="flex justify-between gap-5">
         <SaveJobButton

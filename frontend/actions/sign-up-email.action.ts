@@ -15,20 +15,27 @@ export async function signUpEmailAction(data: TRegister) {
     return { error: result.error.format() };
   }
 
-  const { name, email, password, institution, role, instituteId } = result.data;
+  const { name, email, password, institution, phone, role, instituteId } =
+    result.data;
   const generatedUsername = generateUsername(name);
+  let status: "PENDING" | "ACTIVE" | "REJECTED" = "ACTIVE";
+  if (role === "INSTITUTION" || role === "ORGANIZATION") {
+    status = "PENDING";
+  }
 
   try {
     // Register the user with Better Auth and get the response
-    const res = await auth.api.signUpEmail({
+    await auth.api.signUpEmail({
       body: {
         name,
         username: generatedUsername,
         email,
         password,
         role,
-        institution,
-        instituteId,
+        status: status as "PENDING" | "ACTIVE" | "REJECTED",
+        phone: phone ?? "",
+        institution: institution ?? "",
+        instituteId: instituteId ?? "",
       },
     });
 
