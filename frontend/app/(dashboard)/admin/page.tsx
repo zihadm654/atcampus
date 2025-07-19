@@ -488,46 +488,63 @@ export default function AdminDashboard() {
                             "Ban"
                           )}
                         </Button>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              className="flex h-8 w-8 p-0 data-[state=open]:bg-muted"
+                        {user.role === UserRole.ORGANIZATION && (
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                className="flex h-8 w-8 p-0 data-[state=open]:bg-muted"
+                              >
+                                <DotsHorizontalIcon className="h-4 w-4" />
+                                <span className="sr-only">Open menu</span>
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent
+                              align="end"
+                              className="w-[160px]"
                             >
-                              <DotsHorizontalIcon className="h-4 w-4" />
-                              <span className="sr-only">Open menu</span>
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent
-                            align="end"
-                            className="w-[160px]"
-                          >
-                            <DropdownMenuItem
-                              onClick={async () => {
-                                await updateStatusAction(
-                                  user.id,
-                                  UserStatus.ACTIVE,
-                                );
-                                toast.success("User status updated to ACTIVE");
-                              }}
-                            >
-                              Approve
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                              onClick={async () => {
-                                await updateStatusAction(
-                                  user.id,
-                                  UserStatus.REJECTED,
-                                );
-                                toast.success(
-                                  "User status updated to REJECTED",
-                                );
-                              }}
-                            >
-                              Reject
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
+                              <DropdownMenuItem
+                                onClick={async () => {
+                                  await updateStatusAction(
+                                    user.id,
+                                    UserStatus.ACTIVE,
+                                  );
+                                  toast.success(
+                                    "User status updated to ACTIVE",
+                                  );
+                                }}
+                              >
+                                Approve
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={async () => {
+                                  await updateStatusAction(
+                                    user.id,
+                                    UserStatus.PENDING,
+                                  );
+                                  toast.success(
+                                    "User status updated to pending",
+                                  );
+                                }}
+                              >
+                                Pending
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={async () => {
+                                  await updateStatusAction(
+                                    user.id,
+                                    UserStatus.REJECTED,
+                                  );
+                                  toast.success(
+                                    "User status updated to REJECTED",
+                                  );
+                                }}
+                              >
+                                Reject
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        )}
                       </div>
                     </TableCell>
                   </TableRow>

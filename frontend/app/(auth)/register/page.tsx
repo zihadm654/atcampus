@@ -57,8 +57,8 @@ export default function RegisterPage() {
           .
         </p>
       </div>
-      <div className="lg:p-8">
-        <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
+      <div className="lg:p-6">
+        <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[40rem]">
           <Suspense>
             <UserAuthForm />
           </Suspense>

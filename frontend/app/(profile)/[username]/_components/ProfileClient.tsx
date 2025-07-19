@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
+import { DotsHorizontalIcon } from "@radix-ui/react-icons";
 import { useQuery } from "@tanstack/react-query";
 import { Star } from "lucide-react";
 
@@ -12,8 +14,15 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Job from "@/components/jobs/Job";
+import Research from "@/components/researches/Research";
 import { Icons } from "@/components/shared/icons";
 import SkillButton from "@/components/skill/SkillButton";
 import UserSkillList from "@/components/skill/UserSkillList";
@@ -31,16 +40,23 @@ function ProfessorList({ facultyId }) {
     queryKey: ["professors", facultyId],
     queryFn: () => getProfessorsForFaculty(facultyId),
   });
+  console.log(professors, "prefessors");
   return (
     <div>
-      <h5>Professors:</h5>
-      {professors?.map((p) => <div key={p.id}>{p.name}</div>) ||
-        "No professors"}
+      <h5 className="text-sm">Professors:</h5>
+      {professors && professors.length > 0
+        ? professors?.map((p) => <div key={p.id}>{p.name}</div>)
+        : "No professors"}
     </div>
   );
 }
 
-export default function ProfileClient({ user, jobs, loggedInUserId }) {
+export default function ProfileClient({
+  user,
+  jobs,
+  researches,
+  loggedInUserId,
+}) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedSchool, setSelectedSchool] = useState(null);
   const deleteSchoolMutation = useDeleteSchoolMutation();
@@ -58,7 +74,6 @@ export default function ProfileClient({ user, jobs, loggedInUserId }) {
   function handleDeleteFaculty(facultyId) {
     deleteFacultyMutation.mutate(facultyId);
   }
-
   return (
     <>
       <EditSchoolDialog
@@ -311,7 +326,7 @@ export default function ProfileClient({ user, jobs, loggedInUserId }) {
               </Card>
             </div>
           </TabsContent>
-          <TabsContent value="schools" className="p-3">
+          <TabsContent value="schools" className="p-3 max-md:p-1.5">
             <div className="grid grid-cols-1 gap-3">
               <Card className="overflow-hidden rounded-xl border border-gray-100 shadow-sm transition-all hover:border-gray-200 hover:shadow">
                 <CardHeader className="flex items-center justify-between pb-2">
@@ -329,68 +344,104 @@ export default function ProfileClient({ user, jobs, loggedInUserId }) {
                         setIsDialogOpen(true);
                       }}
                     >
+                      Add
                       <Icons.add className="size-4" />
-                      Add School
                     </Button>
                   </CardAction>
                 </CardHeader>
-                <CardContent className="grid grid-cols-3 gap-2 max-md:grid-cols-1">
+                <CardContent className="grid gap-2 grid-cols-1 max-md:px-3">
                   {user.schools.map((school) => (
-                    <div key={school.id} className="rounded-lg border p-3">
-                      <div className="flex justify-between">
-                        <h3 className="font-medium">{school.name}</h3>
-                        <div>
-                          <Button
-                            variant="ghost"
-                            onClick={() => handleEditSchool(school)}
-                          >
-                            Edit
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            onClick={() => handleDeleteSchool(school.id)}
-                          >
-                            Delete
-                          </Button>
+                    <div
+                      key={school.id}
+                      className="rounded-lg border p-3 max-md:p-2"
+                    >
+                      <div className="flex justify-between items-center">
+                        <div className="flex items-center justify-start space-x-2">
+                          <img
+                            src={"_static/avatars/shadcn.jpeg"}
+                            alt={school.name}
+                            className="size-10 rounded-full"
+                            // height={20}
+                            // width={20}
+                          />
+                          <h3 className="font-medium">{school.name}</h3>
+                        </div>
+                        <div className="m-2">
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                className="flex h-8 w-8 p-0 data-[state=open]:bg-muted"
+                              >
+                                <DotsHorizontalIcon className="size-5" />
+                                <span className="sr-only">Open menu</span>
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent
+                              align="end"
+                              className="w-[160px]"
+                            >
+                              <DropdownMenuItem
+                                onClick={() => handleEditSchool(school)}
+                              >
+                                Edit
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={() => handleDeleteSchool(school.id)}
+                              >
+                                Delete
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                         </div>
                       </div>
-                      <p className="text-sm text-gray-600">
+                      {/* <p className="text-md text-gray-400">
                         {school.description}
-                      </p>
+                      </p> */}
                       <div className="mt-2">
-                        <h4 className="text-sm font-medium">Faculties:</h4>
-                        {school.faculties.map((faculty) => (
-                          <div
-                            key={faculty.id}
-                            className="ml-4 mt-2 text-sm text-gray-600"
-                          >
-                            <div className="flex justify-between">
-                              <span>{faculty.name}</span>
-                              <div>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => {
-                                    /* TODO: handle edit faculty */
-                                  }}
-                                >
-                                  Edit
-                                </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() =>
-                                    handleDeleteFaculty(faculty.id)
-                                  }
-                                >
-                                  Delete
-                                </Button>
+                        <h4 className="font-medium text-gray-400">
+                          Faculties:
+                        </h4>
+                        <div className="grid grid-cols-2 max-md:grid-cols-1 gap-2 w-full">
+                          {school.faculties.map((faculty) => (
+                            <div
+                              key={faculty.id}
+                              className="mt-2 text-md border rounded-lg p-2"
+                            >
+                              <div className="flex items-center justify-between">
+                                <h4 className="text-lg">{faculty.name}</h4>
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                    <Button
+                                      variant="ghost"
+                                      className="flex h-8 w-8 p-0 data-[state=open]:bg-muted"
+                                    >
+                                      <DotsHorizontalIcon className="size-5" />
+                                      <span className="sr-only">Open menu</span>
+                                    </Button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent
+                                    align="end"
+                                    className="w-[160px]"
+                                  >
+                                    <DropdownMenuItem>Edit</DropdownMenuItem>
+                                    <DropdownMenuItem
+                                      onClick={() =>
+                                        handleDeleteFaculty(faculty.id)
+                                      }
+                                    >
+                                      Delete
+                                    </DropdownMenuItem>
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
                               </div>
+                              {/* <p className="text-gray-400">
+                              {faculty.description}
+                              </p> */}
+                              <ProfessorList facultyId={faculty.id} />
                             </div>
-                            <p>{faculty.description}</p>
-                            <ProfessorList facultyId={faculty.id} />
-                          </div>
-                        ))}
+                          ))}
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -418,21 +469,21 @@ export default function ProfileClient({ user, jobs, loggedInUserId }) {
                   </CardAction>
                 </CardHeader>
                 <CardContent className="grid grid-cols-3 gap-2 max-md:grid-cols-1">
-                  {jobs.length > 0 ? (
-                    jobs
-                      .filter((item) => item.job)
-                      .map((item) => <Job key={item.job.id} job={item.job} />)
+                  {researches.length > 0 ? (
+                    researches.map((item) => (
+                      <Research key={item.id} research={item} />
+                    ))
                   ) : (
                     <div className="flex flex-col items-center">
-                      <Icons.job className="size-10" />
-                      <p>No research or activities added yet</p>
+                      <Icons.bookMarked className="size-10" />
+                      <p>No research added yet</p>
                       <Button
                         variant="outline"
                         size="sm"
                         className="mt-4 rounded-full"
                       >
                         <Icons.add className="size-4" />
-                        Add Experience
+                        Add research
                       </Button>
                     </div>
                   )}

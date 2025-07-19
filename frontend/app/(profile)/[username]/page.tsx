@@ -7,6 +7,7 @@ import { formatDate } from "date-fns";
 import {
   FollowerInfo,
   getJobDataInclude,
+  getResearchDataInclude,
   getUserDataSelect,
   UserData,
 } from "@/types/types";
@@ -68,6 +69,20 @@ const getAppliedJobs = cache(async (userId: string) => {
   });
   return applications;
 });
+const getResearches = cache(async (loggedInUserId: string) => {
+  const researches = await prisma.research.findMany({
+    where: {
+      userId: loggedInUserId,
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+    include: {
+      ...getResearchDataInclude(loggedInUserId),
+    },
+  });
+  return researches;
+});
 export async function generateMetadata({
   params,
 }: PageProps): Promise<Metadata> {
@@ -97,10 +112,16 @@ export default async function Page({ params }: PageProps) {
 
   const user = await getUser(username, loggedInUser.id);
   const jobs = await getAppliedJobs(loggedInUser.id);
+  const researches = await getResearches(loggedInUser.id);
   return (
     <div className="w-full min-w-0 space-y-5">
       <UserProfile user={user} loggedInUserId={loggedInUser.id} />
-      <ProfileClient user={user} jobs={jobs} loggedInUserId={loggedInUser.id} />
+      <ProfileClient
+        user={user}
+        jobs={jobs}
+        researches={researches}
+        loggedInUserId={loggedInUser.id}
+      />
       {/* {user.role === "INSTITUTION" && (
         <>
           <SchoolList schools={user.schools} />
@@ -146,7 +167,7 @@ async function UserProfile({ user, loggedInUserId }: UserProfileProps) {
   return (
     <div className="bg-card h-fit w-full overflow-hidden rounded-2xl shadow-sm">
       {/* Cover photo area with enhanced gradient */}
-      <div className="relative h-48 w-full">
+      <div className="relative h-56 w-full">
         {user.coverImage ? (
           <Image
             src={user.coverImage}
@@ -263,7 +284,7 @@ async function UserProfile({ user, loggedInUserId }: UserProfileProps) {
                   </div>
                 )}
 
-                {user.currentSeamster && (
+                {user.currentSeamster ? (
                   <div className="flex items-center gap-2">
                     <div className="rounded-lg bg-purple-100 p-2">
                       <svg
@@ -282,7 +303,7 @@ async function UserProfile({ user, loggedInUserId }: UserProfileProps) {
                       <p className="text-sm text-gray-500">Current Semester</p>
                     </div>
                   </div>
-                )}
+                ) : null}
               </div>
             </div>
           )}
