@@ -207,7 +207,7 @@ export default function AdminDashboard() {
   console.log(users, "users");
 
   return (
-    <div className="container mx-auto space-y-8 p-4">
+    <div className="container mx-auto space-y-5 p-2">
       <ReturnButton href="/dashboard" label="profile" />
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
@@ -408,9 +408,9 @@ export default function AdminDashboard() {
                           variant="destructive"
                         >
                           {isLoading === `delete-${user.id}` ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
+                            <Loader2 className="size-3 animate-spin" />
                           ) : (
-                            <Trash className="h-4 w-4" />
+                            <Trash className="size-3" />
                           )}
                         </Button>
                         <Button
@@ -435,7 +435,7 @@ export default function AdminDashboard() {
                             <Loader2 className="h-4 w-4 animate-spin" />
                           ) : (
                             <>
-                              <UserCircle className="mr-2 h-4 w-4" />
+                              <UserCircle className="size-3" />
                               Impersonate
                             </>
                           )}
@@ -501,8 +501,10 @@ export default function AdminDashboard() {
                             </DropdownMenuTrigger>
                             <DropdownMenuContent
                               align="end"
-                              className="w-[160px]"
+                              className="w-[16rem]"
                             >
+                              <span className="text-gray-500 pl-3">Change Status</span>
+                              <hr />
                               <DropdownMenuItem
                                 onClick={async () => {
                                   await updateStatusAction(
@@ -554,10 +556,6 @@ export default function AdminDashboard() {
           )}
         </CardContent>
       </Card>
-      <h2 className="text-xl font-bold tracking-tight">Admin Dashboard</h2>
-      <p className="text-muted-foreground">
-        Manage user accounts and statuses.
-      </p>
       {/* <DataTable columns={columns as any} data={users || []} /> */}
     </div>
   );

@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
-import type { User } from "@prisma/client";
+import type { User,Job } from "@prisma/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { CalendarIcon } from "lucide-react";
@@ -18,7 +18,7 @@ import {
   type TJob,
 } from "@/lib/validations/job";
 import JobDescriptionEditor from "@/components/editor/richEditor";
-import { createJob } from "@/components/jobs/actions";
+import { createJob, updateJob } from "@/components/jobs/actions";
 
 import { Button } from "../ui/button";
 import { Calendar } from "../ui/calendar";
@@ -48,6 +48,7 @@ import { Textarea } from "../ui/textarea";
 
 interface CreateJobFormProps {
   user?: User;
+  job?: Job;
 }
 const OPTIONS: Option[] = [
   { label: "nextjs", value: "nextjs" },
@@ -62,12 +63,18 @@ const OPTIONS: Option[] = [
   { label: "Gatsby", value: "gatsby", disable: true },
   { label: "Astro", value: "astro" },
 ];
-export function CreateJobForm({ user }: CreateJobFormProps) {
+export function CreateJobForm({ user,job }: CreateJobFormProps) {
   const router = useRouter();
   const [pending, setPending] = useState(false);
   const form = useForm<TJob>({
     resolver: zodResolver(jobSchema),
-    defaultValues: {
+    defaultValues: job ? {
+      ...job,
+      type: job.type as JobType,
+      experienceLevel: job.experienceLevel as ExperienceLevel,
+      endDate: new Date(job.endDate),
+      duration: job.duration ||undefined,
+    } : {
       title: "",
       summary: "",
       description: "",
@@ -83,6 +90,24 @@ export function CreateJobForm({ user }: CreateJobFormProps) {
   const queryClient = useQueryClient();
 
   async function onSubmit(values: TJob) {
+    if(job){
+      try {
+        setPending(true);
+      console.log(values);
+
+      await updateJob(values,job.id);
+      toast.success("Job updated successfully!");
+      queryClient.invalidateQueries({ queryKey: ["job-feed"] });
+      form.reset();
+      router.push("/jobs");
+    } catch (error) {
+      console.error(error);
+      toast.error("Something went wrong. Please try again.");
+    } finally {
+      setPending(false);
+    }
+  }else{
+
     try {
       setPending(true);
       console.log(values);
@@ -98,6 +123,7 @@ export function CreateJobForm({ user }: CreateJobFormProps) {
     } finally {
       setPending(false);
     }
+  }
   }
 
   useEffect(() => {

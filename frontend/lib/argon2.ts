@@ -1,5 +1,3 @@
-'server only';
-
 import { hash, type Options, verify } from '@node-rs/argon2';
 
 const opts: Options = {

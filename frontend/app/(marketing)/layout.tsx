@@ -7,6 +7,7 @@ import { DashboardSidebar } from "@/components/layout/dashboard-sidebar";
 // import { NavMobile } from "@/components/layout/mobile-nav";
 import { NavBarServer } from "@/components/layout/navbar-server";
 import { SiteFooter } from "@/components/layout/site-footer";
+import { APIError } from "better-auth/api";
 
 interface MarketingLayoutProps {
   children: React.ReactNode;

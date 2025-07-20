@@ -41,6 +41,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { AvatarInput } from "@/app/(profile)/[username]/_components/EditProfileDialog";
+import {motion, AnimatePresence} from "framer-motion";
 
 export function OrganizationCard(props: {
   session: Session | null;
@@ -207,12 +208,18 @@ export function OrganizationCard(props: {
               Invites
             </p>
             <div className="flex flex-col gap-2">
+              <AnimatePresence>
               {optimisticOrg?.invitations
                 .filter((invitation) => invitation.status === "pending")
                 .map((invitation) => (
-                  <div
+                  <motion.div
                     className="flex items-center justify-between"
                     key={invitation.id}
+                    variants={inviteVariants}
+											initial="hidden"
+											animate="visible"
+											exit="exit"
+											layout
                   >
                     <div>
                       <p className="text-sm">{invitation.email}</p>
@@ -275,12 +282,15 @@ export function OrganizationCard(props: {
                         />
                       </div>
                     </div>
-                  </div>
+                  </motion.div>
                 ))}
+              </AnimatePresence>
               {optimisticOrg?.invitations.length === 0 && (
-                <p className="text-muted-foreground text-sm">
+                <motion.p className="text-muted-foreground text-sm" initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}>
                   No Active Invitations
-                </p>
+                </motion.p>
               )}
               {!optimisticOrg?.id && (
                 <Label className="text-muted-foreground text-xs">
@@ -348,16 +358,6 @@ function CreateOrganizationDialog({ currentMember }) {
     }
   }, [open]);
 
-  const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files?.[0]) {
-      const file = e.target.files[0];
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setLogo(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
 
   return (
     <Dialog onOpenChange={setOpen} open={open}>
@@ -394,21 +394,6 @@ function CreateOrganizationDialog({ currentMember }) {
               value={slug}
             />
           </div>
-          {/* <div className="flex flex-col gap-2">
-            <Label>Logo</Label>
-            <Input accept="image/*" onChange={handleLogoChange} type="file" />
-            {logo && (
-              <div className="mt-2">
-                <Image
-                  alt="Logo preview"
-                  className="h-16 w-16 object-cover"
-                  height={16}
-                  src={logo}
-                  width={16}
-                />
-              </div>
-            )}
-          </div> */}
           <div className="space-y-1.5">
             <Label>Avatar</Label>
             <AvatarInput

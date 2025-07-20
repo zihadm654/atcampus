@@ -69,3 +69,35 @@ export async function createJob(values: TJob) {
     return { success: false, error: (error as Error).message };
   }
 }
+export async function updateJob(values: TJob,jobId:string) {
+  try {
+    const user = await getCurrentUser();
+
+    if (user?.role !== "ORGANIZATION" && !user) {
+      throw new Error("Unauthorized");
+    }
+
+    const validatedFields = jobSchema.safeParse(values);
+
+    if (!validatedFields.success) {
+      throw new Error(validatedFields.error.message);
+    }
+
+    const job = await prisma.job.update({
+      where:{
+        id: jobId
+      },
+      data: {
+        userId: user.id,
+        ...validatedFields.data,
+      },
+    });
+
+    revalidatePath("/jobs");
+
+    return { success: true, data: job };
+  } catch (error) {
+    console.error(error);
+    return { success: false, error: (error as Error).message };
+  }
+}

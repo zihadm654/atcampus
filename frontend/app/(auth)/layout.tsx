@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
-import { APIError } from "better-auth/api";
 
 import { getCurrentUser } from "@/lib/session";
+import { APIError } from "better-auth/api";
 
 interface AuthLayoutProps {
   children: React.ReactNode;
