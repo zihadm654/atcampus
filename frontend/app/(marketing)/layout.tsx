@@ -1,4 +1,3 @@
-import { redirect } from "next/navigation";
 
 import { menubar } from "@/config/dashboard";
 import { getCurrentUser } from "@/lib/session";
@@ -7,7 +6,7 @@ import { DashboardSidebar } from "@/components/layout/dashboard-sidebar";
 // import { NavMobile } from "@/components/layout/mobile-nav";
 import { NavBarServer } from "@/components/layout/navbar-server";
 import { SiteFooter } from "@/components/layout/site-footer";
-import { APIError } from "better-auth/api";
+import { redirect } from "next/navigation";
 
 interface MarketingLayoutProps {
   children: React.ReactNode;

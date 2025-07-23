@@ -1,21 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSessionCookie } from "better-auth/cookies";
-import { auth } from "./lib/auth";
-import { headers } from "next/headers";
 
-const protectedRoutes = ["/", "/dashboard", "/admin/dashboard", "/users"];
+const protectedRoutes = ["/", "/dashboard", "/admin", "/jobs", "/reserches", "/bookmarks", "/messages", "/notifications", "/posts", "/jobs/*", "/reserches/*"];
 
 export async function middleware(req: NextRequest) {
   const { nextUrl } = req;
   const sessionCookie = await getSessionCookie(req);
-//   const session = await auth.api.getSession({
-//     headers: await headers()
-// })
-
-// if(!session) {
-//     return NextResponse.redirect(new URL("/login", req.url));
-// }
-
   const res = NextResponse.next();
 
   const isLoggedIn = !!sessionCookie;
@@ -29,12 +19,6 @@ export async function middleware(req: NextRequest) {
   if (isOnAuthRoute && isLoggedIn) {
     return NextResponse.redirect(new URL("/", req.url));
   }
-  // if (isLoggedIn && session.user.status === "PENDING") {
-  //   return NextResponse.redirect(new URL("/pending-approval",req.url))
-  // }
-  // if (isOnAuthRoute && isLoggedIn && session.user.status === "REJECTED") {
-  //   return NextResponse.redirect(new URL("/rejected-account",req.url))
-  // }
   return res;
 }
 

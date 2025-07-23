@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import EditFacultyDialog from "./EditFacultyDialog";
+import ProfessorList from "./ProfessorList";
 
 interface FacultyListProps {
   faculties: (Faculty & { school: School | null })[];
@@ -52,6 +53,7 @@ export default function FacultyList({ faculties }: FacultyListProps) {
                 >
                   Edit Faculty
                 </Button>
+                <ProfessorList facultyId={faculty.id} />
               </div>
             </div>
           ))

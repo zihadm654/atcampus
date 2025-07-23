@@ -1,6 +1,3 @@
-import { redirect } from "next/navigation";
-
-import { getCurrentUser } from "@/lib/session";
 import { NavBarServer } from "@/components/layout/navbar-server";
 import { SiteFooter } from "@/components/layout/site-footer";
 
@@ -11,9 +8,6 @@ interface MarketingLayoutProps {
 export default async function MarketingLayout({
   children,
 }: MarketingLayoutProps) {
-  const user = await getCurrentUser();
-
-  if (!user) redirect("/login");
   return (
     <div className="flex min-h-screen flex-col">
       <NavBarServer scroll={true} />

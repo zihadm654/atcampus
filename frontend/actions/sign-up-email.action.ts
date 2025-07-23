@@ -25,7 +25,7 @@ export async function signUpEmailAction(data: TRegister) {
 
   try {
     // Register the user with Better Auth and get the response
-    await auth.api.signUpEmail({
+    const res = await auth.api.signUpEmail({
       body: {
         name,
         username: generatedUsername,
@@ -48,6 +48,7 @@ export async function signUpEmailAction(data: TRegister) {
     // }
 
     return {
+      res,
       success: true,
       message: "Registration successful. Welcome to our site.",
     };

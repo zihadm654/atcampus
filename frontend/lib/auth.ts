@@ -111,25 +111,25 @@ const options = {
         before: async (user: ExtendedUser) => {
           const ADMIN_EMAILS = process.env.ADMIN_EMAILS?.split(";") ?? [];
 
-          let newUserData = { ...user };
 
           if (ADMIN_EMAILS.includes(user.email)) {
-            newUserData = { ...newUserData, role: "ADMIN" };
+            return { data: { ...user, role: "ADMIN" } };
           }
 
           if (
-            newUserData.role === "INSTITUTION" ||
-            newUserData.role === "ORGANIZATION"
+            user.role === "INSTITUTION" ||
+            user.role === "ORGANIZATION"
           ) {
-            newUserData = { ...newUserData, status: "PENDING" };
+            user = { ...user, status: "PENDING" };
           } else {
-            newUserData = { ...newUserData, status: "ACTIVE" };
+            user = { ...user, status: "ACTIVE" };
           }
 
-          return { data: newUserData };
+          return { data: user };
         },
       },
     },
+
   },
   user: {
     additionalFields: {
@@ -190,6 +190,10 @@ const options = {
       roles,
     }),
     organization({
+      allowUserToCreateOrganization: async (user: ExtendedUser) => {
+        const institution = user.role === "INSTITUTION";
+        return institution;
+      },
       async sendInvitationEmail(data) {
         await transporter.sendMail({
           to: data.email,
@@ -203,10 +207,9 @@ const options = {
               inviteLink:
                 process.env.NODE_ENV === "development"
                   ? `http://localhost:3000/accept-invitation/${data.id}`
-                  : `${
-                      process.env.BETTER_AUTH_URL ||
-                      process.env.NEXT_PUBLIC_APP_URL
-                    }/accept-invitation/${data.id}`,
+                  : `${process.env.BETTER_AUTH_URL ||
+                  process.env.NEXT_PUBLIC_APP_URL
+                  }/accept-invitation/${data.id}`,
             }),
           ),
         });

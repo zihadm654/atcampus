@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import Image from "next/image";
 import { DotsHorizontalIcon } from "@radix-ui/react-icons";
 import { useQuery } from "@tanstack/react-query";
@@ -21,44 +21,53 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import Job from "@/components/jobs/Job";
-import Research from "@/components/researches/Research";
+import JobComponent from "@/components/jobs/Job";
+import ResearchComponent from "@/components/researches/Research";
 import { Icons } from "@/components/shared/icons";
 import SkillButton from "@/components/skill/SkillButton";
 import UserSkillList from "@/components/skill/UserSkillList";
 
+import AssignFacultyDialog from "./AssignFacultyDialog";
 import EditSchoolDialog from "./EditSchoolDialog";
+import FacultyList from "./FacultyList";
 import { getProfessorsForFaculty } from "./schoolActions";
+import ProfessorList from "./ProfessorList";
 import {
   useDeleteFacultyMutation,
   useDeleteSchoolMutation,
 } from "./schoolMutations";
 import UserPosts from "./UserPosts";
+import { Member, Job, Research, User, Faculty, ProfessorProfile, School } from "@prisma/client";
 
-function ProfessorList({ facultyId }) {
-  const { data: professors } = useQuery({
-    queryKey: ["professors", facultyId],
-    queryFn: () => getProfessorsForFaculty(facultyId),
-  });
-  console.log(professors, "prefessors");
-  return (
-    <div>
-      <h5 className="text-sm">Professors:</h5>
-      {professors && professors.length > 0
-        ? professors?.map((p) => <div key={p.id}>{p.name}</div>)
-        : "No professors"}
-    </div>
-  );
+
+interface Props {
+  user: User & {
+    userSkills: {
+      skill: {
+        category: {
+          name: string;
+        };
+      };
+    }[];
+    members: Member[];
+    schools: (School & { faculties: Faculty[] })[];
+    professorProfile: ProfessorProfile | null;
+  };
+  jobs: Job[];
+  researches: Research[];
+  loggedInUserId: string;
 }
-
 export default function ProfileClient({
   user,
   jobs,
   researches,
   loggedInUserId,
-}) {
+}: any) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedSchool, setSelectedSchool] = useState(null);
+  const [isAssignFacultyDialogOpen, setIsAssignFacultyDialogOpen] = useState(false);
+  const [selectedMemberForFaculty, setSelectedMemberForFaculty] = useState<Member | null>(null);
+
   const deleteSchoolMutation = useDeleteSchoolMutation();
   const deleteFacultyMutation = useDeleteFacultyMutation();
 
@@ -73,6 +82,11 @@ export default function ProfileClient({
 
   function handleDeleteFaculty(facultyId) {
     deleteFacultyMutation.mutate(facultyId);
+  }
+
+  function handleAssignFaculty(member: Member) {
+    setSelectedMemberForFaculty(member);
+    setIsAssignFacultyDialogOpen(true);
   }
   return (
     <>
@@ -120,16 +134,7 @@ export default function ProfileClient({
                 className="flex-1 rounded-xl border-b-2 border-transparent py-4 transition-all data-[state=active]:border-blue-600 data-[state=active]:text-blue-600"
               >
                 {user.role === "INSTITUTION" ? (
-                  <>
-                    <Icons.bookOpen className="size-5" />
-                    <span className="hidden md:block">Clubs</span>
-                  </>
-                ) : (
-                  <>
-                    <Icons.job className="size-5" />
-                    <span className="hidden md:block">Job & Activities</span>
-                  </>
-                )}
+                  <> <Icons.users className="size-5" /> <span className="hidden md:block">Clubs</span> </>) : (<> <Icons.job className="size-5" /> <span className="hidden md:block">Job & Activities</span> </>)}
               </TabsTrigger>
               <TabsTrigger
                 value="research"
@@ -147,135 +152,203 @@ export default function ProfileClient({
                   <span className="hidden md:block">Events</span>
                 </TabsTrigger>
               )}
+              {user.role === "INSTITUTION" && user.professorProfile ? (
+                <TabsTrigger
+                  value="faculties"
+                  className="flex-1 rounded-xl border-b-2 border-transparent py-4 transition-all data-[state=active]:border-blue-600 data-[state=active]:text-blue-600"
+                >
+                  <Icons.bookOpen className="size-5" />
+                  <span className="hidden md:block">Faculties</span>
+                </TabsTrigger>
+              ) : null}
             </TabsList>
           </div>
+
+          <AssignFacultyDialog
+            open={isAssignFacultyDialogOpen}
+            onOpenChange={setIsAssignFacultyDialogOpen}
+            member={selectedMemberForFaculty}
+            faculties={user.schools.flatMap((school) => school.faculties)}
+          />
+
           <TabsContent value="overview" className="space-y-2 p-6">
-            <div className="grid grid-cols-2 gap-2 max-md:grid-cols-1">
-              <Card className="overflow-hidden rounded-xl border border-gray-100 shadow-sm transition-all hover:border-gray-200 hover:shadow">
+            {user.role === "INSTITUTION" && user.members?.length > 0 && (
+              <Card className="rounded-xl border border-gray-100 shadow-sm transition-all hover:border-gray-200 hover:shadow">
                 <CardHeader className="flex items-center justify-between pb-2">
                   <CardTitle className="flex items-center text-lg font-medium">
-                    <Icons.skill className="size-7 pr-2" />
-                    Skills
+                    <Icons.users className="size-7 pr-2" />
+                    Members
                   </CardTitle>
-                  <CardAction>
-                    <SkillButton user={user} />
-                  </CardAction>
                 </CardHeader>
                 <CardContent className="pt-1">
-                  {user.userSkills.length > 0 ? (
-                    <div className="max-h-40 overflow-y-auto">
-                      <UserSkillList
-                        skills={user.userSkills.map((skill) => ({
-                          ...skill,
-                          _count: { skillEndorsements: 0 },
-                          skill: { category: null },
-                        }))}
-                        userId={user.id}
-                      />
-                    </div>
-                  ) : (
-                    <div className="flex h-28 items-center justify-center rounded-lg text-gray-500">
-                      <div className="flex flex-col items-center">
-                        <Icons.skill className="size-10" />
-                        No skills added yet
+                  <div className="grid grid-cols-1 gap-2">
+                    {user.members.map((member) => (
+                      <div key={member.id} className="flex items-center justify-between">
+                        <h5>{member.role} - {member.role}</h5>
+                        <Button size="sm" variant="outline" onClick={() => handleAssignFaculty(member)}>
+                          Assign to Faculty
+                        </Button>
                       </div>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-              <Card className="overflow-hidden rounded-xl border border-gray-100 shadow-sm transition-all hover:border-gray-200 hover:shadow">
-                <CardHeader className="flex items-center justify-between pb-2">
-                  <CardTitle className="flex items-center text-lg font-medium">
-                    <Icons.bookOpen className="size-7 pr-2" />
-                    Courses
-                  </CardTitle>
-                  <CardAction>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="rounded-full text-green-600 hover:bg-green-50 hover:text-green-800"
-                    >
-                      <span>See More</span>
-                      <Icons.chevronRight className="size-5" />
-                    </Button>
-                  </CardAction>
-                </CardHeader>
-                <CardContent className="pt-4">
-                  <div className="flex h-28 items-center justify-center rounded-lg text-gray-500">
-                    <div className="flex flex-col items-center">
-                      <Icons.bookOpen className="size-10" />
-                      No courses enrolled
-                    </div>
+                    ))}
                   </div>
                 </CardContent>
               </Card>
-            </div>
-            <div className="space-y-2">
-              <Card className="overflow-hidden rounded-xl border border-gray-100 shadow-sm transition-all hover:border-gray-200 hover:shadow">
-                <CardHeader className="flex items-center justify-between pb-4">
-                  <CardTitle className="flex items-center text-lg font-medium">
-                    <Icons.job className="mr-2 size-5" />
-                    <span>Job & Activities</span>
-                  </CardTitle>
-                  <CardAction>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="rounded-full text-amber-600 hover:bg-amber-50 hover:text-amber-800"
-                    >
-                      <span>See More</span>
-                      <Icons.chevronRight className="size-5" />
-                    </Button>
-                  </CardAction>
-                </CardHeader>
-                <CardContent className="grid grid-cols-2 gap-2 max-md:grid-cols-1">
-                  {jobs.length > 0 ? (
-                    jobs
-                      .filter((item) => item.job)
-                      .map((item) => <Job key={item.job.id} job={item.job} />)
-                  ) : (
-                    <div className="flex flex-col items-center justify-center w-full">
-                      <Icons.job className="size-10" />
-                      <p>No job or activities added yet</p>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="mt-4 rounded-full"
-                      >
-                        <Icons.add className="size-4" />
-                        Add Experience
-                      </Button>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-              <Card className="overflow-hidden rounded-xl border border-gray-100 shadow-sm transition-all hover:border-gray-200 hover:shadow">
-                <CardHeader className="flex items-center justify-between pb-4">
-                  <CardTitle className="flex items-center text-lg font-medium">
-                    <Star className="size-7 pr-2" />
-                    Achievements
-                  </CardTitle>
-                  <CardAction>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="rounded-full text-amber-600 hover:bg-amber-50 hover:text-amber-800"
-                    >
-                      <span>See More</span>
-                      <Icons.chevronRight className="size-5" />
-                    </Button>
-                  </CardAction>
-                </CardHeader>
-                <CardContent className="pt-4">
-                  <div className="flex h-28 items-center justify-center rounded-lg text-gray-500">
-                    <div className="flex flex-col items-center">
-                      <Star className="size-10" />
-                      No achievements yet
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+            )}
+            {user.role === "STUDENT" ? (
+              <Fragment>
+                <div className="grid grid-cols-2 gap-2 max-md:grid-cols-1">
+                  <Card className="overflow-hidden rounded-xl border border-gray-100 shadow-sm transition-all hover:border-gray-200 hover:shadow">
+                    <CardHeader className="flex items-center justify-between pb-2">
+                      <CardTitle className="flex items-center text-lg font-medium">
+                        <Icons.skill className="size-7 pr-2" />
+                        Skills
+                      </CardTitle>
+                      <CardAction>
+                        <SkillButton user={user} />
+                      </CardAction>
+                    </CardHeader>
+                    <CardContent className="pt-1">
+                      {user.userSkills.length > 0 ? (
+                        <div className="max-h-40 overflow-y-auto">
+                          <UserSkillList
+                            skills={user.userSkills.map((skill) => ({
+                              ...skill,
+                              _count: { skillEndorsements: 0 },
+                              skill: { category: null },
+                            }))}
+                            userId={user.id}
+                          />
+                        </div>
+                      ) : (
+                        <div className="flex h-28 items-center justify-center rounded-lg text-gray-500">
+                          <div className="flex flex-col items-center">
+                            <Icons.skill className="size-10" />
+                            No skills added yet
+                          </div>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </div>
+              </Fragment>
+            ) :
+              // user.role === "INSTITUTION" ? (
+              // <Fragment>
+              //   <div className="grid grid-cols-2 gap-2 max-md:grid-cols-1">
+              //     <Card className="overflow-hidden rounded-xl border border-gray-100 shadow-sm transition-all hover:border-gray-200 hover:shadow">
+              //       <CardHeader className="flex items-center justify-between pb-2">
+              //         <CardTitle className="flex items-center text-lg font-medium">
+              //           <Icons.users className="size-7 pr-2" />
+              //           Members
+              //         </CardTitle>
+              //       </CardHeader>
+              //       <CardContent className="pt-1">
+              //         {user.members?.length > 0 ? (
+              //           <div className="max-h-40 overflow-y-auto">
+              //             <ul className="space-y-2">
+              //               {user.members.map((member) => (
+              //                 <li key={member.id} className="flex items-center justify-between">
+              //                   <span>{member.name} - {member.role}</span>
+              //                   <Button variant="outline" size="sm">Assign to Faculty</Button>
+              //                 </li>
+              //               ))}
+              //             </ul>
+              //           </div>
+              //         ) : (
+              //           <div className="flex h-28 items-center justify-center rounded-lg text-gray-500">
+              //             <div className="flex flex-col items-center">
+              //               <Icons.users className="size-10" />
+              //               No members found
+              //             </div>
+              //           </div>
+              //         )}
+              //       </CardContent>
+              //     </Card>
+              //   </div>
+              // </Fragment>
+              // ):
+              null}
+          </TabsContent>
+          {user.role === "INSTITUTION" && user.professorProfile ? (
+            <TabsContent value="faculties" className="space-y-2 p-6">
+              <FacultyList faculties={user.schools.flatMap(school => school.faculties)} />
+            </TabsContent>
+          ) : null}
+          <TabsContent value="overview" className="space-y-2 p-6">
+            {user.role === "STUDENT" ? (
+              <Fragment>
+                <div className="grid grid-cols-2 gap-2 max-md:grid-cols-1">
+                  <Card className="overflow-hidden rounded-xl border border-gray-100 shadow-sm transition-all hover:border-gray-200 hover:shadow">
+                    <CardHeader className="flex items-center justify-between pb-2">
+                      <CardTitle className="flex items-center text-lg font-medium">
+                        <Icons.job className="mr-2 size-5" />
+                        <span>Job & Activities</span>
+                      </CardTitle>
+                      <CardAction>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="rounded-full text-amber-600 hover:bg-amber-50 hover:text-amber-800"
+                        >
+                          <span>See More</span>
+                          <Icons.chevronRight className="size-5" />
+                        </Button>
+                      </CardAction>
+                    </CardHeader>
+                    <CardContent className="grid grid-cols-2 gap-2 max-md:grid-cols-1">
+                      {jobs.length > 0 ? (
+                        jobs
+                          .map((item) => <JobComponent key={item.job.id} job={item.job} />)
+                      ) : (
+                        <div className="flex flex-col items-center justify-center w-full">
+                          <Icons.job className="size-10" />
+                          <p>No job or activities added yet</p>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="mt-4 rounded-full"
+                          >
+                            <Icons.add className="size-4" />
+                            Add Experience
+                          </Button>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                  <Card className="overflow-hidden rounded-xl border border-gray-100 shadow-sm transition-all hover:border-gray-200 hover:shadow">
+                    <CardHeader className="flex items-center justify-between pb-4">
+                      <CardTitle className="flex items-center text-lg font-medium">
+                        <Star className="size-7 pr-2" />
+                        Achievements
+                      </CardTitle>
+                      <CardAction>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="rounded-full text-amber-600 hover:bg-amber-50 hover:text-amber-800"
+                        >
+                          <span>See More</span>
+                          <Icons.chevronRight className="size-5" />
+                        </Button>
+                      </CardAction>
+                    </CardHeader>
+                    <CardContent className="pt-4">
+                      <div className="flex h-28 items-center justify-center rounded-lg text-gray-500">
+                        <div className="flex flex-col items-center">
+                          <Star className="size-10" />
+                          No achievements yet
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </Fragment>
+            ) : (
+              <div>organization
+
+                <p>website {user.role === "ORGANIZATION" && user.institution}</p>
+              </div>
+            )}
           </TabsContent>
           <TabsContent value="posts" className="mx-auto max-w-2xl p-6">
             <h2 className="mb-6 flex items-center text-xl font-medium">
@@ -305,9 +378,7 @@ export default function ProfileClient({
                 </CardHeader>
                 <CardContent className="grid grid-cols-3 gap-2 max-md:grid-cols-1">
                   {jobs.length > 0 ? (
-                    jobs
-                      .filter((item) => item.job)
-                      .map((item) => <Job key={item.job.id} job={item.job} />)
+                    jobs.map((item) => <JobComponent key={item.job.id} job={item.job} />)
                   ) : (
                     <div className="flex flex-col items-center">
                       <Icons.job className="size-10" />
@@ -334,20 +405,23 @@ export default function ProfileClient({
                     <Icons.school className="mr-3 size-5" />
                     <span>Schools & Faculties</span>
                   </CardTitle>
-                  <CardAction>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="rounded-full text-amber-600 hover:bg-amber-50 hover:text-amber-800"
-                      onClick={() => {
-                        setSelectedSchool(null);
-                        setIsDialogOpen(true);
-                      }}
-                    >
-                      Add
-                      <Icons.add className="size-4" />
-                    </Button>
-                  </CardAction>
+                  {user.role === "INSTITUTION" && loggedInUserId === user.id && (
+
+                    <CardAction>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="rounded-full text-amber-600 hover:bg-amber-50 hover:text-amber-800"
+                        onClick={() => {
+                          setSelectedSchool(null);
+                          setIsDialogOpen(true);
+                        }}
+                      >
+                        Add
+                        <Icons.add className="size-4" />
+                      </Button>
+                    </CardAction>
+                  )}
                 </CardHeader>
                 <CardContent className="grid gap-2 grid-cols-1 max-md:px-3">
                   {user.schools.map((school) => (
@@ -361,39 +435,42 @@ export default function ProfileClient({
                             src={"_static/avatars/shadcn.jpeg"}
                             alt={school.name}
                             className="size-10 rounded-full"
-                            // height={20}
-                            // width={20}
+                          // height={20}
+                          // width={20}
                           />
                           <h3 className="font-medium">{school.name}</h3>
                         </div>
-                        <div className="m-2">
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                className="flex h-8 w-8 p-0 data-[state=open]:bg-muted"
+                        {user.role === "INSTITUTION" && loggedInUserId === user.id && (
+
+                          <div className="m-2">
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  className="flex h-8 w-8 p-0 data-[state=open]:bg-muted"
+                                >
+                                  <DotsHorizontalIcon className="size-5" />
+                                  <span className="sr-only">Open menu</span>
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent
+                                align="end"
+                                className="w-[160px]"
                               >
-                                <DotsHorizontalIcon className="size-5" />
-                                <span className="sr-only">Open menu</span>
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent
-                              align="end"
-                              className="w-[160px]"
-                            >
-                              <DropdownMenuItem
-                                onClick={() => handleEditSchool(school)}
-                              >
-                                Edit
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                onClick={() => handleDeleteSchool(school.id)}
-                              >
-                                Delete
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </div>
+                                <DropdownMenuItem
+                                  onClick={() => handleEditSchool(school)}
+                                >
+                                  Edit
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                  onClick={() => handleDeleteSchool(school.id)}
+                                >
+                                  Delete
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </div>
+                        )}
                       </div>
                       {/* <p className="text-md text-gray-400">
                         {school.description}
@@ -410,30 +487,31 @@ export default function ProfileClient({
                             >
                               <div className="flex items-center justify-between">
                                 <h4 className="text-lg">{faculty.name}</h4>
-                                <DropdownMenu>
-                                  <DropdownMenuTrigger asChild>
-                                    <Button
-                                      variant="ghost"
-                                      className="flex h-8 w-8 p-0 data-[state=open]:bg-muted"
+                                {user.role === "INSTITUTION" && loggedInUserId === user.id && (
+                                  <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                      <Button
+                                        variant="ghost"
+                                        className="flex h-8 w-8 p-0 data-[state=open]:bg-muted"
+                                      >
+                                        <DotsHorizontalIcon className="size-5" />
+                                        <span className="sr-only">Open menu</span>
+                                      </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent
+                                      align="end"
+                                      className="w-[160px]"
                                     >
-                                      <DotsHorizontalIcon className="size-5" />
-                                      <span className="sr-only">Open menu</span>
-                                    </Button>
-                                  </DropdownMenuTrigger>
-                                  <DropdownMenuContent
-                                    align="end"
-                                    className="w-[160px]"
-                                  >
-                                    <DropdownMenuItem>Edit</DropdownMenuItem>
-                                    <DropdownMenuItem
-                                      onClick={() =>
-                                        handleDeleteFaculty(faculty.id)
-                                      }
-                                    >
-                                      Delete
-                                    </DropdownMenuItem>
-                                  </DropdownMenuContent>
-                                </DropdownMenu>
+                                      <DropdownMenuItem>Edit</DropdownMenuItem>
+                                      <DropdownMenuItem
+                                        onClick={() =>
+                                          handleDeleteFaculty(faculty.id)
+                                        }
+                                      >
+                                        Delete
+                                      </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                  </DropdownMenu>)}
                               </div>
                               {/* <p className="text-gray-400">
                               {faculty.description}
@@ -471,7 +549,7 @@ export default function ProfileClient({
                 <CardContent className="grid grid-cols-3 gap-2 max-md:grid-cols-1">
                   {researches.length > 0 ? (
                     researches.map((item) => (
-                      <Research key={item.id} research={item} />
+                      <ResearchComponent key={item.id} research={item} />
                     ))
                   ) : (
                     <div className="flex flex-col items-center">

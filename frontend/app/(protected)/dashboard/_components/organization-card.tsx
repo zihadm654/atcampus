@@ -41,7 +41,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { AvatarInput } from "@/app/(profile)/[username]/_components/EditProfileDialog";
-import {motion, AnimatePresence} from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 
 export function OrganizationCard(props: {
   session: Session | null;
@@ -209,86 +209,86 @@ export function OrganizationCard(props: {
             </p>
             <div className="flex flex-col gap-2">
               <AnimatePresence>
-              {optimisticOrg?.invitations
-                .filter((invitation) => invitation.status === "pending")
-                .map((invitation) => (
-                  <motion.div
-                    className="flex items-center justify-between"
-                    key={invitation.id}
-                    variants={inviteVariants}
-											initial="hidden"
-											animate="visible"
-											exit="exit"
-											layout
-                  >
-                    <div>
-                      <p className="text-sm">{invitation.email}</p>
-                      <p className="text-muted-foreground text-xs">
-                        {invitation.role}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Button
-                        disabled={isRevoking.includes(invitation.id)}
-                        onClick={() => {
-                          organization.cancelInvitation(
-                            {
-                              invitationId: invitation.id,
-                            },
-                            {
-                              onRequest: () => {
-                                setIsRevoking([...isRevoking, invitation.id]);
-                              },
-                              onSuccess: () => {
-                                toast.message(
-                                  "Invitation revoked successfully",
-                                );
-                                setIsRevoking(
-                                  isRevoking.filter(
-                                    (id) => id !== invitation.id,
-                                  ),
-                                );
-                                setOptimisticOrg({
-                                  ...optimisticOrg,
-                                  invitations:
-                                    optimisticOrg?.invitations.filter(
-                                      (inv) => inv.id !== invitation.id,
-                                    ),
-                                });
-                              },
-                              onError: (ctx) => {
-                                toast.error(ctx.error.message);
-                                setIsRevoking(
-                                  isRevoking.filter(
-                                    (id) => id !== invitation.id,
-                                  ),
-                                );
-                              },
-                            },
-                          );
-                        }}
-                        size="sm"
-                        variant="destructive"
-                      >
-                        {isRevoking.includes(invitation.id) ? (
-                          <Loader2 className="animate-spin" size={16} />
-                        ) : (
-                          "Revoke"
-                        )}
-                      </Button>
+                {optimisticOrg?.invitations
+                  .filter((invitation) => invitation.status === "pending")
+                  .map((invitation) => (
+                    <motion.div
+                      className="flex items-center justify-between"
+                      key={invitation.id}
+                      variants={inviteVariants}
+                      initial="hidden"
+                      animate="visible"
+                      exit="exit"
+                      layout
+                    >
                       <div>
-                        <CopyButton
-                          textToCopy={`${window.location.origin}/accept-invitation/${invitation.id}`}
-                        />
+                        <p className="text-sm">{invitation.email}</p>
+                        <p className="text-muted-foreground text-xs">
+                          {invitation.role}
+                        </p>
                       </div>
-                    </div>
-                  </motion.div>
-                ))}
+                      <div className="flex items-center gap-2">
+                        <Button
+                          disabled={isRevoking.includes(invitation.id)}
+                          onClick={() => {
+                            organization.cancelInvitation(
+                              {
+                                invitationId: invitation.id,
+                              },
+                              {
+                                onRequest: () => {
+                                  setIsRevoking([...isRevoking, invitation.id]);
+                                },
+                                onSuccess: () => {
+                                  toast.message(
+                                    "Invitation revoked successfully",
+                                  );
+                                  setIsRevoking(
+                                    isRevoking.filter(
+                                      (id) => id !== invitation.id,
+                                    ),
+                                  );
+                                  setOptimisticOrg({
+                                    ...optimisticOrg,
+                                    invitations:
+                                      optimisticOrg?.invitations.filter(
+                                        (inv) => inv.id !== invitation.id,
+                                      ),
+                                  });
+                                },
+                                onError: (ctx) => {
+                                  toast.error(ctx.error.message);
+                                  setIsRevoking(
+                                    isRevoking.filter(
+                                      (id) => id !== invitation.id,
+                                    ),
+                                  );
+                                },
+                              },
+                            );
+                          }}
+                          size="sm"
+                          variant="destructive"
+                        >
+                          {isRevoking.includes(invitation.id) ? (
+                            <Loader2 className="animate-spin" size={16} />
+                          ) : (
+                            "Revoke"
+                          )}
+                        </Button>
+                        <div>
+                          <CopyButton
+                            textToCopy={`${window.location.origin}/accept-invitation/${invitation.id}`}
+                          />
+                        </div>
+                      </div>
+                    </motion.div>
+                  ))}
               </AnimatePresence>
               {optimisticOrg?.invitations.length === 0 && (
                 <motion.p className="text-muted-foreground text-sm" initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}>
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}>
                   No Active Invitations
                 </motion.p>
               )}
@@ -412,6 +412,7 @@ function CreateOrganizationDialog({ currentMember }) {
                   name: name,
                   slug: slug,
                   logo: logo || undefined,
+                  keepCurrentActiveOrganization: false,
                 },
                 {
                   onResponse: () => {
@@ -493,6 +494,7 @@ function InviteMemberDialog({
                 const invite = organization.inviteMember({
                   email: email,
                   role: role as "member",
+                  resend: false,
                   fetchOptions: {
                     throw: true,
                     onSuccess: (ctx) => {

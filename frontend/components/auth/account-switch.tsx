@@ -51,7 +51,7 @@ export default function AccountSwitcher({ sessions }: { sessions: Session[] }) {
           <CommandList>
             <CommandGroup heading="Current Account">
               <CommandItem
-                onSelect={() => {}}
+                onSelect={() => { }}
                 className="w-full justify-between text-sm"
                 key={currentUser?.user.id}
               >
@@ -107,7 +107,7 @@ export default function AccountSwitcher({ sessions }: { sessions: Session[] }) {
             <CommandGroup>
               <CommandItem
                 onSelect={() => {
-                  router.push("/sign-in");
+                  router.push("/login");
                   setOpen(false);
                 }}
                 className="cursor-pointer text-sm"

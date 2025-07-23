@@ -1,4 +1,3 @@
-import { redirect } from "next/navigation";
 
 import { menubar } from "@/config/dashboard";
 import { getCurrentUser } from "@/lib/session";
@@ -13,11 +12,10 @@ interface ProtectedLayoutProps {
 export default async function Dashboard({ children }: ProtectedLayoutProps) {
   const user = await getCurrentUser();
 
-  if (!user) redirect("/login");
   const filteredLinks = menubar.map((section) => ({
     ...section,
     items: section.items.filter(
-      ({ authorizeOnly }) => !authorizeOnly || authorizeOnly === user.role,
+      ({ authorizeOnly }) => !authorizeOnly || authorizeOnly === user?.role,
     ),
   }));
   return (

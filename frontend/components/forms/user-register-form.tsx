@@ -10,7 +10,7 @@ import { toast } from "sonner";
 
 import { signIn } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
-import { registerSchema, TRegister, UserRole } from "@/lib/validations/auth";
+import { registerSchema, TRegister } from "@/lib/validations/auth";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Icons } from "@/components/shared/icons";
@@ -25,18 +25,19 @@ import {
   FormMessage,
 } from "../ui/form";
 import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
+import { UserRole } from "@prisma/client";
 
 interface UserRegisterFormProps {
   className?: string;
 }
 
-const roleIcons: Record<UserRole, React.ElementType> = {
-  STUDENT: GraduationCap,
-  ORGANIZATION: Briefcase,
-  INSTITUTION: HomeIcon, // Or UsersIcon if HomeIcon is not suitable
-};
+// const roleIcons: Record<UserRole, React.ElementType> = {
+//   STUDENT: GraduationCap,
+//   ORGANIZATION: Briefcase,
+//   INSTITUTION: HomeIcon, // Or UsersIcon if HomeIcon is not suitable
+// };
 
-interface UserAuthFormProps extends React.HTMLAttributes<HTMLDivElement> {}
+interface UserAuthFormProps extends React.HTMLAttributes<HTMLDivElement> { }
 
 export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
   const [currentStep, setCurrentStep] = React.useState(1);
@@ -131,12 +132,12 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
                       <FormControl>
                         <RadioGroup
                           onValueChange={field.onChange}
-                          defaultValue={field.value}
+                          defaultValue={field.value} // Removed defaultValue to ensure selected value is captured
                           className="flex items-center justify-center space-x-3 max-md:space-x-1.5 flex-wrap"
                         >
                           <FormItem className="flex items-center gap-3 border p-5 rounded-xl">
                             <FormControl>
-                              <RadioGroupItem value="STUDENT" />
+                              <RadioGroupItem value={UserRole.STUDENT} />
                             </FormControl>
                             <FormLabel className="font-normal flex flex-col items-center justify-center">
                               <GraduationCap className="size-7" />
@@ -145,7 +146,7 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
                           </FormItem>
                           <FormItem className="flex items-center gap-3 border p-5 rounded-xl">
                             <FormControl>
-                              <RadioGroupItem value="ORGANIZATION" />
+                              <RadioGroupItem value={UserRole.ORGANIZATION} />
                             </FormControl>
                             <FormLabel className="font-normal flex flex-col items-center justify-center">
                               <Briefcase className="size-7" />
@@ -154,7 +155,7 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
                           </FormItem>
                           <FormItem className="flex items-center gap-3 border p-5 rounded-xl">
                             <FormControl>
-                              <RadioGroupItem value="INSTITUTION" />
+                              <RadioGroupItem value={UserRole.INSTITUTION} />
                             </FormControl>
                             <FormLabel className="font-normal flex flex-col items-center justify-center">
                               <HomeIcon className="size-7" />

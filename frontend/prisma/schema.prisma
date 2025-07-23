@@ -124,7 +124,7 @@ model User {
   institution      String?
   phone            String?
   currentSeamster  Int?
-  role             UserRole   @default(STUDENT)
+  role             UserRole
   username         String?
   displayUsername  String?
   banned           Boolean?
@@ -671,8 +671,10 @@ model Member {
   userId         String
   user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   role           String
-  createdAt      DateTime     @default(now()) @map(name: "created_at")
-  updatedAt      DateTime     @updatedAt @map(name: "updated_at")
+  Faculty        Faculty[]    @relation("facultyMembers")
+
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
 
   @@map(name: "member")
 }
@@ -731,6 +733,8 @@ model Faculty {
 
   schoolId String
   school   School @relation("SchoolFaculties", fields: [schoolId], references: [id], onDelete: Cascade)
+  memberId String
+  member   Member @relation("facultyMembers", fields: [memberId], references: [id], onDelete: Cascade)
 
   @@index([name, slug])
   @@map(name: "faculties")
