@@ -84,25 +84,57 @@ export async function createFaculty(
 ) {
   const validatedValues = createFacultySchema.parse(values);
   const user = await getCurrentUser();
+
   if (!user || user.role !== 'INSTITUTION') {
     throw new Error('Unauthorized');
   }
+
   const school = await prisma.school.findUnique({
     where: { id: validatedValues.schoolId, instituteId: user.id },
   });
+
   if (!school) throw new Error('School not found');
+
   try {
+    // Create a default member for the faculty
+    const defaultMember = await prisma.member.create({
+      data: {
+        userId: user.id,
+        role: 'admin',
+        organizationId: school.instituteId,
+      },
+    });
+
     const faculty = await prisma.faculty.create({
       data: {
-        ...validatedValues,
+        name: validatedValues.name,
+        description: validatedValues.description,
+        logo: validatedValues.logo,
+        coverPhoto: validatedValues.coverPhoto,
         slug:
           validatedValues.slug ||
           validatedValues.name
             .toLowerCase()
             .replace(/[^a-z0-9-]+/g, '-')
             .replace(/^-*|-*$/g, ''),
+        school: {
+          connect: { id: validatedValues.schoolId },
+        },
+        Member: {
+          connect: { id: defaultMember.id },
+        },
+      },
+      include: {
+        professors: {
+          include: {
+            user: true,
+          },
+        },
+        Member: true,
+        school: true,
       },
     });
+
     return faculty;
   } catch (error) {
     if (
@@ -186,19 +218,42 @@ export async function assignMemberToFaculty(
   facultyId: string
 ) {
   try {
-    // First get the member details
+    const user = await getCurrentUser();
+    if (!user || user.role !== 'INSTITUTION') {
+      throw new Error('Unauthorized');
+    }
+
+    // Get member with user details
     const member = await prisma.member.findUnique({
       where: { id: memberId },
-      include: { user: true },
+      include: {
+        user: true,
+        faculty: true,
+      },
     });
 
     if (!member) {
       throw new Error('Member not found');
     }
 
-    // Create or update professor profile
+    // Get faculty
+    const faculty = await prisma.faculty.findUnique({
+      where: { id: facultyId },
+      include: {
+        professors: true,
+        school: true,
+      },
+    });
+
+    if (!faculty) {
+      throw new Error('Faculty not found');
+    }
+
+    // Create professor profile if it doesn't exist
     const professorProfile = await prisma.professorProfile.upsert({
-      where: { userId: member.userId },
+      where: {
+        userId: member.userId,
+      },
       update: {
         faculties: {
           connect: { id: facultyId },
@@ -212,17 +267,155 @@ export async function assignMemberToFaculty(
       },
     });
 
-    // Update member with faculty assignment
+    // Update member
     const updatedMember = await prisma.member.update({
       where: { id: memberId },
       data: {
-        facultyId: facultyId,
+        role: 'PROFESSOR',
+        faculty: {
+          connect: { id: facultyId },
+        },
       },
     });
 
-    return { professorProfile, updatedMember };
+    // Update user role
+    await prisma.user.update({
+      where: { id: member.userId },
+      data: {
+        role: 'PROFESSOR',
+      },
+    });
+
+    // Update faculty with the new professor
+    await prisma.faculty.update({
+      where: { id: facultyId },
+      data: {
+        professors: {
+          connect: { id: professorProfile.id },
+        },
+      },
+    });
+
+    return {
+      success: true,
+      member: updatedMember,
+      professorProfile,
+      faculty,
+    };
   } catch (error) {
     console.error('Error assigning member to faculty:', error);
+    throw error;
+  }
+}
+
+export async function getFacultyMembers(facultyId: string) {
+  try {
+    const faculty = await prisma.faculty.findUnique({
+      where: { id: facultyId },
+      include: {
+        Member: {
+          where: {
+            role: 'member',
+          },
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                image: true,
+                role: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    return faculty?.Member || [];
+  } catch (error) {
+    console.error('Error fetching faculty members:', error);
+    throw error;
+  }
+}
+
+export async function removeProfessorFromFaculty(
+  memberId: string,
+  facultyId: string
+) {
+  try {
+    const user = await getCurrentUser();
+    if (!user || user.role !== 'INSTITUTION') {
+      throw new Error('Unauthorized');
+    }
+
+    // Remove faculty connection from professor profile
+    await prisma.professorProfile.update({
+      where: {
+        userId: memberId,
+      },
+      data: {
+        faculties: {
+          disconnect: { id: facultyId },
+        },
+      },
+    });
+
+    // Update member role
+    const updatedMember = await prisma.member.update({
+      where: { id: memberId },
+      data: {
+        role: 'MEMBER',
+        faculty: {
+          disconnect: true,
+        },
+      },
+    });
+
+    return {
+      success: true,
+      message: 'Professor removed from faculty successfully',
+      member: updatedMember,
+    };
+  } catch (error) {
+    console.error('Error removing professor from faculty:', error);
+    throw error;
+  }
+}
+
+export async function getFacultyDetails(facultyId: string) {
+  try {
+    const faculty = await prisma.faculty.findUnique({
+      where: { id: facultyId },
+      include: {
+        professors: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                image: true,
+              },
+            },
+          },
+        },
+        Member: {
+          include: {
+            user: true,
+          },
+        },
+        school: true,
+      },
+    });
+
+    if (!faculty) {
+      throw new Error('Faculty not found');
+    }
+
+    return faculty;
+  } catch (error) {
+    console.error('Error fetching faculty details:', error);
     throw error;
   }
 }

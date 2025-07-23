@@ -671,7 +671,9 @@ model Member {
   userId         String
   user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   role           String
-  Faculty        Faculty[]    @relation("facultyMembers")
+  facultyId      String?
+  faculty        Faculty?     @relation(fields: [facultyId], references: [id], onDelete: Cascade)
+  // Faculty        Faculty[]    @relation("facultyMembers")
 
   createdAt DateTime @default(now()) @map(name: "created_at")
   updatedAt DateTime @updatedAt @map(name: "updated_at")
@@ -732,9 +734,8 @@ model Faculty {
   updatedAt DateTime @updatedAt @map(name: "updated_at")
 
   schoolId String
-  school   School @relation("SchoolFaculties", fields: [schoolId], references: [id], onDelete: Cascade)
-  memberId String
-  member   Member @relation("facultyMembers", fields: [memberId], references: [id], onDelete: Cascade)
+  school   School   @relation("SchoolFaculties", fields: [schoolId], references: [id], onDelete: Cascade)
+  Member   Member[]
 
   @@index([name, slug])
   @@map(name: "faculties")

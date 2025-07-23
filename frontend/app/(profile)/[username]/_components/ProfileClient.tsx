@@ -38,6 +38,7 @@ import {
 } from "./schoolMutations";
 import UserPosts from "./UserPosts";
 import { Member, Job, Research, User, Faculty, ProfessorProfile, School } from "@prisma/client";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 
 interface Props {
@@ -52,6 +53,9 @@ interface Props {
     members: Member[];
     schools: (School & { faculties: Faculty[] })[];
     professorProfile: ProfessorProfile | null;
+    institution?: {
+      members: (Member & { user: User })[];
+    }[];
   };
   jobs: Job[];
   researches: Research[];
@@ -89,7 +93,7 @@ export default function ProfileClient({
     setIsAssignFacultyDialogOpen(true);
   }
   return (
-    <>
+    <Fragment>
       <EditSchoolDialog
         school={selectedSchool}
         open={isDialogOpen}
@@ -134,7 +138,14 @@ export default function ProfileClient({
                 className="flex-1 rounded-xl border-b-2 border-transparent py-4 transition-all data-[state=active]:border-blue-600 data-[state=active]:text-blue-600"
               >
                 {user.role === "INSTITUTION" ? (
-                  <> <Icons.users className="size-5" /> <span className="hidden md:block">Clubs</span> </>) : (<> <Icons.job className="size-5" /> <span className="hidden md:block">Job & Activities</span> </>)}
+                  <Fragment>
+                    <Icons.users className="size-5" /> <span className="hidden md:block">Clubs</span>
+                  </Fragment>
+                ) : (
+                  <Fragment>
+                    <Icons.job className="size-5" /> <span className="hidden md:block">Job & Activities</span>
+                  </Fragment>
+                )}
               </TabsTrigger>
               <TabsTrigger
                 value="research"
@@ -152,15 +163,15 @@ export default function ProfileClient({
                   <span className="hidden md:block">Events</span>
                 </TabsTrigger>
               )}
-              {user.role === "INSTITUTION" && user.professorProfile ? (
+              {user.role === "ORGANIZATION" && (
                 <TabsTrigger
-                  value="faculties"
+                  value="members"
                   className="flex-1 rounded-xl border-b-2 border-transparent py-4 transition-all data-[state=active]:border-blue-600 data-[state=active]:text-blue-600"
                 >
-                  <Icons.bookOpen className="size-5" />
-                  <span className="hidden md:block">Faculties</span>
+                  <Icons.users className="size-5" />
+                  <span className="hidden md:block">Members</span>
                 </TabsTrigger>
-              ) : null}
+              )}
             </TabsList>
           </div>
 
@@ -171,29 +182,52 @@ export default function ProfileClient({
             faculties={user.schools.flatMap((school) => school.faculties)}
           />
 
-          <TabsContent value="overview" className="space-y-2 p-6">
-            {user.role === "INSTITUTION" && user.members?.length > 0 && (
-              <Card className="rounded-xl border border-gray-100 shadow-sm transition-all hover:border-gray-200 hover:shadow">
-                <CardHeader className="flex items-center justify-between pb-2">
-                  <CardTitle className="flex items-center text-lg font-medium">
-                    <Icons.users className="size-7 pr-2" />
-                    Members
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="pt-1">
-                  <div className="grid grid-cols-1 gap-2">
-                    {user.members.map((member) => (
-                      <div key={member.id} className="flex items-center justify-between">
-                        <h5>{member.role} - {member.role}</h5>
-                        <Button size="sm" variant="outline" onClick={() => handleAssignFaculty(member)}>
-                          Assign to Faculty
-                        </Button>
-                      </div>
-                    ))}
+          <TabsContent value="overview" className="space-y-2 p-3">
+            {user.role === "ORGANIZATION" && user.ownedOrganizations && (
+              <div className="space-y-4">
+                {user.ownedOrganizations.map((org) => (
+                  <div key={org.id} className="space-y-2">
+                    <h3 className="text-lg font-semibold">{org.name} Members</h3>
+                    <div className="flex flex-col gap-2">
+                      {org.members.map((member) => (
+                        <div
+                          className="flex items-center justify-between"
+                          key={member.id}
+                        >
+                          <div className="flex items-center gap-2">
+                            <Avatar className="h-9 w-9 sm:flex">
+                              <AvatarImage
+                                className="object-cover"
+                                src={member.user.image || undefined}
+                              />
+                              <AvatarFallback>
+                                {member.user.name?.charAt(0)}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div>
+                              <p className="text-sm">{member.user.name}</p>
+                              <p className="text-muted-foreground text-xs">
+                                {member.role}
+                              </p>
+                            </div>
+                          </div>
+                          {member.role !== "owner" && (
+                            <Button
+                              onClick={() => handleAssignFaculty(member)}
+                              size="sm"
+                              variant="outline"
+                            >
+                              Assign to Faculty
+                            </Button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                </CardContent>
-              </Card>
+                ))}
+              </div>
             )}
+
             {user.role === "STUDENT" ? (
               <Fragment>
                 <div className="grid grid-cols-2 gap-2 max-md:grid-cols-1">
@@ -229,57 +263,36 @@ export default function ProfileClient({
                       )}
                     </CardContent>
                   </Card>
-                </div>
-              </Fragment>
-            ) :
-              // user.role === "INSTITUTION" ? (
-              // <Fragment>
-              //   <div className="grid grid-cols-2 gap-2 max-md:grid-cols-1">
-              //     <Card className="overflow-hidden rounded-xl border border-gray-100 shadow-sm transition-all hover:border-gray-200 hover:shadow">
-              //       <CardHeader className="flex items-center justify-between pb-2">
-              //         <CardTitle className="flex items-center text-lg font-medium">
-              //           <Icons.users className="size-7 pr-2" />
-              //           Members
-              //         </CardTitle>
-              //       </CardHeader>
-              //       <CardContent className="pt-1">
-              //         {user.members?.length > 0 ? (
-              //           <div className="max-h-40 overflow-y-auto">
-              //             <ul className="space-y-2">
-              //               {user.members.map((member) => (
-              //                 <li key={member.id} className="flex items-center justify-between">
-              //                   <span>{member.name} - {member.role}</span>
-              //                   <Button variant="outline" size="sm">Assign to Faculty</Button>
-              //                 </li>
-              //               ))}
-              //             </ul>
-              //           </div>
-              //         ) : (
-              //           <div className="flex h-28 items-center justify-center rounded-lg text-gray-500">
-              //             <div className="flex flex-col items-center">
-              //               <Icons.users className="size-10" />
-              //               No members found
-              //             </div>
-              //           </div>
-              //         )}
-              //       </CardContent>
-              //     </Card>
-              //   </div>
-              // </Fragment>
-              // ):
-              null}
-          </TabsContent>
-          {user.role === "INSTITUTION" && user.professorProfile ? (
-            <TabsContent value="faculties" className="space-y-2 p-6">
-              <FacultyList faculties={user.schools.flatMap(school => school.faculties)} />
-            </TabsContent>
-          ) : null}
-          <TabsContent value="overview" className="space-y-2 p-6">
-            {user.role === "STUDENT" ? (
-              <Fragment>
-                <div className="grid grid-cols-2 gap-2 max-md:grid-cols-1">
                   <Card className="overflow-hidden rounded-xl border border-gray-100 shadow-sm transition-all hover:border-gray-200 hover:shadow">
                     <CardHeader className="flex items-center justify-between pb-2">
+                      <CardTitle className="flex items-center text-lg font-medium">
+                        <Icons.bookOpen className="size-7 pr-2" />
+                        Courses
+                      </CardTitle>
+                      <CardAction>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="rounded-full text-green-600 hover:bg-green-50 hover:text-green-800"
+                        >
+                          <span>See More</span>
+                          <Icons.chevronRight className="size-5" />
+                        </Button>
+                      </CardAction>
+                    </CardHeader>
+                    <CardContent className="pt-4">
+                      <div className="flex h-28 items-center justify-center rounded-lg text-gray-500">
+                        <div className="flex flex-col items-center">
+                          <Icons.bookOpen className="size-10" />
+                          No courses enrolled
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+                <div className="space-y-2">
+                  <Card className="overflow-hidden rounded-xl border border-gray-100 shadow-sm transition-all hover:border-gray-200 hover:shadow">
+                    <CardHeader className="flex items-center justify-between pb-4">
                       <CardTitle className="flex items-center text-lg font-medium">
                         <Icons.job className="mr-2 size-5" />
                         <span>Job & Activities</span>
@@ -343,12 +356,60 @@ export default function ProfileClient({
                   </Card>
                 </div>
               </Fragment>
-            ) : (
-              <div>organization
-
-                <p>website {user.role === "ORGANIZATION" && user.institution}</p>
-              </div>
-            )}
+            ) :
+              user.role === "INSTITUTION" ? (
+                <Fragment>
+                  <div className="grid grid-cols-2 gap-2 max-md:grid-cols-1">
+                    <Card className="overflow-hidden rounded-xl border border-gray-100 shadow-sm transition-all hover:border-gray-200 hover:shadow">
+                      <CardHeader className="flex items-center justify-between pb-2">
+                        <CardTitle className="flex items-center text-lg font-medium">
+                          <Icons.users className="size-7 pr-2" />
+                          Members
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="pt-1">
+                        {user.members?.length > 0 ? (
+                          <div className="max-h-40 overflow-y-auto">
+                            <ul className="space-y-2">
+                              {user.members.map((member) => (
+                                <li key={member.id} className="flex items-center justify-between border p-2 rounded-md">
+                                  <div className="flex items-center space-x-2">
+                                    {/* <Avatar className="size-8">
+                                      <AvatarImage src={member.user.image || undefined} />
+                                      <AvatarFallback>{member.user.name ? member.user.name[0] : '?'}</AvatarFallback>
+                                    </Avatar> */}
+                                    <span> - {member.role}</span>
+                                  </div>
+                                  {member.role !== 'PROFESSOR' && (
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={() => {
+                                        setSelectedMemberForFaculty(member);
+                                        setIsAssignFacultyDialogOpen(true);
+                                      }}
+                                    >
+                                      Assign to Faculty
+                                    </Button>
+                                  )}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        ) : (
+                          <div className="flex h-28 items-center justify-center rounded-lg text-gray-500">
+                            <div className="flex flex-col items-center">
+                              <Icons.users className="size-10" />
+                              No members found
+                            </div>
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                  </div>
+                </Fragment>
+              ) :
+                null}
           </TabsContent>
           <TabsContent value="posts" className="mx-auto max-w-2xl p-6">
             <h2 className="mb-6 flex items-center text-xl font-medium">
@@ -526,6 +587,9 @@ export default function ProfileClient({
                 </CardContent>
               </Card>
             </div>
+            {user.professorProfile ?
+              (<FacultyList faculties={user.schools.flatMap(school => school.faculties)} />
+              ) : null}
           </TabsContent>
           <TabsContent value="research" className="p-3">
             <div className="grid grid-cols-1 gap-3">
@@ -572,6 +636,6 @@ export default function ProfileClient({
           {/* TODO: Add content for clubs, courses, events if needed */}
         </Tabs>
       </div>
-    </>
+    </Fragment>
   );
 }

@@ -45,6 +45,7 @@ const getUser = cache(async (username: string, loggedInUserId: string) => {
           faculties: true,
         },
       },
+      institution: true,
     },
   });
 
@@ -113,6 +114,7 @@ export default async function Page({ params }: PageProps) {
   const user = await getUser(username, loggedInUser.id);
   const jobs = await getAppliedJobs(loggedInUser.id);
   const researches = await getResearches(loggedInUser.id);
+  console.log(user, "user")
   return (
     <div className="w-full min-w-0 space-y-5">
       <UserProfile user={user} loggedInUserId={loggedInUser.id} />

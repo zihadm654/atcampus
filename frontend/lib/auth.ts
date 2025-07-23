@@ -109,20 +109,20 @@ const options = {
     user: {
       create: {
         before: async (user: ExtendedUser) => {
-          const ADMIN_EMAILS = process.env.ADMIN_EMAILS?.split(";") ?? [];
-
-
-          if (ADMIN_EMAILS.includes(user.email)) {
-            return { data: { ...user, role: "ADMIN" } };
-          }
+          const newRole = user.role;
 
           if (
-            user.role === "INSTITUTION" ||
-            user.role === "ORGANIZATION"
+            newRole === "INSTITUTION" ||
+            newRole === "ORGANIZATION"
           ) {
-            user = { ...user, status: "PENDING" };
+            user = { ...user, role: newRole, status: "PENDING" };
           } else {
-            user = { ...user, status: "ACTIVE" };
+            user = { ...user, role: newRole, status: "ACTIVE" };
+          }
+
+          const ADMIN_EMAILS = process.env.ADMIN_EMAILS?.split(";") ?? [];
+          if (ADMIN_EMAILS.includes(user.email)) {
+            user = { ...user, role: "ADMIN" };
           }
 
           return { data: user };
@@ -184,7 +184,6 @@ const options = {
     nextCookies(),
     username(),
     admin({
-      defaultRole: "STUDENT",
       adminRoles: ["ADMIN"],
       ac,
       roles,
