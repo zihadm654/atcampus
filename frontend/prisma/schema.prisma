@@ -159,9 +159,6 @@ model User {
   enrollments               Enrollment[]           @relation("StudentEnrollments")
   userSkills                UserSkill[]
   skillEndorsements         SkillEndorsement[]
-  profileViewsBy            ProfileView[]          @relation("ViewerProfile")
-  profileViews              ProfileView[]          @relation("ViewedProfile")
-  contentViews              ContentView[]
   sentCollaborationRequests CollaborationRequest[] @relation("Requester")
   collaboratedResearches    Research[]             @relation("ResearchCollaborators", fields: [collaboratedResearchIds], references: [id])
   collaboratedResearchIds   String[]
@@ -247,7 +244,6 @@ model Post {
   linkedNotifications Notification[]
   attachments         Media[]
   bookmarks           Bookmark[]
-  views               ContentView[]
 
   @@map(name: "posts")
 }
@@ -369,7 +365,6 @@ model Job {
   attachments         Media[]
   application         Application[]
   saveJob             SaveJob[]
-  views               ContentView[]
 
   @@map(name: "jobs")
 }
@@ -424,7 +419,6 @@ model Research {
   linkedNotifications   Notification[]
   attachments           Media[]
   saveResearch          SaveResearch[]
-  views                 ContentView[]
   collaborationRequests CollaborationRequest[] @relation("ResearchRequests")
   collaborators         User[]                 @relation("ResearchCollaborators", fields: [collaboratorIds], references: [id])
   collaboratorIds       String[]
@@ -619,36 +613,6 @@ model CourseMaterial {
   @@map(name: "course_materials")
 }
 
-model ProfileView {
-  id String @id @default(cuid()) @map("_id")
-
-  viewerId  String
-  viewer    User   @relation("ViewerProfile", fields: [viewerId], references: [id], onDelete: Cascade)
-  profileId String
-  profile   User   @relation("ViewedProfile", fields: [profileId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now()) @map(name: "created_at")
-
-  @@map(name: "profile_views")
-}
-
-model ContentView {
-  id String @id @default(cuid()) @map("_id")
-
-  viewerId   String
-  viewer     User      @relation(fields: [viewerId], references: [id], onDelete: Cascade)
-  postId     String?
-  post       Post?     @relation(fields: [postId], references: [id], onDelete: Cascade)
-  researchId String?
-  research   Research? @relation(fields: [researchId], references: [id], onDelete: Cascade)
-  jobId      String?
-  job        Job?      @relation(fields: [jobId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now()) @map(name: "created_at")
-
-  @@map(name: "content_views")
-}
-
 model Organization {
   id          String       @id @default(cuid()) @map("_id")
   name        String
@@ -717,6 +681,7 @@ model School {
   @@map(name: "schools")
 }
 
+// Updated Faculty model
 model Faculty {
   id             String             @id @default(cuid()) @map("_id")
   name           String             @unique

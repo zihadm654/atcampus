@@ -30,7 +30,7 @@ import UserSkillList from "@/components/skill/UserSkillList";
 import AssignFacultyDialog from "./AssignFacultyDialog";
 import EditSchoolDialog from "./EditSchoolDialog";
 import FacultyList from "./FacultyList";
-import { getProfessorsForFaculty } from "./schoolActions";
+import { getProfessorsForFaculty, updateFaculty } from "./schoolActions";
 import ProfessorList from "./ProfessorList";
 import {
   useDeleteFacultyMutation,
@@ -183,50 +183,6 @@ export default function ProfileClient({
           />
 
           <TabsContent value="overview" className="space-y-2 p-3">
-            {user.role === "ORGANIZATION" && user.ownedOrganizations && (
-              <div className="space-y-4">
-                {user.ownedOrganizations.map((org) => (
-                  <div key={org.id} className="space-y-2">
-                    <h3 className="text-lg font-semibold">{org.name} Members</h3>
-                    <div className="flex flex-col gap-2">
-                      {org.members.map((member) => (
-                        <div
-                          className="flex items-center justify-between"
-                          key={member.id}
-                        >
-                          <div className="flex items-center gap-2">
-                            <Avatar className="h-9 w-9 sm:flex">
-                              <AvatarImage
-                                className="object-cover"
-                                src={member.user.image || undefined}
-                              />
-                              <AvatarFallback>
-                                {member.user.name?.charAt(0)}
-                              </AvatarFallback>
-                            </Avatar>
-                            <div>
-                              <p className="text-sm">{member.user.name}</p>
-                              <p className="text-muted-foreground text-xs">
-                                {member.role}
-                              </p>
-                            </div>
-                          </div>
-                          {member.role !== "owner" && (
-                            <Button
-                              onClick={() => handleAssignFaculty(member)}
-                              size="sm"
-                              variant="outline"
-                            >
-                              Assign to Faculty
-                            </Button>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
 
             {user.role === "STUDENT" ? (
               <Fragment>
@@ -380,7 +336,7 @@ export default function ProfileClient({
                                     </Avatar> */}
                                     <span> - {member.role}</span>
                                   </div>
-                                  {member.role !== 'PROFESSOR' && (
+                                  {member.role === 'owner' && (
                                     <Button
                                       variant="outline"
                                       size="sm"
@@ -409,7 +365,9 @@ export default function ProfileClient({
                   </div>
                 </Fragment>
               ) :
-                null}
+                (
+                  <h1>you are the admin</h1>
+                )}
           </TabsContent>
           <TabsContent value="posts" className="mx-auto max-w-2xl p-6">
             <h2 className="mb-6 flex items-center text-xl font-medium">
@@ -563,7 +521,8 @@ export default function ProfileClient({
                                       align="end"
                                       className="w-[160px]"
                                     >
-                                      <DropdownMenuItem>Edit</DropdownMenuItem>
+                                      <DropdownMenuItem
+                                      >Edit</DropdownMenuItem>
                                       <DropdownMenuItem
                                         onClick={() =>
                                           handleDeleteFaculty(faculty.id)
@@ -611,7 +570,7 @@ export default function ProfileClient({
                   </CardAction>
                 </CardHeader>
                 <CardContent className="grid grid-cols-3 gap-2 max-md:grid-cols-1">
-                  {researches.length > 0 ? (
+                  {researches.length > 0 && user.id === loggedInUserId ? (
                     researches.map((item) => (
                       <ResearchComponent key={item.id} research={item} />
                     ))

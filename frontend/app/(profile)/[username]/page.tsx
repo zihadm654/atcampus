@@ -20,11 +20,8 @@ import Linkify from "@/components/feed/Linkify";
 import { Icons } from "@/components/shared/icons";
 import UserAvatar from "@/components/UserAvatar";
 
-import AddSchoolButton from "./_components/AddSchoolButton";
 import EditProfileButton from "./_components/EditProfileButton";
-import FacultyList from "./_components/FacultyList";
 import ProfileClient from "./_components/ProfileClient";
-import SchoolList from "./_components/SchoolList";
 
 interface PageProps {
   params: Promise<{ username: string }>;
@@ -124,31 +121,6 @@ export default async function Page({ params }: PageProps) {
         researches={researches}
         loggedInUserId={loggedInUser.id}
       />
-      {/* {user.role === "INSTITUTION" && (
-        <>
-          <SchoolList schools={user.schools} />
-          <FacultyList
-            faculties={user.schools.flatMap((school) =>
-              school.faculties.map((faculty) => ({
-                ...faculty,
-                ...school.faculties,
-                school: {
-                  id: school.id,
-                  name: school.name,
-                  createdAt: school.createdAt,
-                  updatedAt: school.updatedAt,
-                  instituteId: school.instituteId,
-                  slug: school.slug,
-                  logo: school.logo,
-                  description: school.description,
-                  coverPhoto: school.coverPhoto,
-                  website: school.website,
-                },
-              })),
-            )}
-          />
-        </>
-      )} */}
     </div>
   );
 }

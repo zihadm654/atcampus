@@ -458,7 +458,7 @@ export default function AdminDashboard() {
                                   onError(context) {
                                     toast.error(
                                       context.error.message ||
-                                        "Failed to unban user",
+                                      "Failed to unban user",
                                     );
                                     setIsLoading(undefined);
                                   },
