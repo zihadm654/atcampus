@@ -1,8 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { deleteUserAction } from "@/actions/delete-user.action";
-import { toast } from "sonner";
 
 import { siteConfig } from "@/config/site";
 import { Button } from "@/components/ui/button";
@@ -19,17 +17,17 @@ export function DeleteAccountSection({ userId }: DeleteUserButtonProps) {
     useDeleteAccountModal();
   const [isPending, setIsPending] = useState(false);
 
-  async function handleClick() {
-    setIsPending(true);
-    const res = await deleteUserAction({ userId });
+  // async function handleClick() {
+  //   setIsPending(true);
+  //   const res = await deleteUserAction({ userId });
 
-    if (res.error) {
-      toast.error(res.error);
-    } else {
-      toast.success("User deleted successfully");
-    }
-    setIsPending(false);
-  }
+  //   if (res.error) {
+  //     toast.error(res.error);
+  //   } else {
+  //     toast.success("User deleted successfully");
+  //   }
+  //   setIsPending(false);
+  // }
   return (
     <>
       <DeleteAccountModal />

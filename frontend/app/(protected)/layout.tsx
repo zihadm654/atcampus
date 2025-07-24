@@ -4,6 +4,7 @@ import { getCurrentUser } from "@/lib/session";
 import { DashboardSidebar } from "@/components/layout/dashboard-sidebar";
 import { NavBarServer } from "@/components/layout/navbar-server";
 import { SiteFooter } from "@/components/layout/site-footer";
+import { redirect } from "next/navigation";
 
 interface ProtectedLayoutProps {
   children: React.ReactNode;
@@ -11,7 +12,9 @@ interface ProtectedLayoutProps {
 
 export default async function Dashboard({ children }: ProtectedLayoutProps) {
   const user = await getCurrentUser();
-
+  if (!user) {
+    redirect("/login")
+  }
   const filteredLinks = menubar.map((section) => ({
     ...section,
     items: section.items.filter(

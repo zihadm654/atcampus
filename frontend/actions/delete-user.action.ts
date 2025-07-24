@@ -8,6 +8,7 @@ import { APIError } from "better-auth/api";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/session";
+import streamServerClient from "@/lib/stream";
 
 export async function deleteUserAction({ userId }: { userId: string }) {
   const headersList = await headers();
@@ -15,18 +16,22 @@ export async function deleteUserAction({ userId }: { userId: string }) {
   if (!session) throw new Error("Unauthorized");
 
   try {
-    await prisma.user.delete({
-      where: {
-        id: userId,
-      },
-    });
-
+    await Promise.all([
+      prisma.user.delete({
+        where: {
+          id: userId,
+        },
+      }),
+      // streamServerClient.deleteUser({
+      //   id: userId,
+      // }),
+    ]);
     if (session.id === userId) {
       await auth.api.signOut({ headers: headersList });
-      redirect("/sign-in");
+      redirect("/login");
     }
 
-    revalidatePath("/dashboard/admin");
+    revalidatePath("/dashboard");
     return { success: true, error: null };
   } catch (err) {
     if (err instanceof APIError) {

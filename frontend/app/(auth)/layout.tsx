@@ -13,6 +13,5 @@ export default async function AuthLayout({ children }: AuthLayoutProps) {
     if (user.role === "ADMIN") redirect("/admin");
     redirect("/admin");
   }
-
   return <div className="min-h-screen">{children}</div>;
 }
