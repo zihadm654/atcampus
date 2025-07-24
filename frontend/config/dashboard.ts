@@ -1,6 +1,5 @@
-// import { UserRole } from "@prisma/client";
-
 import { SidebarNavItem } from "@/types";
+import { UserRole } from "@prisma/client";
 
 export const sidebarLinks: SidebarNavItem[] = [
   {
@@ -10,45 +9,78 @@ export const sidebarLinks: SidebarNavItem[] = [
         href: "/admin",
         icon: "laptop",
         title: "Admin Panel",
-        // authorizeOnly: UserRole.ADMIN,
+        authorizeOnly: UserRole.ADMIN,
       },
-      { href: "/dashboard", icon: "dashboard", title: "Dashboard" },
+      { href: "/", icon: "home", title: "Feed" },
       {
-        href: "/dashboard/billing",
-        icon: "billing",
-        title: "Billing",
-        // authorizeOnly: UserRole.USER,
-      },
-      { href: "/dashboard/charts", icon: "lineChart", title: "Charts" },
-      {
-        href: "/admin/orders",
-        icon: "package",
-        title: "Orders",
-        badge: 2,
-        // authorizeOnly: UserRole.ADMIN,
+        href: "/courses",
+        icon: "bookOpen",
+        title: "Courses",
+        // authorizeOnly: UserRole.STUDENT,
       },
       {
-        href: "#/dashboard/posts",
-        icon: "post",
-        title: "User Posts",
-        // authorizeOnly: UserRole.USER,
-        disabled: true,
+        href: "/jobs",
+        icon: "job",
+        title: "Jobs",
+        // authorizeOnly: UserRole.STUDENT,
       },
     ],
   },
   {
-    title: "OPTIONS",
+    title: "OTHERS",
     items: [
-      { href: "/dashboard/settings", icon: "settings", title: "Settings" },
-      { href: "/", icon: "home", title: "Homepage" },
-      { href: "/docs", icon: "bookOpen", title: "Documentation" },
+      { href: "/bookmarks", icon: "package", title: "Settings" },
+      { href: "/saveJob", icon: "billing", title: "Saved Jobs" },
+      // {
+      //   href: "#",
+      //   icon: "messages",
+      //   title: "Support",
+      //   // authorizeOnly: UserRole.USER,
+      //   disabled: true,
+      // },
+    ],
+  },
+];
+export const menubar: SidebarNavItem[] = [
+  {
+    title: "MENU",
+    items: [
       {
-        href: "#",
-        icon: "messages",
-        title: "Support",
-        // authorizeOnly: UserRole.USER,
-        disabled: true,
+        href: "/connections",
+        icon: "users",
+        title: "Connections",
       },
+      // { href: "/", icon: "home", title: "Feed" },
+      {
+        href: "/courses",
+        icon: "bookOpen",
+        title: "Courses",
+      },
+      {
+        href: "/jobs",
+        icon: "job",
+        title: "Jobs",
+      },
+      {
+        href: "/researches",
+        icon: "research",
+        title: "Researches",
+      },
+    ],
+  },
+  {
+    title: "OTHERS",
+    items: [
+      { href: "/bookmarks", icon: "bookmark", title: "Saved Post" },
+      { href: "/savedJobs", icon: "bookMarked", title: "Saved Job" },
+      { href: "/savedResearches", icon: "research", title: "Saved Research" },
+      // {
+      //   href: "#",
+      //   icon: "messages",
+      //   title: "Support",
+      // authorizeOnly: UserRole.USER,
+      //   disabled: true,
+      // },
     ],
   },
 ];

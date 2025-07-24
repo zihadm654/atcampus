@@ -4,28 +4,27 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useSelectedLayoutSegment } from "next/navigation";
 import { Menu, X } from "lucide-react";
-// import { useSession } from "next-auth/react";
 
 // import { docsConfig } from "@/config/docs";
 import { marketingConfig } from "@/config/marketing";
 import { siteConfig } from "@/config/site";
+import { useSession } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
 import { Icons } from "@/components/shared/icons";
 
 import { ModeToggle } from "./mode-toggle";
 
 export function NavMobile() {
-  // const { data: session } = useSession();
+  const { data: session } = useSession();
   const [open, setOpen] = useState(false);
-  const selectedLayout = useSelectedLayoutSegment();
+  // const selectedLayout = useSelectedLayoutSegment();
   // const documentation = selectedLayout === "docs";
 
   const configMap = {
     // docs: docsConfig.mainNav,
   };
 
-  // const links =
-  //   (selectedLayout && configMap[selectedLayout]) || marketingConfig.mainNav;
+  const links = marketingConfig.mainNav;
 
   // prevent body scroll when modal is open
   useEffect(() => {
@@ -41,39 +40,41 @@ export function NavMobile() {
       <button
         onClick={() => setOpen(!open)}
         className={cn(
-          "fixed right-2 top-2.5 z-50 rounded-full p-2 transition-colors duration-200 hover:bg-muted focus:outline-hidden active:bg-muted md:hidden",
+          "hover:bg-muted active:bg-muted fixed top-2.5 right-2 z-50 rounded-full p-2 transition-colors duration-200 focus:outline-hidden md:hidden",
           open && "hover:bg-muted active:bg-muted",
         )}
       >
         {open ? (
-          <X className="size-5 text-muted-foreground" />
+          <X className="text-muted-foreground size-5" />
         ) : (
-          <Menu className="size-5 text-muted-foreground" />
+          <Menu className="text-muted-foreground size-5" />
         )}
       </button>
 
       <nav
         className={cn(
-          "fixed inset-0 z-20 hidden w-full overflow-auto bg-background px-5 py-16 lg:hidden",
+          "bg-background fixed inset-0 z-20 hidden w-full overflow-auto px-5 py-16 lg:hidden",
           open && "block",
         )}
       >
-        <ul className="grid divide-y divide-muted">
-          {/* {links && links.length > 0 && links.map(({ title, href }) => (
-            <li key={href} className="py-3">
-              <Link
-                href={href}
-                onClick={() => setOpen(false)}
-                className="flex w-full font-medium capitalize"
-              >
-                {title}
-              </Link>
-            </li>
-          ))} */}
+        <ul className="divide-muted grid divide-y">
+          {links &&
+            links.length > 0 &&
+            links.map(({ title, href }: any) => (
+              <li key={href} className="py-3">
+                <Link
+                  href={href}
+                  onClick={() => setOpen(false)}
+                  className="flex w-full font-medium capitalize"
+                >
+                  {title}
+                </Link>
+              </li>
+            ))}
 
-          {/* {session ? (
+          {session ? (
             <>
-              {session.user.role === "ADMIN" ? (
+              {session?.user.role === "INSTITUTION" ? (
                 <li className="py-3">
                   <Link
                     href="/admin"
@@ -95,7 +96,7 @@ export function NavMobile() {
                 </Link>
               </li>
             </>
-          ) : ( */}
+          ) : (
             <>
               <li className="py-3">
                 <Link
@@ -117,7 +118,7 @@ export function NavMobile() {
                 </Link>
               </li>
             </>
-          {/* )} */}
+          )}
         </ul>
 
         <div className="mt-5 flex items-center justify-end space-x-4">

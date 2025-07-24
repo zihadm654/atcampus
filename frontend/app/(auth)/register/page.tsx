@@ -1,15 +1,16 @@
-import Link from "next/link"
+import { Suspense } from "react";
+import Link from "next/link";
 
-import { cn } from "@/lib/utils"
-import { buttonVariants } from "@/components/ui/button"
-import { Icons } from "@/components/shared/icons"
-import { UserAuthForm } from "@/components/forms/user-auth-form"
-import { Suspense } from "react"
+import { cn } from "@/lib/utils";
+import { buttonVariants } from "@/components/ui/button";
+import { UserAuthForm } from "@/components/forms/user-register-form";
+import BlurImage from "@/components/shared/blur-image";
+import { Icons } from "@/components/shared/icons";
 
 export const metadata = {
   title: "Create an account",
   description: "Create an account to get started.",
-}
+};
 
 export default function RegisterPage() {
   return (
@@ -17,46 +18,52 @@ export default function RegisterPage() {
       <Link
         href="/login"
         className={cn(
-          buttonVariants({ variant: "ghost" }),
-          "absolute right-4 top-4 md:right-8 md:top-8"
+          buttonVariants({ variant: "outline", size: "sm" }),
+          "absolute top-4 right-4 md:top-8 md:right-8",
         )}
       >
         Login
+        <Icons.chevronRight className="mr-2 h-4 w-4" />
       </Link>
-      <div className="hidden h-full bg-muted lg:block" />
-      <div className="lg:p-8">
-        <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
-          <div className="flex flex-col space-y-2 text-center">
-            <Icons.logo className="mx-auto size-6" />
-            <h1 className="text-2xl font-semibold tracking-tight">
-              Create an account
-            </h1>
-            <p className="text-sm text-muted-foreground">
-              Enter your email below to create your account
-            </p>
-          </div>
+      <div className="bg-muted hidden h-full flex-col place-items-center items-center justify-center gap-2 lg:flex">
+        <BlurImage
+          src="/_static/logo1.png"
+          height={100}
+          width={100}
+          alt="logo"
+          className="place-items-center justify-center"
+        />
+        <h1 className="text-2xl font-semibold tracking-tight">
+          Create an account
+        </h1>
+        <p className="text-muted-foreground text-sm">
+          Enter your email below to create your account
+        </p>
+        <p className="text-muted-foreground px-8 text-center text-sm">
+          By clicking continue, you agree to our <br />
+          <Link
+            href="/terms"
+            className="hover:text-brand underline underline-offset-4"
+          >
+            Terms of Service
+          </Link>{" "}
+          and{" "}
+          <Link
+            href="/privacy"
+            className="hover:text-brand underline underline-offset-4"
+          >
+            Privacy Policy
+          </Link>
+          .
+        </p>
+      </div>
+      <div className="lg:p-6">
+        <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[40rem]">
           <Suspense>
-            <UserAuthForm type="register" />
+            <UserAuthForm />
           </Suspense>
-          <p className="px-8 text-center text-sm text-muted-foreground">
-            By clicking continue, you agree to our{" "}
-            <Link
-              href="/terms"
-              className="hover:text-brand underline underline-offset-4"
-            >
-              Terms of Service
-            </Link>{" "}
-            and{" "}
-            <Link
-              href="/privacy"
-              className="hover:text-brand underline underline-offset-4"
-            >
-              Privacy Policy
-            </Link>
-            .
-          </p>
         </div>
       </div>
     </div>
-  )
+  );
 }

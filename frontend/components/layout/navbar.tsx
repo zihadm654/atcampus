@@ -1,109 +1,126 @@
 "use client";
 
-import { useContext } from "react";
+import { Fragment } from "react";
+import Image from "next/image";
 import Link from "next/link";
-import { useSelectedLayoutSegment } from "next/navigation";
-// import { useSession } from "next-auth/react";
+import { usePathname } from "next/navigation";
 
 import { marketingConfig } from "@/config/marketing";
-import { siteConfig } from "@/config/site";
+import { useSession } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
 import { useScroll } from "@/hooks/use-scroll";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ModalContext } from "@/components/modals/providers";
 import { Icons } from "@/components/shared/icons";
 import MaxWidthWrapper from "@/components/shared/max-width-wrapper";
+
+import MessagesButton from "../feed/MessagesButton";
+import NotificationsButton from "../feed/NotificationsButton";
+import SearchField from "../feed/SearchField";
+import { UserAccountNav } from "./user-account-nav";
 
 interface NavBarProps {
   scroll?: boolean;
   large?: boolean;
+  initialNotificationCount: number;
+  initialMessageCount: number;
 }
 
-export function NavBar({ scroll = false }: NavBarProps) {
-  const scrolled = useScroll(50);
-  // const { data: session, status } = useSession();
-  const { setShowSignInModal } = useContext(ModalContext);
-
-  const selectedLayout = useSelectedLayoutSegment();
-
-  const configMap = {
-    // docs: docsConfig.mainNav,
-  };
+export function NavBar({
+  scroll = false,
+  initialNotificationCount,
+  initialMessageCount,
+}: NavBarProps) {
+  const scrolled = useScroll(75);
+  const { data: session } = useSession();
 
   const links = marketingConfig.mainNav;
+  const path = usePathname();
 
   return (
     <header
-      className={`sticky top-0 z-40 flex w-full justify-center bg-background/60 backdrop-blur-xl transition-all ${
+      className={`bg-background/60 sticky top-0 z-40 flex w-full justify-center backdrop-blur-xl transition-all ${
         scroll ? (scrolled ? "border-b" : "bg-transparent") : "border-b"
       }`}
     >
       <MaxWidthWrapper
-        className="flex h-14 items-center justify-between py-4"
+        className="grid grid-cols-3 gap-4 space-x-4 gap-y-0 pt-2 max-md:grid-cols-2 max-md:gap-2"
         // large={documentation}
       >
-        <div className="flex gap-6 md:gap-10">
-          <Link href="/" className="flex items-center space-x-1.5">
-            <Icons.logo />
-            <span className="font-urban text-xl font-bold">
-              {siteConfig.name}
-            </span>
+        <div className="flex items-center gap-2 md:gap-4">
+          <Link href="/" className="text-primary flex items-center space-x-2">
+            <Image
+              src="/_static/logo1.png"
+              alt="logo"
+              height={50}
+              width={50}
+              priority
+              className=""
+            />
           </Link>
-
-          {links && links.length > 0 ? (
-            <nav className="hidden gap-6 md:flex">
-              {links?.map((item, index) => (
-                <Link
-                  key={index}
-                  href={item.disabled ? "#" : item.href}
-                  prefetch={true}
-                  className={cn(
-                    "flex items-center text-lg font-medium transition-colors hover:text-foreground/80 sm:text-sm",
-                    item.href.startsWith(`/${selectedLayout}`)
-                      ? "text-foreground"
-                      : "text-foreground/60",
-                    item.disabled && "cursor-not-allowed opacity-80",
-                  )}
-                >
-                  {item.title}
-                </Link>
-              ))}
-            </nav>
-          ) : null}
+          <SearchField />
         </div>
-
-        <div className="flex items-center space-x-3">
-          {/* right header for docs */}
-
-          {/* {session ? (
-            <Link
-              href={session.user.role === "ADMIN" ? "/admin" : "/dashboard"}
-              className="hidden md:block"
-            >
+        {links && links.length > 0 ? (
+          <nav className="flex items-center justify-start gap-2 space-x-6 max-md:order-3 max-md:col-span-2 max-md:justify-around">
+            {links?.map((item) => {
+              const Icon = Icons[item.icon || "arrowRight"];
+              return (
+                <Fragment key={`link-fragment-${item.title}`}>
+                  <Link
+                    key={`link-${item.title}`}
+                    href={item.disabled ? "#" : item.href}
+                    prefetch={true}
+                    className={cn(
+                      "hover:bg-muted flex items-center gap-3 rounded-md p-2 text-sm font-medium",
+                      path === item.href
+                        ? "bg-muted border border-b-blue-700 text-blue-700"
+                        : "text-muted-foreground hover:text-accent-foreground",
+                      item.disabled &&
+                        "hover:text-muted-foreground cursor-not-allowed opacity-80 hover:bg-transparent",
+                    )}
+                  >
+                    <Icon className="size-6.5" />
+                    <span className="hidden lg:block">{item.title}</span>
+                  </Link>
+                </Fragment>
+              );
+            })}
+          </nav>
+        ) : null}
+        <div className="flex items-center justify-end space-x-2">
+          {/* right header for docs */}{" "}
+          {session?.user ? (
+            <>
+              <NotificationsButton
+                initialState={{ unreadCount: initialNotificationCount }}
+              />
+              <MessagesButton
+                initialState={{ unreadCount: initialMessageCount }}
+              />
+              <UserAccountNav />
+            </>
+          ) : !session ? (
+            <>
               <Button
-                className="gap-2 px-5"
+                className="hidden gap-2 px-5 md:flex"
                 variant="default"
                 size="sm"
                 rounded="full"
               >
-                <span>Dashboard</span>
+                <Link href="/login">Login</Link>
               </Button>
-            </Link>
-          ) : status === "unauthenticated" ? ( */}
-            <Button
-              className="hidden gap-2 px-5 md:flex"
-              variant="default"
-              size="sm"
-              // rounded="full"
-              onClick={() => setShowSignInModal(true)}
-            >
-              <span>Sign In</span>
-              <Icons.arrowRight className="size-4" />
-            </Button>
-          {/* ) : (
+              <Button
+                className="hidden gap-2 px-5 md:flex"
+                variant="default"
+                size="sm"
+                rounded="full"
+              >
+                <Link href="/register">Sign Up</Link>
+              </Button>
+            </>
+          ) : (
             <Skeleton className="hidden h-9 w-28 rounded-full lg:flex" />
-          )} */}
+          )}
         </div>
       </MaxWidthWrapper>
     </header>

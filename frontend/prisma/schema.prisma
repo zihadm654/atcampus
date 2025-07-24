@@ -1,0 +1,739 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  STUDENT
+  INSTITUTION
+  ORGANIZATION
+  PROFESSOR
+  ADMIN
+}
+
+enum UserStatus {
+  PENDING
+  ACTIVE
+  REJECTED
+}
+
+model Account {
+  id     String @id @default(cuid()) @map("_id")
+  userId String
+
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  accountId             String
+  providerId            String
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+
+  @@index([userId])
+  @@map(name: "accounts")
+}
+
+model Session {
+  id     String @id @default(cuid()) @map("_id")
+  userId String
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  expiresAt      DateTime
+  token          String
+  createdAt      DateTime
+  updatedAt      DateTime
+  ipAddress      String?
+  userAgent      String?
+  impersonatedBy String?
+
+  activeOrganizationId String?
+
+  @@unique([token])
+  @@index([userId])
+  @@map(name: "sessions")
+}
+
+model Verification {
+  id String @id @default(cuid()) @map("_id")
+
+  identifier String
+  value      String
+  expiresAt  DateTime
+
+  createdAt DateTime?
+  updatedAt DateTime?
+
+  @@index([identifier])
+  @@map("verifications")
+}
+
+model TwoFactor {
+  id          String @id @default(cuid()) @map("_id")
+  secret      String
+  backupCodes String
+  userId      String
+  user        User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([secret])
+  @@map("twoFactor")
+}
+
+model ProfessorProfile {
+  id                String   @id @default(cuid()) @map("_id")
+  title             String?
+  department        String?
+  office            String?
+  website           String?
+  researchInterests String[]
+  userId            String   @unique
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
+
+  faculties  Faculty[] @relation("ProfessorFaculties", fields: [facultyIds], references: [id])
+  facultyIds String[]
+
+  @@map(name: "professor_profiles")
+}
+
+model User {
+  id String @id @default(cuid()) @map("_id")
+
+  name             String
+  email            String     @unique
+  emailVerified    Boolean
+  image            String?
+  coverImage       String?
+  bio              String?
+  instituteId      String?
+  institution      String?
+  phone            String?
+  currentSeamster  Int?
+  role             UserRole
+  username         String?
+  displayUsername  String?
+  banned           Boolean?
+  banReason        String?
+  banExpires       DateTime?
+  twoFactorEnabled Boolean?
+  status           UserStatus @default(PENDING)
+
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
+
+  accounts                  Account[]
+  sessions                  Session[]
+  posts                     Post[]
+  comments                  Comment[]
+  likes                     Like[]
+  followers                 Follow[]               @relation("UserFollowers")
+  followings                Follow[]               @relation("UserFollowings")
+  block                     Block[]                @relation("BlocksSent")
+  blockBy                   Block[]                @relation("BlocksReceived")
+  receivedNotifications     Notification[]         @relation("Recipient")
+  issuedNotifications       Notification[]         @relation("Issuer")
+  bookmarks                 Bookmark[]
+  job                       Job[]
+  application               Application[]
+  research                  Research[]
+  saveJob                   SaveJob[]
+  saveResearch              SaveResearch[]
+  education                 Education[]
+  experience                Experience[]
+  courses                   Course[]               @relation("InstructorCourses")
+  enrollments               Enrollment[]           @relation("StudentEnrollments")
+  userSkills                UserSkill[]
+  skillEndorsements         SkillEndorsement[]
+  sentCollaborationRequests CollaborationRequest[] @relation("Requester")
+  collaboratedResearches    Research[]             @relation("ResearchCollaborators", fields: [collaboratedResearchIds], references: [id])
+  collaboratedResearchIds   String[]
+
+  members            Member[]
+  invitations        Invitation[]
+  twofactors         TwoFactor[]
+  schools            School[]
+  events             Event[]
+  clubs              Club[]
+  professorProfile   ProfessorProfile?
+  professorProfileId String?
+
+  @@unique([username])
+  @@map(name: "users")
+}
+
+model Skill {
+  id                String             @id @default(cuid()) @map("_id")
+  name              String             @unique
+  category          String? // Added category field
+  userSkills        UserSkill[]
+  skillEndorsements SkillEndorsement[]
+
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
+
+  @@map("skills")
+}
+
+model UserSkill {
+  id      String @id @default(cuid()) @map("_id")
+  userId  String
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  skillId String
+  skill   Skill  @relation(fields: [skillId], references: [id], onDelete: Cascade)
+
+  title             String
+  level             SkillLevel
+  yearsOfExperience Int
+  skillEndorsements SkillEndorsement[]
+
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
+
+  @@map("user_skills")
+}
+
+enum SkillLevel {
+  BEGINNER
+  INTERMEDIATE
+  EXPERT
+}
+
+model SkillEndorsement {
+  id          String    @id @default(cuid()) @map("_id")
+  userSkillId String
+  userSkill   UserSkill @relation(fields: [userSkillId], references: [id], onDelete: Cascade)
+  endorserId  String
+  endorser    User      @relation(fields: [endorserId], references: [id], onDelete: Cascade)
+  skillId     String
+  skill       Skill     @relation(fields: [skillId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
+
+  @@unique([userSkillId, endorserId])
+  @@map("skill_endorsements")
+}
+
+model Post {
+  id      String @id @default(cuid()) @map("_id")
+  content String
+
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+
+  comments            Comment[]
+  likes               Like[]
+  linkedNotifications Notification[]
+  attachments         Media[]
+  bookmarks           Bookmark[]
+
+  @@map(name: "posts")
+}
+
+model Bookmark {
+  id     String @id @default(cuid()) @map("_id")
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  postId String
+  post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
+
+  @@unique([userId, postId])
+  @@map(name: "bookmarks")
+}
+
+model Media {
+  id       String    @id @default(cuid()) @map("_id")
+  type     MediaType
+  url      String
+  fileKey  String?
+  fileSize Int?
+
+  postId     String?
+  post       Post?     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  job        Job?      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  jobId      String?
+  research   Research? @relation(fields: [researchId], references: [id])
+  researchId String?
+
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
+
+  @@map(name: "post_media")
+}
+
+enum MediaType {
+  IMAGE
+  VIDEO
+  PDF
+}
+
+model Comment {
+  id      String @id @default(cuid()) @map("_id")
+  content String
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  postId String // Changed to optional
+  post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade) // onDelete: Cascade is good here
+
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
+
+  @@map("comments")
+}
+
+model Like {
+  id String @id @default(cuid()) @map("_id")
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  postId String
+  post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
+
+  @@map(name: "likes")
+}
+
+model Follow {
+  id          String @id @default(cuid()) @map("_id")
+  followerId  String
+  follower    User   @relation("UserFollowings", fields: [followerId], references: [id], onDelete: Cascade)
+  followingId String
+  following   User   @relation("UserFollowers", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@unique([followerId, followingId])
+  @@map(name: "follows")
+}
+
+model Block {
+  id String @id @default(cuid()) @map("_id")
+
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
+  blocker   User     @relation("BlocksSent", fields: [blockerId], references: [id], onDelete: Cascade)
+  blockerId String
+  blocked   User     @relation("BlocksReceived", fields: [blockedId], references: [id], onDelete: Cascade)
+  blockedId String
+
+  @@unique([blockerId, blockedId])
+  @@map(name: "blocks")
+}
+
+model Job {
+  id              String   @id @default(cuid()) @map("_id")
+  title           String
+  description     String
+  summary         String
+  endDate         DateTime
+  weeklyHours     Int
+  requirements    String[]
+  salary          Float
+  location        String
+  type            String
+  experienceLevel String
+  duration        Int?
+
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+
+  linkedNotifications Notification[]
+  attachments         Media[]
+  application         Application[]
+  saveJob             SaveJob[]
+
+  @@map(name: "jobs")
+}
+
+enum ApplicationStatus {
+  pending
+  accepted
+  rejected
+}
+
+model Application {
+  id String @id @default(cuid()) @map("_id")
+
+  applicantId String
+  applicant   User   @relation(fields: [applicantId], references: [id])
+  jobId       String
+  job         Job    @relation(fields: [jobId], references: [id])
+
+  status ApplicationStatus @default(pending)
+
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
+
+  @@map(name: "applications")
+}
+
+model SaveJob {
+  id     String @id @default(cuid()) @map("_id")
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  job    Job    @relation(fields: [jobId], references: [id])
+  jobId  String
+
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
+
+  @@unique([userId, jobId])
+  @@map(name: "save_jobs")
+}
+
+model Research {
+  id String @id @default(cuid()) @map("_id")
+
+  title       String
+  description String
+
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+
+  linkedNotifications   Notification[]
+  attachments           Media[]
+  saveResearch          SaveResearch[]
+  collaborationRequests CollaborationRequest[] @relation("ResearchRequests")
+  collaborators         User[]                 @relation("ResearchCollaborators", fields: [collaboratorIds], references: [id])
+  collaboratorIds       String[]
+
+  @@map(name: "researches")
+}
+
+enum CollaborationStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+}
+
+model CollaborationRequest {
+  id          String              @id @default(cuid()) @map("_id")
+  researchId  String
+  requesterId String
+  research    Research            @relation("ResearchRequests", fields: [researchId], references: [id], onDelete: Cascade)
+  requester   User                @relation("Requester", fields: [requesterId], references: [id], onDelete: Cascade)
+  status      CollaborationStatus @default(PENDING)
+
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
+
+  @@map("collaboration_requests")
+}
+
+model SaveResearch {
+  id         String   @id @default(cuid()) @map("_id")
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  researchId String
+  research   Research @relation(fields: [researchId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
+
+  @@unique([userId, researchId])
+  @@map(name: "save_researches")
+}
+
+model Notification {
+  id          String           @id @default(cuid()) @map("_id")
+  recipientId String
+  recipient   User             @relation("Recipient", fields: [recipientId], references: [id], onDelete: Cascade)
+  issuerId    String
+  issuer      User             @relation("Issuer", fields: [issuerId], references: [id], onDelete: Cascade)
+  postId      String?
+  post        Post?            @relation(fields: [postId], references: [id], onDelete: Cascade)
+  job         Job?             @relation(fields: [jobId], references: [id])
+  jobId       String?
+  research    Research?        @relation(fields: [researchId], references: [id])
+  researchId  String?
+  type        NotificationType
+  read        Boolean          @default(false)
+
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
+
+  @@map(name: "notifications")
+}
+
+enum NotificationType {
+  LIKE
+  FOLLOW
+  COMMENT
+  POST
+  APPLICATION
+}
+
+model Education {
+  id String @id @default(cuid()) @map("_id")
+
+  institution String
+  degree      String
+  field       String
+  startDate   DateTime
+  endDate     DateTime?
+  grade       String?
+  description String?
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
+
+  @@map(name: "education")
+}
+
+model Experience {
+  id String @id @default(cuid()) @map("_id")
+
+  title       String
+  company     String
+  location    String?
+  type        String // Full-time, Part-time, Internship, etc.
+  startDate   DateTime
+  endDate     DateTime?
+  current     Boolean   @default(false)
+  description String?
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
+
+  @@map(name: "experiences")
+}
+
+model Course {
+  id String @id @default(cuid()) @map("_id")
+
+  title       String
+  description String
+  code        String
+  credits     Int?
+  level       String? // Undergraduate, Graduate, etc.
+  duration    Int? // in weeks
+  status      String  @default("draft") // draft, published, archived
+
+  facultyId    String?
+  faculty      Faculty? @relation("CoursePrimaryFaculty", fields: [facultyId], references: [id])
+  instructorId String
+  instructor   User     @relation("InstructorCourses", fields: [instructorId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
+
+  enrollments   Enrollment[]
+  announcements CourseAnnouncement[]
+  schoolId      String?
+  School        School?              @relation("SchoolCourses", fields: [schoolId], references: [id])
+  materials     CourseMaterial[]
+  faculties     Faculty[]            @relation("FacultyCourses", fields: [facultyIds], references: [id])
+  facultyIds    String[]
+
+  @@map(name: "courses")
+}
+
+model Enrollment {
+  id String @id @default(cuid()) @map("_id")
+
+  status   String  @default("enrolled") // enrolled, completed, dropped
+  progress Float   @default(0)
+  grade    String?
+
+  courseId  String
+  course    Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  studentId String
+  student   User   @relation("StudentEnrollments", fields: [studentId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
+
+  @@unique([courseId, studentId])
+  @@map(name: "enrollments")
+}
+
+model CourseAnnouncement {
+  id String @id @default(cuid()) @map("_id")
+
+  title    String
+  content  String
+  priority String? // normal, important, urgent
+
+  courseId String
+  course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
+
+  @@map(name: "course_announcements")
+}
+
+model CourseMaterial {
+  id String @id @default(cuid()) @map("_id")
+
+  title   String
+  type    String // document, video, link, etc.
+  content String?
+  fileUrl String?
+  order   Int     @default(0)
+
+  courseId String
+  course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
+
+  @@map(name: "course_materials")
+}
+
+model Organization {
+  id          String       @id @default(cuid()) @map("_id")
+  name        String
+  slug        String?
+  logo        String?
+  createdAt   DateTime
+  metadata    String?
+  members     Member[]
+  invitations Invitation[]
+
+  @@unique([slug])
+  @@map(name: "organization")
+}
+
+model Member {
+  id String @id @default(cuid()) @map("_id")
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  userId         String
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role           String
+  facultyId      String?
+  faculty        Faculty?     @relation(fields: [facultyId], references: [id], onDelete: Cascade)
+  // Faculty        Faculty[]    @relation("facultyMembers")
+
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
+
+  @@map(name: "member")
+}
+
+model Invitation {
+  id             String       @id @default(cuid()) @map("_id")
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  email          String
+  role           String?
+  status         String
+  expiresAt      DateTime
+  inviterId      String
+  user           User         @relation(fields: [inviterId], references: [id], onDelete: Cascade)
+
+  @@map(name: "invitation")
+}
+
+model School {
+  id          String  @id @default(cuid()) @map("_id")
+  name        String  @unique
+  slug        String? @unique
+  description String?
+  coverPhoto  String?
+  logo        String?
+  website     String?
+
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
+
+  instituteId String
+  institute   User   @relation(fields: [instituteId], references: [id], onDelete: Cascade)
+
+  faculties Faculty[] @relation("SchoolFaculties")
+  courses   Course[]  @relation("SchoolCourses")
+
+  @@index([name, slug])
+  @@map(name: "schools")
+}
+
+// Updated Faculty model
+model Faculty {
+  id             String             @id @default(cuid()) @map("_id")
+  name           String             @unique
+  professors     ProfessorProfile[] @relation("ProfessorFaculties", fields: [professorIds], references: [id])
+  professorIds   String[]
+  courses        Course[]           @relation("FacultyCourses", fields: [courseIds], references: [id])
+  courseIds      String[]
+  primaryCourses Course[]           @relation("CoursePrimaryFaculty")
+  slug           String?            @unique
+  description    String?
+  coverPhoto     String?
+  logo           String?
+
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
+
+  schoolId String
+  school   School   @relation("SchoolFaculties", fields: [schoolId], references: [id], onDelete: Cascade)
+  Member   Member[]
+
+  @@index([name, slug])
+  @@map(name: "faculties")
+}
+
+model Event {
+  id String @id @default(cuid()) @map("_id")
+
+  name        String
+  description String
+  startDate   DateTime
+  location    String
+  coverPhoto  String?
+
+  createdAt      DateTime @default(now()) @map(name: "created_at")
+  updatedAt      DateTime @updatedAt @map(name: "updated_at")
+  organizationId String
+  organization   User?    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@map(name: "events")
+}
+
+model Club {
+  id String @id @default(cuid()) @map("_id")
+
+  name        String
+  description String
+  coverPhoto  String?
+
+  createdAt      DateTime @default(now()) @map(name: "created_at")
+  updatedAt      DateTime @updatedAt @map(name: "updated_at")
+  organizationId String
+  organization   User?    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@map(name: "clubs")
+}

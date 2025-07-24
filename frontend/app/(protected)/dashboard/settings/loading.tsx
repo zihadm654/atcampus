@@ -3,7 +3,7 @@ import { SkeletonSection } from "@/components/shared/section-skeleton";
 
 export default function DashboardSettingsLoading() {
   return (
-    <>
+    <section className="flex flex-col items-center justify-center">
       <DashboardHeader
         heading="Settings"
         text="Manage account and website settings."
@@ -13,6 +13,6 @@ export default function DashboardSettingsLoading() {
         <SkeletonSection />
         <SkeletonSection card />
       </div>
-    </>
+    </section>
   );
 }

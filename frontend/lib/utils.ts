@@ -1,5 +1,6 @@
 import { Metadata } from "next";
 import { clsx, type ClassValue } from "clsx";
+import { format, formatDistanceToNowStrict } from "date-fns";
 // import ms from "ms";
 import { twMerge } from "tailwind-merge";
 
@@ -14,7 +15,7 @@ export function constructMetadata({
   title = siteConfig.name,
   description = siteConfig.description,
   image = siteConfig.ogImage,
-  icons = "/favicon.ico",
+  icons = "/_static/favicon.ico",
   noIndex = false,
 }: {
   title?: string;
@@ -30,19 +31,20 @@ export function constructMetadata({
       "Next.js",
       "React",
       "Prisma",
-      "Neon",
-      "Auth.js",
+      "MongoDB",
+      "Tailwind CSS",
+      "Better-auth",
       "shadcn ui",
-      "Resend",
-      "React Email",
-      "Stripe",
+      "Register",
+      "Login",
+      "atCampus",
     ],
     authors: [
       {
-        name: "mickasmt",
+        name: "zihadm654",
       },
     ],
-    creator: "mickasmt",
+    creator: "zihadm654",
     openGraph: {
       type: "website",
       locale: "en_US",
@@ -56,7 +58,7 @@ export function constructMetadata({
       title,
       description,
       images: [image],
-      creator: "@miickasmt",
+      creator: "@zihadm654",
     },
     icons,
     metadataBase: new URL(siteConfig.url),
@@ -69,15 +71,66 @@ export function constructMetadata({
     }),
   };
 }
-
-export function formatDate(input: string | number): string {
-  const date = new Date(input);
-  return date.toLocaleDateString("en-US", {
-    month: "long",
-    day: "numeric",
-    year: "numeric",
-  });
+export function formatRelativeDate(from: Date) {
+  const currentDate = new Date();
+  if (currentDate.getTime() - from.getTime() < 24 * 60 * 60 * 1000) {
+    return formatDistanceToNowStrict(from, { addSuffix: true });
+  } else {
+    if (currentDate.getFullYear() === from.getFullYear()) {
+      return formatDate(from, "MMM d");
+    } else {
+      return formatDate(from, "MMM d, yyyy");
+    }
+  }
 }
+
+export function formatNumber(n: number): string {
+  return Intl.NumberFormat("en-US", {
+    notation: "compact",
+    maximumFractionDigits: 1,
+  }).format(n);
+}
+
+export function slugify(input: string): string {
+  return input
+    .toLowerCase()
+    .replace(/ /g, "-")
+    .replace(/[^a-z0-9-]/g, "");
+}
+
+export const generateUsername = (name: string) => {
+  const nameParts = name.split(/\s+/);
+  const truncatedName = nameParts.slice(0, 5).join(" ");
+  const randomNumbers = Math.floor(1000 + Math.random() * 9000); // Generate a random 4-digit number
+  return `${truncatedName.replace(/\s+/g, "").toLowerCase()}${randomNumbers}`;
+};
+export const VALID_DOMAINS = () => {
+  const domains = ["gmail.com", "yahoo.com", "outlook.com"];
+
+  if (process.env.NODE_ENV === "development") {
+    domains.push("example.com");
+  }
+
+  return domains;
+};
+export function normalizeName(name: string) {
+  return name
+    .trim()
+    .replace(/\s+/g, " ")
+    .replace(/[^a-zA-Z\s'-]/g, "")
+    .replace(/\b\w/g, (char) => char.toUpperCase());
+}
+export function formatDate(date: Date, formatString: string): string {
+  return format(date, formatString);
+}
+// export function formatDate(from: Date, input: string | number): string {
+//   const date = new Date(input);
+//   return date.toLocaleDateString("en-US", {
+//     month: "long",
+//     day: "numeric",
+//     year: "numeric",
+//   });
+// }
 
 export function absoluteUrl(path: string) {
   return `${env.NEXT_PUBLIC_APP_URL}${path}`;
@@ -122,7 +175,7 @@ export const timeAgo = (timestamp: Date, timeOnly?: boolean): string => {
 
 export async function fetcher<JSON = any>(
   input: RequestInfo,
-  init?: RequestInit
+  init?: RequestInit,
 ): Promise<JSON> {
   const res = await fetch(input, init);
 
@@ -186,7 +239,7 @@ export const getBlurDataURL = async (url: string | null) => {
 
   try {
     const response = await fetch(
-      `https://wsrv.nl/?url=${url}&w=50&h=50&blur=5`
+      `https://wsrv.nl/?url=${url}&w=50&h=50&blur=5`,
     );
     const buffer = await response.arrayBuffer();
     const base64 = Buffer.from(buffer).toString("base64");

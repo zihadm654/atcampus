@@ -2,69 +2,113 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { LayoutDashboard, LogOut, Settings } from "lucide-react";
-// import { signOut, useSession } from "next-auth/react";
+import { redirect } from "next/navigation";
+import {
+  Check,
+  LayoutDashboard,
+  Lock,
+  LogOut,
+  Monitor,
+  Moon,
+  Settings,
+  Sun,
+} from "lucide-react";
+import { useTheme } from "next-themes";
+import { toast } from "sonner";
 import { Drawer } from "vaul";
 
+import { signOut, useSession } from "@/lib/auth-client";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuPortal,
   DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-// import { UserAvatar } from "@/components/shared/user-avatar";
+import { UserAvatar } from "@/components/shared/user-avatar";
 
 export function UserAccountNav() {
-  // const { data: session } = useSession();
-  // const user = session?.user;
+  const { data: session } = useSession();
+  const user = session?.user;
+
+  const [isPending, setIsPending] = useState(false);
+
+  async function handleClick() {
+    await signOut({
+      fetchOptions: {
+        onRequest: () => {
+          setIsPending(true);
+        },
+        onResponse: () => {
+          setIsPending(false);
+        },
+        onError: (ctx) => {
+          toast.error(ctx.error.message);
+        },
+        onSuccess: () => {
+          toast.success("You’ve logged out. See you soon!");
+          setIsPending(false);
+          redirect("/login");
+        },
+      },
+    });
+  }
 
   const [open, setOpen] = useState(false);
   const closeDrawer = () => {
     setOpen(false);
   };
+  const { theme, setTheme } = useTheme();
 
   const { isMobile } = useMediaQuery();
 
-  // if (!user)
-  //   return (
-  //     <div className="size-8 animate-pulse rounded-full border bg-muted" />
-  //   );
+  if (!user)
+    return (
+      <div className="bg-muted size-8 animate-pulse rounded-full border" />
+    );
 
   if (isMobile) {
     return (
       <Drawer.Root open={open} onClose={closeDrawer}>
         <Drawer.Trigger onClick={() => setOpen(true)}>
-          {/* <UserAvatar
-            user={{ name: user.name || null, image: user.image || null }}
+          <UserAvatar
+            user={{
+              name: user.name as string,
+              username: user.username || null,
+              image: user.image || null,
+            }}
             className="size-9 border"
-          /> */}
+          />
         </Drawer.Trigger>
         <Drawer.Portal>
           <Drawer.Overlay
-            className="fixed inset-0 z-40 h-full bg-background/80 backdrop-blur-xs"
+            className="bg-background/80 fixed inset-0 z-40 h-full backdrop-blur-xs"
             onClick={closeDrawer}
           />
-          <Drawer.Content className="fixed inset-x-0 bottom-0 z-50 mt-24 overflow-hidden rounded-t-[10px] border bg-background px-3 text-sm">
+          <Drawer.Content className="bg-background fixed inset-x-0 bottom-0 z-50 mt-24 overflow-hidden rounded-t-[10px] border px-3 text-sm">
             <div className="sticky top-0 z-20 flex w-full items-center justify-center bg-inherit">
-              <div className="my-3 h-1.5 w-16 rounded-full bg-muted-foreground/20" />
+              <div className="bg-muted-foreground/20 my-3 h-1.5 w-16 rounded-full" />
             </div>
 
             <div className="flex items-center justify-start gap-2 p-2">
               <div className="flex flex-col">
-                {/* {user.name && <p className="font-medium">{user.name}</p>}
+                {user.name && <p className="font-medium">{user.name}</p>}
                 {user.email && (
-                  <p className="w-[200px] truncate text-muted-foreground">
+                  <p className="text-muted-foreground w-[200px] truncate">
                     {user?.email}
                   </p>
-                )} */}
+                )}
               </div>
             </div>
 
-            <ul role="list" className="mb-14 mt-1 w-full text-muted-foreground">
-              {/* {user.role === "ADMIN" ? (
-                <li className="rounded-lg text-foreground hover:bg-muted">
+            <ul role="list" className="text-muted-foreground mt-1 mb-14 w-full">
+              {user.role === "ADMIN" ? (
+                <li className="text-foreground hover:bg-muted rounded-lg">
                   <Link
                     href="/admin"
                     onClick={closeDrawer}
@@ -74,20 +118,29 @@ export function UserAccountNav() {
                     <p className="text-sm">Admin</p>
                   </Link>
                 </li>
-              ) : null} */}
-
-              <li className="rounded-lg text-foreground hover:bg-muted">
+              ) : null}
+              <li className="text-foreground hover:bg-muted rounded-lg">
                 <Link
                   href="/dashboard"
                   onClick={closeDrawer}
                   className="flex w-full items-center gap-3 px-2.5 py-2"
                 >
-                  <LayoutDashboard className="size-4" />
+                  <Lock className="size-4" />
                   <p className="text-sm">Dashboard</p>
                 </Link>
               </li>
+              <li className="text-foreground hover:bg-muted rounded-lg">
+                <Link
+                  href={`/${user.username}`}
+                  onClick={closeDrawer}
+                  className="flex w-full items-center gap-3 px-2.5 py-2"
+                >
+                  <LayoutDashboard className="size-4" />
+                  <p className="text-sm">Profile</p>
+                </Link>
+              </li>
 
-              <li className="rounded-lg text-foreground hover:bg-muted">
+              <li className="text-foreground hover:bg-muted rounded-lg">
                 <Link
                   href="/dashboard/settings"
                   onClick={closeDrawer}
@@ -99,12 +152,9 @@ export function UserAccountNav() {
               </li>
 
               <li
-                className="rounded-lg text-foreground hover:bg-muted"
-                onClick={(event) => {
-                  event.preventDefault();
-                  // signOut({
-                  //   callbackUrl: `${window.location.origin}/`,
-                  // });
+                className="text-foreground hover:bg-muted rounded-lg"
+                onClick={() => {
+                  handleClick();
                 }}
               >
                 <div className="flex w-full items-center gap-3 px-2.5 py-2">
@@ -123,37 +173,49 @@ export function UserAccountNav() {
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger>
-        {/* <UserAvatar
-          user={{ name: user.name || null, image: user.image || null }}
+        <UserAvatar
+          user={{
+            name: user.name as string,
+            username: user.displayUsername || null,
+            image: user.image ?? null,
+          }}
           className="size-8 border"
-        /> */}
+        />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <div className="flex items-center justify-start gap-2 p-2">
           <div className="flex flex-col space-y-1 leading-none">
-            {/* {user.name && <p className="font-medium">{user.name}</p>}
+            {user.name && <p className="font-medium">{user.name}</p>}
             {user.email && (
-              <p className="w-[200px] truncate text-sm text-muted-foreground">
+              <p className="text-muted-foreground w-[200px] truncate text-sm">
                 {user?.email}
               </p>
-            )} */}
+            )}
           </div>
         </div>
         <DropdownMenuSeparator />
 
-        {/* {user.role === "ADMIN" ? (
+        {user.role === "ADMIN" ? (
           <DropdownMenuItem asChild>
             <Link href="/admin" className="flex items-center space-x-2.5">
               <Lock className="size-4" />
               <p className="text-sm">Admin</p>
             </Link>
           </DropdownMenuItem>
-        ) : null} */}
-
+        ) : null}
         <DropdownMenuItem asChild>
           <Link href="/dashboard" className="flex items-center space-x-2.5">
-            <LayoutDashboard className="size-4" />
+            <Lock className="size-4" />
             <p className="text-sm">Dashboard</p>
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link
+            href={`/${user.username}`}
+            className="flex items-center space-x-2.5"
+          >
+            <LayoutDashboard className="size-4" />
+            <p className="text-sm">Profile</p>
           </Link>
         </DropdownMenuItem>
 
@@ -166,14 +228,37 @@ export function UserAccountNav() {
             <p className="text-sm">Settings</p>
           </Link>
         </DropdownMenuItem>
+        <DropdownMenuSub>
+          <DropdownMenuSubTrigger>
+            <Monitor className="mr-2 size-4" />
+            Theme
+          </DropdownMenuSubTrigger>
+          <DropdownMenuPortal>
+            <DropdownMenuSubContent>
+              <DropdownMenuItem onClick={() => setTheme("system")}>
+                <Monitor className="mr-2 size-4" />
+                System default
+                {theme === "system" && <Check className="ms-2 size-4" />}
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setTheme("light")}>
+                <Sun className="mr-2 size-4" />
+                Light
+                {theme === "light" && <Check className="ms-2 size-4" />}
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setTheme("dark")}>
+                <Moon className="mr-2 size-4" />
+                Dark
+                {theme === "dark" && <Check className="ms-2 size-4" />}
+              </DropdownMenuItem>
+            </DropdownMenuSubContent>
+          </DropdownMenuPortal>
+        </DropdownMenuSub>
         <DropdownMenuSeparator />
         <DropdownMenuItem
           className="cursor-pointer"
           onSelect={(event) => {
             event.preventDefault();
-            // signOut({
-            //   callbackUrl: `${window.location.origin}/`,
-            // });
+            handleClick();
           }}
         >
           <div className="flex items-center space-x-2.5">
