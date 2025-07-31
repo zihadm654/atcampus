@@ -62,7 +62,7 @@ export default function ResearchFeed() {
   return (
     <Fragment>
       {/* Header with gradient background */}
-      <div className="rounded-xl bg-gradient-to-r from-blue-500/80 to-indigo-600/80 p-6 text-white shadow-md">
+      {/* <div className="rounded-xl bg-gradient-to-r from-blue-500/80 to-indigo-600/80 p-6 text-white shadow-md">
         <div className="flex flex-col gap-3">
           <div className="flex items-center gap-2">
             <Briefcase className="h-6 w-6" />
@@ -73,7 +73,6 @@ export default function ResearchFeed() {
             and enhance your skills while studying
           </p>
 
-          {/* Search bar */}
           <div className="mt-4 flex w-full max-w-md items-center gap-2 rounded-lg bg-white/10 p-1 backdrop-blur-sm">
             <div className="flex h-10 w-full items-center gap-2 rounded-md bg-white px-3 text-gray-800">
               <Search className="h-4 w-4 text-gray-500" />
@@ -86,7 +85,7 @@ export default function ResearchFeed() {
               />
             </div>
             <Button
-              onClick={() => {}}
+              onClick={() => { }}
               className="h-10 rounded-md hover:bg-blue-800"
               size="sm"
             >
@@ -94,9 +93,10 @@ export default function ResearchFeed() {
             </Button>
           </div>
         </div>
-      </div>
+      </div> */}
       {/* Filters */}
-      {/* <div className="flex items-center justify-between gap-2">
+      <div className="flex items-center justify-between gap-2">
+        {/* 
         <div className="flex flex-wrap items-center gap-2">
           <Button className="rounded-full" size="sm" variant="outline">
             All Jobs
@@ -113,11 +113,12 @@ export default function ResearchFeed() {
           <Button className="rounded-full" size="sm" variant="outline">
             Full-time
           </Button>
-        </div>
-        </div> */}
-      <Button className="rounded-xl" size="sm" variant="outline">
-        <Link href="/researches/createResearch">Create Research</Link>
-      </Button>
+          </div> */}
+        <h1 className="font-bold text-2xl">Research</h1>
+        <Button className="rounded-xl" size="sm" variant="outline">
+          <Link href="/researches/createResearch">Create Research</Link>
+        </Button>
+      </div>
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
         <InfiniteScrollContainer
           className="space-y-5"

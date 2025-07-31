@@ -9,8 +9,7 @@ import { Bookmark } from "lucide-react";
 import { SaveResearchInfo } from "@/types/types";
 import kyInstance from "@/lib/ky";
 import { cn } from "@/lib/utils";
-
-import { useToast } from "../ui/use-toast";
+import { toast } from "sonner";
 
 interface BookmarkButtonProps {
   researchId: string;
@@ -21,8 +20,6 @@ export default function SaveResearchButton({
   researchId,
   initialState,
 }: BookmarkButtonProps) {
-  const { toast } = useToast();
-
   const queryClient = useQueryClient();
 
   const queryKey: QueryKey = ["saveResearch-info", researchId];
@@ -43,9 +40,7 @@ export default function SaveResearchButton({
         ? kyInstance.delete(`/api/researches/${researchId}/saveResearch`)
         : kyInstance.post(`/api/researches/${researchId}/saveResearch`),
     onMutate: async () => {
-      toast({
-        description: `Research ${data.isSaveResearchByUser ? "un" : ""}saved`,
-      });
+      toast.success(`Research ${data.isSaveResearchByUser ? "un" : ""}saved`);
 
       await queryClient.cancelQueries({ queryKey });
 
@@ -61,10 +56,7 @@ export default function SaveResearchButton({
     onError(error, variables, context) {
       queryClient.setQueryData(queryKey, context?.previousState);
       console.error(error);
-      toast({
-        variant: "destructive",
-        description: "Something went wrong. Please try again.",
-      });
+      toast.error("Something went wrong. Please try again.");
     },
   });
 
@@ -73,7 +65,7 @@ export default function SaveResearchButton({
       <Bookmark
         className={cn(
           "size-5",
-          data.isSaveResearchByUser && "fill-primary text-primary",
+          data.isSaveResearchByUser && "fill-primary text-primary"
         )}
       />
     </button>

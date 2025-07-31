@@ -1,3 +1,4 @@
+"use client";
 import {
   QueryKey,
   useMutation,
@@ -9,8 +10,7 @@ import { Bookmark } from "lucide-react";
 import { BookmarkInfo } from "@/types/types";
 import kyInstance from "@/lib/ky";
 import { cn } from "@/lib/utils";
-
-import { useToast } from "../ui/use-toast";
+import { toast } from "sonner";
 
 interface BookmarkButtonProps {
   postId: string;
@@ -21,8 +21,6 @@ export default function BookmarkButton({
   postId,
   initialState,
 }: BookmarkButtonProps) {
-  const { toast } = useToast();
-
   const queryClient = useQueryClient();
 
   const queryKey: QueryKey = ["bookmark-info", postId];
@@ -41,9 +39,7 @@ export default function BookmarkButton({
         ? kyInstance.delete(`/api/posts/${postId}/bookmark`)
         : kyInstance.post(`/api/posts/${postId}/bookmark`),
     onMutate: async () => {
-      toast({
-        description: `Post ${data.isBookmarkedByUser ? "un" : ""}bookmarked`,
-      });
+      toast(`Post ${data.isBookmarkedByUser ? "un" : ""}bookmarked`);
 
       await queryClient.cancelQueries({ queryKey });
 
@@ -58,10 +54,7 @@ export default function BookmarkButton({
     onError(error, variables, context) {
       queryClient.setQueryData(queryKey, context?.previousState);
       console.error(error);
-      toast({
-        variant: "destructive",
-        description: "Something went wrong. Please try again.",
-      });
+      toast.error("Something went wrong. Please try again.");
     },
   });
 
@@ -70,7 +63,7 @@ export default function BookmarkButton({
       <Bookmark
         className={cn(
           "size-5",
-          data.isBookmarkedByUser && "fill-primary text-primary",
+          data.isBookmarkedByUser && "fill-primary text-primary"
         )}
       />
     </button>

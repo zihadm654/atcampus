@@ -8,11 +8,9 @@ import StarterKit from "@tiptap/starter-kit";
 import { useDropzone } from "@uploadthing/react";
 import {
   AlertCircle,
-  FileVideo,
   ImageIcon,
   Loader2,
   RefreshCw,
-  StickyNote,
   X,
 } from "lucide-react";
 import {
@@ -70,7 +68,7 @@ function AttachmentPreview({
           />
         ) : isVideo ? (
           <div className="bg-muted flex h-full w-full items-center justify-center">
-            <FileVideo className="text-muted-foreground h-8 w-8" />
+            <Icons.video className="text-muted-foreground h-8 w-8" />
           </div>
         ) : null}
 
@@ -201,8 +199,8 @@ export default function PostEditor() {
   );
 
   return (
-    <div className="bg-card flex flex-col gap-5 rounded-2xl p-5 shadow-sm">
-      <div className="flex gap-5">
+    <div className="bg-card flex flex-col gap-3 rounded-2xl p-3 shadow-sm">
+      <div className="flex gap-3">
         <UserAvatar
           avatarUrl={user?.image}
           className="hidden sm:inline"
@@ -245,7 +243,7 @@ export default function PostEditor() {
             </div>
           )}
 
-          <div className="mt-5 flex items-center justify-between">
+          <div className="mt-2 flex items-center justify-between">
             <Button
               type="button"
               variant="ghost"
@@ -255,7 +253,7 @@ export default function PostEditor() {
               }
               disabled={isUploading}
             >
-              <ImageIcon className="size-6" />
+              <Icons.media className="size-5.5 text-green-500 " />
               <span>Photos</span>
             </Button>
             <Button
@@ -267,7 +265,7 @@ export default function PostEditor() {
               }
               disabled={isUploading}
             >
-              <Icons.media className="size-6" />
+              <Icons.video className="size-6 text-red-500" />
               <span>Videos</span>
             </Button>
 

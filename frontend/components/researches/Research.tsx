@@ -1,12 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { ShieldCheck } from "lucide-react";
+import { Calendar, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 
 import { ResearchData } from "@/types/types";
 import { useSession } from "@/lib/auth-client";
-import { formatRelativeDate } from "@/lib/utils";
+import { formatDate, formatRelativeDate } from "@/lib/utils";
 
 import { UserAvatar } from "../shared/user-avatar";
 import { Button } from "../ui/button";
@@ -35,9 +35,6 @@ export default function Research({ research }: ResearchProps) {
   };
   return (
     <article className="group/post bg-card relative space-y-3 rounded-2xl p-5 shadow-sm">
-      {/* Color strip at top */}
-      <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-blue-400 to-indigo-500"></div>
-
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <UserTooltip user={research.user}>
@@ -60,7 +57,7 @@ export default function Research({ research }: ResearchProps) {
               className="text-muted-foreground block text-sm hover:underline"
               suppressHydrationWarning
             >
-              {/* <span className="text-black">@{research.user.username}</span>{" "} */}
+              <span className="text-black">@{research.user.username}</span>{" "}
               {formatRelativeDate(research.createdAt)}
             </Link>
           </div>
@@ -69,9 +66,15 @@ export default function Research({ research }: ResearchProps) {
           <ResearchMoreButton research={research} />
         )}
       </div>
-      <h3 className="text-xl font-semibold">
-        <Link href={`/researches/${research.id}`}>{research.title}</Link>
-      </h3>
+      <Link href={`/researches/${research.id}`}>
+        <h3 className="text-xl font-semibold">{research.title}</h3>
+        {research.collaborators.length > 0 && (
+          <p className="text-muted-foreground text-sm">
+            Collaborators:{" "}
+            {research.collaborators.map((c) => c.name).join(", ")}
+          </p>
+        )}
+      </Link>
       <hr className="text-muted-foreground" />
       <div className="flex justify-between gap-5">
         {research.user.id !== user.id && (
@@ -82,14 +85,14 @@ export default function Research({ research }: ResearchProps) {
             {research.collaborators.some((c) => c.id === user.id) &&
             research.collaborationRequests.some((c) => c.id === user.id)
               ? "Already Requested"
-              : "Request Collaboration"}
+              : "Request Collaborate"}
           </Button>
         )}
         <SaveResearchButton
           researchId={research.id}
           initialState={{
             isSaveResearchByUser: research.saveResearch.some(
-              (bookmark) => bookmark.userId === user.id,
+              (bookmark) => bookmark.userId === user.id
             ),
           }}
         />

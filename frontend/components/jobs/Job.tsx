@@ -37,7 +37,7 @@ export default function Job({ job }: JobProps) {
   return (
     <article className="group/post bg-card relative space-y-3 rounded-2xl border p-5 shadow-sm">
       {/* Department badge */}
-      <div className="absolute top-1 right-1 rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700">
+      <div className="absolute top-0 right-0 rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700">
         Profile match
       </div>
       <div className="flex items-center justify-between gap-3">
@@ -70,26 +70,26 @@ export default function Job({ job }: JobProps) {
         {job.user.id === user.id && <JobMoreButton job={job} />}
       </div>
       <Link href={`/jobs/${job.id}`}>
-        <h3 className="text-xl font-semibold">{job.title}</h3>
-        <p>{job.summary}</p>
+        <h3 className="text-2xl font-semibold">{job.title}</h3>
+        <p className="py-2">{job.summary}</p>
         <div className="flex items-center space-x-4">
           <div className="flex items-center gap-1.5">
             <MapPin className="size-4 text-gray-500" />
             <span>{job.location}</span>
           </div>
-          {/* Job type badge */}
-          <Badge className="bg-primary/10 text-primary text-sm font-medium">
-            {job.type}
-          </Badge>
-        </div>
-        <div className="grid grid-cols-2 gap-1">
           <h4 className="flex items-center gap-1">
             <Clock className="size-4 text-gray-500" />
             <span>{job.weeklyHours} hrs/week</span>
           </h4>
+        </div>
+        <div className="grid grid-cols-2 gap-1">
           <h4 className="flex items-center gap-1">
             Salary: <span>${job.salary}</span>
           </h4>
+          {/* Job type badge */}
+          <Badge className="bg-primary/10 text-primary text-sm font-medium">
+            {job.type}
+          </Badge>
         </div>
         <div className="flex items-center gap-1 px-1 py-1">
           <Calendar className="size-4" />

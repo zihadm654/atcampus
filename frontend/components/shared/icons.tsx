@@ -42,6 +42,7 @@ import {
   Users,
   X,
   Zap,
+  Video
 } from "lucide-react";
 
 export type Icon = LucideIcon;
@@ -156,4 +157,5 @@ export const Icons = {
   card: IdCard,
   event: Calendar1,
   info: ShieldQuestion,
+  video: Video
 };

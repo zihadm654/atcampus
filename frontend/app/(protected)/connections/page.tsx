@@ -32,7 +32,7 @@ async function Connections() {
   });
   // console.log(connections, "connections"); // You might want to keep or remove this for debugging
   return (
-    <div className="w-full space-y-5 rounded-2xl p-2 shadow-sm">
+    <div className="w-full space-y-5 rounded-2xl p-2 px-4 shadow-sm">
       <h1 className="text-xl font-bold">Following</h1> {/* Updated Title */}
       <div className="grid grid-cols-3 gap-4 rounded-2xl max-md:grid-cols-2">
         {connections?.map(
@@ -45,7 +45,7 @@ async function Connections() {
                 width={50}
                 height={50}
                 alt={connectionUser.name}
-                className="h-44 w-full rounded-xl object-cover"
+                className="h-36 w-full object-cover"
               />
               <CardContent className="max-md:px-3">
                 <UserTooltip user={connectionUser}>

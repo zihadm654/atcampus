@@ -1,3 +1,4 @@
+"use client";
 import {
   QueryKey,
   useMutation,
@@ -11,7 +12,7 @@ import kyInstance from "@/lib/ky";
 import { cn } from "@/lib/utils";
 
 import { Button } from "../ui/button";
-import { useToast } from "../ui/use-toast";
+import { toast } from "sonner";
 
 interface BookmarkButtonProps {
   jobId: string;
@@ -22,8 +23,6 @@ export default function SaveJobButton({
   jobId,
   initialState,
 }: BookmarkButtonProps) {
-  const { toast } = useToast();
-
   const queryClient = useQueryClient();
 
   const queryKey: QueryKey = ["saveJob-info", jobId];
@@ -42,9 +41,7 @@ export default function SaveJobButton({
         ? kyInstance.delete(`/api/jobs/${jobId}/saveJob`)
         : kyInstance.post(`/api/jobs/${jobId}/saveJob`),
     onMutate: async () => {
-      toast({
-        description: `Job ${data.isSaveJobByUser ? "un" : ""}saved`,
-      });
+      toast(`Job ${data.isSaveJobByUser ? "un" : ""}saved`);
 
       await queryClient.cancelQueries({ queryKey });
 
@@ -59,10 +56,7 @@ export default function SaveJobButton({
     onError(error, variables, context) {
       queryClient.setQueryData(queryKey, context?.previousState);
       console.error(error);
-      toast({
-        variant: "destructive",
-        description: "Something went wrong. Please try again.",
-      });
+      toast.error("Something went wrong. Please try again.");
     },
   });
 
@@ -75,7 +69,7 @@ export default function SaveJobButton({
       <Bookmark
         className={cn(
           "size-5",
-          data.isSaveJobByUser && "fill-primary text-primary",
+          data.isSaveJobByUser && "fill-primary text-primary"
         )}
       />
       Later

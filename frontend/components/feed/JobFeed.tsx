@@ -15,11 +15,11 @@ import Job from "../jobs/Job";
 import JobsLoadingSkeleton from "../jobs/JobsLoadingSkeleton";
 import { Button } from "../ui/button";
 
-interface Props {
-  user: any;
+interface Props<T> {
+  user: T;
 }
 
-export default function JobFeed({ user }: Props) {
+export default function JobFeed<T>({ user }: Props<T>) {
   const [searchQuery, setSearchQuery] = useState("");
   const [jobTypes, setJobTypes] = useState<JobType[]>([]);
 
@@ -52,7 +52,7 @@ export default function JobFeed({ user }: Props) {
 
   const handleJobTypeFilter = (type: JobType) => {
     setJobTypes((prev) =>
-      prev.includes(type) ? prev.filter((t) => t !== type) : [...prev, type],
+      prev.includes(type) ? prev.filter((t) => t !== type) : [...prev, type]
     );
   };
   if (status === "pending") {
@@ -77,7 +77,7 @@ export default function JobFeed({ user }: Props) {
   return (
     <div>
       {/* Header with gradient background */}
-      <div className="rounded-xl bg-gradient-to-r from-blue-500/80 to-indigo-600/80 p-6 text-white shadow-md">
+      {/* <div className="rounded-xl bg-gradient-to-r from-blue-500/80 to-indigo-600/80 p-6 text-white shadow-md">
         <div className="flex flex-col gap-3">
           <div className="flex items-center gap-2">
             <Briefcase className="h-6 w-6" />
@@ -88,7 +88,6 @@ export default function JobFeed({ user }: Props) {
             enhance your skills while studying
           </p>
 
-          {/* Search bar */}
           <div className="mt-4 flex w-full max-w-md items-center gap-2 rounded-lg bg-white/10 p-1 backdrop-blur-sm">
             <div className="flex h-10 w-full items-center gap-2 rounded-md bg-white px-3 text-gray-800">
               <Search className="h-4 w-4 text-gray-500" />
@@ -103,16 +102,16 @@ export default function JobFeed({ user }: Props) {
             <Button
               className="h-10 rounded-md hover:bg-blue-800"
               size="sm"
-              onClick={() => {}}
+              onClick={() => { }}
             >
               Search
             </Button>
           </div>
         </div>
-      </div>
+      </div> */}
 
       {/* Filters */}
-      <div className="flex items-center justify-between gap-2 p-2">
+      {/* <div className="flex items-center justify-between gap-2 p-2">
         <div className="flex flex-wrap items-center gap-2 group-hover:cursor-pointer">
           <Button
             className="rounded-full"
@@ -125,24 +124,24 @@ export default function JobFeed({ user }: Props) {
           <Button
             className="rounded-full"
             size="sm"
-            // variant={jobTypes.includes("PARTTIME") ? "default" : "outline"}
-            // onClick={() => handleJobTypeFilter("REMOTE")}
+          // variant={jobTypes.includes("PARTTIME") ? "default" : "outline"}
+          // onClick={() => handleJobTypeFilter("REMOTE")}
           >
             Remote
           </Button>
           <Button
             className="rounded-full"
             size="sm"
-            // variant={jobTypes.includes("PART_TIME") ? "default" : "outline"}
-            // onClick={() => handleJobTypeFilter("PART_TIME")}
+          // variant={jobTypes.includes("PART_TIME") ? "default" : "outline"}
+          // onClick={() => handleJobTypeFilter("PART_TIME")}
           >
             Part-time
           </Button>
           <Button
             className="rounded-full"
             size="sm"
-            // variant={jobTypes.includes("FULL_TIME") ? "default" : "outline"}
-            // onClick={() => handleJobTypeFilter("FULL_TIME")}
+          // variant={jobTypes.includes("FULL_TIME") ? "default" : "outline"}
+          // onClick={() => handleJobTypeFilter("FULL_TIME")}
           >
             Full-time
           </Button>
@@ -152,7 +151,8 @@ export default function JobFeed({ user }: Props) {
             <Link href="/jobs/createJob">Create Job</Link>
           </Button>
         ) : null}
-      </div>
+      </div> */}
+      <h1 className="text-3xl font-bold pb-4">Jobs</h1>
 
       <InfiniteScrollContainer
         className="grid grid-cols-3 gap-4 space-y-5 max-md:grid-cols-1"

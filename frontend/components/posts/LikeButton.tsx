@@ -1,3 +1,4 @@
+"use client";
 import {
   QueryKey,
   useMutation,
@@ -9,8 +10,7 @@ import { Heart } from "lucide-react";
 import { LikeInfo } from "@/types/types";
 import kyInstance from "@/lib/ky";
 import { cn } from "@/lib/utils";
-
-import { useToast } from "../ui/use-toast";
+import { toast } from "sonner";
 
 interface LikeButtonProps {
   postId: string;
@@ -18,8 +18,6 @@ interface LikeButtonProps {
 }
 
 export default function LikeButton({ postId, initialState }: LikeButtonProps) {
-  const { toast } = useToast();
-
   const queryClient = useQueryClient();
 
   const queryKey: QueryKey = ["like-info", postId];
@@ -53,10 +51,7 @@ export default function LikeButton({ postId, initialState }: LikeButtonProps) {
     onError(error, variables, context) {
       queryClient.setQueryData(queryKey, context?.previousState);
       console.error(error);
-      toast({
-        variant: "destructive",
-        description: "Something went wrong. Please try again.",
-      });
+      toast.error("Something went wrong. Please try again.");
     },
   });
 
@@ -65,7 +60,7 @@ export default function LikeButton({ postId, initialState }: LikeButtonProps) {
       <Heart
         className={cn(
           "size-5",
-          data.isLikedByUser && "fill-red-500 text-red-500",
+          data.isLikedByUser && "fill-red-500 text-red-500"
         )}
       />
       <span className="text-sm font-medium tabular-nums">

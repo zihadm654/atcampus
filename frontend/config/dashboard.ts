@@ -69,7 +69,7 @@ export const menubar: SidebarNavItem[] = [
     ],
   },
   {
-    title: "OTHERS",
+    title: "Later",
     items: [
       { href: "/bookmarks", icon: "bookmark", title: "Saved Post" },
       { href: "/savedJobs", icon: "bookMarked", title: "Saved Job" },

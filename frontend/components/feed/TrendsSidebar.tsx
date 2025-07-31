@@ -10,10 +10,11 @@ import { formatNumber } from "@/lib/utils";
 
 import UserTooltip from "../UserTooltip";
 import FollowButton from "./FollowButton";
+import UserAvatar from "../UserAvatar";
 
 export default function TrendsSidebar() {
   return (
-    <div className="sticky top-[5.25rem] hidden h-fit w-72 flex-none space-y-5 md:block lg:w-80">
+    <div className="sticky top-[4.5rem] hidden h-fit w-72 flex-none space-y-5 md:block lg:w-80">
       <Suspense fallback={<Loader2 className="mx-auto animate-spin" />}>
         <WhoToFollow />
         <TrendingTopics />
@@ -52,6 +53,11 @@ async function WhoToFollow() {
               href={`/${user.username}`}
               className="flex items-center gap-3"
             >
+              <UserAvatar
+                avatarUrl={user.image}
+                className="hidden sm:inline"
+                size={40}
+              />
               <div>
                 <p className="line-clamp-1 font-semibold break-all hover:underline">
                   {user.name}

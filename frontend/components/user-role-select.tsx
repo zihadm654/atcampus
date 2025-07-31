@@ -2,14 +2,14 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import type { UserRole } from "@prisma/client";
+import { UserRole } from "@prisma/client";
 import { toast } from "sonner";
 
 import { admin } from "@/lib/auth-client";
 
 interface UserRoleSelectProps {
   userId: string;
-  role: UserRole;
+  role: string;
 }
 
 export const UserRoleSelect = ({ userId, role }: UserRoleSelectProps) => {
@@ -31,7 +31,7 @@ export const UserRoleSelect = ({ userId, role }: UserRoleSelectProps) => {
 
     await admin.setRole({
       userId,
-      role: newRole as "STUDENT" | "PROFESSOR" | "INSTITUTION" | "ORGANIZATION",
+      role: newRole as UserRole,
       fetchOptions: {
         onRequest: () => {
           setIsPending(true);
@@ -57,9 +57,11 @@ export const UserRoleSelect = ({ userId, role }: UserRoleSelectProps) => {
       disabled={role === "ADMIN" || isPending}
       className="p-1 text-sm disabled:cursor-not-allowed disabled:opacity-50"
     >
-      <option value="STUDENT">STUDENT</option>
-      <option value="INSTITUTION">INSTITUTION</option>
-      <option value="ORGANIZATION">ORGANIZATION</option>
+      {Object.values(UserRole).map((item) => (
+        <option className="dark:bg-accent" key={item} value={item}>
+          {item}
+        </option>
+      ))}
     </select>
   );
 };

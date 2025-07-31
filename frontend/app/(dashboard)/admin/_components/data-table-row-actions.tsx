@@ -14,6 +14,11 @@ import {
   DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { updateStatusAction } from "@/actions/update-status.action";
+import { UserRole, UserStatus } from "@prisma/client";
+import { admin } from "@/lib/auth-client";
+import { useQueryClient } from "@tanstack/react-query";
+import { RefreshCw, Trash, UserCircle } from "lucide-react";
 
 interface DataTableRowActionsProps<TData> {
   row: Row<TData>;
@@ -22,26 +27,46 @@ interface DataTableRowActionsProps<TData> {
 export function DataTableRowActions<TData>({
   row,
 }: DataTableRowActionsProps<TData>) {
-  // const task = taskSchema.parse(row.original);
   const router = useRouter();
+  const queryClient = useQueryClient();
 
-  //delete hotel and image
-  const handleDeleteListing = async (id: string, imageString: string) => {
-    const getImageKey = (src: string) =>
-      src.substring(src.lastIndexOf("/") + 1);
+  const handleDeleteUser = async (id: string) => {
+    // setIsLoading(`delete-${id}`);
     try {
-      const imageKey = getImageKey(imageString);
-      // const res = await imgRemove(imageKey);
-      // if (res.status === 401) {
-      //   toast.success("image removed successfully");
-      // }
-      // await deleteBanner(id);
-      // setIsHotelDeleting(false);
-      toast.success("banner deleted successfully");
-    } catch (error) {
-      console.log(error);
-      toast.error("Error deleting product");
-      // setIsHotelDeleting(false);
+      await Promise.all([admin.removeUser({ userId: id })]);
+      toast.success("User deleted successfully");
+      queryClient.invalidateQueries({
+        queryKey: ["users"],
+      });
+    } catch (error: any) {
+      toast.error(error.message || "Failed to delete user");
+    } finally {
+      // setIsLoading(undefined);
+    }
+  };
+
+  const handleRevokeSessions = async (id: string) => {
+    // setIsLoading(`revoke-${id}`);
+    try {
+      await admin.revokeUserSessions({ userId: id });
+      toast.success("Sessions revoked for user");
+    } catch (error: any) {
+      toast.error(error.message || "Failed to revoke sessions");
+    } finally {
+      // setIsLoading(undefined);
+    }
+  };
+
+  const handleImpersonateUser = async (id: string) => {
+    // setIsLoading(`impersonate-${id}`);
+    try {
+      await admin.impersonateUser({ userId: id });
+      toast.success("Impersonated user");
+      router.push("/dashboard");
+    } catch (error: any) {
+      toast.error(error.message || "Failed to impersonate user");
+    } finally {
+      // setIsLoading(undefined);
     }
   };
   return (
@@ -56,19 +81,59 @@ export function DataTableRowActions<TData>({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-[160px]">
+        {row.getValue("role") === UserRole.ORGANIZATION && (
+          <>
+            <span className="text-gray-500 pl-3">Change Status</span>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              onClick={async () => {
+                await updateStatusAction(row.getValue("id"), UserStatus.ACTIVE);
+                toast.success("User status updated to ACTIVE");
+              }}
+            >
+              Approve
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={async () => {
+                await updateStatusAction(
+                  row.getValue("id"),
+                  UserStatus.PENDING
+                );
+                toast.success("User status updated to pending");
+              }}
+            >
+              Pending
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={async () => {
+                await updateStatusAction(
+                  row.getValue("id"),
+                  UserStatus.REJECTED
+                );
+                toast.success("User status updated to REJECTED");
+              }}
+            >
+              Reject
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+          </>
+        )}
         <DropdownMenuItem
           onClick={() => router.push(`/admin/banner/${row.getValue("id")}`)}
         >
           Edit
         </DropdownMenuItem>
-        <DropdownMenuItem>Make a copy</DropdownMenuItem>
-        <DropdownMenuItem>Favorite</DropdownMenuItem>
-        <DropdownMenuSeparator />
         <DropdownMenuItem
-          onClick={() =>
-            handleDeleteListing(row.getValue("id"), row.getValue("imageString"))
-          }
+          onClick={() => handleImpersonateUser(row.getValue("id"))}
         >
+          <UserCircle className="h-4 w-4" /> Impersonate
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          onClick={() => handleRevokeSessions(row.getValue("id"))}
+        >
+          <RefreshCw className="h-4 w-4" /> Revoke
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => handleDeleteUser(row.getValue("id"))}>
           Delete
           <DropdownMenuShortcut>⌘⌫</DropdownMenuShortcut>
         </DropdownMenuItem>

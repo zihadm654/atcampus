@@ -69,7 +69,9 @@ export default function AssignFacultyDialog({
       await assignMemberToFaculty(member.id, values.facultyId);
 
       // Invalidate relevant queries
-      await queryClient.invalidateQueries({ queryKey: ["professors", values.facultyId] });
+      await queryClient.invalidateQueries({
+        queryKey: ["professors", values.facultyId],
+      });
 
       toast({
         title: "Success!",

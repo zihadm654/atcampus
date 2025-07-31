@@ -12,7 +12,7 @@ const ProfileCard = () => {
   if (!user?.id) return null;
 
   return (
-    <Card className="py-2">
+    <Card className="border-0 shadow-none py-1">
       <CardContent className="flex items-center justify-start gap-2">
         <UserAvatar avatarUrl={user.image ?? null} size={40} />
         <div className="hidden lg:block">
