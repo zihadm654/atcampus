@@ -34,7 +34,7 @@ export default function Research({ research }: ResearchProps) {
     }
   };
   return (
-    <article className="group/post bg-card relative space-y-3 rounded-2xl p-5 shadow-sm">
+    <article className="group/post bg-card relative space-y-3 rounded-2xl p-5 shadow-sm border">
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <UserTooltip user={research.user}>
@@ -57,7 +57,7 @@ export default function Research({ research }: ResearchProps) {
               className="text-muted-foreground block text-sm hover:underline"
               suppressHydrationWarning
             >
-              <span className="text-black">@{research.user.username}</span>{" "}
+              <span>@{research.user.username}</span>{" "}
               {formatRelativeDate(research.createdAt)}
             </Link>
           </div>

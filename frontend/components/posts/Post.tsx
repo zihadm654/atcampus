@@ -30,7 +30,7 @@ export default function Post({ post }: PostProps) {
   }
   const [showComments, setShowComments] = useState(false);
   return (
-    <article className="group/post bg-card space-y-3 rounded-2xl p-5 shadow-sm">
+    <article className="group/post bg-card space-y-3 rounded-2xl p-5 shadow-sm border">
       <div className="flex justify-between gap-3">
         <div className="flex flex-wrap gap-3">
           <UserTooltip user={post.user}>
@@ -59,7 +59,7 @@ export default function Post({ post }: PostProps) {
         {post.user.id === user.id && (
           <PostMoreButton
             post={post}
-          // className="opacity-0 transition-opacity group-hover/post:opacity-100"
+            // className="opacity-0 transition-opacity group-hover/post:opacity-100"
           />
         )}
       </div>
@@ -88,7 +88,7 @@ export default function Post({ post }: PostProps) {
           postId={post.id}
           initialState={{
             isBookmarkedByUser: post.bookmarks.some(
-              (bookmark) => bookmark.userId === user.id,
+              (bookmark) => bookmark.userId === user.id
             ),
           }}
         />
@@ -107,7 +107,7 @@ function MediaPreviews({ attachments }: MediaPreviewsProps) {
     <div
       className={cn(
         "flex flex-col gap-3",
-        attachments.length > 1 && "sm:grid sm:grid-cols-2",
+        attachments.length > 1 && "sm:grid sm:grid-cols-2"
       )}
     >
       {attachments.map((m) => (

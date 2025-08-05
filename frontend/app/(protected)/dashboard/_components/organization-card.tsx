@@ -49,7 +49,7 @@ export function OrganizationCard(props: {
 }) {
   const organizations = useListOrganizations();
   const [optimisticOrg, setOptimisticOrg] = useState<ActiveOrganization | null>(
-    props.activeOrganization,
+    props.activeOrganization
   );
   const [isRevoking, setIsRevoking] = useState<string[]>([]);
   const inviteVariants = {
@@ -62,7 +62,7 @@ export function OrganizationCard(props: {
   const session = data || props.session;
 
   const currentMember = optimisticOrg?.members.find(
-    (member) => member.userId === session?.user.id,
+    (member) => member.userId === session?.user.id
   );
 
   return (
@@ -241,18 +241,18 @@ export function OrganizationCard(props: {
                                 },
                                 onSuccess: () => {
                                   toast.message(
-                                    "Invitation revoked successfully",
+                                    "Invitation revoked successfully"
                                   );
                                   setIsRevoking(
                                     isRevoking.filter(
-                                      (id) => id !== invitation.id,
-                                    ),
+                                      (id) => id !== invitation.id
+                                    )
                                   );
                                   setOptimisticOrg({
                                     ...optimisticOrg,
                                     invitations:
                                       optimisticOrg?.invitations.filter(
-                                        (inv) => inv.id !== invitation.id,
+                                        (inv) => inv.id !== invitation.id
                                       ),
                                   });
                                 },
@@ -260,11 +260,11 @@ export function OrganizationCard(props: {
                                   toast.error(ctx.error.message);
                                   setIsRevoking(
                                     isRevoking.filter(
-                                      (id) => id !== invitation.id,
-                                    ),
+                                      (id) => id !== invitation.id
+                                    )
                                   );
                                 },
-                              },
+                              }
                             );
                           }}
                           size="sm"
@@ -286,9 +286,12 @@ export function OrganizationCard(props: {
                   ))}
               </AnimatePresence>
               {optimisticOrg?.invitations.length === 0 && (
-                <motion.p className="text-muted-foreground text-sm" initial={{ opacity: 0 }}
+                <motion.p
+                  className="text-muted-foreground text-sm"
+                  initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}>
+                  exit={{ opacity: 0 }}
+                >
                   No Active Invitations
                 </motion.p>
               )}
@@ -328,7 +331,8 @@ function CreateOrganizationDialog({ currentMember }) {
   const [avatarPreviewUrl, setAvatarPreviewUrl] = useState<string>("");
 
   // Defensive: handle undefined currentMember and currentMember.user
-  const userImage = currentMember && currentMember.user ? currentMember.user.image : undefined;
+  const userImage =
+    currentMember && currentMember.user ? currentMember.user.image : undefined;
 
   useEffect(() => {
     if (!isSlugEdited) {
@@ -357,7 +361,6 @@ function CreateOrganizationDialog({ currentMember }) {
       setLogo(null);
     }
   }, [open]);
-
 
   return (
     <Dialog onOpenChange={setOpen} open={open}>
@@ -426,7 +429,7 @@ function CreateOrganizationDialog({ currentMember }) {
                     toast.error(error.error.message);
                     setLoading(false);
                   },
-                },
+                }
               );
             }}
           >

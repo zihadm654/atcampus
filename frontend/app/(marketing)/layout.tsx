@@ -1,4 +1,3 @@
-
 import { menubar } from "@/config/dashboard";
 import { getCurrentUser } from "@/lib/session";
 import TrendsSidebar from "@/components/feed/TrendsSidebar";
@@ -18,10 +17,17 @@ export default async function MarketingLayout({
   const user = await getCurrentUser();
 
   if (!user) redirect("/login");
+  if (user.role === "ORGANIZATION" || user.role === "INSTITUTION") {
+    if (user.status === "PENDING") {
+      redirect("/pending-approval");
+    } else if (user.status === "REJECTED") {
+      redirect("/rejected-account");
+    }
+  }
   const filteredLinks = menubar.map((section) => ({
     ...section,
     items: section.items.filter(
-      ({ authorizeOnly }) => !authorizeOnly || authorizeOnly === user.role,
+      ({ authorizeOnly }) => !authorizeOnly || authorizeOnly === user.role
     ),
   }));
   return (

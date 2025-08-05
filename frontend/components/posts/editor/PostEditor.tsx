@@ -6,13 +6,7 @@ import Placeholder from "@tiptap/extension-placeholder";
 import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { useDropzone } from "@uploadthing/react";
-import {
-  AlertCircle,
-  ImageIcon,
-  Loader2,
-  RefreshCw,
-  X,
-} from "lucide-react";
+import { AlertCircle, ImageIcon, Loader2, RefreshCw, X } from "lucide-react";
 import {
   generateClientDropzoneAccept,
   generatePermittedFileTypes,
@@ -52,7 +46,7 @@ function AttachmentPreview({
         className={cn(
           "relative h-24 w-24 overflow-hidden rounded-lg border",
           attachment.error && "border-red-500",
-          attachment.isUploading && "border-muted",
+          attachment.isUploading && "border-muted"
         )}
       >
         {isImage && attachment.preview ? (
@@ -61,7 +55,7 @@ function AttachmentPreview({
             alt={attachment.file.name}
             className={cn(
               "h-full w-full object-cover transition-opacity",
-              attachment.isUploading && "opacity-50",
+              attachment.isUploading && "opacity-50"
             )}
             width={96}
             height={96}
@@ -132,13 +126,13 @@ export default function PostEditor() {
     (files: File[]) => {
       startUpload(files);
     },
-    [startUpload],
+    [startUpload]
   );
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: generateClientDropzoneAccept(
-      generatePermittedFileTypes(routeConfig).fileTypes,
+      generatePermittedFileTypes(routeConfig).fileTypes
     ),
     disabled: isUploading,
   });
@@ -155,6 +149,7 @@ export default function PostEditor() {
         placeholder: "share your thoughts...",
       }),
     ],
+    immediatelyRender: false,
   });
 
   editorRef.current = editor;
@@ -181,7 +176,7 @@ export default function PostEditor() {
           editorRef.current?.commands.clearContent();
           resetMediaUploads();
         },
-      },
+      }
     );
   }, [attachments, mutation, resetMediaUploads, getContent]);
 
@@ -195,7 +190,7 @@ export default function PostEditor() {
         startUpload(files);
       }
     },
-    [startUpload],
+    [startUpload]
   );
 
   return (
@@ -211,7 +206,7 @@ export default function PostEditor() {
             {...rootProps}
             className={cn(
               "relative rounded-2xl transition-colors",
-              isDragActive && "ring-primary ring-2 ring-offset-2",
+              isDragActive && "ring-primary ring-2 ring-offset-2"
             )}
           >
             <input {...getInputProps()} />
@@ -220,7 +215,7 @@ export default function PostEditor() {
               onPaste={onPaste}
               className={cn(
                 "bg-background max-h-[20rem] w-full overflow-y-auto rounded-2xl px-5 py-3",
-                isDragActive && "pointer-events-none opacity-50",
+                isDragActive && "pointer-events-none opacity-50"
               )}
             />
             {isDragActive && (
@@ -275,7 +270,7 @@ export default function PostEditor() {
               disabled={
                 !getContent().trim() &&
                 !attachments.some(
-                  (a) => !a.isUploading && !a.error && a.mediaId,
+                  (a) => !a.isUploading && !a.error && a.mediaId
                 )
               }
             >

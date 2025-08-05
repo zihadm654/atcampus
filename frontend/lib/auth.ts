@@ -23,29 +23,31 @@ import { ac, roles } from "@/lib/permissions";
 import { normalizeName, VALID_DOMAINS } from "@/lib/utils";
 
 import transporter from "./nodemailer";
+import { getActiveOrganization } from "@/actions/organizations";
+import VerifyEmail from "@/emails/verify-email";
 
 const options = {
   database: prismaAdapter(prisma, {
     provider: "mongodb",
   }),
   emailVerification: {
-    sendOnSignUp: true,
+    sendOnSignUp: false,
     expiresIn: 60 * 60,
     autoSignInAfterVerification: true,
     sendVerificationEmail: async ({ user, url }) => {
       const link = new URL(url);
       link.searchParams.set("callbackURL", "/verify");
-
-      await sendEmailAction({
+      await transporter.sendMail({
         to: user.email,
         subject: "Verify your email address",
-        meta: {
-          description:
-            "Please verify your email address to complete the registration process.",
-          link: String(link),
-        },
-      });
-    },
+        html: await render(
+          VerifyEmail({
+            username: user.name,
+            verifyUrl: String(link)
+          })
+        )
+      })
+    }
   },
   emailAndPassword: {
     enabled: true,
@@ -60,7 +62,7 @@ const options = {
       await transporter.sendMail({
         to: user.email,
         subject: "Reset your password",
-        htnl: await render(
+        html: await render(
           reactResetPasswordEmail({
             username: user.email,
             resetLink: url,
@@ -129,7 +131,19 @@ const options = {
         },
       },
     },
-
+    session: {
+      create: {
+        before: async (session) => {
+          const organization = await getActiveOrganization(session.userId)
+          return {
+            data: {
+              ...session,
+              activeOrganizationId: organization?.id
+            }
+          }
+        }
+      }
+    }
   },
   user: {
     additionalFields: {
@@ -147,7 +161,7 @@ const options = {
       },
       status: {
         type: ["PENDING", "ACTIVE", "REJECTED"],
-        input: true,
+        input: false,
       },
       phone: {
         type: "string",
@@ -193,6 +207,8 @@ const options = {
         const institution = user.role === "INSTITUTION";
         return institution;
       },
+      // Set invitation expiration to 30 days (in seconds)
+      invitationExpiresIn: 60 * 60 * 24 * 30,
       async sendInvitationEmail(data) {
         await transporter.sendMail({
           to: data.email,
@@ -279,5 +295,6 @@ export type ErrorCode = keyof typeof auth.$ERROR_CODES | "UNKNOWN";
 interface ExtendedUser extends User {
   role: "STUDENT" | "PROFESSOR" | "INSTITUTION" | "ORGANIZATION" | "ADMIN";
   status: "PENDING" | "ACTIVE" | "REJECTED";
+  username: string
   // ... other additional fields
 }
