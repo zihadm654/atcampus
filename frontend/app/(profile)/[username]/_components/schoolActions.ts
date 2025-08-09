@@ -120,17 +120,17 @@ export async function createFaculty(
         school: {
           connect: { id: validatedValues.schoolId },
         },
-        Member: {
+        member: {
           connect: { id: defaultMember.id },
         },
       },
       include: {
         professors: {
           include: {
-            user: true,
+            professor: true,
           },
         },
-        Member: true,
+        member: true,
         school: true,
       },
     });
@@ -193,14 +193,7 @@ export async function getProfessorsForFaculty(facultyId: string) {
       include: {
         professors: {
           include: {
-            user: {
-              select: {
-                id: true,
-                name: true,
-                image: true,
-                email: true,
-              },
-            },
+            professor: true
           },
         },
       },
@@ -252,7 +245,7 @@ export async function assignMemberToFaculty(
     // Create professor profile if it doesn't exist
     const professorProfile = await prisma.professorProfile.upsert({
       where: {
-        userId: member.userId,
+        professorId: member.userId,
       },
       update: {
         faculties: {
@@ -260,7 +253,7 @@ export async function assignMemberToFaculty(
         },
       },
       create: {
-        userId: member.userId,
+        professorId: member.userId,
         faculties: {
           connect: { id: facultyId },
         },
@@ -313,7 +306,7 @@ export async function getFacultyMembers(facultyId: string) {
     const faculty = await prisma.faculty.findUnique({
       where: { id: facultyId },
       include: {
-        Member: {
+        member: {
           where: {
             role: 'member',
           },
@@ -332,7 +325,7 @@ export async function getFacultyMembers(facultyId: string) {
       },
     });
 
-    return faculty?.Member || [];
+    return faculty?.member || [];
   } catch (error) {
     console.error('Error fetching faculty members:', error);
     throw error;
@@ -352,7 +345,7 @@ export async function removeProfessorFromFaculty(
     // Remove faculty connection from professor profile
     await prisma.professorProfile.update({
       where: {
-        userId: memberId,
+        professorId: memberId,
       },
       data: {
         faculties: {
@@ -390,17 +383,10 @@ export async function getFacultyDetails(facultyId: string) {
       include: {
         professors: {
           include: {
-            user: {
-              select: {
-                id: true,
-                name: true,
-                email: true,
-                image: true,
-              },
-            },
+            professor: true
           },
         },
-        Member: {
+        member: {
           include: {
             user: true,
           },

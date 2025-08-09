@@ -37,9 +37,17 @@ import {
   useDeleteSchoolMutation,
 } from "./schoolMutations";
 import UserPosts from "./UserPosts";
-import { Member, Job, Research, User, Faculty, ProfessorProfile, School } from "@prisma/client";
+import {
+  Member,
+  Job,
+  Research,
+  User,
+  Faculty,
+  ProfessorProfile,
+  School,
+} from "@prisma/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-
+import { useRouter } from "next/navigation";
 
 interface Props {
   user: User & {
@@ -69,8 +77,10 @@ export default function ProfileClient({
 }: any) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedSchool, setSelectedSchool] = useState(null);
-  const [isAssignFacultyDialogOpen, setIsAssignFacultyDialogOpen] = useState(false);
-  const [selectedMemberForFaculty, setSelectedMemberForFaculty] = useState<Member | null>(null);
+  const [isAssignFacultyDialogOpen, setIsAssignFacultyDialogOpen] =
+    useState(false);
+  const [selectedMemberForFaculty, setSelectedMemberForFaculty] =
+    useState<Member | null>(null);
 
   const deleteSchoolMutation = useDeleteSchoolMutation();
   const deleteFacultyMutation = useDeleteFacultyMutation();
@@ -92,6 +102,8 @@ export default function ProfileClient({
     setSelectedMemberForFaculty(member);
     setIsAssignFacultyDialogOpen(true);
   }
+  const router = useRouter()
+
   return (
     <Fragment>
       <EditSchoolDialog
@@ -139,11 +151,13 @@ export default function ProfileClient({
               >
                 {user.role === "INSTITUTION" ? (
                   <Fragment>
-                    <Icons.users className="size-5" /> <span className="hidden md:block">Clubs</span>
+                    <Icons.users className="size-5" />{" "}
+                    <span className="hidden md:block">Clubs</span>
                   </Fragment>
                 ) : (
                   <Fragment>
-                    <Icons.job className="size-5" /> <span className="hidden md:block">Job & Activities</span>
+                    <Icons.job className="size-5" />{" "}
+                    <span className="hidden md:block">Job & Activities</span>
                   </Fragment>
                 )}
               </TabsTrigger>
@@ -183,7 +197,6 @@ export default function ProfileClient({
           />
 
           <TabsContent value="overview" className="space-y-2 p-3">
-
             {user.role === "STUDENT" ? (
               <Fragment>
                 <div className="grid grid-cols-2 gap-2 max-md:grid-cols-1">
@@ -266,8 +279,9 @@ export default function ProfileClient({
                     </CardHeader>
                     <CardContent className="grid grid-cols-2 gap-2 max-md:grid-cols-1">
                       {jobs.length > 0 ? (
-                        jobs
-                          .map((item) => <JobComponent key={item.job.id} job={item.job} />)
+                        jobs.map((item) => (
+                          <JobComponent key={item.job.id} job={item.job} />
+                        ))
                       ) : (
                         <div className="flex flex-col items-center justify-center w-full">
                           <Icons.job className="size-10" />
@@ -312,62 +326,63 @@ export default function ProfileClient({
                   </Card>
                 </div>
               </Fragment>
-            ) :
-              user.role === "INSTITUTION" ? (
-                <Fragment>
-                  <div className="grid grid-cols-2 gap-2 max-md:grid-cols-1">
-                    <Card className="overflow-hidden rounded-xl border border-gray-100 shadow-sm transition-all hover:border-gray-200 hover:shadow">
-                      <CardHeader className="flex items-center justify-between pb-2">
-                        <CardTitle className="flex items-center text-lg font-medium">
-                          <Icons.users className="size-7 pr-2" />
-                          Members
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent className="pt-1">
-                        {user.members?.length > 0 ? (
-                          <div className="max-h-40 overflow-y-auto">
-                            <ul className="space-y-2">
-                              {user.members.map((member) => (
-                                <li key={member.id} className="flex items-center justify-between border p-2 rounded-md">
-                                  <div className="flex items-center space-x-2">
-                                    {/* <Avatar className="size-8">
+            ) : user.role === "INSTITUTION" ? (
+              <Fragment>
+                <div className="grid grid-cols-2 gap-2 max-md:grid-cols-1">
+                  <Card className="overflow-hidden rounded-xl border border-gray-100 shadow-sm transition-all hover:border-gray-200 hover:shadow">
+                    <CardHeader className="flex items-center justify-between pb-2">
+                      <CardTitle className="flex items-center text-lg font-medium">
+                        <Icons.users className="size-7 pr-2" />
+                        Members
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-1">
+                      {user.role === "member" && user.members?.length > 0 ? (
+                        <div className="max-h-40 overflow-y-auto">
+                          <ul className="space-y-2">
+                            {user.members.map((member) => (
+                              <li
+                                key={member.id}
+                                className="flex items-center justify-between border p-2 rounded-md"
+                              >
+                                <div className="flex items-center space-x-2">
+                                  {/* <Avatar className="size-8">
                                       <AvatarImage src={member.user.image || undefined} />
                                       <AvatarFallback>{member.user.name ? member.user.name[0] : '?'}</AvatarFallback>
                                     </Avatar> */}
-                                    <span> - {member.role}</span>
-                                  </div>
-                                  {member.role === 'owner' && (
-                                    <Button
-                                      variant="outline"
-                                      size="sm"
-                                      onClick={() => {
-                                        setSelectedMemberForFaculty(member);
-                                        setIsAssignFacultyDialogOpen(true);
-                                      }}
-                                    >
-                                      Assign to Faculty
-                                    </Button>
-                                  )}
-                                </li>
-                              ))}
-                            </ul>
+                                  <span> - {member.role}</span>
+                                </div>
+                                {member.role === "owner" && (
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => {
+                                      setSelectedMemberForFaculty(member);
+                                      setIsAssignFacultyDialogOpen(true);
+                                    }}
+                                  >
+                                    Assign to Faculty
+                                  </Button>
+                                )}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      ) : (
+                        <div className="flex h-28 items-center justify-center rounded-lg text-gray-500">
+                          <div className="flex flex-col items-center">
+                            <Icons.users className="size-10" />
+                            No members found
                           </div>
-                        ) : (
-                          <div className="flex h-28 items-center justify-center rounded-lg text-gray-500">
-                            <div className="flex flex-col items-center">
-                              <Icons.users className="size-10" />
-                              No members found
-                            </div>
-                          </div>
-                        )}
-                      </CardContent>
-                    </Card>
-                  </div>
-                </Fragment>
-              ) :
-                (
-                  <h1>you are the admin</h1>
-                )}
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </div>
+              </Fragment>
+            ) : (
+              <h1>you are the admin</h1>
+            )}
           </TabsContent>
           <TabsContent value="posts" className="mx-auto max-w-2xl p-6">
             <h2 className="mb-6 flex items-center text-xl font-medium">
@@ -397,7 +412,9 @@ export default function ProfileClient({
                 </CardHeader>
                 <CardContent className="grid grid-cols-3 gap-2 max-md:grid-cols-1">
                   {jobs.length > 0 ? (
-                    jobs.map((item) => <JobComponent key={item.job.id} job={item.job} />)
+                    jobs.map((item) => (
+                      <JobComponent key={item.job.id} job={item.job} />
+                    ))
                   ) : (
                     <div className="flex flex-col items-center">
                       <Icons.job className="size-10" />
@@ -422,25 +439,25 @@ export default function ProfileClient({
                 <CardHeader className="flex items-center justify-between pb-2">
                   <CardTitle className="flex items-center text-lg font-medium">
                     <Icons.school className="mr-3 size-5" />
-                    <span>Schools & Faculties</span>
+                    <h1 className="text-xl">Schools</h1>
                   </CardTitle>
-                  {user.role === "INSTITUTION" && loggedInUserId === user.id && (
-
-                    <CardAction>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="rounded-full text-amber-600 hover:bg-amber-50 hover:text-amber-800"
-                        onClick={() => {
-                          setSelectedSchool(null);
-                          setIsDialogOpen(true);
-                        }}
-                      >
-                        Add
-                        <Icons.add className="size-4" />
-                      </Button>
-                    </CardAction>
-                  )}
+                  {user.role === "INSTITUTION" &&
+                    loggedInUserId === user.id && (
+                      <CardAction>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="rounded-full text-amber-600 hover:bg-amber-50 hover:text-amber-800"
+                          onClick={() => {
+                            setSelectedSchool(null);
+                            setIsDialogOpen(true);
+                          }}
+                        >
+                          Add
+                          <Icons.add className="size-4" />
+                        </Button>
+                      </CardAction>
+                    )}
                 </CardHeader>
                 <CardContent className="grid gap-2 grid-cols-1 max-md:px-3">
                   {user.schools.map((school) => (
@@ -457,44 +474,53 @@ export default function ProfileClient({
                           // height={20}
                           // width={20}
                           />
-                          <h3 className="font-medium">{school.name}</h3>
-                        </div>
-                        {user.role === "INSTITUTION" && loggedInUserId === user.id && (
-
-                          <div className="m-2">
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button
-                                  variant="ghost"
-                                  className="flex h-8 w-8 p-0 data-[state=open]:bg-muted"
-                                >
-                                  <DotsHorizontalIcon className="size-5" />
-                                  <span className="sr-only">Open menu</span>
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent
-                                align="end"
-                                className="w-[160px]"
-                              >
-                                <DropdownMenuItem
-                                  onClick={() => handleEditSchool(school)}
-                                >
-                                  Edit
-                                </DropdownMenuItem>
-                                <DropdownMenuItem
-                                  onClick={() => handleDeleteSchool(school.id)}
-                                >
-                                  Delete
-                                </DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
+                          <div className="pl-4">
+                            <h2 className="font-medium text-2xl">{school.name}</h2>
+                            <p className="text-md text-gray-400">
+                              {school.description}
+                            </p>
+                            <Button
+                              type="button"
+                              className="mt-3 cursor-pointer"
+                              onClick={() => router.push(`/${user.username}/${school.id}`)}
+                            >View More</Button>
                           </div>
-                        )}
+                        </div>
+                        {user.role === "INSTITUTION" &&
+                          loggedInUserId === user.id && (
+                            <div className="m-2">
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    className="flex h-8 w-8 p-0 data-[state=open]:bg-muted"
+                                  >
+                                    <DotsHorizontalIcon className="size-5" />
+                                    <span className="sr-only">Open menu</span>
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent
+                                  align="end"
+                                  className="w-[160px]"
+                                >
+                                  <DropdownMenuItem
+                                    onClick={() => handleEditSchool(school)}
+                                  >
+                                    Edit
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem
+                                    onClick={() =>
+                                      handleDeleteSchool(school.id)
+                                    }
+                                  >
+                                    Delete
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </div>
+                          )}
                       </div>
-                      {/* <p className="text-md text-gray-400">
-                        {school.description}
-                      </p> */}
-                      <div className="mt-2">
+                      {/* <div className="mt-2">
                         <h4 className="font-medium text-gray-400">
                           Faculties:
                         </h4>
@@ -506,49 +532,56 @@ export default function ProfileClient({
                             >
                               <div className="flex items-center justify-between">
                                 <h4 className="text-lg">{faculty.name}</h4>
-                                {user.role === "INSTITUTION" && loggedInUserId === user.id && (
-                                  <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                      <Button
-                                        variant="ghost"
-                                        className="flex h-8 w-8 p-0 data-[state=open]:bg-muted"
+                                {user.role === "INSTITUTION" &&
+                                  loggedInUserId === user.id && (
+                                    <DropdownMenu>
+                                      <DropdownMenuTrigger asChild>
+                                        <Button
+                                          variant="ghost"
+                                          className="flex h-8 w-8 p-0 data-[state=open]:bg-muted"
+                                        >
+                                          <DotsHorizontalIcon className="size-5" />
+                                          <span className="sr-only">
+                                            Open menu
+                                          </span>
+                                        </Button>
+                                      </DropdownMenuTrigger>
+                                      <DropdownMenuContent
+                                        align="end"
+                                        className="w-[160px]"
                                       >
-                                        <DotsHorizontalIcon className="size-5" />
-                                        <span className="sr-only">Open menu</span>
-                                      </Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent
-                                      align="end"
-                                      className="w-[160px]"
-                                    >
-                                      <DropdownMenuItem
-                                      >Edit</DropdownMenuItem>
-                                      <DropdownMenuItem
-                                        onClick={() =>
-                                          handleDeleteFaculty(faculty.id)
-                                        }
-                                      >
-                                        Delete
-                                      </DropdownMenuItem>
-                                    </DropdownMenuContent>
-                                  </DropdownMenu>)}
+                                        <DropdownMenuItem>
+                                          Edit
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem
+                                          onClick={() =>
+                                            handleDeleteFaculty(faculty.id)
+                                          }
+                                        >
+                                          Delete
+                                        </DropdownMenuItem>
+                                      </DropdownMenuContent>
+                                    </DropdownMenu>
+                                  )}
                               </div>
-                              {/* <p className="text-gray-400">
-                              {faculty.description}
-                              </p> */}
+                              <p className="text-gray-400">
+                                {faculty.description}
+                              </p>
                               <ProfessorList facultyId={faculty.id} />
                             </div>
                           ))}
                         </div>
-                      </div>
+                      </div> */}
                     </div>
                   ))}
                 </CardContent>
               </Card>
             </div>
-            {user.professorProfile ?
-              (<FacultyList faculties={user.schools.flatMap(school => school.faculties)} />
-              ) : null}
+            {user.professorProfile ? (
+              <FacultyList
+                faculties={user.schools.flatMap((school) => school.faculties)}
+              />
+            ) : null}
           </TabsContent>
           <TabsContent value="research" className="p-3">
             <div className="grid grid-cols-1 gap-3">

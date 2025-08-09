@@ -27,16 +27,13 @@ export default function ProfessorList({ facultyId }: ProfessorListProps) {
       {professors && professors.length > 0 ? (
         <div className="space-y-2">
           {professors.map((professor) => (
-            <div
-              key={professor.id}
-              className="flex items-center gap-2 text-sm"
-            >
-              <UserAvatar
-                avatarUrl={professor.user.image}
+            <div key={professor.id} className="flex items-center gap-2 text-sm">
+              {/* <UserAvatar
+                avatarUrl={professor.professor.}
                 size={24}
                 className="rounded-full"
-              />
-              <span>{professor.user.name}</span>
+              /> */}
+              <span>{professor.title}</span>
             </div>
           ))}
         </div>

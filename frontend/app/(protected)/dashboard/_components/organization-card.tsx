@@ -367,7 +367,7 @@ function CreateOrganizationDialog({ currentMember }) {
       <DialogTrigger asChild>
         <Button className="w-full gap-2" size="sm" variant="default">
           <PlusIcon />
-          <p>New Organization</p>
+          <p className="hidden lg:block">New Organization</p>
         </Button>
       </DialogTrigger>
       <DialogContent className="w-11/12 sm:max-w-[425px]">
@@ -486,7 +486,6 @@ function InviteMemberDialog({
             <SelectContent>
               <SelectItem value="admin">Admin</SelectItem>
               <SelectItem value="member">Member</SelectItem>
-              <SelectItem value="PROFESSOR">Professor</SelectItem>
             </SelectContent>
           </Select>
         </div>

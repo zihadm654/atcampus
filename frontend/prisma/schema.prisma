@@ -47,10 +47,10 @@ model Account {
 }
 
 model Session {
-  id     String @id @default(cuid()) @map("_id")
-  userId String
+  id String @id @default(cuid()) @map("_id")
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   expiresAt      DateTime
   token          String
@@ -61,6 +61,7 @@ model Session {
   impersonatedBy String?
 
   activeOrganizationId String?
+  activeTeamId         String?
 
   @@unique([token])
   @@index([userId])
@@ -99,8 +100,8 @@ model ProfessorProfile {
   office            String?
   website           String?
   researchInterests String[]
-  userId            String   @unique
-  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  professorId       String   @unique
+  professor         Member   @relation(fields: [professorId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now()) @map(name: "created_at")
   updatedAt DateTime @updatedAt @map(name: "updated_at")
@@ -163,14 +164,13 @@ model User {
   collaboratedResearches    Research[]             @relation("ResearchCollaborators", fields: [collaboratedResearchIds], references: [id])
   collaboratedResearchIds   String[]
 
-  members            Member[]
-  invitations        Invitation[]
-  twofactors         TwoFactor[]
-  schools            School[]
-  events             Event[]
-  clubs              Club[]
-  professorProfile   ProfessorProfile?
-  professorProfileId String?
+  members     Member[]
+  invitations Invitation[]
+  twofactors  TwoFactor[]
+  schools     School[]
+  events      Event[]
+  clubs       Club[]
+  teamMember  TeamMember[]
 
   @@unique([username])
   @@map(name: "users")
@@ -613,6 +613,29 @@ model CourseMaterial {
   @@map(name: "course_materials")
 }
 
+// Optional teams models (enable with organization({ teams: true }))
+model Team {
+  id             String    @id @default(cuid()) @map("_id")
+  name           String
+  organizationId String
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime? @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  teamMembers  TeamMember[]
+}
+
+model TeamMember {
+  id     String @id @default(cuid()) @map("_id")
+  teamId String
+  userId String
+
+  createdAt DateTime @default(now())
+
+  team Team @relation(fields: [teamId], references: [id])
+  user User @relation(fields: [userId], references: [id])
+}
+
 model Organization {
   id          String       @id @default(cuid()) @map("_id")
   name        String
@@ -622,6 +645,7 @@ model Organization {
   metadata    String?
   members     Member[]
   invitations Invitation[]
+  team        Team[]
 
   @@unique([slug])
   @@map(name: "organization")
@@ -634,10 +658,11 @@ model Member {
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   userId         String
   user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  role           String
   facultyId      String?
   faculty        Faculty?     @relation(fields: [facultyId], references: [id], onDelete: Cascade)
-  // Faculty        Faculty[]    @relation("facultyMembers")
+
+  role             String
+  ProfessorProfile ProfessorProfile[]
 
   createdAt DateTime @default(now()) @map(name: "created_at")
   updatedAt DateTime @updatedAt @map(name: "updated_at")
@@ -654,7 +679,9 @@ model Invitation {
   status         String
   expiresAt      DateTime
   inviterId      String
-  user           User         @relation(fields: [inviterId], references: [id], onDelete: Cascade)
+  teamId         String?
+
+  user User @relation(fields: [inviterId], references: [id], onDelete: Cascade)
 
   @@map(name: "invitation")
 }
@@ -700,7 +727,7 @@ model Faculty {
 
   schoolId String
   school   School   @relation("SchoolFaculties", fields: [schoolId], references: [id], onDelete: Cascade)
-  Member   Member[]
+  member   Member[]
 
   @@index([name, slug])
   @@map(name: "faculties")

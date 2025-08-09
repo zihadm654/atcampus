@@ -161,7 +161,7 @@ const options = {
       },
       status: {
         type: ["PENDING", "ACTIVE", "REJECTED"],
-        input: false,
+        input: true,
       },
       phone: {
         type: "string",

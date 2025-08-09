@@ -226,7 +226,7 @@ async function UserProfile({ user, loggedInUserId }: UserProfileProps) {
           ) : null}
 
           {/* Education info with enhanced styling */}
-          {(user.institution || user.instituteId || user.currentSeamster) && (
+          {(user.institution || user.instituteId || user.currentSeamster) && user.role === "STUDENT" ? (
             <div className="flex flex-col gap-2 rounded-xl border border-gray-100 px-4 py-2 shadow-sm">
               <div className="mb-3 flex items-center">
                 <Icons.edu className="mr-2 size-6 text-green-600" />
@@ -278,6 +278,27 @@ async function UserProfile({ user, loggedInUserId }: UserProfileProps) {
                     </div>
                   </div>
                 ) : null}
+              </div>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-2 rounded-xl border border-gray-100 px-4 py-2 shadow-sm">
+              <div className="mb-3 flex items-center">
+                <Icons.edu className="mr-2 size-6 text-green-600" />
+                <h3 className="font-medium">Institution Info</h3>
+              </div>
+
+              <div className="space-y-1">
+                {user.institution && (
+                  <div className="flex items-center gap-2">
+                    <div className="rounded-lg p-2">
+                      <Icons.edu className="size-6 text-green-600" />
+                    </div>
+                    <div>
+                      <span className="font-medium">{user.institution}</span>
+                      <p className="text-sm">Institution</p>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           )}
