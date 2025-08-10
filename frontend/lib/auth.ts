@@ -115,7 +115,8 @@ const options = {
 
           if (
             newRole === "INSTITUTION" ||
-            newRole === "ORGANIZATION"
+            newRole === "ORGANIZATION" ||
+            newRole === "PROFESSOR"
           ) {
             user = { ...user, role: newRole, status: "PENDING" };
           } else {

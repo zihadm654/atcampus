@@ -10,10 +10,11 @@ export enum UserRole {
   STUDENT = "STUDENT",
   ORGANIZATION = "ORGANIZATION",
   INSTITUTION = "INSTITUTION",
+  PROFESSOR = "PROFESSOR"
 }
 
 export const registerSchema = z.object({
-  role: z.enum(["STUDENT", "ORGANIZATION", "INSTITUTION"], {
+  role: z.enum(["STUDENT", "ORGANIZATION", "INSTITUTION", "PROFESSOR"], {
     required_error: "You need to select a notification type.",
   }),
   instituteId: z.coerce.string().optional(),
