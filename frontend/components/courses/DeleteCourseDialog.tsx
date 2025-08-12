@@ -1,4 +1,4 @@
-import { PostData } from "@/types/types";
+import { CourseData } from "@/types/types";
 
 import LoadingButton from "../feed/LoadingButton";
 import { Button } from "../ui/button";
@@ -11,25 +11,25 @@ import {
   DialogTitle,
 } from "../ui/dialog";
 
-// import { useDeleteJobMutation } from "./mutations";
+import { useDeleteCourseMutation } from "./mutations";
 
-interface DeletePostDialogProps {
-  post: PostData;
+interface DeleteCourseDialogProps {
+  course: CourseData;
   open: boolean;
   onClose: () => void;
 }
 
-export default function DeletePostDialog({
-  post,
+export default function DeleteCourseDialog({
+  course,
   open,
   onClose,
-}: DeletePostDialogProps) {
-  // const mutation = useDeleteJobMutation();
+}: DeleteCourseDialogProps) {
+  const mutation = useDeleteCourseMutation();
 
   function handleOpenChange(open: boolean) {
-    // if (!open || !mutation.isPending) {
-    //   onClose();
-    // }
+    if (!open || !mutation.isPending) {
+      onClose();
+    }
   }
 
   return (
@@ -43,17 +43,17 @@ export default function DeletePostDialog({
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
-          {/* <LoadingButton
+          <LoadingButton
             variant="destructive"
-            onClick={() => mutation.mutate(job.id, { onSuccess: onClose })}
+            onClick={() => mutation.mutate(course.id, { onSuccess: onClose })}
             loading={mutation.isPending}
           >
             Delete
-          </LoadingButton> */}
+          </LoadingButton>
           <Button
             variant="outline"
             onClick={onClose}
-            // disabled={mutation.isPending}
+            disabled={mutation.isPending}
           >
             Cancel
           </Button>

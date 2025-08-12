@@ -112,15 +112,17 @@ const options = {
       create: {
         before: async (user: ExtendedUser) => {
           const newRole = user.role;
+          const validRoles = ["STUDENT", "PROFESSOR", "INSTITUTION", "ORGANIZATION", "ADMIN"];
+          const safeRole = validRoles.includes(newRole) ? newRole : "STUDENT";
 
           if (
-            newRole === "INSTITUTION" ||
-            newRole === "ORGANIZATION" ||
-            newRole === "PROFESSOR"
+            safeRole === "INSTITUTION" ||
+            safeRole === "ORGANIZATION" ||
+            safeRole === "PROFESSOR"
           ) {
-            user = { ...user, role: newRole, status: "PENDING" };
+            user = { ...user, role: safeRole, status: "PENDING" };
           } else {
-            user = { ...user, role: newRole, status: "ACTIVE" };
+            user = { ...user, role: safeRole, status: "ACTIVE" };
           }
 
           const ADMIN_EMAILS = process.env.ADMIN_EMAILS?.split(";") ?? [];
@@ -155,10 +157,12 @@ const options = {
       instituteId: {
         type: "string",
         input: true,
+        required: false
       },
       role: {
         type: ["STUDENT", "PROFESSOR", "INSTITUTION", "ORGANIZATION", "ADMIN"],
         input: true,
+        required: true
       },
       status: {
         type: ["PENDING", "ACTIVE", "REJECTED"],
@@ -167,6 +171,7 @@ const options = {
       phone: {
         type: "string",
         input: true,
+        required: false
       },
     },
   },

@@ -1,7 +1,9 @@
+"use client";
+
 import { useState } from "react";
 import { MoreHorizontal, Trash2 } from "lucide-react";
 
-import { CourseData } from "@/types/types";
+import { JobData } from "@/types/types";
 
 import { Button } from "../ui/button";
 import {
@@ -10,18 +12,14 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
+import DeleteJobDialog from "../jobs/DeleteJobDialog";
 
-import DeleteCourseDialog from "./DeleteCourseDialog";
-
-interface CourseMoreButtonProps {
-  course: CourseData;
+interface JobMoreButtonProps {
+  job: JobData;
   className?: string;
 }
 
-export default function CourseMoreButton({
-  course,
-  className,
-}: CourseMoreButtonProps) {
+export default function JobMoreButton({ job, className }: JobMoreButtonProps) {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   return (
@@ -41,8 +39,8 @@ export default function CourseMoreButton({
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
-      <DeleteCourseDialog
-        course={course}
+      <DeleteJobDialog
+        job={job}
         open={showDeleteDialog}
         onClose={() => setShowDeleteDialog(false)}
       />

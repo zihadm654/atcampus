@@ -69,7 +69,7 @@ export async function createJob(values: TJob) {
     return { success: false, error: (error as Error).message };
   }
 }
-export async function updateJob(values: TJob,jobId:string) {
+export async function updateJob(values: TJob, jobId: string) {
   try {
     const user = await getCurrentUser();
 
@@ -84,7 +84,7 @@ export async function updateJob(values: TJob,jobId:string) {
     }
 
     const job = await prisma.job.update({
-      where:{
+      where: {
         id: jobId
       },
       data: {

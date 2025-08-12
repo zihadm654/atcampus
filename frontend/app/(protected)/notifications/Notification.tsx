@@ -39,7 +39,12 @@ export default function Notification({ notification }: NotificationProps) {
     APPLICATION: {
       message: `${notification.issuer.displayUsername} applied job`,
       icon: <Heart className="size-7 fill-red-500 text-red-500" />,
-      href: `/jobs/${notification.postId}`,
+      href: `/jobs/${notification.jobId}`,
+    },
+    ENROLLMENT: {
+      message: `${notification.issuer.displayUsername} enrolled course`,
+      icon: <Heart className="size-7 fill-red-500 text-red-500" />,
+      href: `/courses/${notification.jobId}`,
     },
   };
 
@@ -50,7 +55,7 @@ export default function Notification({ notification }: NotificationProps) {
       <article
         className={cn(
           "bg-card hover:bg-card/70 flex gap-3 rounded-2xl p-5 shadow-sm transition-colors",
-          !notification.read && "bg-primary/10",
+          !notification.read && "bg-primary/10"
         )}
       >
         <div className="my-1">{icon}</div>

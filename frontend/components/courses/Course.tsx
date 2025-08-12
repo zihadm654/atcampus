@@ -1,176 +1,103 @@
 "use client";
 
-import { Suspense, useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
-import { Media } from "@prisma/client";
-import {
-  Calendar,
-  Clock,
-  DollarSign,
-  MapPin,
-  MessageSquare,
-} from "lucide-react";
+import { BookOpen, Clock, CreditCard, Users } from "lucide-react";
 
-import { JobData } from "@/types/types";
+import { Course as CourseType, Enrollment } from "@prisma/client";
 import { useSession } from "@/lib/auth-client";
 import { cn, formatRelativeDate } from "@/lib/utils";
 
 import Linkify from "../feed/Linkify";
-import JobMoreButton from "../jobs/JobMoreButton";
-import BookmarkButton from "../posts/BookmarkButton";
-import Comments from "../posts/comments/Comments";
-import LikeButton from "../posts/LikeButton";
-import BlurImage from "../shared/blur-image";
-import { UserAvatar } from "../shared/user-avatar";
+import CourseMoreButton from "./CourseMoreButton";
+import EnrollButton from "./EnrollButton";
 import UserTooltip from "../UserTooltip";
+import { UserAvatar } from "../shared/user-avatar";
 
-interface JobProps {
-  job: JobData;
+interface CourseProps {
+  course: CourseType & {
+    instructor: { username: string; image?: string };
+    faculty?: { name: string };
+    enrollments: Enrollment[];
+  };
 }
 
-export default function Job({ job }: JobProps) {
+export default function Course({ course }: any) {
   const { data: session } = useSession();
   const user = session?.user;
   if (!user) {
     return null;
   }
-  const [showComments, setShowComments] = useState(false);
   return (
     <article className="group/post bg-card relative space-y-3 rounded-2xl p-5 shadow-sm">
-      {/* Color strip at top */}
-      <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-blue-400 to-indigo-500"></div>
-
       {/* Department badge */}
-      <div className="absolute top-4 right-4 rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700">
-        Computer Science
+      <div className="absolute top-0 right-0 rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700">
+        Profile match
       </div>
       <div className="flex justify-between gap-3">
         <div className="flex flex-wrap gap-3">
-          <UserTooltip user={job.user}>
-            <Link href={`/${job.user.username}`}>
-              <UserAvatar user={job?.user} />
+          <UserTooltip user={course.instructor}>
+            <Link href={`/${course.instructor.username}`}>
+              <UserAvatar user={course.instructor} />
             </Link>
           </UserTooltip>
           <div>
-            <UserTooltip user={job?.user}>
+            <UserTooltip user={course.instructor}>
               <Link
-                href={`/${job.user.username}`}
+                href={`/${course.instructor.username}`}
                 className="block font-medium hover:underline"
               >
-                {job.user.username}
+                {course.instructor.username}
               </Link>
             </UserTooltip>
             <Link
-              href={`/posts/${job.id}`}
+              href={`/courses/${course.id}`}
               className="text-muted-foreground block text-sm hover:underline"
               suppressHydrationWarning
             >
-              {formatRelativeDate(job.createdAt)}
+              {formatRelativeDate(course.createdAt)}
             </Link>
           </div>
         </div>
-        {job.user.id === user.id && (
-          <JobMoreButton
-            job={job}
-            // className="opacity-0 transition-opacity group-hover/post:opacity-100"
-          />
+        {course.instructorId === user.id && (
+          <CourseMoreButton course={course} />
         )}
       </div>
-      {/* Job type badge */}
       <div className="mb-3">
         <span className="bg-primary/10 text-primary inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium">
-          Part-time
+          {course.code}
         </span>
       </div>
-      <Linkify>
-        <div className="break-words whitespace-pre-line">{job.description}</div>
-      </Linkify>
-      {!!job.attachments.length && (
-        <MediaPreviews attachments={job.attachments} />
-      )}
-      {/* Details with icons */}
+      <h4>Faculty Name: {course.faculty?.name}</h4>
+      {/* <Linkify>
+        <div className="break-words whitespace-pre-line">
+          {course.description}
+        </div>
+      </Linkify> */}
       <div className="mt-auto grid grid-cols-1 gap-2 text-xs sm:grid-cols-3">
         <div className="flex items-center gap-1.5">
-          <MapPin className="h-3.5 w-3.5 text-gray-500" />
-          <span>On Campus</span>
+          <CreditCard className="h-3.5 w-3.5 text-gray-500" />
+          <span>{course.credits} credits</span>
         </div>
         <div className="flex items-center gap-1.5">
           <Clock className="h-3.5 w-3.5 text-gray-500" />
-          <span>10-15 hrs/week</span>
+          <span>{course.duration} weeks</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <DollarSign className="h-3.5 w-3.5 text-gray-500" />
-          <span>$15/hr</span>
+          <Users className="h-3.5 w-3.5 text-gray-500" />
+          <span>{course.level}</span>
         </div>
       </div>
       <div className="flex items-center gap-1.5 px-1 py-1">
-        <Calendar className="h-4 w-4" />
-        <span>Deadline: 2025-06-15</span>
+        <BookOpen className="h-4 w-4" />
+        <span>Prerequisites: {course.prerequisites.join(", ") || "None"}</span>
       </div>
       <hr className="text-muted-foreground" />
       <div className="flex justify-between gap-5">
-        <BookmarkButton
-          postId={job.id}
-          initialState={{
-            isBookmarkedByUser: job.saveJob.some(
-              (saveJob) => saveJob.userId === user.id,
-            ),
-          }}
+        <EnrollButton
+          courseId={course.id}
+          initialEnrolled={course.enrollments.length > 0}
         />
       </div>
     </article>
   );
-}
-
-interface MediaPreviewsProps {
-  attachments: Media[];
-}
-
-function MediaPreviews({ attachments }: MediaPreviewsProps) {
-  return (
-    <div
-      className={cn(
-        "flex flex-col gap-3",
-        attachments.length > 1 && "sm:grid sm:grid-cols-2",
-      )}
-    >
-      {attachments.map((m) => (
-        <MediaPreview key={m.id} media={m} />
-      ))}
-    </div>
-  );
-}
-
-interface MediaPreviewProps {
-  media: Media;
-}
-
-function MediaPreview({ media }: MediaPreviewProps) {
-  console.log(media.url, "url");
-  if (media.type === "IMAGE") {
-    return (
-      <BlurImage
-        src={media.url}
-        alt="Attachment"
-        width={500}
-        height={500}
-        className="mx-auto size-fit max-h-[30rem] rounded-2xl"
-      />
-    );
-  }
-
-  if (media.type === "VIDEO") {
-    return (
-      <div>
-        <video
-          src={media?.url}
-          controls
-          className="mx-auto size-fit max-h-[30rem] rounded-2xl"
-        />
-      </div>
-    );
-  }
-
-  return <p className="text-destructive">Unsupported media type</p>;
 }

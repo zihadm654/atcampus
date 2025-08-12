@@ -68,7 +68,7 @@ export function AvatarInput({ src, onImageCropped }: AvatarInputProps) {
       100,
       0,
       (uri) => setImageToCrop(uri as File),
-      "file",
+      "file"
     );
   }
 
@@ -137,7 +137,7 @@ function CoverImageInput({
       100,
       0,
       (uri) => setImageToCrop(uri as File),
-      "file",
+      "file"
     );
   }
 
@@ -266,7 +266,7 @@ export default function EditSchoolDialog({
       }
 
       const existingFacultyIds = new Set(
-        school?.faculties?.map((f: { id: any }) => f.id),
+        school?.faculties?.map((f: { id: any }) => f.id)
       );
       const mutations: Promise<any>[] = [];
 
@@ -279,7 +279,7 @@ export default function EditSchoolDialog({
               name: faculty.name,
               schoolId: savedSchool.id,
               description: faculty.description,
-            }),
+            })
           );
         } else {
           // Create new faculty
@@ -288,7 +288,7 @@ export default function EditSchoolDialog({
               name: faculty.name,
               schoolId: savedSchool.id,
               description: faculty.description,
-            }),
+            })
           );
         }
       }
@@ -296,7 +296,7 @@ export default function EditSchoolDialog({
       // Delete removed faculties
       const removedFaculties =
         school?.faculties?.filter(
-          (f: { id: any }) => !values.faculties.some((v) => v.id === f.id),
+          (f: { id: any }) => !values.faculties.some((v) => v.id === f.id)
         ) || [];
 
       for (const f of removedFaculties) {
@@ -371,7 +371,7 @@ export default function EditSchoolDialog({
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <h4 className="text-sm font-medium">Faculties</h4>
-                {/* <Button
+                <Button
                   type="button"
                   variant="outline"
                   size="sm"
@@ -379,7 +379,7 @@ export default function EditSchoolDialog({
                 >
                   <Icons.add className="mr-2 size-4" />
                   Add Faculty
-                </Button> */}
+                </Button>
               </div>
               {fields.map((field, index) => (
                 <div key={field.id} className="flex gap-4">

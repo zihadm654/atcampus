@@ -1,19 +1,19 @@
-'use client';
+"use client";
 
-import * as React from 'react';
-import { useRouter } from 'next/navigation';
-import { signUpEmailAction } from '@/actions/sign-up-email.action';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { Briefcase, GraduationCap, HomeIcon } from 'lucide-react';
-import { useForm } from 'react-hook-form';
-import { toast } from 'sonner';
+import * as React from "react";
+import { useRouter } from "next/navigation";
+import { signUpEmailAction } from "@/actions/sign-up-email.action";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Briefcase, GraduationCap, HomeIcon } from "lucide-react";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 
-import { signIn } from '@/lib/auth-client';
-import { cn } from '@/lib/utils';
-import { registerSchema, TRegister } from '@/lib/validations/auth';
-import { Button, buttonVariants } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Icons } from '@/components/shared/icons';
+import { signIn } from "@/lib/auth-client";
+import { cn } from "@/lib/utils";
+import { registerSchema, TRegister } from "@/lib/validations/auth";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Icons } from "@/components/shared/icons";
 
 import {
   Form,
@@ -23,9 +23,9 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '../ui/form';
-import { RadioGroup, RadioGroupItem } from '../ui/radio-group';
-import { UserRole } from '@prisma/client';
+} from "../ui/form";
+import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
+import { UserRole } from "@prisma/client";
 
 interface UserRegisterFormProps {
   className?: string;
@@ -43,14 +43,14 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
   const [currentStep, setCurrentStep] = React.useState(1);
   const form = useForm<TRegister>({
     resolver: zodResolver(registerSchema),
-    mode: 'onChange', // Validate on change for better UX
+    mode: "onChange", // Validate on change for better UX
     defaultValues: {
-      email: '',
-      password: '',
-      name: '',
+      email: "",
+      password: "",
+      name: "",
       role: UserRole.STUDENT, // Default to undefined or a specific role if preferred
-      institution: '',
-      instituteId: '',
+      institution: "",
+      instituteId: "",
     },
   });
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
@@ -58,17 +58,17 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
 
   const router = useRouter();
 
-  const role = form.watch('role');
+  const role = form.watch("role");
   async function onSubmit(data: TRegister) {
     setIsLoading(true);
     try {
       const result = await signUpEmailAction(data);
 
       if (result.error) {
-        if (typeof result.error === 'string') {
+        if (typeof result.error === "string") {
           toast.error(result.error);
         } else {
-          toast.error('Please check the form for errors');
+          toast.error("Please check the form for errors");
         }
       } else if (result.success) {
         form.reset();
@@ -77,17 +77,17 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
           data.role === UserRole.ORGANIZATION ||
           data.role === UserRole.PROFESSOR
         ) {
-          router.push('/pending-approval');
+          router.push("/pending-approval");
         } else {
-          router.push('/register/success');
+          router.push("/register/success");
         }
         toast.success(
-          result.message || 'Verification link has been sent to your mail'
+          result.message || "Verification link has been sent to your mail"
         );
       }
     } catch (error) {
       console.error(error);
-      toast.error('Something went wrong');
+      toast.error("Something went wrong");
     } finally {
       setIsLoading(false);
     }
@@ -96,7 +96,7 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
   const nextStep = async () => {
     let fieldsToValidate: (keyof TRegister)[] = [];
     if (currentStep === 1) {
-      fieldsToValidate = ['role'];
+      fieldsToValidate = ["role"];
     }
     // Add more steps and fields to validate as needed
 
@@ -116,59 +116,59 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
     return () => subscription.unsubscribe();
   }, [form]);
   return (
-    <div className={cn('grid gap-6', className)} {...props}>
+    <div className={cn("grid gap-6", className)} {...props}>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>
-          <div className='grid gap-4'>
+          <div className="grid gap-4">
             {currentStep === 1 && (
-              <div className='grid gap-2 place-self-center'>
+              <div className="grid gap-2 place-self-center">
                 <FormField
-                  name='role'
+                  name="role"
                   control={form.control}
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel htmlFor='role' className='text-2xl'>
+                      <FormLabel htmlFor="role" className="text-2xl">
                         Choose Your Role
                       </FormLabel>
                       <FormControl>
                         <RadioGroup
                           onValueChange={field.onChange}
                           defaultValue={field.value} // Removed defaultValue to ensure selected value is captured
-                          className='flex items-center justify-center space-x-3 max-md:space-x-1.5 flex-wrap'
+                          className="flex items-center justify-center space-x-3 max-md:space-x-1.5 flex-wrap"
                         >
-                          <FormItem className='flex items-center gap-3 border p-5 rounded-xl'>
+                          <FormItem className="flex items-center gap-3 border p-3 rounded-xl">
                             <FormControl>
                               <RadioGroupItem value={UserRole.STUDENT} />
                             </FormControl>
-                            <FormLabel className='font-normal flex flex-col items-center justify-center'>
-                              <GraduationCap className='size-7' />
+                            <FormLabel className="font-normal flex flex-col items-center justify-center">
+                              <GraduationCap className="size-7" />
                               STUDENT
                             </FormLabel>
                           </FormItem>
-                          <FormItem className='flex items-center gap-3 border p-5 rounded-xl'>
+                          <FormItem className="flex items-center gap-3 border p-3 rounded-xl">
                             <FormControl>
                               <RadioGroupItem value={UserRole.ORGANIZATION} />
                             </FormControl>
-                            <FormLabel className='font-normal flex flex-col items-center justify-center'>
-                              <Briefcase className='size-7' />
+                            <FormLabel className="font-normal flex flex-col items-center justify-center">
+                              <Briefcase className="size-7" />
                               ORGANIZATION
                             </FormLabel>
                           </FormItem>
-                          <FormItem className='flex items-center gap-3 border p-5 rounded-xl'>
+                          <FormItem className="flex items-center gap-3 border p-3 rounded-xl">
                             <FormControl>
                               <RadioGroupItem value={UserRole.INSTITUTION} />
                             </FormControl>
-                            <FormLabel className='font-normal flex flex-col items-center justify-center'>
-                              <HomeIcon className='size-7' />
+                            <FormLabel className="font-normal flex flex-col items-center justify-center">
+                              <HomeIcon className="size-7" />
                               INSTITUTION
                             </FormLabel>
                           </FormItem>
-                          <FormItem className='flex items-center gap-3 border p-5 rounded-xl'>
+                          <FormItem className="flex items-center gap-3 border p-3 rounded-xl">
                             <FormControl>
                               <RadioGroupItem value={UserRole.PROFESSOR} />
                             </FormControl>
-                            <FormLabel className='font-normal flex flex-col items-center justify-center'>
-                              <HomeIcon className='size-7' />
+                            <FormLabel className="font-normal flex flex-col items-center justify-center">
+                              <HomeIcon className="size-7" />
                               PROFESSOR
                             </FormLabel>
                           </FormItem>
@@ -183,31 +183,31 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
             )}
           </div>
           {currentStep === 2 && (
-            <div className='grid grid-cols-1 gap-2.5 pb-2'>
+            <div className="grid grid-cols-1 gap-2.5 pb-2">
               <FormField
                 control={form.control}
-                name='name'
+                name="name"
                 render={({ field }) => (
-                  <FormItem className='grid gap-1'>
-                    <FormLabel htmlFor='name'>Name</FormLabel>
+                  <FormItem className="grid gap-1">
+                    <FormLabel htmlFor="name">Name</FormLabel>
                     <FormControl>
                       <Input
                         {...field}
-                        id='name'
+                        id="name"
                         placeholder={
                           role === UserRole.STUDENT
-                            ? 'full name' // Assuming full name for students
+                            ? "full name" // Assuming full name for students
                             : role === UserRole.ORGANIZATION
-                              ? 'organization name' // Assuming organization name for organizations
+                              ? "organization name" // Assuming organization name for organizations
                               : role === UserRole.INSTITUTION
-                                ? 'institution name' // Assuming institution name for institutions
+                                ? "institution name" // Assuming institution name for institutions
                                 : role === UserRole.PROFESSOR
-                                  ? 'professor name' // Assuming professor name for professors
-                                  : 'full name' // Default case or fallback
+                                  ? "professor name" // Assuming professor name for professors
+                                  : "full name" // Default case or fallback
                         }
-                        autoCapitalize='none'
-                        autoComplete='name'
-                        autoCorrect='off'
+                        autoCapitalize="none"
+                        autoComplete="name"
+                        autoCorrect="off"
                         disabled={isLoading || isGoogleLoading}
                       />
                     </FormControl>
@@ -218,23 +218,23 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
               {(role === UserRole.STUDENT || role === UserRole.PROFESSOR) && (
                 <FormField
                   control={form.control}
-                  name='instituteId'
+                  name="instituteId"
                   render={({ field }) => (
-                    <FormItem className='grid gap-1'>
-                      <FormLabel htmlFor='instituteId'>
+                    <FormItem className="grid gap-1">
+                      <FormLabel htmlFor="instituteId">
                         {role === UserRole.STUDENT
-                          ? 'Student Id'
-                          : 'Professor Id'}
+                          ? "Student Id"
+                          : "Professor Id"}
                       </FormLabel>
                       <FormControl>
                         <Input
                           {...field}
-                          id='instituteId'
-                          placeholder='0910203'
-                          type='number'
-                          autoCapitalize='none'
-                          autoComplete='instituteId'
-                          autoCorrect='off'
+                          id="instituteId"
+                          placeholder="0910203"
+                          type="number"
+                          autoCapitalize="none"
+                          autoComplete="instituteId"
+                          autoCorrect="off"
                           disabled={isLoading || isGoogleLoading}
                         />
                       </FormControl>
@@ -245,18 +245,18 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
               )}
               <FormField
                 control={form.control}
-                name='institution'
+                name="institution"
                 render={({ field }) => (
-                  <FormItem className='grid gap-1'>
-                    <FormLabel htmlFor='institution'>Institution</FormLabel>
+                  <FormItem className="grid gap-1">
+                    <FormLabel htmlFor="institution">Institution</FormLabel>
                     <FormControl>
                       <Input
                         {...field}
-                        id='institution'
-                        placeholder={`${role === UserRole.STUDENT || role === UserRole.PROFESSOR ? 'college/university name' : 'institute website'}`}
-                        autoCapitalize='none'
-                        autoComplete='institution'
-                        autoCorrect='off'
+                        id="institution"
+                        placeholder={`${role === UserRole.STUDENT || role === UserRole.PROFESSOR ? "college/university name" : "institute website"}`}
+                        autoCapitalize="none"
+                        autoComplete="institution"
+                        autoCorrect="off"
                         disabled={isLoading || isGoogleLoading}
                       />
                     </FormControl>
@@ -264,45 +264,45 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
                   </FormItem>
                 )}
               />
-              {(UserRole && role !== UserRole.STUDENT) ||
-                (role !== UserRole.PROFESSOR && (
-                  <FormField
-                    control={form.control}
-                    name='phone'
-                    render={({ field }) => (
-                      <FormItem className='grid gap-1'>
-                        <FormLabel htmlFor='telephone'>Phone Number</FormLabel>
-                        <FormControl>
-                          <Input
-                            type='telephone'
-                            {...field}
-                            id='telephone'
-                            placeholder='05555555555'
-                            autoCapitalize='none'
-                            autoComplete='tel'
-                            autoCorrect='off'
-                            disabled={isLoading || isGoogleLoading}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                ))}
+              {(role === UserRole.ORGANIZATION ||
+                role === UserRole.INSTITUTION) && (
+                <FormField
+                  control={form.control}
+                  name="phone"
+                  render={({ field }) => (
+                    <FormItem className="grid gap-1">
+                      <FormLabel htmlFor="telephone">Phone Number</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="telephone"
+                          {...field}
+                          id="telephone"
+                          placeholder="05555555555"
+                          autoCapitalize="none"
+                          autoComplete="tel"
+                          autoCorrect="off"
+                          disabled={isLoading || isGoogleLoading}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
               <FormField
                 control={form.control}
-                name='email'
+                name="email"
                 render={({ field }) => (
-                  <FormItem className='grid gap-1'>
-                    <FormLabel htmlFor='email'>Email</FormLabel>
+                  <FormItem className="grid gap-1">
+                    <FormLabel htmlFor="email">Email</FormLabel>
                     <FormControl>
                       <Input
                         {...field}
-                        id='email'
-                        placeholder='example.edu@gmail.com'
-                        autoCapitalize='none'
-                        autoComplete='email'
-                        autoCorrect='off'
+                        id="email"
+                        placeholder="example.edu@gmail.com"
+                        autoCapitalize="none"
+                        autoComplete="email"
+                        autoCorrect="off"
                         disabled={isLoading || isGoogleLoading}
                       />
                     </FormControl>
@@ -312,19 +312,19 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
               />
               <FormField
                 control={form.control}
-                name='password'
+                name="password"
                 render={({ field }) => (
-                  <FormItem className='grid gap-1'>
-                    <FormLabel htmlFor='password'>Password</FormLabel>
+                  <FormItem className="grid gap-1">
+                    <FormLabel htmlFor="password">Password</FormLabel>
                     <FormControl>
                       <Input
                         {...field}
-                        id='password'
-                        placeholder='********'
-                        type='password'
-                        autoCapitalize='none'
-                        autoComplete='none'
-                        autoCorrect='off'
+                        id="password"
+                        placeholder="********"
+                        type="password"
+                        autoCapitalize="none"
+                        autoComplete="none"
+                        autoCorrect="off"
                         disabled={isLoading || isGoogleLoading}
                       />
                     </FormControl>
@@ -334,12 +334,12 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
               />
             </div>
           )}
-          <div className='flex items-center justify-between gap-2'>
+          <div className="flex items-center justify-between gap-2">
             {currentStep > 1 && (
               <Button
-                type='button'
+                type="button"
                 onClick={prevStep}
-                className={cn(buttonVariants({ variant: 'ghost' }))}
+                className={cn(buttonVariants({ variant: "ghost" }))}
                 disabled={isLoading}
               >
                 Previous
@@ -347,9 +347,9 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
             )}
             {currentStep < 2 && (
               <Button
-                type='button'
+                type="button"
                 onClick={nextStep}
-                className={cn(buttonVariants({ variant: 'ghost' }), 'self-end')}
+                className={cn(buttonVariants({ variant: "ghost" }), "self-end")}
                 disabled={isLoading || (currentStep === 1 && !role)}
               >
                 Next
@@ -357,12 +357,12 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
             )}
             {currentStep === 2 && (
               <Button
-                type='submit'
+                type="submit"
                 className={cn(buttonVariants())}
                 disabled={isLoading} // Disable if form is not valid
               >
                 {isLoading && (
-                  <Icons.spinner className='mr-2 size-4 animate-spin' />
+                  <Icons.spinner className="mr-2 size-4 animate-spin" />
                 )}
                 Sign up
               </Button>
@@ -370,34 +370,34 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
           </div>
         </form>
       </Form>
-      <div className='relative'>
-        <div className='absolute inset-0 flex items-center'>
-          <span className='w-full border-t' />
+      <div className="relative">
+        <div className="absolute inset-0 flex items-center">
+          <span className="w-full border-t" />
         </div>
-        <div className='relative flex justify-center text-xs uppercase'>
-          <span className='bg-background text-muted-foreground px-2'>
+        <div className="relative flex justify-center text-xs uppercase">
+          <span className="bg-background text-muted-foreground px-2">
             Or continue with
           </span>
         </div>
       </div>
       <button
-        type='button'
-        className={cn(buttonVariants({ variant: 'outline' }))}
+        type="button"
+        className={cn(buttonVariants({ variant: "outline" }))}
         onClick={async () => {
           setIsGoogleLoading(true);
           await signIn.social({
-            provider: 'google',
-            callbackURL: '/',
-            errorCallbackURL: '/login/error',
+            provider: "google",
+            callbackURL: "/",
+            errorCallbackURL: "/login/error",
           });
         }}
         disabled={isLoading || isGoogleLoading}
       >
         {isGoogleLoading ? (
-          <Icons.spinner className='mr-2 size-4 animate-spin' />
+          <Icons.spinner className="mr-2 size-4 animate-spin" />
         ) : (
-          <Icons.google className='mr-2 size-4' />
-        )}{' '}
+          <Icons.google className="mr-2 size-4" />
+        )}{" "}
         Google
       </button>
     </div>

@@ -118,6 +118,16 @@ export function getJobDataInclude(loggedInUserId: string) {
     },
   } satisfies Prisma.JobInclude;
 }
+export function getCourseDataInclude(loggedInUserId: string) {
+  return {
+    instructor: {
+      select: getUserDataSelect(loggedInUserId),
+    },
+    faculty: true,
+    enrollments: true,
+
+  } satisfies Prisma.CourseInclude;
+}
 export function getResearchDataInclude(loggedInUserId: string) {
   return {
     user: {
@@ -151,6 +161,9 @@ export type PostData = Prisma.PostGetPayload<{
 export type JobData = Prisma.JobGetPayload<{
   include: ReturnType<typeof getJobDataInclude>;
 }>;
+export type CourseData = Prisma.CourseGetPayload<{
+  include: ReturnType<typeof getCourseDataInclude>;
+}>;
 export type ResearchData = Prisma.ResearchGetPayload<{
   include: ReturnType<typeof getResearchDataInclude>;
 }>;
@@ -164,6 +177,10 @@ export interface PostsPage {
 }
 export interface JobsPage {
   jobs: JobData[];
+  nextCursor: string | null;
+}
+export interface CoursesPage {
+  courses: CourseData[];
   nextCursor: string | null;
 }
 export interface ResearchesPage {
@@ -212,6 +229,11 @@ export const notificationsInclude = {
       content: true,
     },
   },
+  job: {
+    select: {
+      title: true
+    }
+  }
 } satisfies Prisma.NotificationInclude;
 
 export type NotificationData = Prisma.NotificationGetPayload<{

@@ -18,9 +18,9 @@ export async function signUpEmailAction(data: TRegister) {
   const { name, email, password, institution, phone, role, instituteId } =
     result.data;
   const generatedUsername = generateUsername(name);
-  let status: "PENDING" | "ACTIVE" | "REJECTED" = "ACTIVE";
-  if (role === "INSTITUTION" || role === "ORGANIZATION") {
-    status = "PENDING";
+  let status: "PENDING" | "ACTIVE" | "REJECTED" = "PENDING";
+  if (role === "STUDENT") {
+    status = "ACTIVE";
   }
 
   try {
@@ -32,10 +32,11 @@ export async function signUpEmailAction(data: TRegister) {
         email,
         password,
         role,
-        status: status as "PENDING" | "ACTIVE" | "REJECTED",
+        status,
         phone: phone ?? "",
         institution: institution ?? "",
         instituteId: instituteId ?? "",
+        callbackURL: "/dashboard"
       },
     });
 

@@ -102,7 +102,7 @@ export default function Job({ job }: JobProps) {
           jobId={job.id}
           initialState={{
             isSaveJobByUser: job.saveJob.some(
-              (saveJob) => saveJob.userId === user.id,
+              (saveJob) => saveJob.userId === user.id
             ),
           }}
         />
@@ -110,11 +110,11 @@ export default function Job({ job }: JobProps) {
           onClick={handleApply}
           variant="default"
           disabled={job.application.some(
-            (application) => application.applicantId === user.id,
+            (application) => application.applicantId === user.id
           )}
         >
           {job.application.some(
-            (application) => application.applicantId === user.id,
+            (application) => application.applicantId === user.id
           )
             ? "Already Applied"
             : "Apply Now"}

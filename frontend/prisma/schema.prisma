@@ -125,7 +125,7 @@ model User {
   institution      String?
   phone            String?
   currentSeamster  Int?
-  role             UserRole
+  role             UserRole   @default(STUDENT)
   username         String?
   displayUsername  String?
   banned           Boolean?
@@ -487,6 +487,7 @@ enum NotificationType {
   COMMENT
   POST
   APPLICATION
+  ENROLLMENT
 }
 
 model Education {
@@ -535,14 +536,15 @@ model Course {
 
   title       String
   description String
-  code        String
+  code        String @unique
   credits     Int?
   level       String? // Undergraduate, Graduate, etc.
   duration    Int? // in weeks
   status      String  @default("draft") // draft, published, archived
+  prerequisites String[] @default([])
 
-  facultyId    String?
-  faculty      Faculty? @relation("CoursePrimaryFaculty", fields: [facultyId], references: [id])
+  facultyId    String
+  faculty      Faculty @relation("FacultyCourses", fields: [facultyId], references: [id])
   instructorId String
   instructor   User     @relation("InstructorCourses", fields: [instructorId], references: [id], onDelete: Cascade)
 
@@ -554,8 +556,6 @@ model Course {
   schoolId      String?
   School        School?              @relation("SchoolCourses", fields: [schoolId], references: [id])
   materials     CourseMaterial[]
-  faculties     Faculty[]            @relation("FacultyCourses", fields: [facultyIds], references: [id])
-  facultyIds    String[]
 
   @@map(name: "courses")
 }
@@ -714,9 +714,7 @@ model Faculty {
   name           String             @unique
   professors     ProfessorProfile[] @relation("ProfessorFaculties", fields: [professorIds], references: [id])
   professorIds   String[]
-  courses        Course[]           @relation("FacultyCourses", fields: [courseIds], references: [id])
-  courseIds      String[]
-  primaryCourses Course[]           @relation("CoursePrimaryFaculty")
+  courses        Course[]           @relation("FacultyCourses")
   slug           String?            @unique
   description    String?
   coverPhoto     String?

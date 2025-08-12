@@ -25,8 +25,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import LoadingButton from "@/components/feed/LoadingButton";
 
 import {
@@ -57,6 +55,7 @@ export default function SkillDialog({
     resolver: zodResolver(userSkillSchema),
     defaultValues: {
       title: skill?.title || "",
+      category: skill?.skill.category || "",
       level: skill?.level || "BEGINNER",
       yearsOfExperience: skill?.yearsOfExperience || 0,
     },
@@ -71,10 +70,29 @@ export default function SkillDialog({
         onSuccess: () => {
           onOpenChange(false);
         },
-      },
+      }
     );
   }
+  const categories = {
+    Programming: ["ReactJS", "Node.js", "Python", "Java"],
+    Design: ["Graphic Design", "UI/UX", "Illustration", "Logo Design"],
+    Writing: ["Content Writing", "Copywriting", "Technical Writing"],
+  };
 
+  // State for selected category and skill
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [selectedSkill, setSelectedSkill] = useState("");
+
+  // Handle category change
+  const handleCategoryChange = (event) => {
+    setSelectedCategory(event.target.value);
+    setSelectedSkill(""); // Reset skill when category changes
+  };
+
+  // Handle skill change
+  const handleSkillChange = (event) => {
+    setSelectedSkill(event.target.value);
+  };
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
@@ -83,7 +101,7 @@ export default function SkillDialog({
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
-            <FormField
+            {/* <FormField
               control={form.control}
               name="title"
               render={({ field }) => (
@@ -99,7 +117,7 @@ export default function SkillDialog({
                   <FormMessage />
                 </FormItem>
               )}
-            />
+            /> */}
             <FormField
               control={form.control}
               name="category"
