@@ -73,6 +73,7 @@ export default function ProfileClient({
   user,
   jobs,
   researches,
+  // courses,
   loggedInUserId,
 }: any) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -251,13 +252,25 @@ export default function ProfileClient({
                         </Button>
                       </CardAction>
                     </CardHeader>
-                    <CardContent className="pt-4">
-                      <div className="flex h-28 items-center justify-center rounded-lg text-gray-500">
-                        <div className="flex flex-col items-center">
-                          <Icons.bookOpen className="size-10" />
-                          No courses enrolled
+                    <CardContent className="pt-1">
+                      {/* {courses.length > 0 ? (
+                        <div className="max-h-40 overflow-y-auto">
+                          <ul className="space-y-2">
+                            {courses.map((enrollment) => (
+                              <li key={enrollment.id} className="border p-2 rounded-md">
+                                {enrollment.course.title} ({enrollment.course.code})
+                              </li>
+                            ))}
+                          </ul>
                         </div>
-                      </div>
+                      ) : (
+                        <div className="flex h-28 items-center justify-center rounded-lg text-gray-500">
+                          <div className="flex flex-col items-center">
+                            <Icons.bookOpen className="size-10" />
+                            No courses enrolled
+                          </div>
+                        </div>
+                      )} */}
                     </CardContent>
                   </Card>
                 </div>
@@ -597,6 +610,7 @@ export default function ProfileClient({
               />
             ) : null}
           </TabsContent>
+          <TabsContent value="courses" className="p-3"></TabsContent>
           <TabsContent value="research" className="p-3">
             <div className="grid grid-cols-1 gap-3">
               <Card className="overflow-hidden rounded-xl border border-gray-100 shadow-sm transition-all hover:border-gray-200 hover:shadow">

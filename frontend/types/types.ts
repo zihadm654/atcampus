@@ -31,6 +31,7 @@ export function getUserDataSelect(loggedInUserId: string) {
     _count: {
       select: {
         posts: true,
+        research: true,
         followers: true,
       },
     },

@@ -69,6 +69,23 @@ const getAppliedJobs = cache(async (userId: string) => {
   });
   return applications;
 });
+// const getEnrolledCourses = cache(async (userId: string) => {
+//   const enrolled = await prisma.enrollment.findMany({
+//     where: {
+//       studentId: userId,
+//     },
+//     orderBy: {
+//       createdAt: "desc",
+//     },
+//     select: {
+//       course: {
+//         include: getUserDataSelect(userId),
+//       },
+//       id: true,
+//     },
+//   });
+//   return enrolled;
+// });
 const getResearches = cache(async (loggedInUserId: string) => {
   const researches = await prisma.research.findMany({
     where: {
@@ -113,7 +130,8 @@ export default async function Page({ params }: PageProps) {
   const user = await getUser(username, loggedInUser.id);
   const jobs = await getAppliedJobs(loggedInUser.id);
   const researches = await getResearches(loggedInUser.id);
-
+  // const courses = await getEnrolledCourses(loggedInUser.id);
+  // console.log(courses);
   return (
     <div className="w-full min-w-0 space-y-5">
       <UserProfile user={user} loggedInUserId={loggedInUser.id} />
@@ -121,6 +139,7 @@ export default async function Page({ params }: PageProps) {
         user={user}
         jobs={jobs}
         researches={researches}
+        // courses={courses}
         loggedInUserId={loggedInUser.id}
       />
     </div>

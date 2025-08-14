@@ -5,13 +5,15 @@ import { BookOpen, Clock, CreditCard, Users } from "lucide-react";
 
 import { Course as CourseType, Enrollment } from "@prisma/client";
 import { useSession } from "@/lib/auth-client";
-import { cn, formatRelativeDate } from "@/lib/utils";
+import { formatRelativeDate } from "@/lib/utils";
 
-import Linkify from "../feed/Linkify";
 import CourseMoreButton from "./CourseMoreButton";
-import EnrollButton from "./EnrollButton";
 import UserTooltip from "../UserTooltip";
 import { UserAvatar } from "../shared/user-avatar";
+import { toast } from "sonner";
+import { enrollCourse } from "@/actions/enrollment";
+import { useTransition } from "react";
+import { Button } from "../ui/button";
 
 interface CourseProps {
   course: CourseType & {
@@ -24,9 +26,22 @@ interface CourseProps {
 export default function Course({ course }: any) {
   const { data: session } = useSession();
   const user = session?.user;
+  const [isPending, startTransition] = useTransition();
+
   if (!user) {
     return null;
   }
+
+  const handleEnroll = () => {
+    startTransition(async () => {
+      const res = await enrollCourse(course.id);
+      if (res.success) {
+        toast.success(res.message);
+      } else {
+        toast.error(res.message);
+      }
+    });
+  };
   return (
     <article className="group/post bg-card relative space-y-3 rounded-2xl p-5 shadow-sm">
       {/* Department badge */}
@@ -93,10 +108,20 @@ export default function Course({ course }: any) {
       </div>
       <hr className="text-muted-foreground" />
       <div className="flex justify-between gap-5">
-        <EnrollButton
-          courseId={course.id}
-          initialEnrolled={course.enrollments.length > 0}
-        />
+        {/* {user.role === "STUDENT" && ( */}
+        <Button
+          onClick={handleEnroll}
+          variant="default"
+          disabled={
+            course.enrollments.some((enroll) => enroll.studentId === user.id) ||
+            isPending
+          }
+        >
+          {course.enrollments.some((enroll) => enroll.studentId === user.id)
+            ? "Already Enrolled"
+            : "Enroll Now"}
+        </Button>
+        {/* )} */}
       </div>
     </article>
   );

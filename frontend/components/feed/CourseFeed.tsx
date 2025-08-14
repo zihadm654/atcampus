@@ -82,7 +82,7 @@ export default function CourseFeed({ user }: Props) {
             Browse and enroll in courses to enhance your skills
           </p>
         </div>
-        {/* {user.role === "ORGANIZATION" && ( */}
+        {/* {user.role === "PROFESSOR" && ( */}
         <Button className="rounded-xl" size="sm" variant="outline">
           <Link href="/courses/createCourse">Create Course</Link>
         </Button>
