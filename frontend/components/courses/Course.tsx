@@ -77,35 +77,34 @@ export default function Course({ course }: any) {
           <CourseMoreButton course={course} />
         )}
       </div>
-      <div className="mb-3">
-        <span className="bg-primary/10 text-primary inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium">
-          {course.code}
-        </span>
-      </div>
-      <h4>Faculty Name: {course.faculty?.name}</h4>
-      {/* <Linkify>
-        <div className="break-words whitespace-pre-line">
-          {course.description}
+      <Link href={`/courses/${course.id}`}>
+        <div className="mb-3">
+          <span className="bg-primary/10 text-primary inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium">
+            {course.code}
+          </span>
+          <h4>{course.department}</h4>
         </div>
-      </Linkify> */}
-      <div className="mt-auto grid grid-cols-1 gap-2 text-xs sm:grid-cols-3">
-        <div className="flex items-center gap-1.5">
-          <CreditCard className="h-3.5 w-3.5 text-gray-500" />
-          <span>{course.credits} credits</span>
+        <div className="mt-auto grid grid-cols-1 gap-2 text-xs sm:grid-cols-3">
+          <div className="flex items-center gap-1.5">
+            <CreditCard className="size-5 text-gray-500" />
+            <span>{course.credits} credits</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <Clock className="size-5 text-gray-500" />
+            <span>{course.duration} weeks</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <Users className="size-5 text-gray-500" />
+            <span>{course.level}</span>
+          </div>
         </div>
-        <div className="flex items-center gap-1.5">
-          <Clock className="h-3.5 w-3.5 text-gray-500" />
-          <span>{course.duration} weeks</span>
+        <div className="flex items-center gap-1.5 px-1 py-1">
+          <BookOpen className="size-5" />
+          <span className="text-sm">
+            Prerequisites: {course.prerequisites.join(", ") || "None"}
+          </span>
         </div>
-        <div className="flex items-center gap-1.5">
-          <Users className="h-3.5 w-3.5 text-gray-500" />
-          <span>{course.level}</span>
-        </div>
-      </div>
-      <div className="flex items-center gap-1.5 px-1 py-1">
-        <BookOpen className="h-4 w-4" />
-        <span>Prerequisites: {course.prerequisites.join(", ") || "None"}</span>
-      </div>
+      </Link>
       <hr className="text-muted-foreground" />
       <div className="flex justify-between gap-5">
         {/* {user.role === "STUDENT" && ( */}

@@ -12,6 +12,10 @@ export const courseSchema = z.object({
     .string()
     .min(1, "description is required")
     .max(1000, "Must be at most 1000 characters"),
+  department: z
+    .string()
+    .min(1, "department is required")
+    .max(1000, "Must be at most 1000 characters"),
   code: z
     .string()
     .min(1, "code is required")

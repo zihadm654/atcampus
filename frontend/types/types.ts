@@ -99,7 +99,6 @@ export function getJobDataInclude(loggedInUserId: string) {
     user: {
       select: getUserDataSelect(loggedInUserId),
     },
-    attachments: true,
     saveJob: {
       where: {
         userId: loggedInUserId,

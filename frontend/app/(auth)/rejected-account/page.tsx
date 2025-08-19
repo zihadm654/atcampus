@@ -1,4 +1,12 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { ReturnButton } from "@/components/auth/return-button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
 export default function RejectedAccountPage() {
   return (
@@ -12,9 +20,13 @@ export default function RejectedAccountPage() {
         </CardHeader>
         <CardContent className="grid gap-4">
           <p className="text-sm text-muted-foreground">
-            If you believe this is an error, please contact support for further assistance.
+            If you believe this is an error, please contact support for further
+            assistance.
           </p>
         </CardContent>
+        <CardFooter>
+          <ReturnButton href="/login" label="Go to Login" />
+        </CardFooter>
       </Card>
     </div>
   );

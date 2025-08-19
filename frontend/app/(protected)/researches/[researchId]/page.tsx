@@ -58,7 +58,7 @@ const getResearch = cache(
     if (!research) notFound();
 
     return research;
-  },
+  }
 );
 
 export async function generateMetadata({
@@ -95,128 +95,111 @@ export default async function ResearchPage({ params }: PageProps) {
   }
 
   return (
-    <div className="flex w-full flex-col gap-6">
-      {/* Header with gradient background */}
-      <div className="rounded-xl bg-gradient-to-r from-blue-400/70 to-indigo-500/70 p-6 text-white shadow-md">
-        <div>
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <UserTooltip user={research.user}>
-                <Link href={`/${research.user.username}`}>
-                  <UserAvatar user={research?.user} />
-                </Link>
-              </UserTooltip>
-              <UserTooltip user={research?.user}>
-                <Link
-                  className="text-md flex items-center gap-1 font-medium hover:underline"
-                  href={`/${research.user.username}`}
-                >
-                  {research.user.name}
-                  <ShieldCheck className="size-5 text-blue-700" />
-                </Link>
-              </UserTooltip>
-              <Link
-                className="text-muted-foreground block text-sm hover:underline"
-                href={`/researches/${research.id}`}
-                suppressHydrationWarning
-              >
-                {formatRelativeDate(research.createdAt)}
-              </Link>
-            </div>
-            {research.user.id === user.id && (
-              <ResearchMoreButton research={research} />
-            )}
+    <div className="flex w-full flex-col gap-3">
+      <div className="rounded-xl p-3 shadow-md">
+        <h1 className="text-3xl font-bold">{research.title}</h1>
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-6 py-4">
+            <h4>Published on</h4>
+            <Link
+              className="text-muted-foreground block text-sm hover:underline"
+              href={`/researches/${research.id}`}
+              suppressHydrationWarning
+            >
+              {formatRelativeDate(research.createdAt)}
+            </Link>
           </div>
-          <div className="text-md mt-2 gap-4">
-            <h5>Collaborators</h5>
+          {research.user.id === user.id && (
+            <ResearchMoreButton research={research} />
+          )}
+        </div>
+        <div className="text-md mt-2 gap-4">
+          <h5 className="font-semibold pb-4 text-xl">Authors</h5>
+          <div className="flex items-center gap-3 py-2">
+            <UserTooltip user={research.user}>
+              <Link href={`/${research.user.username}`}>
+                <UserAvatar user={research?.user} />
+              </Link>
+            </UserTooltip>
+            <UserTooltip user={research?.user}>
+              <Link
+                className="text-md flex items-center gap-1 font-medium hover:underline"
+                href={`/${research.user.username}`}
+              >
+                {research.user.name}
+              </Link>
+            </UserTooltip>
             {research.collaborators.map((collab) => (
               <div key={collab.id} className="flex items-center gap-2">
-                <UserAvatar user={collab} />
+                <UserTooltip user={research.user}>
+                  <Link href={`/${collab.username}`}>
+                    <UserAvatar user={collab} />{" "}
+                  </Link>
+                </UserTooltip>
+                <UserTooltip user={research?.user}>
+                  <Link
+                    className="text-md flex items-center gap-1 font-medium hover:underline"
+                    href={`/${collab.username}`}
+                  >
+                    {collab.name}
+                  </Link>
+                </UserTooltip>
               </div>
             ))}
           </div>
         </div>
       </div>
-      <div className="bg-card overflow-hidden rounded-2xl shadow-sm">
-        <Tabs defaultValue="summary">
-          <div className="border-b border-gray-100">
-            <TabsList className="flex w-full justify-between p-0">
-              <TabsTrigger
-                className="flex-1 rounded-none border-b-2 border-transparent py-4 transition-all data-[state=active]:border-blue-600 data-[state=active]:text-blue-600"
-                value="summary"
-              >
-                <Icons.home className="size-5" />
-                Description
-              </TabsTrigger>
-              <TabsTrigger
-                className="flex-1 rounded-none border-b-2 border-transparent py-4 transition-all data-[state=active]:border-blue-600 data-[state=active]:text-blue-600"
-                value="requests"
-              >
-                <Icons.post className="size-5" />
-                Collaboration Req
-              </TabsTrigger>
-            </TabsList>
+      <div className="bg-card overflow-hidden rounded-2xl">
+        <div className="flex-1 space-y-3 mb-4">
+          <div className="rounded-xl border p-3 shadow-sm">
+            <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold">
+              Abstract and Figures
+            </h2>
+            <JsonToHtml json={JSON.parse(research.description)} />
           </div>
-          <TabsContent className="p-2" value="summary">
-            {/* Main content */}
-            <div className="flex-1 space-y-3 mb-2">
-              <div className="bg-card rounded-xl border p-3 shadow-sm">
-                <h2 className="mb-4 flex items-center gap-2 text-xl font-semibold">
-                  <span className="rounded-full bg-blue-100 p-1.5 text-blue-700">
-                    <Icons.bookMarked className="h-5 w-5" />
-                  </span>
-                  Research Summary
-                </h2>
-                <JsonToHtml json={JSON.parse(research.description)} />
-              </div>
-            </div>
-            {research.attachments.map((item) => (
-              <object
-                data={item.url}
-                type="application/pdf"
-                width="100%"
-                height="700px"
-              >
-                <p>
-                  Unable to display PDF file. <a href={item.url}>Download</a>{" "}
-                  instead.
-                </p>
-              </object>
-            ))}
-          </TabsContent>
-          <TabsContent className=" p-3" value="requests">
-            {research.user.id === user.id &&
-              research.collaborationRequests.length > 0 && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Pending Collaboration Requests</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    {research.collaborationRequests.map(
-                      (req) =>
-                        req.status === "PENDING" && (
-                          <div
-                            key={req.id}
-                            className="flex items-center justify-between mb-2"
-                          >
-                            <div className="flex items-center gap-2">
-                              <UserAvatar user={req.requester} />
-                              <span>
-                                {req.requester.name} wants to collaborate
-                              </span>
-                            </div>
-                            <div>
-                              <AcceptCollaborationButton requestId={req.id} />
-                              <DeclineCollaborationButton requestId={req.id} />
-                            </div>
-                          </div>
-                        ),
-                    )}
-                  </CardContent>
-                </Card>
-              )}
-          </TabsContent>
-        </Tabs>
+        </div>
+        {research.attachments.map((item) => (
+          <object
+            key={item.url}
+            data={item.url}
+            type="application/pdf"
+            width="100%"
+            height="700px"
+          >
+            <p>
+              Unable to display PDF file. <a href={item.url}>Download</a>{" "}
+              instead.
+            </p>
+          </object>
+        ))}
+        {/* {research.user.id === user.id &&
+          research.collaborationRequests.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Pending Collaboration Requests</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {research.collaborationRequests.map(
+                  (req) =>
+                    req.status === "PENDING" && (
+                      <div
+                        key={req.id}
+                        className="flex items-center justify-between mb-2"
+                      >
+                        <div className="flex items-center gap-2">
+                          <UserAvatar user={req.requester} />
+                          <span>{req.requester.name} wants to collaborate</span>
+                        </div>
+                        <div>
+                          <AcceptCollaborationButton requestId={req.id} />
+                          <DeclineCollaborationButton requestId={req.id} />
+                        </div>
+                      </div>
+                    )
+                )}
+              </CardContent>
+            </Card>
+          )} */}
       </div>
     </div>
   );

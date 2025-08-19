@@ -1,4 +1,12 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { ReturnButton } from "@/components/auth/return-button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
 export default function PendingApprovalPage() {
   return (
@@ -12,10 +20,13 @@ export default function PendingApprovalPage() {
         </CardHeader>
         <CardContent className="grid gap-4">
           <p className="text-sm text-muted-foreground">
-            You will receive an email notification once your account status changes.
-            Thank you for your patience.
+            You will receive an email notification once your account status
+            changes. Thank you for your patience.
           </p>
         </CardContent>
+        <CardFooter>
+          <ReturnButton href="/login" label="Go to Login" />
+        </CardFooter>
       </Card>
     </div>
   );

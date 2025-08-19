@@ -271,8 +271,6 @@ model Media {
 
   postId     String?
   post       Post?     @relation(fields: [postId], references: [id], onDelete: Cascade)
-  job        Job?      @relation(fields: [jobId], references: [id], onDelete: Cascade)
-  jobId      String?
   research   Research? @relation(fields: [researchId], references: [id])
   researchId String?
 
@@ -362,7 +360,6 @@ model Job {
   userId    String
 
   linkedNotifications Notification[]
-  attachments         Media[]
   application         Application[]
   saveJob             SaveJob[]
 
@@ -534,27 +531,26 @@ model Experience {
 model Course {
   id String @id @default(cuid()) @map("_id")
 
-  title       String
-  description String
-  code        String @unique
-  credits     Int?
-  level       String? // Undergraduate, Graduate, etc.
-  duration    Int? // in weeks
-  status      String  @default("draft") // draft, published, archived
+  title         String
+  description   String
+  code          String   @unique
+  credits       Int?
+  department    String
+  level         String? // Undergraduate, Graduate, etc.
+  duration      Int? // in weeks
+  status        String   @default("draft") // draft, published, archived
   prerequisites String[] @default([])
 
   facultyId    String
-  faculty      Faculty @relation("FacultyCourses", fields: [facultyId], references: [id])
+  faculty      Faculty @relation("FacultyCourses", fields: [facultyId], references: [id], onDelete: Cascade)
   instructorId String
-  instructor   User     @relation("InstructorCourses", fields: [instructorId], references: [id], onDelete: Cascade)
+  instructor   User    @relation("InstructorCourses", fields: [instructorId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now()) @map(name: "created_at")
   updatedAt DateTime @updatedAt @map(name: "updated_at")
 
   enrollments   Enrollment[]
   announcements CourseAnnouncement[]
-  schoolId      String?
-  School        School?              @relation("SchoolCourses", fields: [schoolId], references: [id])
   materials     CourseMaterial[]
 
   @@map(name: "courses")
@@ -702,7 +698,6 @@ model School {
   institute   User   @relation(fields: [instituteId], references: [id], onDelete: Cascade)
 
   faculties Faculty[] @relation("SchoolFaculties")
-  courses   Course[]  @relation("SchoolCourses")
 
   @@index([name, slug])
   @@map(name: "schools")
@@ -710,15 +705,15 @@ model School {
 
 // Updated Faculty model
 model Faculty {
-  id             String             @id @default(cuid()) @map("_id")
-  name           String             @unique
-  professors     ProfessorProfile[] @relation("ProfessorFaculties", fields: [professorIds], references: [id])
-  professorIds   String[]
-  courses        Course[]           @relation("FacultyCourses")
-  slug           String?            @unique
-  description    String?
-  coverPhoto     String?
-  logo           String?
+  id           String             @id @default(cuid()) @map("_id")
+  name         String             @unique
+  professors   ProfessorProfile[] @relation("ProfessorFaculties", fields: [professorIds], references: [id])
+  professorIds String[]
+  courses      Course[]           @relation("FacultyCourses")
+  slug         String?            @unique
+  description  String?
+  coverPhoto   String?
+  logo         String?
 
   createdAt DateTime @default(now()) @map(name: "created_at")
   updatedAt DateTime @updatedAt @map(name: "updated_at")

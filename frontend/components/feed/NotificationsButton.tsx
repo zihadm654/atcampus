@@ -40,7 +40,7 @@ export default function NotificationsButton({
       title="Notifications"
       asChild
     >
-      <Link href="/notifications">
+      <Link href="/notifications" prefetch={true}>
         <div className="relative">
           <Bell className="size-5" />
           {!!data.unreadCount && (

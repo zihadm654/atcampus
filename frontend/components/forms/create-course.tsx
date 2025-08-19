@@ -50,6 +50,7 @@ export function CreateCourseForm({ user, course }: CreateCourseFormProps) {
           description: course.description || "",
           status: course.status as Status,
           code: course.code || "",
+          department: course.department || "",
           prerequisites: course.prerequisites || [],
           credits: course.credits || 0,
           level: course.level || "",
@@ -61,6 +62,7 @@ export function CreateCourseForm({ user, course }: CreateCourseFormProps) {
           description: "",
           status: "draft" as Status,
           code: "",
+          department: "",
           duration: 0,
           prerequisites: [],
           credits: 0,
@@ -168,6 +170,7 @@ export function CreateCourseForm({ user, course }: CreateCourseFormProps) {
                     setSelectedDepartment("");
                     setSelectedCourse("");
                     form.setValue("title", "");
+                    form.setValue("department", "");
                     form.setValue("code", "");
                   }}
                 >
@@ -195,6 +198,7 @@ export function CreateCourseForm({ user, course }: CreateCourseFormProps) {
                     setSelectedDepartment(value);
                     setSelectedCourse("");
                     form.setValue("title", "");
+                    form.setValue("department", value);
                     form.setValue("code", "");
                   }}
                   disabled={!selectedSchool}
@@ -253,6 +257,19 @@ export function CreateCourseForm({ user, course }: CreateCourseFormProps) {
                     <FormLabel>Course Title</FormLabel>
                     <FormControl>
                       <Input placeholder="Course Title" {...field} disabled />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="department"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Department</FormLabel>
+                    <FormControl>
+                      <Input placeholder="department" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

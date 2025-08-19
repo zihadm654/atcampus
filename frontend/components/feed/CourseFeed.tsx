@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 
@@ -10,7 +9,6 @@ import kyInstance from "@/lib/ky";
 import useDebounce from "@/hooks/useDebounce";
 import InfiniteScrollContainer from "@/components/feed/InfiniteScrollContainer";
 
-import { Button } from "../ui/button";
 import CourseLoadingSkeleton from "../courses/CourseLoadingSkeleton";
 import Course from "../courses/Course";
 
@@ -74,32 +72,14 @@ export default function CourseFeed({ user }: Props) {
     );
   }
   return (
-    <div>
-      <div className="flex items-center justify-between gap-2 p-2">
-        <div className="">
-          <h1 className="text-3xl font-bold">Courses</h1>
-          <p className="text-muted-foreground">
-            Browse and enroll in courses to enhance your skills
-          </p>
-        </div>
-        {/* {user.role === "PROFESSOR" && ( */}
-        <Button className="rounded-xl" size="sm" variant="outline">
-          <Link href="/courses/createCourse">Create Course</Link>
-        </Button>
-        {/* )} */}
-      </div>
-
-      <InfiniteScrollContainer
-        className="grid grid-cols-3 gap-4 space-y-5 max-md:grid-cols-1"
-        onBottomReached={() => hasNextPage && !isFetching && fetchNextPage()}
-      >
-        {courses.map((course) => (
-          <Course key={course.id} course={course} />
-        ))}
-        {isFetchingNextPage && (
-          <Loader2 className="mx-auto my-3 animate-spin" />
-        )}
-      </InfiniteScrollContainer>
-    </div>
+    <InfiniteScrollContainer
+      className="grid grid-cols-3 gap-4 space-y-5 max-md:grid-cols-1"
+      onBottomReached={() => hasNextPage && !isFetching && fetchNextPage()}
+    >
+      {courses.map((course) => (
+        <Course key={course.id} course={course} />
+      ))}
+      {isFetchingNextPage && <Loader2 className="mx-auto my-3 animate-spin" />}
+    </InfiniteScrollContainer>
   );
 }
