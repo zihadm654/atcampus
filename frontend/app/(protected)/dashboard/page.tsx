@@ -31,7 +31,7 @@ export const metadata = constructMetadata({
 
 export default async function DashboardPage() {
   const user = await getCurrentUser();
-  if (!user) redirect("/login");
+  if (!user) throw new Error("Unauthorized");
 
   //organization
   const [session, organization] = await Promise.all([
@@ -46,7 +46,7 @@ export default async function DashboardPage() {
     // toast.error("Failed to fetch user data.");
     throw new Error(e);
   });
-  
+
   //job applicatons
   const applications = await prisma.application.findMany({
     where: {

@@ -15,7 +15,7 @@ export const metadata: Metadata = constructMetadata({
 export default async function CoursesPage() {
   const user = await getCurrentUser();
 
-  if (!user) redirect("/login");
+  if (!user) throw new Error("Unauthorized");
 
   return (
     <div className="flex w-full flex-col gap-6">

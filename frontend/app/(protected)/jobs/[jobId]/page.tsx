@@ -62,6 +62,7 @@ const getUser = cache(async (loggedInUserId: string) => {
 
   return user;
 });
+
 export async function generateMetadata({
   params,
 }: PageProps): Promise<Metadata> {

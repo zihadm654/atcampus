@@ -35,7 +35,7 @@ const getAppliedJobs = cache(async (userId: string) => {
 });
 export default async function JobsPage() {
   const user = await getCurrentUser();
-  if (!user) redirect("/login");
+  if (!user) throw new Error("Unauthorized");
 
   const jobs = await getAppliedJobs(user.id);
 

@@ -17,6 +17,7 @@ export default async function MarketingLayout({
   const user = await getCurrentUser();
 
   if (!user) redirect("/login");
+
   if (user.role === "ORGANIZATION" || user.role === "INSTITUTION") {
     if (user.status === "PENDING") {
       redirect("/pending-approval");

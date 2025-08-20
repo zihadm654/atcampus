@@ -1,18 +1,18 @@
 import { Metadata } from "next";
 import Link from "next/link";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import {
   ArrowLeft,
   Book,
-  Calendar,
+  Briefcase,
   Clock,
   GraduationCap,
-  MapPin,
+  ShieldCheck,
   User,
 } from "lucide-react";
 
 import { getCurrentUser } from "@/lib/session";
-import { constructMetadata } from "@/lib/utils";
+import { constructMetadata, formatRelativeDate } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -20,6 +20,19 @@ import { cache } from "react";
 import { prisma } from "@/lib/db";
 import { getCourseDataInclude, getUserDataSelect } from "@/types/types";
 import { JsonToHtml } from "@/components/editor/JsonToHtml";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import UserTooltip from "@/components/UserTooltip";
+import CourseMoreButton from "@/components/courses/CourseMoreButton";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Icons } from "@/components/shared/icons";
+import EnrollButton from "@/components/courses/EnrollButton";
+import { UserAvatar } from "@/components/shared/user-avatar";
 
 interface CoursePageProps {
   params: Promise<{
@@ -76,7 +89,6 @@ export default async function CoursePage({ params }: CoursePageProps) {
   const currentUser = await getUser(user.id);
   const course = await getCourse(courseId, user.id);
 
-  // If job not found, return 404
   if (!course) {
     notFound();
   }
@@ -118,49 +130,153 @@ export default async function CoursePage({ params }: CoursePageProps) {
   // };
 
   return (
-    <div className="flex w-full flex-col gap-6">
-      <div className="flex items-center gap-2">
-        <Button variant="ghost" size="icon" asChild>
-          <Link href="/courses">
-            <ArrowLeft className="h-4 w-4" />
-          </Link>
-        </Button>
-        <h1 className="text-2xl font-bold">{course.title}</h1>
-      </div>
+    <div className="w-full">
+      <div className="grid grid-cols-2 max-md:grid-cols-1 gap-2">
+        <Card className="flex flex-col gap-3">
+          <CardHeader className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <UserTooltip user={course?.instructor}>
+                <Link href={`/${course.instructor.username}`}>
+                  <UserAvatar user={course.instructor} className="size-10" />
+                </Link>
+              </UserTooltip>
+              <UserTooltip user={course?.instructor}>
+                <Link
+                  className="flex items-center gap-1 font-medium text-md hover:underline"
+                  href={`/${course.instructor.username}`}
+                >
+                  {course.instructor.name}
+                  <ShieldCheck className="size-5 text-blue-700" />
+                </Link>
+              </UserTooltip>
+              <Link
+                className="block text-muted-foreground text-sm hover:underline"
+                href={`/courses/${course.id}`}
+                suppressHydrationWarning
+              >
+                {formatRelativeDate(course.createdAt)}
+              </Link>
+            </div>
+            {course.instructor.id === user.id && (
+              <CourseMoreButton course={course} />
+            )}
+          </CardHeader>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <div className="lg:col-span-2">
-          <div className="bg-card rounded-lg border shadow-sm">
-            <div className="border-b p-6">
-              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                  <h2 className="text-xl font-semibold">{course.title}</h2>
-                  <h5 className="text-muted-foreground">{course.department}</h5>
-                  <p className="text-muted-foreground">
-                    Course code: {course.code}
-                  </p>
-                  <p className="text-muted-foreground">Level: {course.level}</p>
-                </div>
-                <Badge variant="secondary" className="w-fit">
-                  Credits: {course.credits}
-                </Badge>
-              </div>
+          <CardContent className="mt-2 gap-4 text-md">
+            <h1 className="text-2xl font-bold">{course.title}</h1>
+            <h5 className="text-muted-foreground mb-4">{course.department}</h5>
+            <Badge variant="secondary" className="w-fit">
+              Credits: {course.credits}
+            </Badge>
+            <div className="flex items-center gap-1.5 rounded-full px-3 py-1">
+              <Icons.bookOpen className="size-5" />
+              Course Code: <span>{course.code}</span>
+            </div>
+            <div className="flex items-center gap-1.5 rounded-full px-3 py-1">
+              <Clock className="size-5" />
+              Duration: <span>{course.duration}</span>
+            </div>
+            <div className="flex items-center gap-1.5 rounded-full px-3 py-1">
+              <Icons.edu className="text-primary mt-0.5 h-5 w-5" />
+              Enrollment:{" "}
+              <span className="text-muted-foreground">
+                {course.enrollments.length} students
+              </span>
+              {/* <p className="text-muted-foreground">
+                  Deadline: {course.enrollmentDeadline}
+                </p> */}
             </div>
 
-            <div className="p-6">
-              <h3 className="mb-3 text-lg font-medium">Course Description</h3>
+            {/* 
+            <div className="flex items-center gap-1.5 rounded-full px-3 py-1">
+              <Calendar className="size-5" />
+              Deadline: <span>{formatDate(job.endDate, "MM/dd/yyyy")}</span>
+            </div> */}
+          </CardContent>
+          <CardFooter className="flex justify-between gap-5">
+            <EnrollButton courseId={course.id} />
+            {/* <Client user={user} job={job} /> */}
+          </CardFooter>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-3">
+              <UserTooltip user={currentUser}>
+                <Link href={`/${currentUser.username}`}>
+                  <UserAvatar user={currentUser} />
+                </Link>
+              </UserTooltip>
+              <UserTooltip user={currentUser}>
+                <Link
+                  className="flex items-center gap-1 font-medium text-md hover:underline"
+                  href={`/${user.username}`}
+                >
+                  {user.name}
+                  <ShieldCheck className="size-5 text-blue-700" />
+                </Link>
+              </UserTooltip>
+            </CardTitle>
+          </CardHeader>
+        </Card>
+      </div>
+      <div className="overflow-hidden mt-3 rounded-2xl bg-card shadow-sm">
+        <Tabs defaultValue="outline">
+          <div className="border-b">
+            <TabsList className="flex w-full justify-between p-0">
+              <TabsTrigger
+                className="flex-1 rounded-xl py-4 transition-all data-[state=active]:border-blue-600 data-[state=active]:text-blue-600"
+                value="outline"
+              >
+                <Icons.home className="size-5" />
+                <span className="hidden lg:block">Course Outline</span>
+              </TabsTrigger>
+              <TabsTrigger
+                className="flex-1 rounded-xl py-4 transition-all data-[state=active]:border-blue-600 data-[state=active]:text-blue-600"
+                value="assets"
+              >
+                <Icons.post className="size-5" />
+                <span className="hidden lg:block">Learning Materials</span>
+              </TabsTrigger>
+              <TabsTrigger
+                className="flex-1 rounded-xl py-4 transition-all data-[state=active]:border-blue-600 data-[state=active]:text-blue-600"
+                value="skill"
+              >
+                <Icons.post className="size-5" />
+                <span className="hidden lg:block">Skill Overview</span>
+              </TabsTrigger>
+              <TabsTrigger
+                className="flex-1 rounded-xl py-4 transition-all data-[state=active]:border-blue-600 data-[state=active]:text-blue-600"
+                value="projects"
+              >
+                <Icons.post className="size-5" />
+                <span className="hidden lg:block">Project & Research</span>
+              </TabsTrigger>
+              <TabsTrigger
+                className="flex-1 rounded-xl py-4 transition-all data-[state=active]:border-blue-600 data-[state=active]:text-blue-600"
+                value="members"
+              >
+                <Icons.post className="size-5" />
+                <span className="hidden lg:block">People</span>
+              </TabsTrigger>
+            </TabsList>
+          </div>
+          <TabsContent className="p-3 space-y-3" value="outline">
+            <div className="rounded-xl border bg-card p-6 shadow-sm">
+              <h2 className="mb-4 flex items-center gap-2 font-semibold text-xl">
+                <span className="rounded-full bg-green-100 p-1.5 text-green-700">
+                  <Icons.post className="size-8" />
+                </span>
+                Description
+              </h2>
               <JsonToHtml json={JSON.parse(course.description)} />
-
-              {/* <h3 className="mt-6 mb-3 text-lg font-medium">Topics Covered</h3> */}
-              {/* <ul className="mb-6 list-inside list-disc space-y-1">
-                {course.topics.map((item, index) => (
-                  <li key={index} className="text-muted-foreground">
-                    {item}
-                  </li>
-                ))}
-              </ul> */}
-
-              <h3 className="mb-3 mt-4 text-lg font-medium">Prerequisites</h3>
+            </div>
+            <div className="bg-card rounded-xl border p-6 shadow-sm">
+              <h2 className="mb-4 flex items-center gap-2 text-xl font-semibold">
+                <span className="rounded-full bg-purple-100 p-1.5 text-purple-700">
+                  <GraduationCap className="h-5 w-5" />
+                </span>
+                Prerequisites
+              </h2>
               <ul className="mb-6 list-inside list-disc space-y-1">
                 {course.prerequisites.map((item, index) => (
                   <li key={index} className="text-muted-foreground">
@@ -168,84 +284,98 @@ export default async function CoursePage({ params }: CoursePageProps) {
                   </li>
                 ))}
               </ul>
-
-              {/* <h3 className="mb-3 text-lg font-medium">Learning Outcomes</h3>
+            </div>
+          </TabsContent>
+          <TabsContent className="p-3 space-y-2" value="assets">
+            <div className="bg-card rounded-xl border p-6 shadow-sm">
+              <h2 className="mb-4 flex items-center gap-2 text-xl font-semibold">
+                <span className="rounded-full bg-purple-100 p-1.5 text-purple-700">
+                  <GraduationCap className="h-5 w-5" />
+                </span>
+                Topics Covered
+              </h2>
               <ul className="mb-6 list-inside list-disc space-y-1">
-                {course.learningOutcomes.map((item, index) => (
+                {/* {course.topics.map((item, index) => (
+                  <li key={index} className="text-muted-foreground">
+                    {item}
+                  </li>
+                ))} */}
+              </ul>
+            </div>
+            <div className="bg-card rounded-xl border p-6 shadow-sm">
+              <h2 className="mb-4 flex items-center gap-2 text-xl font-semibold">
+                <span className="rounded-full bg-purple-100 p-1.5 text-purple-700">
+                  <GraduationCap className="h-5 w-5" />
+                </span>
+                Learning Outcomes
+              </h2>
+              <ul className="mb-6 list-inside list-disc space-y-1">
+                {/* {course.learningOutcomes.map((item, index) => (
+                   <li key={index} className="text-muted-foreground">
+                     {item}
+                   </li>
+                 ))} */}
+              </ul>
+            </div>
+          </TabsContent>
+          <TabsContent className="p-3" value="skill">
+            <div className="bg-card rounded-xl border p-6 shadow-sm">
+              {/* 
+            <h2 className="mb-4 flex items-center gap-2 text-xl font-semibold">
+              <span className="rounded-full bg-purple-100 p-1.5 text-purple-700">
+                <GraduationCap className="h-5 w-5" />
+              </span>
+              Qualifications
+            </h2>
+            <ul className="text-muted-foreground space-y-3">
+              {job.qualifications.map((item, index) => (
+                <li key={index} className="flex items-start gap-2">
+                  <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-purple-500"></span>
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+            */}
+            </div>
+          </TabsContent>
+          <TabsContent className="p-3" value="projects">
+            <div className="bg-card rounded-xl border p-6 shadow-sm">
+              {/* 
+            <h2 className="mb-4 flex items-center gap-2 text-xl font-semibold">
+              <span className="rounded-full bg-purple-100 p-1.5 text-purple-700">
+                <GraduationCap className="h-5 w-5" />
+              </span>
+              Qualifications
+            </h2>
+            <ul className="text-muted-foreground space-y-3">
+              {job.qualifications.map((item, index) => (
+                <li key={index} className="flex items-start gap-2">
+                  <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-purple-500"></span>
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+            */}
+            </div>
+          </TabsContent>
+          <TabsContent className="p-3" value="members">
+            <div className="bg-card rounded-xl border p-6 shadow-sm">
+              <h2 className="mb-4 flex items-center gap-2 text-xl font-semibold">
+                <span className="rounded-full bg-purple-100 p-1.5 text-purple-700">
+                  <GraduationCap className="h-5 w-5" />
+                </span>
+                Members
+              </h2>
+              {/* <ul className="mb-6 list-inside list-disc space-y-1">
+                {course.topics.map((item, index) => (
                   <li key={index} className="text-muted-foreground">
                     {item}
                   </li>
                 ))}
               </ul> */}
-
-              <Button className="w-full">Enroll Now</Button>
             </div>
-          </div>
-        </div>
-        <div>
-          <div className="bg-card rounded-lg border p-6 shadow-sm">
-            <h3 className="mb-4 text-lg font-medium">Course Details</h3>
-
-            <div className="space-y-4">
-              <div className="flex items-start gap-3">
-                <User className="text-primary mt-0.5 h-5 w-5" />
-                <div>
-                  <p className="text-sm font-medium">Instructor</p>
-                  <p className="text-muted-foreground">
-                    {course.instructor.name}
-                  </p>
-                </div>
-              </div>
-
-              {/* <div className="flex items-start gap-3">
-                <MapPin className="text-primary mt-0.5 h-5 w-5" />
-                <div>
-                  <p className="text-sm font-medium">Location</p>
-                  <p className="text-muted-foreground">{course.location}</p>
-                </div>
-              </div> */}
-
-              <div className="flex items-start gap-3">
-                <Clock className="text-primary mt-0.5 h-5 w-5" />
-                <div>
-                  <p className="text-sm font-medium">Duration</p>
-                  <p className="text-muted-foreground">{course.duration}</p>
-                </div>
-              </div>
-
-              {/* <div className="flex items-start gap-3">
-                <Calendar className="text-primary mt-0.5 h-5 w-5" />
-                <div>
-                  <p className="text-sm font-medium">Dates</p>
-                  <p className="text-muted-foreground">
-                    {course.startDate} - {course.endDate}
-                  </p>
-                </div>
-              </div> */}
-
-              <div className="flex items-start gap-3">
-                <GraduationCap className="text-primary mt-0.5 h-5 w-5" />
-                <div>
-                  <p className="text-sm font-medium">Enrollment</p>
-                  <p className="text-muted-foreground">
-                    {course.enrollments.length} students
-                  </p>
-                  <p className="text-muted-foreground">
-                    {/* Deadline: {course.enrollmentDeadline} */}
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3">
-                <Book className="text-primary mt-0.5 h-5 w-5" />
-                <div>
-                  <p className="text-sm font-medium">Credits</p>
-                  <p className="text-muted-foreground">{course.credits}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
