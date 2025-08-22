@@ -15,6 +15,7 @@ export function getUserDataSelect(loggedInUserId: string) {
     image: true,
     coverImage: true,
     email: true,
+    emailVerified: true,
     displayUsername: true,
     createdAt: true,
     userSkills: true,
@@ -106,6 +107,14 @@ export function getJobDataInclude(loggedInUserId: string) {
       select: {
         userId: true,
       },
+    },
+    course: {
+      where: {
+        instructorId: loggedInUserId
+      },
+      select: {
+        instructorId: true
+      }
     },
     application: {
       // Add this new field

@@ -8,6 +8,8 @@ import { toast } from "sonner";
 import { JobData } from "@/types/types";
 import { useSession } from "@/lib/auth-client";
 import { formatDate, formatRelativeDate } from "@/lib/utils";
+import { useQuery } from "@tanstack/react-query";
+import { isEnrolledInCourse } from "@/actions/enrollment";
 
 import JobMoreButton from "../jobs/JobMoreButton";
 import SaveJobButton from "../jobs/SaveJobButton";
@@ -26,6 +28,12 @@ export default function Job({ job }: JobProps) {
   if (!user) {
     return null;
   }
+
+  const { data: isEnrolled } = useQuery({
+    queryKey: ["enrolled", job.courseId],
+    queryFn: () => isEnrolledInCourse(job.courseId || ""),
+    enabled: !!job.courseId && user.role === "STUDENT",
+  });
   const handleApply = async () => {
     const res = await applyJob(job.id);
     if (!res.success) {
@@ -35,10 +43,10 @@ export default function Job({ job }: JobProps) {
     }
   };
   return (
-    <article className="group/post bg-card relative space-y-3 rounded-2xl border p-5 shadow-sm">
+    <article className="group/post bg-card relative space-y-2 rounded-2xl border p-3 shadow-sm">
       {/* Department badge */}
       <div className="absolute top-0 right-0 rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700">
-        Profile match
+        {job.courseId && isEnrolled ? "Profile Match" : "Profile Not Matched"}
       </div>
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-3">
@@ -54,7 +62,9 @@ export default function Job({ job }: JobProps) {
                 className="text-md flex items-center gap-1 font-medium hover:underline"
               >
                 {job.user.name}
-                <ShieldCheck className="size-5 text-blue-700" />
+                {job.user.emailVerified && (
+                  <ShieldCheck className="size-5 text-blue-700" />
+                )}
               </Link>
             </UserTooltip>
             <Link
@@ -71,27 +81,26 @@ export default function Job({ job }: JobProps) {
       </div>
       <Link href={`/jobs/${job.id}`}>
         <h3 className="text-2xl font-semibold">{job.title}</h3>
-        <p className="py-2">{job.summary}</p>
-        <div className="flex items-center space-x-4">
-          <div className="flex items-center gap-1.5">
+        <p className="py-1">{job.summary}</p>
+        <div className="flex items-center justify-between gap-3">
+          <h4 className="flex items-center gap-1.5">
             <MapPin className="size-4 text-gray-500" />
             <span>{job.location}</span>
-          </div>
+          </h4>
           <h4 className="flex items-center gap-1">
             <Clock className="size-4 text-gray-500" />
             <span>{job.weeklyHours} hrs/week</span>
           </h4>
         </div>
-        <div className="grid grid-cols-2 gap-1">
+        <div className="flex items-center justify-between">
           <h4 className="flex items-center gap-1">
             Salary: <span>${job.salary}</span>
           </h4>
-          {/* Job type badge */}
           <Badge className="bg-primary/10 text-primary text-sm font-medium">
             {job.type}
           </Badge>
         </div>
-        <div className="flex items-center gap-1 px-1 py-1">
+        <div className="flex items-center gap-2 py-2">
           <Calendar className="size-4" />
           <span>Deadline: {formatDate(job.endDate, "MM/dd/yyyy")}</span>
         </div>

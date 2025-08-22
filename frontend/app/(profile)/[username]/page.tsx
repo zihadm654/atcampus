@@ -69,7 +69,7 @@ const getAppliedJobs = cache(async (userId: string) => {
   });
   return applications;
 });
-// const getEnrolledCourses = cache(async (userId: string) => {
+// const getCourses = cache(async (userId: string) => {
 //   const enrolled = await prisma.enrollment.findMany({
 //     where: {
 //       studentId: userId,
@@ -176,8 +176,7 @@ async function UserProfile({ user, loggedInUserId }: UserProfileProps) {
         <div className="absolute inset-0 bg-black opacity-20 mix-blend-overlay" />
       </div>
 
-      {/* Profile info section */}
-      <div className="relative px-6 pb-6">
+      <div className="relative px-6 pb-2">
         {/* Avatar - positioned to overlap the cover photo with enhanced styling */}
         <div className="absolute -top-16 left-6 rounded-full shadow-lg ring-4 ring-white max-sm:-top-30">
           <UserAvatar
@@ -187,7 +186,6 @@ async function UserProfile({ user, loggedInUserId }: UserProfileProps) {
           />
         </div>
 
-        {/* Profile content with proper spacing for the avatar */}
         <div className="pt-2">
           {/* Name and username with enhanced styling */}
           <div className="flex items-center justify-between">
@@ -213,7 +211,7 @@ async function UserProfile({ user, loggedInUserId }: UserProfileProps) {
           </div>
 
           {/* Stats row with enhanced styling */}
-          <div className="mb-6 flex items-center space-between gap-6 rounded-xl p-3 pl-36 max-sm:pl-3">
+          <div className="mb-2 flex items-center space-between gap-6 rounded-xl p-1 pl-36 max-sm:pl-3">
             <div className="flex flex-col items-center">
               <span className="font-semibold text-blue-700">
                 {formatNumber(user._count.posts)}
@@ -233,7 +231,7 @@ async function UserProfile({ user, loggedInUserId }: UserProfileProps) {
 
           {/* Bio section with enhanced styling */}
           {user.bio ? (
-            <div className="mb-4 rounded-xl border p-4 shadow-sm">
+            <div className="py-2">
               <div className="mb-2 flex items-center">
                 <Icons.info className="mr-2 size-6 text-green-600" />
                 <h3 className="font-medium text-muted-foreground">About</h3>
@@ -246,11 +244,10 @@ async function UserProfile({ user, loggedInUserId }: UserProfileProps) {
             </div>
           ) : null}
 
-          {/* Education info with enhanced styling */}
           {((user.institution || user.instituteId || user.currentSeamster) &&
             user.role === "STUDENT") ||
           user.role === "PROFESSOR" ? (
-            <div className="flex flex-col gap-2 rounded-xl border p-2 shadow-sm">
+            <div className="flex flex-col gap-2">
               <div className="mb-3 flex items-center">
                 <Icons.edu className="mr-2 size-6 text-green-600" />
                 <h3 className="font-medium text-muted-foreground">
@@ -261,21 +258,14 @@ async function UserProfile({ user, loggedInUserId }: UserProfileProps) {
               <div className="space-y-1">
                 {user.institution && (
                   <div className="flex items-center gap-2">
-                    <div className="rounded-lg p-2">
-                      <Icons.edu className="size-6 text-green-600" />
-                    </div>
-                    <div>
-                      <span className="font-medium">{user.institution}</span>
-                      <p className="text-sm">Institution</p>
-                    </div>
+                    <Icons.edu className="size-6 text-green-600" />
+                    <span className="font-medium">{user.institution}</span>
                   </div>
                 )}
 
                 {user.instituteId && (
                   <div className="flex items-center gap-2">
-                    <div className="rounded-lg p-2">
-                      <Icons.card className="size-6 text-green-600" />
-                    </div>
+                    <Icons.card className="size-6 text-green-600" />
                     <div>
                       <span className="font-medium">{user.instituteId}</span>
                       <p className="text-sm text-gray-500">Student ID</p>
@@ -283,7 +273,7 @@ async function UserProfile({ user, loggedInUserId }: UserProfileProps) {
                   </div>
                 )}
 
-                {user.currentSeamster ? (
+                {user.currentSeamster && (
                   <div className="flex items-center gap-2">
                     <div className="rounded-lg bg-purple-100 p-2">
                       <svg
@@ -302,11 +292,11 @@ async function UserProfile({ user, loggedInUserId }: UserProfileProps) {
                       <p className="text-sm text-gray-500">Current Semester</p>
                     </div>
                   </div>
-                ) : null}
+                )}
               </div>
             </div>
           ) : (
-            <div className="flex flex-col gap-2 rounded-xl border px-4 py-2 shadow-sm">
+            <div className="flex flex-col gap-2 py-2">
               <div className="mb-3 flex items-center">
                 <Icons.edu className="mr-2 size-6 text-green-600" />
                 <h3 className="font-medium text-muted-foreground">
@@ -314,19 +304,12 @@ async function UserProfile({ user, loggedInUserId }: UserProfileProps) {
                 </h3>
               </div>
 
-              <div className="space-y-1">
-                {user.institution && (
-                  <div className="flex items-center gap-2">
-                    <div className="rounded-lg p-2">
-                      <Icons.edu className="size-6 text-green-600" />
-                    </div>
-                    <div>
-                      <span className="font-medium">{user.institution}</span>
-                      <p className="text-sm">Institution</p>
-                    </div>
-                  </div>
-                )}
-              </div>
+              {user.institution && (
+                <div className="flex items-center gap-2">
+                  <Icons.edu className="size-6 text-green-600" />
+                  <span className="font-medium">{user.institution}</span>
+                </div>
+              )}
             </div>
           )}
         </div>

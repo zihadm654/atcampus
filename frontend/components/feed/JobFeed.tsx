@@ -1,26 +1,26 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import Link from 'next/link';
-import { useInfiniteQuery } from '@tanstack/react-query';
-import { Loader2 } from 'lucide-react';
+import { useState } from "react";
+import Link from "next/link";
+import { useInfiniteQuery } from "@tanstack/react-query";
+import { Loader2 } from "lucide-react";
 
-import { JobsPage } from '@/types/types';
-import kyInstance from '@/lib/ky';
-import { JobType } from '@/lib/validations/job';
-import useDebounce from '@/hooks/useDebounce';
-import InfiniteScrollContainer from '@/components/feed/InfiniteScrollContainer';
+import { JobsPage } from "@/types/types";
+import kyInstance from "@/lib/ky";
+import { JobType } from "@/lib/validations/job";
+import useDebounce from "@/hooks/useDebounce";
+import InfiniteScrollContainer from "@/components/feed/InfiniteScrollContainer";
 
-import Job from '../jobs/Job';
-import JobsLoadingSkeleton from '../jobs/JobsLoadingSkeleton';
-import { Button } from '../ui/button';
+import Job from "../jobs/Job";
+import JobsLoadingSkeleton from "../jobs/JobsLoadingSkeleton";
+import { Button } from "../ui/button";
 
 interface Props {
   user: any;
 }
 
 export default function JobFeed({ user }: Props) {
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [jobTypes, setJobTypes] = useState<JobType[]>([]);
 
   const debouncedSearchQuery = useDebounce(searchQuery);
@@ -33,14 +33,14 @@ export default function JobFeed({ user }: Props) {
     isFetchingNextPage,
     status,
   } = useInfiniteQuery({
-    queryKey: ['job-feed', 'for-you', debouncedSearchQuery, jobTypes],
+    queryKey: ["job-feed", "for-you", debouncedSearchQuery, jobTypes],
     queryFn: ({ pageParam }) =>
       kyInstance
-        .get('/api/jobs', {
+        .get("/api/jobs", {
           searchParams: {
             ...(pageParam ? { cursor: pageParam } : {}),
             ...(debouncedSearchQuery ? { q: debouncedSearchQuery } : {}),
-            ...(jobTypes.length ? { type: jobTypes.join(',') } : {}),
+            ...(jobTypes.length ? { type: jobTypes.join(",") } : {}),
           },
         })
         .json<JobsPage>(),
@@ -55,21 +55,21 @@ export default function JobFeed({ user }: Props) {
       prev.includes(type) ? prev.filter((t) => t !== type) : [...prev, type]
     );
   };
-  if (status === 'pending') {
+  if (status === "pending") {
     return <JobsLoadingSkeleton />;
   }
 
-  if (status === 'success' && !jobs.length && !hasNextPage) {
+  if (status === "success" && !jobs.length && !hasNextPage) {
     return (
-      <p className='text-muted-foreground text-center'>
+      <p className="text-muted-foreground text-center">
         No one has posted anything yet.
       </p>
     );
   }
 
-  if (status === 'error') {
+  if (status === "error") {
     return (
-      <p className='text-destructive text-center'>
+      <p className="text-destructive text-center">
         An error occurred while loading posts.
       </p>
     );
@@ -111,8 +111,8 @@ export default function JobFeed({ user }: Props) {
       </div> */}
 
       {/* Filters */}
-      <div className='flex items-center justify-between gap-2 p-2'>
-        <h1 className='text-3xl font-bold pb-4'>Jobs</h1>
+      <div className="flex items-center justify-between gap-2 p-2">
+        <h1 className="text-3xl font-bold pb-4">Jobs</h1>
         {/* 
         <div className="flex flex-wrap items-center gap-2 group-hover:cursor-pointer">
           <Button
@@ -149,22 +149,22 @@ export default function JobFeed({ user }: Props) {
           </Button>
         </div>
         */}
-        {user.role === 'ORGANIZATION' && (
-          <Button className='rounded-xl' size='sm' variant='outline'>
-            <Link href='/jobs/createJob'>Create Job</Link>
+        {user.role === "ORGANIZATION" && (
+          <Button className="rounded-xl" size="sm" variant="outline">
+            <Link href="/jobs/createJob">Create Job</Link>
           </Button>
         )}
       </div>
 
       <InfiniteScrollContainer
-        className='grid grid-cols-3 gap-4 space-y-5 max-md:grid-cols-1'
+        className="grid grid-cols-3 gap-4 space-y-5 max-md:grid-cols-1"
         onBottomReached={() => hasNextPage && !isFetching && fetchNextPage()}
       >
         {jobs.map((job) => (
           <Job key={job.id} job={job} />
         ))}
         {isFetchingNextPage && (
-          <Loader2 className='mx-auto my-3 animate-spin' />
+          <Loader2 className="mx-auto my-3 animate-spin" />
         )}
       </InfiniteScrollContainer>
     </div>

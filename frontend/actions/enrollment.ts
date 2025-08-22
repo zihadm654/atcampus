@@ -87,3 +87,16 @@ export const updateEnrollmentStatus = async (
   revalidatePath("/courses");
   return { success: true, message: "Enrollment status updated successfully." };
 };
+
+export async function isEnrolledInCourse(courseId: string) {
+  const user = await getCurrentUser();
+  if (!user) return false;
+
+  const enrollment = await prisma.enrollment.findUnique({
+    where: {
+      courseId_studentId: { courseId, studentId: user.id }
+    }
+  });
+
+  return !!enrollment && enrollment.status === "enrolled";
+}

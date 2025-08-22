@@ -114,7 +114,7 @@ export default function ProfileClient({
       />
       <div className="bg-card overflow-hidden rounded-2xl shadow-sm">
         <Tabs defaultValue="overview">
-          <div className="border-b border-gray-100">
+          <div className="border-b">
             <TabsList className="flex w-full justify-between p-0">
               <TabsTrigger
                 value="overview"
@@ -347,57 +347,18 @@ export default function ProfileClient({
                   <Card className="overflow-hidden rounded-xl border border-gray-100 shadow-sm transition-all hover:border-gray-200 hover:shadow">
                     <CardHeader className="flex items-center justify-between pb-2">
                       <CardTitle className="flex items-center text-lg font-medium">
-                        <Icons.users className="size-7 pr-2" />
-                        Members
+                        Academics
                       </CardTitle>
                     </CardHeader>
-                    <CardContent className="pt-1">
-                      {user.members?.length > 0 ? (
-                        <div className="max-h-40 overflow-y-auto">
-                          <ul className="space-y-2">
-                            {user.members.map((member) => (
-                              <li
-                                key={member.id}
-                                className="flex items-center justify-between border p-2 rounded-md"
-                              >
-                                <div className="flex items-center space-x-2">
-                                  {/* <Avatar className="size-8">
-                                    <AvatarImage
-                                      src={member.user.image || undefined}
-                                    />
-                                    <AvatarFallback>
-                                      {member.user.name
-                                        ? member.user.name[0]
-                                        : "?"}
-                                    </AvatarFallback>
-                                  </Avatar> */}
-                                  <span> - {member.role}</span>
-                                </div>
-                                {member.role === "owner" && (
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => {
-                                      setSelectedMemberForFaculty(member);
-                                      setIsAssignFacultyDialogOpen(true);
-                                    }}
-                                  >
-                                    Assign to Faculty
-                                  </Button>
-                                )}
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      ) : (
-                        <div className="flex h-28 items-center justify-center rounded-lg text-gray-500">
-                          <div className="flex flex-col items-center">
-                            <Icons.users className="size-10" />
-                            No members found
-                          </div>
-                        </div>
-                      )}
-                    </CardContent>
+                    <CardContent className="pt-1 border rounded-xl"></CardContent>
+                  </Card>
+                  <Card className="overflow-hidden rounded-xl border border-gray-100 shadow-sm transition-all hover:border-gray-200 hover:shadow">
+                    <CardHeader className="flex items-center justify-between pb-2">
+                      <CardTitle className="flex items-center text-lg font-medium">
+                        Campus Life
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-1 border rounded-xl"></CardContent>
                   </Card>
                 </div>
               </Fragment>
@@ -699,7 +660,6 @@ export default function ProfileClient({
               </div>
             </section>
           </TabsContent>
-          {/* TODO: Add content for clubs, courses, events if needed */}
         </Tabs>
       </div>
     </Fragment>

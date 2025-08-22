@@ -15,7 +15,7 @@ const PostJobPage = async () => {
     return redirect("/login");
   }
   return (
-    <div className="mt-5">
+    <div className="mt-5 w-full">
       <CreateJobForm />
     </div>
   );

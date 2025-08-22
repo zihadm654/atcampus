@@ -31,6 +31,8 @@ import { getJobDataInclude, getUserDataSelect } from "@/types/types";
 import SaveJobButton from "@/components/jobs/SaveJobButton";
 import Client from "./client";
 import { JobType } from "@/lib/validations/job";
+import { Badge } from "@/components/ui/badge";
+import { isEnrolledInCourse } from "@/actions/enrollment";
 
 interface PageProps {
   params: Promise<{ jobId: string }>;
@@ -90,7 +92,7 @@ export default async function JobPage({ params }: PageProps) {
   }
   const currentUser = await getUser(user.id);
   const job = await getJob(jobId, user.id);
-
+  const isEnrolled = await isEnrolledInCourse(job?.courseId || "");
   // If job not found, return 404
   if (!job) {
     notFound();
@@ -99,7 +101,7 @@ export default async function JobPage({ params }: PageProps) {
   return (
     <div className="w-full">
       {/* Header with gradient background */}
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-2 max-md:grid-cols-1 gap-2">
         <Card className="flex flex-col gap-3">
           <CardHeader className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -127,14 +129,13 @@ export default async function JobPage({ params }: PageProps) {
             </div>
             {job.user.id === user.id && <JobMoreButton job={job} />}
           </CardHeader>
-
           <CardContent className="mt-2 gap-4 text-md">
             <div className="flex items-center gap-1.5 rounded-full px-3 py-1">
               <MapPin className="size-5" />
               Location: <span>{job.location}</span>
             </div>
             <div className="flex items-center gap-1.5 rounded-full px-3 py-1">
-              Job Type: <span>{job.type}</span>
+              Job Type: <Badge>{job.type}</Badge>
             </div>
             {job.type === JobType.INTERSHIP && (
               <div className="flex items-center gap-1.5 rounded-full px-3 py-1">
@@ -186,36 +187,43 @@ export default async function JobPage({ params }: PageProps) {
               </UserTooltip>
             </CardTitle>
           </CardHeader>
+          <CardContent>
+            <Badge>
+              {job.courseId && isEnrolled
+                ? "Profile Match"
+                : "Profile Not Matched"}
+            </Badge>
+          </CardContent>
         </Card>
       </div>
-      <div className="overflow-hidden rounded-2xl bg-card shadow-sm">
+      <div className="overflow-hidden mt-3 rounded-2xl bg-card shadow-sm">
         <Tabs defaultValue="summary">
-          <div className="border-gray-100 border-b">
+          <div className=" border-b">
             <TabsList className="flex w-full justify-between p-0">
               <TabsTrigger
                 className="flex-1 rounded-xl py-4 transition-all data-[state=active]:border-blue-600 data-[state=active]:text-blue-600"
                 value="summary"
               >
                 <Icons.home className="size-5" />
-                Summary
+                <span className="hidden lg:block">Summary</span>
               </TabsTrigger>
               <TabsTrigger
                 className="flex-1 rounded-xl py-4 transition-all data-[state=active]:border-blue-600 data-[state=active]:text-blue-600"
                 value="description"
               >
                 <Icons.post className="size-5" />
-                Description
+                <span className="hidden lg:block">Description</span>
               </TabsTrigger>
               <TabsTrigger
                 className="flex-1 rounded-xl py-4 transition-all data-[state=active]:border-blue-600 data-[state=active]:text-blue-600"
                 value="qualifications"
               >
                 <Icons.post className="size-5" />
-                Qualifications
+                <span className="hidden lg:block">Qualifications</span>
               </TabsTrigger>
             </TabsList>
           </div>
-          <TabsContent className="p-3" value="summary">
+          <TabsContent className="p-2" value="summary">
             {/* Main content */}
             <div className="flex-1 space-y-6">
               <div className="rounded-xl border bg-card p-6 shadow-sm">
@@ -229,7 +237,7 @@ export default async function JobPage({ params }: PageProps) {
               </div>
             </div>
           </TabsContent>
-          <TabsContent className="p-3" value="description">
+          <TabsContent className="p-2" value="description">
             <div className="rounded-xl border bg-card p-6 shadow-sm">
               <h2 className="mb-4 flex items-center gap-2 font-semibold text-xl">
                 <span className="rounded-full bg-green-100 p-1.5 text-green-700">
@@ -240,7 +248,7 @@ export default async function JobPage({ params }: PageProps) {
               <JsonToHtml json={JSON.parse(job.description)} />
             </div>
           </TabsContent>
-          <TabsContent className="p-6" value="qualifications">
+          <TabsContent className="p-2" value="qualifications">
             {/* <div className="bg-card rounded-xl border p-6 shadow-sm">
             <h2 className="mb-4 flex items-center gap-2 text-xl font-semibold">
               <span className="rounded-full bg-purple-100 p-1.5 text-purple-700">

@@ -54,12 +54,12 @@ export async function createJob(values: TJob) {
       throw new Error(validatedFields.error.message);
     }
 
-    const job = await prisma.job.create({
-      data: {
+    const data = {
         userId: user.id,
         ...validatedFields.data,
-      },
-    });
+        courseId: validatedFields.data.courseId || undefined,
+      };
+    const job = await prisma.job.create({ data });
 
     revalidatePath("/jobs");
 
@@ -83,14 +83,14 @@ export async function updateJob(values: TJob, jobId: string) {
       throw new Error(validatedFields.error.message);
     }
 
-    const job = await prisma.job.update({
-      where: {
-        id: jobId
-      },
-      data: {
+    const data = {
         userId: user.id,
         ...validatedFields.data,
-      },
+        courseId: validatedFields.data.courseId || undefined,
+      };
+    const job = await prisma.job.update({
+      where: { id: jobId },
+      data,
     });
 
     revalidatePath("/jobs");

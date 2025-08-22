@@ -3,12 +3,14 @@
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
-import type { User,Job } from "@prisma/client";
+import type { User, Job } from "@prisma/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { CalendarIcon } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
+import { useQuery } from "@tanstack/react-query";
+import { getInstructorCourses } from "@/components/courses/actions";
 
 import { cn } from "@/lib/utils";
 import {
@@ -63,72 +65,80 @@ const OPTIONS: Option[] = [
   { label: "Gatsby", value: "gatsby", disable: true },
   { label: "Astro", value: "astro" },
 ];
-export function CreateJobForm({ user,job }: CreateJobFormProps) {
+export function CreateJobForm({ user, job }: CreateJobFormProps) {
   const router = useRouter();
   const [pending, setPending] = useState(false);
   const form = useForm<TJob>({
     resolver: zodResolver(jobSchema),
-    defaultValues: job ? {
-      ...job,
-      type: job.type as JobType,
-      experienceLevel: job.experienceLevel as ExperienceLevel,
-      endDate: new Date(job.endDate),
-      duration: job.duration ||undefined,
-    } : {
-      title: "",
-      summary: "",
-      description: "",
-      location: "",
-      weeklyHours: 0,
-      type: JobType.INTERSHIP,
-      experienceLevel: ExperienceLevel.ENTRY,
-      salary: 0,
-      requirements: [],
-      endDate: new Date(),
-    },
+    defaultValues: job
+      ? {
+          ...job,
+          type: job.type as JobType,
+          experienceLevel: job.experienceLevel as ExperienceLevel,
+          endDate: new Date(job.endDate),
+          duration: job.duration || undefined,
+          courseId: job.courseId || undefined,
+        }
+      : {
+          title: "",
+          summary: "",
+          description: "",
+          location: "",
+          weeklyHours: 0,
+          type: JobType.INTERSHIP,
+          experienceLevel: ExperienceLevel.ENTRY,
+          salary: 0,
+          requirements: [],
+          endDate: new Date(),
+          courseId: "",
+        },
   });
   const queryClient = useQueryClient();
 
+  const { data: courses } = useQuery({
+    queryKey: ["instructor-courses"],
+    queryFn: getInstructorCourses,
+  });
+
   async function onSubmit(values: TJob) {
-    if(job){
+    if (job) {
       try {
         setPending(true);
-      console.log(values);
+        console.log(values);
 
-      await updateJob(values,job.id);
-      toast.success("Job updated successfully!");
-      queryClient.invalidateQueries({ queryKey: ["job-feed"] });
-      form.reset();
-      router.push("/jobs");
-    } catch (error) {
-      console.error(error);
-      toast.error("Something went wrong. Please try again.");
-    } finally {
-      setPending(false);
-    }
-  }else{
+        await updateJob(values, job.id);
+        toast.success("Job updated successfully!");
+        queryClient.invalidateQueries({ queryKey: ["job-feed"] });
+        form.reset();
+        router.push("/jobs");
+      } catch (error) {
+        console.error(error);
+        toast.error("Something went wrong. Please try again.");
+      } finally {
+        setPending(false);
+      }
+    } else {
+      try {
+        setPending(true);
+        console.log(values);
 
-    try {
-      setPending(true);
-      console.log(values);
-
-      await createJob(values);
-      toast.success("Job created successfully!");
-      queryClient.invalidateQueries({ queryKey: ["job-feed"] });
-      form.reset();
-      router.push("/jobs");
-    } catch (error) {
-      console.error(error);
-      toast.error("Something went wrong. Please try again.");
-    } finally {
-      setPending(false);
+        await createJob(values);
+        toast.success("Job created successfully!");
+        queryClient.invalidateQueries({ queryKey: ["job-feed"] });
+        form.reset();
+        router.push("/jobs");
+      } catch (error) {
+        console.error(error);
+        toast.error("Something went wrong. Please try again.");
+      } finally {
+        setPending(false);
+      }
     }
   }
-  }
-
+  const type = form.watch("type");
   useEffect(() => {
     const subscription = form.watch((value, { name, type }) =>
-      console.log(value, name, type),
+      console.log(value, name, type)
     );
     return () => subscription.unsubscribe();
   }, [form]);
@@ -251,6 +261,35 @@ export function CreateJobForm({ user,job }: CreateJobFormProps) {
                   </FormItem>
                 )}
               />
+              <FormField
+                control={form.control}
+                name="courseId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Associated Course (Optional)</FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select associated course" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectGroup>
+                          {courses?.map((course) => (
+                            <SelectItem key={course.id} value={course.id}>
+                              {course.title} ({course.code})
+                            </SelectItem>
+                          ))}
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </div>
 
             <FormField
@@ -279,7 +318,7 @@ export function CreateJobForm({ user,job }: CreateJobFormProps) {
                           variant={"outline"}
                           className={cn(
                             "w-[240px] pl-3 text-left font-normal",
-                            !field.value && "text-muted-foreground",
+                            !field.value && "text-muted-foreground"
                           )}
                         >
                           {field.value ? (
@@ -324,12 +363,12 @@ export function CreateJobForm({ user,job }: CreateJobFormProps) {
                       }
                       onChange={(selectedOptions: Option[]) =>
                         field.onChange(
-                          selectedOptions.map((option) => option.value),
+                          selectedOptions.map((option) => option.value)
                         )
                       }
                       placeholder="Select frameworks you like..."
                       value={OPTIONS.filter((option) =>
-                        field.value.includes(option.value),
+                        field.value.includes(option.value)
                       )}
                     />
                   </FormControl>
@@ -345,7 +384,7 @@ export function CreateJobForm({ user,job }: CreateJobFormProps) {
             <CardTitle>Duration</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            {JobType.INTERSHIP && (
+            {type === JobType.INTERSHIP && (
               <FormField
                 control={form.control}
                 name="duration"

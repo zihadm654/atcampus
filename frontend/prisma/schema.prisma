@@ -353,6 +353,8 @@ model Job {
   type            String
   experienceLevel String
   duration        Int?
+  courseId        String?
+  course          Course?   @relation(fields: [courseId], references: [id])
 
   createdAt DateTime @default(now()) @map(name: "created_at")
   updatedAt DateTime @updatedAt @map(name: "updated_at")
@@ -552,6 +554,7 @@ model Course {
   enrollments   Enrollment[]
   announcements CourseAnnouncement[]
   materials     CourseMaterial[]
+  jobs          Job[]
 
   @@map(name: "courses")
 }

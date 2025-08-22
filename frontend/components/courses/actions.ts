@@ -69,6 +69,19 @@ export async function createCourse(values: TCourse) {
     return { success: false, error: (error as Error).message };
   }
 }
+
+export async function getInstructorCourses() {
+  const user = await getCurrentUser();
+
+  if (!user) throw new Error("Unauthorized");
+
+  const courses = await prisma.course.findMany({
+    where: { instructorId: user.id },
+    orderBy: { createdAt: "desc" },
+  });
+
+  return courses;
+}
 export async function updateCourse(values: TCourse, courseId: string) {
   try {
     const user = await getCurrentUser();
