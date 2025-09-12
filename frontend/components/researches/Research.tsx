@@ -83,7 +83,7 @@ export default function Research({ research }: ResearchProps) {
             disabled={research.collaborators.some((c) => c.id === user.id)}
           >
             {research.collaborators.some((c) => c.id === user.id) &&
-            research.collaborationRequests.some((c) => c.id === user.id)
+              research.collaborationRequests.some((c) => c.id === user.id)
               ? "Already Requested"
               : "Request Collaborate"}
           </Button>
@@ -91,7 +91,7 @@ export default function Research({ research }: ResearchProps) {
         <SaveResearchButton
           researchId={research.id}
           initialState={{
-            isSaveResearchByUser: research.saveResearch.some(
+            isSaveResearchByUser: research.savedResearch.some(
               (bookmark) => bookmark.userId === user.id
             ),
           }}

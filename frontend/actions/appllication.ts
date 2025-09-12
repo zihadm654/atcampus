@@ -1,13 +1,14 @@
-"use server";
+'use server';
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath } from 'next/cache';
 
-import { prisma } from "@/lib/db";
-import { getCurrentUser } from "@/lib/session";
+import { prisma } from '@/lib/db';
+import { getCurrentUser } from '@/lib/session';
+import { ApplicationStatus, NotificationType } from '@prisma/client';
 
 export const applyJob = async (jobId: string) => {
   const user = await getCurrentUser();
-  if (!user) throw new Error("Unauthorized");
+  if (!user) throw new Error('Unauthorized');
 
   try {
     // Check if user already applied
@@ -18,7 +19,7 @@ export const applyJob = async (jobId: string) => {
       },
     });
     if (existingApplication) {
-      return { success: false, message: "Already applied to this job." };
+      return { success: false, message: 'Already applied to this job.' };
     }
 
     // Fetch job to get the creator's userId
@@ -27,10 +28,10 @@ export const applyJob = async (jobId: string) => {
       select: { userId: true },
     });
     if (!job) {
-      return { success: false, message: "Job not found." };
+      return { success: false, message: 'Job not found.' };
     }
     if (job.userId === user.id) {
-      return { success: false, message: "You cannot apply to your own job." };
+      return { success: false, message: 'You cannot apply to your own job.' };
     }
 
     // Use a transaction to create application and notification atomically
@@ -39,48 +40,48 @@ export const applyJob = async (jobId: string) => {
         data: {
           applicantId: user.id,
           jobId,
-          status: "pending",
+          status: ApplicationStatus.PENDING,
         },
       });
       await tx.notification.create({
         data: {
           issuerId: user.id,
           recipientId: job.userId,
-          type: "APPLICATION", // Use a specific type for job applications
+          type: NotificationType.JOB_APPLICATION, // Use a specific type for job applications
           // Optionally add more fields (jobId, message, etc.)
         },
       });
     });
-    revalidatePath("/jobs");
+    revalidatePath('/jobs');
     return {
       success: true,
-      message: "Job application submitted successfully.",
+      message: 'Job application submitted successfully.',
     };
   } catch (error) {
-    console.error("Error applying for job:", error);
-    throw new Error("Failed to apply for job.");
+    console.error('Error applying for job:', error);
+    throw new Error('Failed to apply for job.');
   }
 };
 
 export const updateApplicationStatus = async (
   applicationId: string,
-  newStatus: "pending" | "accepted" | "rejected",
+  newStatus: ApplicationStatus
 ) => {
   const user = await getCurrentUser();
-  if (!user || user.role !== "ORGANIZATION") throw new Error("Unauthorized");
+  if (!user || user.role !== 'ORGANIZATION') throw new Error('Unauthorized');
 
   const application = await prisma.application.findUnique({
     where: { id: applicationId },
     include: { job: true },
   });
   if (!application || application.job.userId !== user.id)
-    throw new Error("Unauthorized or application not found");
+    throw new Error('Unauthorized or application not found');
 
   await prisma.application.update({
     where: { id: applicationId },
     data: { status: newStatus },
   });
 
-  revalidatePath("/dashboard");
-  return { success: true, message: "Status updated successfully." };
+  revalidatePath('/dashboard');
+  return { success: true, message: 'Status updated successfully.' };
 };

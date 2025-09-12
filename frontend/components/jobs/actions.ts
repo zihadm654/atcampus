@@ -6,6 +6,7 @@ import { getJobDataInclude } from "@/types/types";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/session";
 import { jobSchema, TJob } from "@/lib/validations/job";
+import { ExperienceLevel, JobType } from "@prisma/client";
 
 export async function deleteJob(id: string) {
   const user = await getCurrentUser();
@@ -55,10 +56,12 @@ export async function createJob(values: TJob) {
     }
 
     const data = {
-        userId: user.id,
-        ...validatedFields.data,
-        courseId: validatedFields.data.courseId || undefined,
-      };
+      ...validatedFields.data,
+      userId: user.id,
+      level: validatedFields.data?.experienceLevel as ExperienceLevel,
+      type: validatedFields.data.type as JobType,
+      courseId: validatedFields.data.courseId || undefined,
+    };
     const job = await prisma.job.create({ data });
 
     revalidatePath("/jobs");
@@ -84,10 +87,11 @@ export async function updateJob(values: TJob, jobId: string) {
     }
 
     const data = {
-        userId: user.id,
-        ...validatedFields.data,
-        courseId: validatedFields.data.courseId || undefined,
-      };
+      ...validatedFields.data,
+      userId: user.id,
+      type: validatedFields.data.type as JobType,
+      courseId: validatedFields.data.courseId || undefined,
+    };
     const job = await prisma.job.update({
       where: { id: jobId },
       data,

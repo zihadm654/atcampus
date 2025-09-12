@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { CheckIcon, XIcon } from 'lucide-react';
-import { useParams, useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
-import { Button } from '@/components/ui/button';
+import { CheckIcon, XIcon } from "lucide-react";
+import { useParams, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -11,11 +11,11 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
-import { organization } from '@/lib/auth-client';
+} from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { organization } from "@/lib/auth-client";
 
-import { InvitationError } from './invitation-error';
+import { InvitationError } from "./invitation-error";
 
 export default function InvitationPage() {
   const params = useParams<{
@@ -23,8 +23,8 @@ export default function InvitationPage() {
   }>();
   const router = useRouter();
   const [invitationStatus, setInvitationStatus] = useState<
-    'pending' | 'accepted' | 'rejected'
-  >('pending');
+    "pending" | "accepted" | "rejected"
+  >("pending");
 
   const handleAccept = async () => {
     await organization
@@ -33,10 +33,10 @@ export default function InvitationPage() {
       })
       .then((res) => {
         if (res.error) {
-          setError(res.error.message || 'An error occurred');
+          setError(res.error.message || "An error occurred");
         } else {
-          setInvitationStatus('accepted');
-          router.push('/dashboard');
+          setInvitationStatus("accepted");
+          router.push("/dashboard");
         }
       });
   };
@@ -48,9 +48,9 @@ export default function InvitationPage() {
       })
       .then((res) => {
         if (res.error) {
-          setError(res.error.message || 'An error occurred');
+          setError(res.error.message || "An error occurred");
         } else {
-          setInvitationStatus('rejected');
+          setInvitationStatus("rejected");
         }
       });
   };
@@ -60,7 +60,7 @@ export default function InvitationPage() {
     organizationSlug: string;
     inviterEmail: string;
     id: string;
-    status: 'pending' | 'accepted' | 'rejected' | 'canceled';
+    status: "pending" | "accepted" | "rejected" | "canceled";
     email: string;
     expiresAt: Date;
     organizationId: string;
@@ -79,7 +79,7 @@ export default function InvitationPage() {
       })
       .then((res) => {
         if (res.error) {
-          setError(res.error.message || 'An error occurred');
+          setError(res.error.message || "An error occurred");
         } else {
           setInvitation(res.data);
         }
@@ -98,19 +98,19 @@ export default function InvitationPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {invitationStatus === 'pending' && (
+            {invitationStatus === "pending" && (
               <div className="space-y-4">
                 <p>
                   <strong>{invitation?.inviterEmail}</strong> has invited you to
                   join <strong>{invitation?.organizationName}</strong>.
                 </p>
                 <p>
-                  This invitation was sent to{' '}
+                  This invitation was sent to{" "}
                   <strong>{invitation?.email}</strong>.
                 </p>
               </div>
             )}
-            {invitationStatus === 'accepted' && (
+            {invitationStatus === "accepted" && (
               <div className="space-y-4">
                 <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
                   <CheckIcon className="h-8 w-8 text-green-600" />
@@ -124,7 +124,7 @@ export default function InvitationPage() {
                 </p>
               </div>
             )}
-            {invitationStatus === 'rejected' && (
+            {invitationStatus === "rejected" && (
               <div className="space-y-4">
                 <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-red-100">
                   <XIcon className="h-8 w-8 text-red-600" />
@@ -133,13 +133,13 @@ export default function InvitationPage() {
                   Invitation Declined
                 </h2>
                 <p className="text-center">
-                  You&lsquo;ve declined the invitation to join{' '}
+                  You&lsquo;ve declined the invitation to join{" "}
                   {invitation?.organizationName}.
                 </p>
               </div>
             )}
           </CardContent>
-          {invitationStatus === 'pending' && (
+          {invitationStatus === "pending" && (
             <CardFooter className="flex justify-between">
               <Button onClick={handleReject} variant="outline">
                 Decline

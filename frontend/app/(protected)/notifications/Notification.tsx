@@ -36,16 +36,41 @@ export default function Notification({ notification }: NotificationProps) {
       icon: <Heart className="size-7 fill-red-500 text-red-500" />,
       href: `/posts/${notification.postId}`,
     },
-    APPLICATION: {
+    JOB_APPLICATION: {
       message: `${notification.issuer.displayUsername} applied job`,
       icon: <Heart className="size-7 fill-red-500 text-red-500" />,
       href: `/jobs/${notification.jobId}`,
     },
-    ENROLLMENT: {
+    COURSE_ENROLLMENT: {
       message: `${notification.issuer.displayUsername} enrolled course`,
       icon: <Heart className="size-7 fill-red-500 text-red-500" />,
       href: `/courses/${notification.jobId}`,
     },
+    RESEARCH_COLLABORATION: {
+      message: "",
+      icon: <Heart className="size-7 fill-current text-current" />,
+      href: ""
+    },
+    SYSTEM_ANNOUNCEMENT: {
+      message: "",
+      icon: <Heart className="size-7 fill-current text-current" />,
+      href: ""
+    },
+    PROFESSOR_INVITATION: {
+      message: "",
+      icon: <Heart className="size-7 fill-current text-current" />,
+      href: ""
+    },
+    COURSE_APPROVAL_REQUEST: {
+      message: "",
+      icon: <Heart className="size-7 fill-current text-current" />,
+      href: ""
+    },
+    COURSE_APPROVAL_RESULT: {
+      message: "",
+      icon: <Heart className="size-7 fill-current text-current" />,
+      href: ""
+    }
   };
 
   const { message, icon, href } = notificationTypeMap[notification.type];

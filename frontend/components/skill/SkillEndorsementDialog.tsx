@@ -23,7 +23,7 @@ interface SkillEndorsementDialogProps {
 export default function SkillEndorsementDialog({ skill }: SkillEndorsementDialogProps) {
   const [open, setOpen] = useState(false);
   const { data: endorsements, isLoading } = useSkillEndorsements(skill.id);
-  const endorsementCount = skill._count?.skillEndorsements || 0;
+  const endorsementCount = skill._count?.endorsements || 0;
 
   if (endorsementCount === 0) {
     return null;

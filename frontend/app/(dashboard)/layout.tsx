@@ -13,13 +13,6 @@ export default async function Dashboard({ children }: ProtectedLayoutProps) {
 
   if (!user) redirect("/login");
 
-  if (user.role === "ORGANIZATION" || user.role === "INSTITUTION") {
-    if (user.status === "PENDING") {
-      redirect("/pending-approval");
-    } else if (user.status === "REJECTED") {
-      redirect("/rejected-account");
-    }
-  }
   if (user.role !== "ADMIN") redirect("/dashboard");
   return (
     <div className="flex min-h-screen flex-col">

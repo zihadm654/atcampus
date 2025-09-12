@@ -11,7 +11,7 @@ export async function getOrganizationFaculties(organizationId: string) {
     // Find all schools for this organization
     const schools = await prisma.school.findMany({
       where: {
-        instituteId: organizationId,
+        organizationId: organizationId,
       },
       include: {
         faculties: true,
@@ -19,7 +19,7 @@ export async function getOrganizationFaculties(organizationId: string) {
     });
 
     // Extract all faculties from all schools
-    const faculties = schools.flatMap(school => 
+    const faculties = schools.flatMap(school =>
       school.faculties.map(faculty => ({
         ...faculty,
         schoolName: school.name,
@@ -29,10 +29,10 @@ export async function getOrganizationFaculties(organizationId: string) {
     return { success: true, faculties };
   } catch (error) {
     console.error('Error fetching organization faculties:', error);
-    return { 
-      success: false, 
+    return {
+      success: false,
       error: error instanceof Error ? error.message : 'An unknown error occurred',
-      faculties: [] 
+      faculties: []
     };
   }
 }

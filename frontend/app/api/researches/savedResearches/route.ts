@@ -16,7 +16,7 @@ export async function GET(req: NextRequest) {
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const saveResearches = await prisma.saveResearch.findMany({
+    const saveResearches = await prisma.savedResearch.findMany({
       where: {
         userId: user.id,
       },

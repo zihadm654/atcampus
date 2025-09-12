@@ -14,7 +14,7 @@ export async function GET(
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const saveResearch = await prisma.saveResearch.findUnique({
+    const saveResearch = await prisma.savedResearch.findUnique({
       where: {
         userId_researchId: {
           userId: loggedInUser.id,
@@ -46,7 +46,7 @@ export async function POST(
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    await prisma.saveResearch.upsert({
+    await prisma.savedResearch.upsert({
       where: {
         userId_researchId: {
           userId: loggedInUser.id,
@@ -79,7 +79,7 @@ export async function DELETE(
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    await prisma.saveResearch.deleteMany({
+    await prisma.savedResearch.deleteMany({
       where: {
         userId: loggedInUser.id,
         researchId,

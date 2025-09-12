@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import SkillDialog from "./SkillDialog";
 
 interface SkillButtonProps {
-  user: UserData;
+  user: UserData | { id: string };
 }
 
 export default function SkillButton({ user }: SkillButtonProps) {
@@ -21,7 +21,7 @@ export default function SkillButton({ user }: SkillButtonProps) {
       </Button>
       <SkillDialog
         skill={null}
-        user={user}
+        user={user as UserData}
         open={showDialog}
         onOpenChange={setShowDialog}
       />

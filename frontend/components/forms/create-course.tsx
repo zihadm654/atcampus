@@ -3,13 +3,13 @@
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
-import type { User, Course, Faculty } from "@prisma/client";
+import { User, Course, Faculty, CourseStatus } from "@prisma/client";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
-import { courseSchema, Status, TCourse } from "@/lib/validations/course";
-import { createCourse, updateCourse } from "@/components/courses/actions";
+import { courseSchema, TCourse } from "@/lib/validations/course";
+import { createCourse, submitCourseForApproval, updateCourse } from "@/components/courses/actions";
 import { coursesData } from "@/config/course";
 
 import { Button } from "../ui/button";
@@ -42,33 +42,38 @@ interface CreateCourseFormProps {
 export function CreateCourseForm({ user, course }: CreateCourseFormProps) {
   const router = useRouter();
   const [pending, setPending] = useState(false);
+  const [submittingForApproval, setSubmittingForApproval] = useState(false);
   const form = useForm<TCourse>({
-    resolver: zodResolver(courseSchema),
+    resolver: zodResolver(courseSchema) as any,
     defaultValues: course
       ? {
-          title: course.title || "",
-          description: course.description || "",
-          status: course.status as Status,
-          code: course.code || "",
-          department: course.department || "",
-          prerequisites: course.prerequisites || [],
-          credits: course.credits || 0,
-          level: course.level || "",
-          duration: course.duration || 0,
-          facultyId: course.facultyId || "",
-        }
+        title: course.title || "",
+        description: course.description || "",
+        status: course.status as CourseStatus,
+        code: course.code || "",
+        department: course.department || "",
+        credits: course.credits || 0,
+        level: course.level || "",
+        estimatedHours: course.estimatedHours || 0,
+        facultyId: course.facultyId || "",
+        objectives: course.objectives || [],
+        outcomes: course.outcomes || [],
+        year: course.year || new Date().getFullYear(),
+      }
       : {
-          title: "",
-          description: "",
-          status: "draft" as Status,
-          code: "",
-          department: "",
-          duration: 0,
-          prerequisites: [],
-          credits: 0,
-          level: "",
-          facultyId: "",
-        },
+        title: "",
+        description: "",
+        status: CourseStatus.DRAFT,
+        code: "",
+        department: "",
+        estimatedHours: 0,
+        credits: 0,
+        level: "",
+        facultyId: "",
+        objectives: [],
+        outcomes: [],
+        year: new Date().getFullYear(),
+      },
   });
   const queryClient = useQueryClient();
 
@@ -129,16 +134,68 @@ export function CreateCourseForm({ user, course }: CreateCourseFormProps) {
     } else {
       try {
         setPending(true);
-        await createCourse(values);
-        toast.success("Course created successfully!");
-        queryClient.invalidateQueries({ queryKey: ["course-feed"] });
-        form.reset();
-        router.push("/courses");
+        const result = await createCourse(values);
+        if (result.success) {
+          toast.success("Course created successfully!");
+          queryClient.invalidateQueries({ queryKey: ["course-feed"] });
+          form.reset();
+          router.push("/courses");
+        } else {
+          toast.error(result.error || "Failed to create course");
+        }
       } catch (error) {
         console.error(error);
         toast.error("Something went wrong. Please try again.");
       } finally {
         setPending(false);
+      }
+    }
+  }
+
+  async function handleSubmitForApproval(values: TCourse) {
+    if (!course) {
+      // Create course first, then submit for approval
+      try {
+        setPending(true);
+        const result = await createCourse({ ...values, status: CourseStatus.DRAFT });
+        if (result.success && result.data) {
+          setSubmittingForApproval(true);
+          const approvalResult = await submitCourseForApproval(result.data.id);
+          if (approvalResult.success) {
+            toast.success("Course created and submitted for approval!");
+            queryClient.invalidateQueries({ queryKey: ["course-feed"] });
+            form.reset();
+            router.push("/courses");
+          } else {
+            toast.error(approvalResult.error || "Failed to submit for approval");
+          }
+        } else {
+          toast.error(result.error || "Failed to create course");
+        }
+      } catch (error) {
+        console.error(error);
+        toast.error("Something went wrong. Please try again.");
+      } finally {
+        setPending(false);
+        setSubmittingForApproval(false);
+      }
+    } else {
+      // Submit existing course for approval
+      try {
+        setSubmittingForApproval(true);
+        const result = await submitCourseForApproval(course.id);
+        if (result.success) {
+          toast.success("Course submitted for approval!");
+          queryClient.invalidateQueries({ queryKey: ["course-feed"] });
+          router.push("/courses");
+        } else {
+          toast.error(result.error || "Failed to submit for approval");
+        }
+      } catch (error) {
+        console.error(error);
+        toast.error("Something went wrong. Please try again.");
+      } finally {
+        setSubmittingForApproval(false);
       }
     }
   }
@@ -305,12 +362,12 @@ export function CreateCourseForm({ user, course }: CreateCourseFormProps) {
               />
               <FormField
                 control={form.control}
-                name="duration"
+                name="estimatedHours"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Duration (weeks)</FormLabel>
+                    <FormLabel>estimatedHours (weeks)</FormLabel>
                     <FormControl>
-                      <Input type="number" placeholder="Duration" {...field} />
+                      <Input type="number" placeholder="estimatedHours" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -348,7 +405,7 @@ export function CreateCourseForm({ user, course }: CreateCourseFormProps) {
                       </FormControl>
                       <SelectContent>
                         <SelectGroup>
-                          {Object.values(Status).map((status) => (
+                          {Object.values(CourseStatus).map((status) => (
                             <SelectItem key={status} value={status}>
                               {status.charAt(0).toUpperCase() +
                                 status.slice(1).toLowerCase()}
@@ -389,21 +446,57 @@ export function CreateCourseForm({ user, course }: CreateCourseFormProps) {
                 </FormItem>
               )}
             />
+            <div className="grid gap-6 md:grid-cols-2">
+              <FormField
+                control={form.control}
+                name="year"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Academic Year</FormLabel>
+                    <FormControl>
+                      <Input type="number" placeholder="2024" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
             <FormField
               control={form.control}
-              name="prerequisites"
+              name="objectives"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Prerequisites</FormLabel>
+                  <FormLabel>Learning Objectives</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="Enter prerequisites separated by commas"
+                      placeholder="Enter learning objectives separated by commas"
                       onChange={(e) =>
                         field.onChange(
-                          e.target.value.split(",").map((p) => p.trim())
+                          e.target.value.split(",").map((o) => o.trim()).filter(o => o.length > 0)
                         )
                       }
-                      value={field.value.join(", ")}
+                      value={field.value?.join(", ") || ""}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="outcomes"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Learning Outcomes</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      placeholder="Enter learning outcomes separated by commas"
+                      onChange={(e) =>
+                        field.onChange(
+                          e.target.value.split(",").map((o) => o.trim()).filter(o => o.length > 0)
+                        )
+                      }
+                      value={field.value?.join(", ") || ""}
                     />
                   </FormControl>
                   <FormMessage />
@@ -426,13 +519,31 @@ export function CreateCourseForm({ user, course }: CreateCourseFormProps) {
           </CardContent>
         </Card>
 
-        <Button className="w-full" disabled={pending} type="submit">
-          {pending
-            ? "Submitting..."
-            : course
-              ? "Update Course"
-              : "Create Course"}
-        </Button>
+        <div className="flex gap-4">
+          <Button className="flex-1" disabled={pending || submittingForApproval} type="submit">
+            {pending
+              ? "Saving..."
+              : course
+                ? "Update Course"
+                : "Save as Draft"}
+          </Button>
+
+          {(!course || course.status === "DRAFT" || course.status === "REJECTED") && (
+            <Button
+              className="flex-1"
+              disabled={pending || submittingForApproval}
+              type="button"
+              variant="default"
+              onClick={form.handleSubmit(handleSubmitForApproval as any)}
+            >
+              {submittingForApproval
+                ? "Submitting..."
+                : course
+                  ? "Submit for Approval"
+                  : "Create & Submit for Approval"}
+            </Button>
+          )}
+        </div>
       </form>
     </Form>
   );

@@ -1,4 +1,4 @@
-import type { Prisma } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 import type { LiteralStringForUnion, UR } from 'stream-chat';
 
 export function getUserDataSelect(loggedInUserId: string) {
@@ -11,16 +11,36 @@ export function getUserDataSelect(loggedInUserId: string) {
     institution: true,
     instituteId: true,
     status: true,
-    currentSeamster: true,
+    currentSemester: true,
     image: true,
     coverImage: true,
     email: true,
     emailVerified: true,
     displayUsername: true,
     createdAt: true,
-    userSkills: true,
-    application: true,
+    userSkills: {
+      include: {
+        skill: {
+          select: {
+            name: true,
+            category: true,
+          },
+        },
+        _count: {
+          select: {
+            endorsements: true,
+          },
+        },
+      },
+      orderBy: {
+        yearsOfExperience: Prisma.SortOrder.desc,
+      },
+      take: 10, // Limit for performance
+    },
+    applications: true,
     members: true,
+    clubs: true,
+    events: true,
     followers: {
       where: {
         followerId: loggedInUserId,
@@ -35,7 +55,7 @@ export function getUserDataSelect(loggedInUserId: string) {
         research: true,
         followers: true,
       },
-    },
+    }
   } satisfies Prisma.UserSelect;
 }
 export function getUserSkillDataSelect() {
@@ -47,12 +67,13 @@ export function getUserSkillDataSelect() {
     skillId: true,
     skill: {
       select: {
+        name: true,
         category: true,
       },
     },
     _count: {
       select: {
-        skillEndorsements: true,
+        endorsements: true,
       },
     },
   } satisfies Prisma.UserSkillSelect;
@@ -100,7 +121,7 @@ export function getJobDataInclude(loggedInUserId: string) {
     user: {
       select: getUserDataSelect(loggedInUserId),
     },
-    saveJob: {
+    savedJobs: {
       where: {
         userId: loggedInUserId,
       },
@@ -108,21 +129,19 @@ export function getJobDataInclude(loggedInUserId: string) {
         userId: true,
       },
     },
-    course: {
-      where: {
-        instructorId: loggedInUserId
-      },
-      select: {
-        instructorId: true
-      }
-    },
-    application: {
+    course: true,
+    applications: {
       // Add this new field
       where: {
         applicantId: loggedInUserId,
       },
       select: {
         applicantId: true,
+      },
+    },
+    _count: {
+      select: {
+        applications: true,
       },
     },
   } satisfies Prisma.JobInclude;
@@ -132,9 +151,16 @@ export function getCourseDataInclude(loggedInUserId: string) {
     instructor: {
       select: getUserDataSelect(loggedInUserId),
     },
-    faculty: true,
+    faculty: {
+      include: {
+        school: {
+          include: {
+            organization: true,
+          },
+        },
+      },
+    },
     enrollments: true,
-
   } satisfies Prisma.CourseInclude;
 }
 export function getResearchDataInclude(loggedInUserId: string) {
@@ -143,7 +169,7 @@ export function getResearchDataInclude(loggedInUserId: string) {
       select: getUserDataSelect(loggedInUserId),
     },
     attachments: true,
-    saveResearch: {
+    savedResearch: {
       where: {
         userId: loggedInUserId,
       },
@@ -160,6 +186,11 @@ export function getResearchDataInclude(loggedInUserId: string) {
     },
     collaborators: {
       select: getUserDataSelect(loggedInUserId),
+    },
+    _count: {
+      select: {
+        collaborators: true,
+      },
     },
   } satisfies Prisma.ResearchInclude;
 }
@@ -208,12 +239,20 @@ export function getCommentDataInclude(loggedInUserId: string) {
     },
   } satisfies Prisma.CommentInclude;
 }
-export function getSkillDataInclude(loggedInUserId: string) {
+export function getSkillDataInclude() {
   return {
-    user: {
-      select: getUserDataSelect(loggedInUserId),
+    skill: {
+      select: {
+        name: true,
+        category: true,
+      },
     },
-  } satisfies Prisma.CommentInclude;
+    _count: {
+      select: {
+        endorsements: true,
+      },
+    },
+  } satisfies Prisma.UserSkillInclude;
 }
 
 export type CommentData = Prisma.CommentGetPayload<{
@@ -240,9 +279,9 @@ export const notificationsInclude = {
   },
   job: {
     select: {
-      title: true
-    }
-  }
+      title: true,
+    },
+  },
 } satisfies Prisma.NotificationInclude;
 
 export type NotificationData = Prisma.NotificationGetPayload<{
@@ -307,4 +346,4 @@ export type StreamChatGenerics = {
   userType: UserType;
   pollOptionType: Record<string, unknown>;
   pollType: Record<string, unknown>;
-};
+}

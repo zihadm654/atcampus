@@ -49,7 +49,7 @@ export default function EditProfileDialog({
     defaultValues: {
       name: user.name,
       bio: user.bio || '',
-      currentSeamster: user.currentSeamster || 0,
+      currentSemester: user.currentSemester || 0,
     },
   });
 
@@ -88,13 +88,13 @@ export default function EditProfileDialog({
   async function onSubmit(values: UpdateUserProfileValues) {
     const newAvatarFile = croppedAvatar
       ? new File([croppedAvatar], `avatar_${user.id}.webp`, {
-          type: 'image/webp',
-        })
+        type: 'image/webp',
+      })
       : undefined;
     const newCoverFile = croppedCover
       ? new File([croppedCover], `cover_${user.id}.webp`, {
-          type: 'image/webp',
-        })
+        type: 'image/webp',
+      })
       : undefined;
 
     mutation.mutate(
@@ -196,7 +196,7 @@ export default function EditProfileDialog({
             /> */}
             <FormField
               control={form.control}
-              name='currentSeamster'
+              name='currentSemester'
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Current Seamester</FormLabel>

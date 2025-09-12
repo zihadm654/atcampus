@@ -33,7 +33,7 @@ export default function ProfessorList({ facultyId }: ProfessorListProps) {
                 size={24}
                 className="rounded-full"
               /> */}
-              <span>{professor.title}</span>
+              <span>{professor.user.name}</span>
             </div>
           ))}
         </div>

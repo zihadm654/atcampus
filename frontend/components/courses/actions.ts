@@ -6,6 +6,7 @@ import { getCourseDataInclude } from "@/types/types";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/session";
 import { courseSchema, TCourse } from "@/lib/validations/course";
+import { CourseStatus } from "@prisma/client";
 
 export async function deleteCourse(id: string) {
   const user = await getCurrentUser();
@@ -14,9 +15,12 @@ export async function deleteCourse(id: string) {
 
   const course = await prisma.course.findUnique({
     where: { id },
+    include: {
+      instructor: true,
+    }
   });
 
-  if (!course) throw new Error("Job not found");
+  if (!course) throw new Error("Course not found");
 
   if (course.instructorId !== user.id) throw new Error("Unauthorized");
 
@@ -54,6 +58,20 @@ export async function createCourse(values: TCourse) {
       throw new Error(validatedFields.error.message);
     }
 
+    // Verify user is a professor in the selected faculty
+    const professorMember = await prisma.member.findFirst({
+      where: {
+        userId: user.id,
+        facultyId: validatedFields.data.facultyId,
+        role: "PROFESSOR",
+        isActive: true,
+      },
+    });
+
+    if (!professorMember) {
+      throw new Error("You must be a professor in the selected faculty to create courses");
+    }
+
     const course = await prisma.course.create({
       data: {
         instructorId: user.id,
@@ -76,11 +94,129 @@ export async function getInstructorCourses() {
   if (!user) throw new Error("Unauthorized");
 
   const courses = await prisma.course.findMany({
-    where: { instructorId: user.id },
+    where: {
+      OR: [
+        { instructorId: user.id },
+      ]
+    },
+    include: {
+      faculty: {
+        include: {
+          school: {
+            include: {
+              organization: true,
+            },
+          },
+        },
+      },
+      approvals: true,
+    },
     orderBy: { createdAt: "desc" },
   });
 
   return courses;
+}
+
+export async function submitCourseForApproval(courseId: string) {
+  try {
+    const user = await getCurrentUser();
+
+    if (!user) {
+      throw new Error("Unauthorized");
+    }
+
+    // Verify course exists and user has permission
+    const course = await prisma.course.findFirst({
+      where: {
+        id: courseId,
+        instructorId: user.id,
+        status: "DRAFT",
+      },
+      include: {
+        faculty: {
+          include: {
+            school: {
+              include: {
+                organization: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!course) {
+      throw new Error("Course not found or you don't have permission to submit it");
+    }
+
+    // Check if there's already an active approval
+    const existingApproval = await prisma.courseApproval.findFirst({
+      where: {
+        courseId,
+        isActive: true,
+        status: "PENDING",
+      },
+    });
+
+    if (existingApproval) {
+      throw new Error("Course is already under review");
+    }
+    // Find a faculty admin to assign the review to
+    const facultyAdmin = await prisma.member.findFirst({
+      where: {
+        organizationId: course.faculty.school.organizationId,
+        facultyId: course.facultyId,
+        role: "FACULTY_ADMIN",
+        isActive: true,
+      },
+    });
+
+    if (!facultyAdmin) {
+      throw new Error("No faculty administrator available to review this course");
+    }
+
+    await prisma.$transaction(async (tx) => {
+      // Update course status
+      await tx.course.update({
+        where: { id: courseId },
+        data: {
+          status: CourseStatus.UNDER_REVIEW,
+          submittedForApproval: new Date(),
+          currentApprovalLevel: 1,
+        },
+      });
+
+      // Create first level approval request
+      await tx.courseApproval.create({
+        data: {
+          courseId,
+          reviewerId: facultyAdmin.userId,
+          level: 1,
+          isActive: true,
+          status: "PENDING",
+        },
+      });
+
+      // Notify the faculty admin
+      await tx.notification.create({
+        data: {
+          recipientId: facultyAdmin.userId,
+          issuerId: user.id,
+          type: "COURSE_APPROVAL_REQUEST",
+          title: "New Course Approval Request",
+          message: `${user.name} has submitted "${course.title}" for approval`,
+          courseId,
+        },
+      });
+    });
+
+    revalidatePath("/courses");
+
+    return { success: true, message: "Course submitted for approval successfully" };
+  } catch (error) {
+    console.error(error);
+    return { success: false, error: (error as Error).message };
+  }
 }
 export async function updateCourse(values: TCourse, courseId: string) {
   try {
@@ -96,12 +232,23 @@ export async function updateCourse(values: TCourse, courseId: string) {
       throw new Error(validatedFields.error.message);
     }
 
+    // Verify user owns the course
+    const existingCourse = await prisma.course.findFirst({
+      where: {
+        id: courseId,
+        instructorId: user.id,
+      },
+    });
+
+    if (!existingCourse) {
+      throw new Error("Course not found or you don't have permission to edit it");
+    }
+
     const course = await prisma.course.update({
       where: {
         id: courseId
       },
       data: {
-        instructorId: user.id,
         ...validatedFields.data,
       },
     });

@@ -1,6 +1,6 @@
 'use server';
 
-import { Prisma } from '@prisma/client';
+import { MemberRole, Prisma } from '@prisma/client';
 import { z } from 'zod';
 
 import { prisma } from '@/lib/db';
@@ -28,7 +28,11 @@ export async function createSchool(values: z.infer<typeof createSchoolSchema>) {
     const school = await prisma.school.create({
       data: {
         ...validatedValues,
-        instituteId: user.id,
+        organizationId: user.id,
+        slug: validatedValues.slug || validatedValues.name
+          .toLowerCase()
+          .replace(/[^a-z0-9-]+/g, '-')
+          .replace(/^-*|-*$/g, ''),
       },
     });
     return school;
@@ -54,7 +58,7 @@ export async function updateSchool(values: z.infer<typeof updateSchoolSchema>) {
     throw new Error('Unauthorized');
   }
   const school = await prisma.school.update({
-    where: { id: id, instituteId: user.id },
+    where: { id: id, organizationId: user.id },
     data: dataToUpdate,
   });
   return school;
@@ -66,7 +70,7 @@ export async function deleteSchool(schoolId: string) {
     throw new Error('Unauthorized');
   }
   await prisma.school.delete({
-    where: { id: schoolId, instituteId: user.id },
+    where: { id: schoolId, organizationId: user.id },
   });
 }
 
@@ -90,18 +94,19 @@ export async function createFaculty(
   }
 
   const school = await prisma.school.findUnique({
-    where: { id: validatedValues.schoolId, instituteId: user.id },
+    where: { id: validatedValues.schoolId, organizationId: user.id },
   });
 
   if (!school) throw new Error('School not found');
 
   try {
-    // Create a default member for the faculty
+    // Create a default member for the faculty with faculty assignment
     const defaultMember = await prisma.member.create({
       data: {
         userId: user.id,
-        role: 'admin',
-        organizationId: school.instituteId,
+        role: MemberRole.ORGANIZATION_ADMIN,
+        organizationId: school.organizationId,
+        facultyId: null, // Will be set after faculty creation
       },
     });
 
@@ -120,18 +125,22 @@ export async function createFaculty(
         school: {
           connect: { id: validatedValues.schoolId },
         },
-        member: {
-          connect: { id: defaultMember.id },
-        },
       },
       include: {
-        professors: {
+        members: {
           include: {
-            professor: true,
+            user: true,
           },
         },
-        member: true,
         school: true,
+      },
+    });
+
+    // Update the member to associate with the new faculty
+    await prisma.member.update({
+      where: { id: defaultMember.id },
+      data: {
+        facultyId: faculty.id,
       },
     });
 
@@ -191,15 +200,15 @@ export async function getProfessorsForFaculty(facultyId: string) {
     const faculty = await prisma.faculty.findUnique({
       where: { id: facultyId },
       include: {
-        professors: {
+        members: {
           include: {
-            professor: true
+            user: true
           },
         },
       },
     });
 
-    return faculty?.professors || [];
+    return faculty?.members || [];
   } catch (error) {
     console.error('Error fetching professors:', error);
     throw error;
@@ -233,7 +242,7 @@ export async function assignMemberToFaculty(
     const faculty = await prisma.faculty.findUnique({
       where: { id: facultyId },
       include: {
-        professors: true,
+        members: true,
         school: true,
       },
     });
@@ -243,28 +252,28 @@ export async function assignMemberToFaculty(
     }
 
     // Create professor profile if it doesn't exist
-    const professorProfile = await prisma.professorProfile.upsert({
-      where: {
-        professorId: member.userId,
-      },
-      update: {
-        faculties: {
-          connect: { id: facultyId },
-        },
-      },
-      create: {
-        professorId: member.userId,
-        faculties: {
-          connect: { id: facultyId },
-        },
-      },
-    });
+    // const professorProfile = await prisma.members.upsert({
+    //   where: {
+    //     professorId: member.userId,
+    //   },
+    //   update: {
+    //     faculties: {
+    //       connect: { id: facultyId },
+    //     },
+    //   },
+    //   create: {
+    //     professorId: member.userId,
+    //     faculties: {
+    //       connect: { id: facultyId },
+    //     },
+    //   },
+    // });
 
     // Update member
     const updatedMember = await prisma.member.update({
       where: { id: memberId },
       data: {
-        role: 'PROFESSOR',
+        role: MemberRole.PROFESSOR,
         faculty: {
           connect: { id: facultyId },
         },
@@ -275,24 +284,24 @@ export async function assignMemberToFaculty(
     await prisma.user.update({
       where: { id: member.userId },
       data: {
-        role: 'PROFESSOR',
+        role: MemberRole.PROFESSOR,
       },
     });
 
     // Update faculty with the new professor
-    await prisma.faculty.update({
-      where: { id: facultyId },
-      data: {
-        professors: {
-          connect: { id: professorProfile.id },
-        },
-      },
-    });
+    // await prisma.faculty.update({
+    //   where: { id: facultyId },
+    //   data: {
+    //     members: {
+    //       connect: { id: professorProfile.id },
+    //     },
+    //   },
+    // });
 
     return {
       success: true,
       member: updatedMember,
-      professorProfile,
+      // professorProfile,
       faculty,
     };
   } catch (error) {
@@ -306,9 +315,9 @@ export async function getFacultyMembers(facultyId: string) {
     const faculty = await prisma.faculty.findUnique({
       where: { id: facultyId },
       include: {
-        member: {
+        members: {
           where: {
-            role: 'member',
+            role: MemberRole.STUDENT,
           },
           include: {
             user: {
@@ -325,7 +334,7 @@ export async function getFacultyMembers(facultyId: string) {
       },
     });
 
-    return faculty?.member || [];
+    return faculty?.members || [];
   } catch (error) {
     console.error('Error fetching faculty members:', error);
     throw error;
@@ -343,22 +352,22 @@ export async function removeProfessorFromFaculty(
     }
 
     // Remove faculty connection from professor profile
-    await prisma.professorProfile.update({
-      where: {
-        professorId: memberId,
-      },
-      data: {
-        faculties: {
-          disconnect: { id: facultyId },
-        },
-      },
-    });
+    // await prisma.member.update({
+    //   where: {
+    //     userId_organizationId: { userId: memberId, organizationId: facultyId },
+    //   },
+    //   data: {
+    //     faculty: {
+    //       disconnect: { id: facultyId },
+    //     },
+    //   },
+    // });
 
     // Update member role
     const updatedMember = await prisma.member.update({
       where: { id: memberId },
       data: {
-        role: 'MEMBER',
+        role: MemberRole.STUDENT,
         faculty: {
           disconnect: true,
         },
@@ -381,14 +390,9 @@ export async function getFacultyDetails(facultyId: string) {
     const faculty = await prisma.faculty.findUnique({
       where: { id: facultyId },
       include: {
-        professors: {
+        members: {
           include: {
-            professor: true
-          },
-        },
-        member: {
-          include: {
-            user: true,
+            user: true
           },
         },
         school: true,

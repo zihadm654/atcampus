@@ -56,7 +56,7 @@ export default function SkillEndorsementButton({
     }
   };
 
-  const endorsementCount = skill._count?.skillEndorsements || 0;
+  const endorsementCount = skill._count?.endorsements || 0;
   const isLoading =
     endorseMutation.isPending || removeEndorsementMutation.isPending;
 

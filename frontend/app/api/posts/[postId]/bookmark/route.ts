@@ -16,7 +16,7 @@ export async function GET(
 
     const bookmark = await prisma.bookmark.findUnique({
       where: {
-        userId_postId: {
+        postId_userId: {
           userId: loggedInUser.id,
           postId,
         },
@@ -48,7 +48,7 @@ export async function POST(
 
     await prisma.bookmark.upsert({
       where: {
-        userId_postId: {
+        postId_userId: {
           userId: loggedInUser.id,
           postId,
         },

@@ -4,18 +4,18 @@ import { useTransition } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { updateApplicationStatus } from "@/actions/appllication";
 import { toast } from "@/components/ui/use-toast";
+import { ApplicationStatus } from "@prisma/client";
 
-type Status = "pending" | "accepted" | "rejected";
 
 interface ApplicationStatusSelectProps {
   applicationId: string;
-  currentStatus: Status;
+  currentStatus: ApplicationStatus;
 }
 
 export function ApplicationStatusSelect({ applicationId, currentStatus }: ApplicationStatusSelectProps) {
   const [isPending, startTransition] = useTransition();
 
-  const handleStatusChange = (newStatus: Status) => {
+  const handleStatusChange = (newStatus: ApplicationStatus) => {
     startTransition(async () => {
       try {
         await updateApplicationStatus(applicationId, newStatus);

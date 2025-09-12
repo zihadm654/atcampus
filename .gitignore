@@ -47,6 +47,7 @@ next-env.d.ts
 /.trae/
 /.github/
 /.kiro/
+/.qoder/
 
 # prisma
 /generated

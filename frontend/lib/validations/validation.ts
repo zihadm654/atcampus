@@ -29,7 +29,7 @@ export const createPostSchema = z.object({
 export const updateUserProfileSchema = z.object({
   name: requiredString,
   bio: z.string().max(1000, "Must be at most 1000 characters"),
-  currentSeamster: z.coerce.number().max(100, "required").optional(),
+  currentSemester: z.coerce.number().max(100, "required").optional(),
   institution: z.string().max(100, "Must be at most 100 characters").optional(),
   instituteId: z.string().optional(),
 });

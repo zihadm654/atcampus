@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 
 import { getCurrentUser } from "@/lib/session";
-import { constructMetadata, formatRelativeDate } from "@/lib/utils";
+import { constructMetadata, formatDate, formatRelativeDate } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -92,42 +92,6 @@ export default async function CoursePage({ params }: CoursePageProps) {
   if (!course) {
     notFound();
   }
-  // const course = {
-  //   id: courseId,
-  //   title: "Introduction to Data Science",
-  //   department: "Department of Computer Science",
-  //   description:
-  //     "This course provides a comprehensive introduction to data science concepts, tools, and methodologies. Students will learn the fundamentals of data collection, cleaning, analysis, and visualization. The course covers statistical methods, machine learning algorithms, and programming tools commonly used in the field.",
-  //   topics: [
-  //     "Data collection and preprocessing",
-  //     "Exploratory data analysis",
-  //     "Statistical inference",
-  //     "Machine learning fundamentals",
-  //     "Data visualization techniques",
-  //     "Ethical considerations in data science",
-  //   ],
-  //   prerequisites: [
-  //     "Basic programming knowledge (Python preferred)",
-  //     "Introductory statistics",
-  //     "College algebra",
-  //   ],
-  //   learningOutcomes: [
-  //     "Apply data science methodologies to real-world problems",
-  //     "Implement basic machine learning algorithms",
-  //     "Create effective data visualizations",
-  //     "Perform statistical analysis on datasets",
-  //     "Communicate findings to technical and non-technical audiences",
-  //   ],
-  //   location: "Science Building, Room 305",
-  //   schedule: "Tuesdays and Thursdays, 2:00 PM - 3:30 PM",
-  //   credits: "3 credits",
-  //   instructor: "Dr. Sarah Johnson",
-  //   startDate: "September 5, 2023",
-  //   endDate: "December 15, 2023",
-  //   enrollmentDeadline: "August 25, 2023",
-  //   maxEnrollment: 30,
-  //   currentEnrollment: 18,
-  // };
 
   return (
     <div className="w-full">
@@ -135,7 +99,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
         <Card className="flex flex-col gap-3">
           <CardHeader className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <UserTooltip user={course?.instructor}>
+              <UserTooltip user={course.instructor}>
                 <Link href={`/${course.instructor.username}`}>
                   <UserAvatar user={course.instructor} className="size-10" />
                 </Link>
@@ -143,7 +107,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
               <UserTooltip user={course?.instructor}>
                 <Link
                   className="flex items-center gap-1 font-medium text-md hover:underline"
-                  href={`/${course.instructor.username}`}
+                  href={`/${course.instructor?.username}`}
                 >
                   {course.instructor.name}
                   <ShieldCheck className="size-5 text-blue-700" />
@@ -157,7 +121,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
                 {formatRelativeDate(course.createdAt)}
               </Link>
             </div>
-            {course.instructor.id === user.id && (
+            {course.instructor?.id === user.id && (
               <CourseMoreButton course={course} />
             )}
           </CardHeader>
@@ -174,7 +138,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
             </div>
             <div className="flex items-center gap-1.5 rounded-full px-3 py-1">
               <Clock className="size-5" />
-              Duration: <span>{course.duration}</span>
+              Duration: <span>{course.estimatedHours}</span>
             </div>
             <div className="flex items-center gap-1.5 rounded-full px-3 py-1">
               <Icons.edu className="text-primary mt-0.5 h-5 w-5" />
@@ -182,13 +146,13 @@ export default async function CoursePage({ params }: CoursePageProps) {
               <span className="text-muted-foreground">
                 {course.enrollments.length} students
               </span>
-              {/* <p className="text-muted-foreground">
-                  Deadline: {course.enrollmentDeadline}
-                </p> */}
+              <p className="text-muted-foreground">
+                {/* Deadline: <span>{formatDate(course?.endDate, "MM/dd/yyyy")}</span> */}
+              </p>
             </div>
 
-            {/* 
-            <div className="flex items-center gap-1.5 rounded-full px-3 py-1">
+
+            {/* <div className="flex items-center gap-1.5 rounded-full px-3 py-1">
               <Calendar className="size-5" />
               Deadline: <span>{formatDate(job.endDate, "MM/dd/yyyy")}</span>
             </div> */}
@@ -269,21 +233,6 @@ export default async function CoursePage({ params }: CoursePageProps) {
                 Description
               </h2>
               <JsonToHtml json={JSON.parse(course.description)} />
-            </div>
-            <div className="bg-card rounded-xl border p-6 shadow-sm">
-              <h2 className="mb-4 flex items-center gap-2 text-xl font-semibold">
-                <span className="rounded-full bg-purple-100 p-1.5 text-purple-700">
-                  <GraduationCap className="h-5 w-5" />
-                </span>
-                Prerequisites
-              </h2>
-              <ul className="mb-6 list-inside list-disc space-y-1">
-                {course.prerequisites.map((item, index) => (
-                  <li key={index} className="text-muted-foreground">
-                    {item}
-                  </li>
-                ))}
-              </ul>
             </div>
           </TabsContent>
           <TabsContent className="p-3 space-y-2" value="assets">

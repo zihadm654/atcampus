@@ -42,7 +42,12 @@ import {
   Users,
   X,
   Zap,
-  Video
+  Video,
+  ChevronDown,
+  Pencil,
+  ChartBar,
+  Eye,
+  Star
 } from "lucide-react";
 
 export type Icon = LucideIcon;
@@ -57,6 +62,10 @@ export const Icons = {
   bookMarked: BookMarked,
   chevronLeft: ChevronLeft,
   chevronRight: ChevronRight,
+  chevronDown: ChevronDown,
+  eye: Eye,
+  pencil: Pencil,
+  chart: ChartBar,
   check: Check,
   close: X,
   copy: Copy,
@@ -126,6 +135,7 @@ export const Icons = {
   post: FileText,
   search: Search,
   settings: Settings,
+  star: Star,
   spinner: Loader2,
   sun: SunMedium,
   trash: Trash,

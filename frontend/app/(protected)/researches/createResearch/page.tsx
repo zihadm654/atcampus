@@ -1,4 +1,3 @@
-/* eslint-disable react/no-unescaped-entities */
 
 import { redirect } from 'next/navigation';
 import React from 'react';

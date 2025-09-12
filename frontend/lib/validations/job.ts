@@ -1,18 +1,6 @@
+import { ExperienceLevel, JobType } from "@prisma/client";
 import { z } from "zod/v3";
 
-export enum JobType {
-  FULLTIME = "Full-time",
-  PARTTIME = "Part-time",
-  CONTRACT = "contract",
-  INTERSHIP = "Internship",
-  TEMPORARY = "Temporary",
-}
-export enum ExperienceLevel {
-  ENTRY = "entry",
-  MID = "mid",
-  SENIOR = "senior",
-  EXECUTIVE = "executive",
-}
 export const jobSchema = z.object({
   title: z.string().trim().min(1, "Required"),
   description: z

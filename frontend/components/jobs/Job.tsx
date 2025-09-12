@@ -110,7 +110,7 @@ export default function Job({ job }: JobProps) {
         <SaveJobButton
           jobId={job.id}
           initialState={{
-            isSaveJobByUser: job.saveJob.some(
+            isSaveJobByUser: job.savedJobs.some(
               (saveJob) => saveJob.userId === user.id
             ),
           }}
@@ -118,11 +118,11 @@ export default function Job({ job }: JobProps) {
         <Button
           onClick={handleApply}
           variant="default"
-          disabled={job.application.some(
+          disabled={job.applications.some(
             (application) => application.applicantId === user.id
           )}
         >
-          {job.application.some(
+          {job.applications.some(
             (application) => application.applicantId === user.id
           )
             ? "Already Applied"

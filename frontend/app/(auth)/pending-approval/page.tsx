@@ -1,4 +1,5 @@
 import { ReturnButton } from "@/components/auth/return-button";
+import { SignOutButton } from "@/components/auth/sign-out-button";
 import {
   Card,
   CardContent,
@@ -24,8 +25,9 @@ export default function PendingApprovalPage() {
             changes. Thank you for your patience.
           </p>
         </CardContent>
-        <CardFooter>
+        <CardFooter className="flex justify-between items-center gap-2">
           <ReturnButton href="/login" label="Go to Login" />
+          <SignOutButton />
         </CardFooter>
       </Card>
     </div>

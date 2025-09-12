@@ -51,7 +51,7 @@ export default function UserSkillCard({ skill, userId, currentUserEndorsements =
               )}
             </div>
 
-            {skill._count?.skillEndorsements > 0 && (
+            {skill._count?.endorsements > 0 && (
               <SkillEndorsementDialog skill={skill} />
             )}
           </div>

@@ -7,13 +7,13 @@ import { Loader2 } from "lucide-react";
 
 import { JobsPage } from "@/types/types";
 import kyInstance from "@/lib/ky";
-import { JobType } from "@/lib/validations/job";
 import useDebounce from "@/hooks/useDebounce";
 import InfiniteScrollContainer from "@/components/feed/InfiniteScrollContainer";
 
 import Job from "../jobs/Job";
 import JobsLoadingSkeleton from "../jobs/JobsLoadingSkeleton";
 import { Button } from "../ui/button";
+import { JobType } from "@prisma/client";
 
 interface Props {
   user: any;

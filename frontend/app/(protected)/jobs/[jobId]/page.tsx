@@ -30,9 +30,9 @@ import { constructMetadata, formatDate, formatRelativeDate } from "@/lib/utils";
 import { getJobDataInclude, getUserDataSelect } from "@/types/types";
 import SaveJobButton from "@/components/jobs/SaveJobButton";
 import Client from "./client";
-import { JobType } from "@/lib/validations/job";
 import { Badge } from "@/components/ui/badge";
 import { isEnrolledInCourse } from "@/actions/enrollment";
+import { JobType } from "@prisma/client";
 
 interface PageProps {
   params: Promise<{ jobId: string }>;
@@ -137,7 +137,7 @@ export default async function JobPage({ params }: PageProps) {
             <div className="flex items-center gap-1.5 rounded-full px-3 py-1">
               Job Type: <Badge>{job.type}</Badge>
             </div>
-            {job.type === JobType.INTERSHIP && (
+            {job.type === JobType.INTERNSHIP && (
               <div className="flex items-center gap-1.5 rounded-full px-3 py-1">
                 <Clock className="size-5" />
                 Duration: <span>{job.duration}</span>
@@ -160,7 +160,7 @@ export default async function JobPage({ params }: PageProps) {
             <SaveJobButton
               jobId={job.id}
               initialState={{
-                isSaveJobByUser: job.saveJob.some(
+                isSaveJobByUser: job.savedJobs.some(
                   (saveJob) => saveJob.userId === user.id
                 ),
               }}

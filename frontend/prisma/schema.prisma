@@ -10,28 +10,146 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// ============================================================================
+// ENUMS - Consolidated and consistent
+// ============================================================================
+
 enum UserRole {
   STUDENT
+  PROFESSOR
   INSTITUTION
   ORGANIZATION
-  PROFESSOR
   ADMIN
+}
+
+enum MemberRole {
+  STUDENT
+  PROFESSOR
+  FACULTY_ADMIN
+  SCHOOL_ADMIN
+  ORGANIZATION_ADMIN
+  SUPER_ADMIN
 }
 
 enum UserStatus {
   PENDING
   ACTIVE
+  SUSPENDED
   REJECTED
 }
+
+enum CourseStatus {
+  DRAFT
+  UNDER_REVIEW
+  APPROVED
+  PUBLISHED
+  ACTIVE
+  COMPLETED
+  ARCHIVED
+  REJECTED
+  NEEDS_REVISION
+  WITHDRAWN
+}
+
+enum EnrollmentStatus {
+  PENDING
+  ENROLLED
+  ACTIVE
+  COMPLETED
+  DROPPED
+  SUSPENDED
+}
+
+enum ApplicationStatus {
+  PENDING
+  UNDER_REVIEW
+  ACCEPTED
+  REJECTED
+  WITHDRAWN
+}
+
+enum CollaborationStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+  EXPIRED
+}
+
+enum NotificationType {
+  LIKE
+  FOLLOW
+  COMMENT
+  POST
+  JOB_APPLICATION
+  COURSE_ENROLLMENT
+  RESEARCH_COLLABORATION
+  SYSTEM_ANNOUNCEMENT
+  PROFESSOR_INVITATION
+  COURSE_APPROVAL_REQUEST
+  COURSE_APPROVAL_RESULT
+}
+
+enum MediaType {
+  IMAGE
+  VIDEO
+  PDF
+  DOCUMENT
+  AUDIO
+}
+
+enum SkillLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+  EXPERT
+}
+
+enum JobType {
+  FULL_TIME
+  PART_TIME
+  INTERNSHIP
+  CONTRACT
+  RESEARCH_ASSISTANT
+}
+
+enum ExperienceLevel {
+  ENTRY_LEVEL
+  MID_LEVEL
+  SENIOR_LEVEL
+  EXECUTIVE
+}
+
+enum ApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  NEEDS_REVISION
+}
+
+enum InvitationStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+  EXPIRED
+  CANCELLED
+}
+
+enum InvitationType {
+  ORGANIZATION_MEMBER
+  PROFESSOR_APPOINTMENT
+  FACULTY_ASSIGNMENT
+}
+
+// ============================================================================
+// AUTHENTICATION & SESSION MODELS
+// ============================================================================
 
 model Account {
   id     String @id @default(cuid()) @map("_id")
   userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  createdAt DateTime @default(now()) @map(name: "created_at")
-  updatedAt DateTime @updatedAt @map(name: "updated_at")
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
+  // Better Auth fields
   accountId             String
   providerId            String
   accessToken           String?
@@ -42,151 +160,909 @@ model Account {
   scope                 String?
   password              String?
 
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
+
   @@index([userId])
-  @@map(name: "accounts")
+  @@index([providerId, accountId])
+  @@map("accounts")
 }
 
 model Session {
-  id String @id @default(cuid()) @map("_id")
+  id        String   @id @default(cuid()) @map("_id")
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token     String   @unique
+  expiresAt DateTime
 
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  expiresAt      DateTime
-  token          String
-  createdAt      DateTime
-  updatedAt      DateTime
+  // Session metadata
   ipAddress      String?
   userAgent      String?
   impersonatedBy String?
 
+  // Active context
   activeOrganizationId String?
-  activeTeamId         String?
 
-  @@unique([token])
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
+
   @@index([userId])
-  @@map(name: "sessions")
+  @@index([expiresAt])
+  @@map("sessions")
 }
 
 model Verification {
-  id String @id @default(cuid()) @map("_id")
-
+  id         String   @id @default(cuid()) @map("_id")
   identifier String
   value      String
   expiresAt  DateTime
 
-  createdAt DateTime?
-  updatedAt DateTime?
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
 
   @@index([identifier])
+  @@index([value])
   @@map("verifications")
 }
 
 model TwoFactor {
   id          String @id @default(cuid()) @map("_id")
+  userId      String @unique
+  user        User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   secret      String
   backupCodes String
-  userId      String
-  user        User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([secret])
   @@map("twoFactor")
 }
 
-model ProfessorProfile {
-  id                String   @id @default(cuid()) @map("_id")
-  title             String?
-  department        String?
-  office            String?
-  website           String?
-  researchInterests String[]
-  professorId       String   @unique
-  professor         Member   @relation(fields: [professorId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now()) @map(name: "created_at")
-  updatedAt DateTime @updatedAt @map(name: "updated_at")
-
-  faculties  Faculty[] @relation("ProfessorFaculties", fields: [facultyIds], references: [id])
-  facultyIds String[]
-
-  @@map(name: "professor_profiles")
-}
+// ============================================================================
+// CORE USER & ORGANIZATION MODELS
+// ============================================================================
 
 model User {
-  id String @id @default(cuid()) @map("_id")
+  id              String  @id @default(cuid()) @map("_id")
+  email           String  @unique
+  emailVerified   Boolean @default(false)
+  name            String
+  username        String? @unique
+  displayUsername String?
+  image           String?
+  coverImage      String?
+  bio             String?
+  instituteId     String?
+  institution     String?
+  phone           String?
 
-  name             String
-  email            String     @unique
-  emailVerified    Boolean
-  image            String?
-  coverImage       String?
-  bio              String?
-  instituteId      String?
-  institution      String?
-  phone            String?
-  currentSeamster  Int?
+  // Academic info
+  currentSemester Int?
+  graduationYear  Int?
+
+  // System fields
   role             UserRole   @default(STUDENT)
-  username         String?
-  displayUsername  String?
-  banned           Boolean?
-  banReason        String?
-  banExpires       DateTime?
-  twoFactorEnabled Boolean?
+  twoFactorEnabled Boolean    @default(false)
   status           UserStatus @default(PENDING)
+
+  // Moderation
+  banned     Boolean?  @default(false)
+  banReason  String?
+  banExpires DateTime?
 
   createdAt DateTime @default(now()) @map(name: "created_at")
   updatedAt DateTime @updatedAt @map(name: "updated_at")
 
-  accounts                  Account[]
-  sessions                  Session[]
-  posts                     Post[]
-  comments                  Comment[]
-  likes                     Like[]
-  followers                 Follow[]               @relation("UserFollowers")
-  followings                Follow[]               @relation("UserFollowings")
-  block                     Block[]                @relation("BlocksSent")
-  blockBy                   Block[]                @relation("BlocksReceived")
-  receivedNotifications     Notification[]         @relation("Recipient")
-  issuedNotifications       Notification[]         @relation("Issuer")
-  bookmarks                 Bookmark[]
-  job                       Job[]
-  application               Application[]
-  research                  Research[]
-  saveJob                   SaveJob[]
-  saveResearch              SaveResearch[]
-  education                 Education[]
-  experience                Experience[]
-  courses                   Course[]               @relation("InstructorCourses")
-  enrollments               Enrollment[]           @relation("StudentEnrollments")
-  userSkills                UserSkill[]
-  skillEndorsements         SkillEndorsement[]
-  sentCollaborationRequests CollaborationRequest[] @relation("Requester")
-  collaboratedResearches    Research[]             @relation("ResearchCollaborators", fields: [collaboratedResearchIds], references: [id])
-  collaboratedResearchIds   String[]
+  // Authentication
+  accounts   Account[]
+  sessions   Session[]
+  twoFactors TwoFactor[]
 
-  members     Member[]
-  invitations Invitation[]
-  twofactors  TwoFactor[]
-  schools     School[]
-  events      Event[]
-  clubs       Club[]
-  teamMember  TeamMember[]
+  // Social features
+  posts     Post[]
+  comments  Comment[]
+  likes     Like[]
+  bookmarks Bookmark[]
+  followers Follow[]   @relation("UserFollowers")
+  following Follow[]   @relation("UserFollowing")
+  block     Block[]    @relation("BlocksSent")
+  blockBy   Block[]    @relation("BlocksReceived")
 
-  @@unique([username])
-  @@map(name: "users")
-}
+  // Notifications
+  receivedNotifications Notification[] @relation("Recipient")
+  issuedNotifications   Notification[] @relation("Issuer")
 
-model Skill {
-  id                String             @id @default(cuid()) @map("_id")
-  name              String             @unique
-  category          String? // Added category field
+  // Professional
+  jobs                    Job[]
+  applications            Application[]
+  savedJobs               SavedJob[]
+  research                Research[]
+  savedResearch           SavedResearch[]
+  collaborationRequests   CollaborationRequest[] @relation("CollaborationRequester")
+  collaboratedResearch    Research[]             @relation("ResearchCollaborators", fields: [collaboratedResearchIds], references: [id])
+  collaboratedResearchIds String[]
+
+  // Academic profile
+  education         Education[]
+  experience        Experience[]
   userSkills        UserSkill[]
   skillEndorsements SkillEndorsement[]
 
+  // Institutional
+  members     Member[]
+  invitations Invitation[]
+
+  // Course management - simplified relationships
+  primaryCourses    Course[]           @relation("PrimaryCourseInstructor")
+  additionalCourses CourseInstructor[] @relation("AdditionalCourseInstructors")
+  enrollments       Enrollment[]
+  courseReviews     CourseApproval[]   @relation("CourseReviewer")
+
+  // Events & clubs
+  events       Event[]
+  clubs        Club[]
+  notification Notification[]
+
+  // Audit trail
+  auditActions AuditLog[] @relation("AuditActor")
+
+  // Removed professor invitation relations - now handled by unified Invitation model
+
+  @@index([role, status])
+  @@index([status, createdAt])
+  @@index([instituteId, role]) // For institution queries
+  @@map(name: "users")
+}
+
+model Organization {
+  id          String  @id @default(cuid()) @map("_id")
+  name        String
+  slug        String  @unique
+  logo        String?
+  description String?
+  website     String?
+  isActive    Boolean @default(true)
+
   createdAt DateTime @default(now()) @map(name: "created_at")
   updatedAt DateTime @updatedAt @map(name: "updated_at")
 
-  @@map("skills")
+  members     Member[]
+  invitations Invitation[]
+  schools     School[]
+
+  @@index([name])
+  @@map(name: "organizations")
+}
+
+model Member {
+  id             String       @id @default(cuid()) @map("_id")
+  userId         String
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  facultyId      String?
+  faculty        Faculty?     @relation(fields: [facultyId], references: [id])
+
+  role        String
+  isActive    Boolean  @default(true)
+  permissions String[] @default([])
+
+  // Professor-specific fields
+  academicTitle     String? // Professor, Associate Professor, Assistant Professor, etc.
+  department        String? // Department within faculty
+  officeLocation    String?
+  officeHours       String?
+  researchInterests String[] @default([])
+  academicDegrees   String[] @default([])
+  specializations   String[] @default([])
+
+  // Contact information
+  officePhone     String?
+  alternateEmail  String?
+  personalWebsite String?
+
+  // Employment details
+  employmentType    String? // Full-time, Part-time, Visiting, Adjunct
+  contractStartDate DateTime?
+  contractEndDate   DateTime?
+  tenure            Boolean   @default(false)
+
+  // Lifecycle tracking
+  joinedAt      DateTime    @default(now())
+  lastActive    DateTime?
+  roleChangedAt DateTime?
+  previousRole  MemberRole?
+
+  // Assignment tracking
+  assignedAt DateTime? // When assigned as professor
+  assignedBy String? // User ID who made the assignment
+
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
+
+  @@unique([userId, organizationId])
+  @@index([organizationId, role])
+  @@index([userId, isActive])
+  @@index([facultyId, role])
+  @@index([role, academicTitle])
+  @@index([assignedAt, role])
+  @@map(name: "members")
+}
+
+// Production-grade invitation model with audit trail
+model Invitation {
+  id             String       @id @default(cuid()) @map("_id")
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  inviterId      String
+  inviter        User         @relation(fields: [inviterId], references: [id], onDelete: Cascade)
+
+  // Basic invitation details
+  email     String
+  firstName String?
+  lastName  String?
+  role      MemberRole       @default(STUDENT)
+  type      InvitationType   @default(ORGANIZATION_MEMBER)
+  status    InvitationStatus @default(PENDING)
+  expiresAt DateTime
+  message   String?
+
+  // Academic context (for professor invitations)
+  facultyId String?
+  faculty   Faculty? @relation(fields: [facultyId], references: [id], onDelete: Cascade)
+  schoolId  String?
+  school    School?  @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+
+  // Professor-specific fields with validation
+  proposedTitle String? // "Associate Professor", etc.
+  department    String?
+  startDate     DateTime?
+  contractType  String? // Full-time, Part-time, Visiting
+
+  // Enhanced tracking and audit
+  sentAt        DateTime  @default(now())
+  respondedAt   DateTime?
+  acceptedAt    DateTime?
+  declinedAt    DateTime?
+  cancelledAt   DateTime?
+  lastReminder  DateTime?
+  reminderCount Int       @default(0)
+
+  // Security and validation
+  invitationToken String? @unique // Secure invitation token
+  ipAddress       String? // IP from which invitation was created
+  userAgent       String? // User agent info
+
+  // Soft delete for audit trail
+  deletedAt DateTime?
+  isDeleted Boolean   @default(false)
+
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
+
+  notifications Notification[]
+
+  @@index([email, status, isDeleted])
+  @@index([organizationId, status, isDeleted])
+  @@index([facultyId, status, isDeleted])
+  @@index([type, status, isDeleted])
+  @@index([expiresAt, isDeleted])
+  @@index([status, expiresAt]) // For cleanup jobs
+  @@map(name: "invitations")
+}
+
+// Removed - functionality merged into unified Invitation model
+
+// ============================================================================
+// ACADEMIC STRUCTURE MODELS
+// ============================================================================
+
+model School {
+  id          String  @id @default(cuid()) @map("_id")
+  name        String
+  shortName   String?
+  slug        String
+  description String?
+  logo        String?
+  coverPhoto  String?
+  website     String?
+  isActive    Boolean @default(true)
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
+
+  faculties   Faculty[]
+  invitations Invitation[]
+
+  @@unique([slug, organizationId])
+  @@unique([name, organizationId])
+  @@index([organizationId, isActive])
+  @@map(name: "schools")
+}
+
+model Faculty {
+  id          String  @id @default(cuid()) @map("_id")
+  name        String
+  shortName   String?
+  slug        String
+  description String?
+  logo        String?
+  coverPhoto  String?
+  website     String?
+  isActive    Boolean @default(true)
+
+  schoolId String
+  school   School @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
+
+  courses     Course[]
+  members     Member[]
+  invitations Invitation[]
+
+  @@unique([slug, schoolId])
+  @@unique([name, schoolId])
+  @@index([schoolId, isActive])
+  @@map(name: "faculties")
+}
+
+// ============================================================================
+// COURSE MANAGEMENT MODELS
+// ============================================================================
+
+// Production-grade course model with comprehensive features
+model Course {
+  id          String  @id @default(cuid()) @map("_id")
+  code        String  @db.String // Enforce length limit
+  title       String  @db.String
+  description String  @db.String
+  department  String?
+  level       String? // undergraduate, graduate, doctoral
+  credits     Int?    @default(3)
+  maxStudents Int?
+  minStudents Int?    @default(1)
+
+  // Course metadata
+  objectives     String[] @default([])
+  outcomes       String[] @default([])
+  keywords       String[] @default([]) // For search
+  difficulty     String?  @default("BEGINNER") // BEGINNER, INTERMEDIATE, ADVANCED
+  estimatedHours Int? // Total course hours
+
+  // Scheduling with validation
+  startDate DateTime?
+  endDate   DateTime?
+  semester  String?
+  year      Int?
+
+  // Enhanced status tracking
+  status               CourseStatus @default(DRAFT)
+  isActive             Boolean      @default(true)
+  isArchived           Boolean      @default(false)
+  submittedForApproval DateTime?
+  lastModified         DateTime     @updatedAt
+
+  // Approval tracking
+  currentApprovalLevel Int?     @default(0) // 0=not submitted, 1-3=levels
+  approvalHistory      String[] @default([]) // JSON log of approval actions
+  rejectionReason      String?
+  revisionNotes        String?
+
+  // Academic context with constraints
+  facultyId String
+  faculty   Faculty @relation(fields: [facultyId], references: [id], onDelete: Cascade)
+
+  // Primary instructor (course owner)
+  instructorId String
+  instructor   User   @relation("PrimaryCourseInstructor", fields: [instructorId], references: [id], onDelete: Cascade)
+
+  // Audit fields
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
+
+  // Soft delete
+  deletedAt DateTime?
+  isDeleted Boolean   @default(false)
+
+  // Version control
+  version    Int     @default(1)
+  previousId String? // Reference to previous version
+
+  // Related models
+  enrollments       Enrollment[]
+  announcements     CourseAnnouncement[]
+  materials         CourseMaterial[]
+  instructorCourses CourseInstructor[]
+  approvals         CourseApproval[]
+  notifications     Notification[]
+  jobs              Job[]
+
+  @@unique([code, facultyId, isDeleted]) // Prevent duplicate active courses
+  @@index([facultyId, status, isDeleted])
+  @@index([instructorId, status, isDeleted])
+  @@index([status, isDeleted, startDate])
+  @@index([isActive, isDeleted, startDate])
+  @@index([currentApprovalLevel, status])
+  @@index([keywords]) // For search functionality
+  @@index([level, difficulty]) // For filtering
+  @@index([semester, year, facultyId]) // Academic calendar queries
+  @@map(name: "courses")
+}
+
+// Junction table for multiple course instructors
+model CourseInstructor {
+  id           String @id @default(cuid()) @map("_id")
+  courseId     String
+  course       Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  instructorId String
+  instructor   User   @relation("AdditionalCourseInstructors", fields: [instructorId], references: [id], onDelete: Cascade)
+
+  role     String   @default("CO_INSTRUCTOR") // CO_INSTRUCTOR, TEACHING_ASSISTANT, GUEST_LECTURER
+  addedAt  DateTime @default(now())
+  isActive Boolean  @default(true)
+
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
+
+  @@unique([courseId, instructorId])
+  @@index([instructorId, isActive])
+  @@index([courseId, role])
+  @@map(name: "course_instructors")
+}
+
+model Enrollment {
+  id        String @id @default(cuid()) @map("_id")
+  courseId  String
+  course    Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  studentId String
+  student   User   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  status      EnrollmentStatus @default(PENDING)
+  enrolledAt  DateTime?
+  completedAt DateTime?
+  grade       String?
+
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
+
+  @@unique([courseId, studentId])
+  @@index([studentId, status])
+  @@index([courseId, status])
+  @@index([createdAt])
+  @@map(name: "enrollments")
+}
+
+model CourseAnnouncement {
+  id       String @id @default(cuid()) @map("_id")
+  courseId String
+  course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  title    String
+  content  String
+  priority String @default("normal") // normal, important, urgent
+
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
+
+  @@index([courseId, createdAt])
+  @@map(name: "course_announcements")
+}
+
+model CourseMaterial {
+  id       String @id @default(cuid()) @map("_id")
+  courseId String
+  course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  title   String
+  type    String // document, video, link, etc.
+  content String?
+  fileUrl String?
+  fileKey String?
+  order   Int     @default(0)
+
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
+
+  @@index([courseId, order])
+  @@map("course_materials")
+}
+
+// Production-grade course approval model with comprehensive workflow
+model CourseApproval {
+  id         String @id @default(cuid()) @map("_id")
+  courseId   String
+  course     Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  reviewerId String
+  reviewer   User   @relation("CourseReviewer", fields: [reviewerId], references: [id], onDelete: Cascade)
+
+  // Approval workflow
+  level    Int            @default(1) // 1=Faculty, 2=School, 3=Institution
+  status   ApprovalStatus @default(PENDING)
+  isActive Boolean        @default(true)
+  priority String         @default("NORMAL") // LOW, NORMAL, HIGH, URGENT
+
+  // Review details
+  comments      String?
+  internalNotes String? // Private notes for reviewers
+  reviewedAt    DateTime?
+  submittedAt   DateTime  @default(now())
+
+  // Comprehensive scoring system
+  contentScore    Int? // 1-10
+  academicRigor   Int? // 1-10
+  resourceScore   Int? // 1-10
+  innovationScore Int? // 1-10
+  overallScore    Int? // Calculated average
+
+  // Detailed feedback
+  requiredChanges     String[]  @default([])
+  suggestedChanges    String[]  @default([])
+  revisionDeadline    DateTime?
+  estimatedReviewTime Int? // Hours estimated for review
+
+  // Workflow tracking
+  approvalPath     String[]  @default([]) // Track approval route
+  delegatedFrom    String? // If delegated from another reviewer
+  delegatedTo      String? // If delegated to another reviewer
+  escalatedAt      DateTime?
+  escalatedBy      String?
+  escalationReason String?
+
+  // Communication
+  lastNotificationSent DateTime?
+  reminderCount        Int       @default(0)
+
+  // Audit and compliance
+  reviewDuration     Int? // Minutes spent reviewing
+  conflictOfInterest Boolean @default(false)
+  reviewerQualified  Boolean @default(true)
+  reviewMethodology  String? // How the review was conducted
+
+  // Metadata
+  reviewCriteria String[] @default([]) // Which criteria were evaluated
+  attachments    String[] @default([]) // File URLs
+
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
+
+  @@index([courseId, level, isActive])
+  @@index([reviewerId, status])
+  @@index([status, level, priority])
+  @@index([courseId, isActive, submittedAt])
+  @@index([status, submittedAt]) // For SLA tracking
+  @@index([level, status, reviewedAt]) // For metrics
+  @@index([priority, isActive]) // For urgent reviews
+  @@map("course_approvals")
+}
+
+// Production audit trail for compliance and tracking
+model AuditLog {
+  id String @id @default(cuid()) @map("_id")
+
+  // Action details
+  action     String // CREATE, UPDATE, DELETE, APPROVE, REJECT, etc.
+  entityType String // Course, Invitation, User, etc.
+  entityId   String // ID of the affected entity
+
+  // Actor information
+  userId    String?
+  user      User?   @relation("AuditActor", fields: [userId], references: [id])
+  sessionId String?
+  ipAddress String?
+  userAgent String?
+
+  // Change details
+  previousData String? // JSON snapshot before change
+  newData      String? // JSON snapshot after change
+  changes      String? // Specific fields changed
+
+  // Context
+  reason   String? // Reason for the change
+  source   String? // API, UI, SYSTEM, etc.
+  metadata String? // Additional context as JSON
+
+  // Compliance
+  timestamp DateTime @default(now())
+
+  @@index([entityType, entityId])
+  @@index([userId, timestamp])
+  @@index([action, entityType])
+  @@index([timestamp]) // For time-based queries
+  @@map("audit_logs")
+}
+
+// Removed - functionality consolidated into CourseApproval model
+
+// ============================================================================
+// SOCIAL & CONTENT MODELS
+// ============================================================================
+
+model Post {
+  id     String @id @default(cuid()) @map("_id")
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  content String
+
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
+
+  comments      Comment[]
+  likes         Like[]
+  bookmarks     Bookmark[]
+  attachments   Media[]
+  notifications Notification[]
+
+  @@index([userId, createdAt])
+  @@index([createdAt])
+  @@map(name: "posts")
+}
+
+model Comment {
+  id     String @id @default(cuid()) @map("_id")
+  postId String
+  post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  content String
+
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
+
+  @@index([postId, createdAt])
+  @@index([userId])
+  @@map(name: "comments")
+}
+
+model Like {
+  id     String @id @default(cuid()) @map("_id")
+  postId String
+  post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
+
+  @@unique([postId, userId])
+  @@index([userId])
+  @@map(name: "likes")
+}
+
+model Bookmark {
+  id     String @id @default(cuid()) @map("_id")
+  postId String
+  post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
+
+  @@unique([postId, userId])
+  @@index([userId, createdAt])
+  @@map(name: "bookmarks")
+}
+
+model Follow {
+  id          String @id @default(cuid()) @map("_id")
+  followerId  String
+  follower    User   @relation("UserFollowing", fields: [followerId], references: [id], onDelete: Cascade)
+  followingId String
+  following   User   @relation("UserFollowers", fields: [followingId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([followerId, followingId])
+  @@index([followingId])
+  @@map(name: "follows")
+}
+
+model Block {
+  id        String @id @default(cuid()) @map("_id")
+  blockerId String
+  blocker   User   @relation("BlocksSent", fields: [blockerId], references: [id], onDelete: Cascade)
+  blockedId String
+  blocked   User   @relation("BlocksReceived", fields: [blockedId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
+
+  @@unique([blockerId, blockedId])
+  @@index([blockedId])
+  @@map(name: "blocks")
+}
+
+model Media {
+  id       String    @id @default(cuid()) @map("_id")
+  type     MediaType
+  url      String
+  fileKey  String?
+  fileSize Int?
+  fileName String?
+
+  // Polymorphic relationships
+  postId     String?
+  post       Post?     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  researchId String?
+  research   Research? @relation(fields: [researchId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
+
+  @@index([postId])
+  @@index([researchId])
+  @@map(name: "post_media")
+}
+
+// ============================================================================
+// PROFESSIONAL & CAREER MODELS
+// ============================================================================
+
+model Job {
+  id       String  @id @default(cuid()) @map("_id")
+  userId   String
+  user     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  courseId String?
+  course   Course? @relation(fields: [courseId], references: [id])
+
+  title        String
+  description  String
+  summary      String?
+  requirements String[]
+
+  // Job details
+  type            JobType         @default(FULL_TIME)
+  experienceLevel ExperienceLevel @default(ENTRY_LEVEL)
+  salary          Float
+  location        String
+  weeklyHours     Int
+  duration        Int? // in months
+
+  // Dates
+  startDate DateTime?
+  endDate   DateTime
+
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
+
+  applications  Application[]
+  savedJobs     SavedJob[]
+  notifications Notification[]
+
+  @@index([userId, isActive])
+  @@index([type, experienceLevel])
+  @@index([endDate, isActive])
+  @@index([courseId])
+  @@map(name: "jobs")
+}
+
+model Application {
+  id          String @id @default(cuid()) @map("_id")
+  jobId       String
+  job         Job    @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  applicantId String
+  applicant   User   @relation(fields: [applicantId], references: [id], onDelete: Cascade)
+
+  status      ApplicationStatus @default(PENDING)
+  coverLetter String?
+  resume      String? // File URL
+
+  appliedAt  DateTime  @default(now())
+  reviewedAt DateTime?
+
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
+
+  @@unique([jobId, applicantId])
+  @@index([applicantId, status])
+  @@index([jobId, status])
+  @@map(name: "applications")
+}
+
+model SavedJob {
+  id     String @id @default(cuid()) @map("_id")
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  jobId  String
+  job    Job    @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
+
+  @@unique([userId, jobId])
+  @@index([userId, createdAt])
+  @@map(name: "saved_jobs")
+}
+
+// ============================================================================
+// RESEARCH & COLLABORATION MODELS
+// ============================================================================
+
+model Research {
+  id     String @id @default(cuid()) @map("_id")
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  title       String
+  description String
+  field       String?
+  keywords    String[]
+
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
+
+  attachments           Media[]
+  savedResearch         SavedResearch[]
+  collaborationRequests CollaborationRequest[]
+  collaborators         User[]                 @relation("ResearchCollaborators", fields: [collaboratorIds], references: [id])
+  collaboratorIds       String[]
+  notifications         Notification[]
+
+  @@index([userId, isActive])
+  @@index([field])
+  @@index([createdAt])
+  @@map(name: "researches")
+}
+
+model CollaborationRequest {
+  id          String   @id @default(cuid()) @map("_id")
+  researchId  String
+  research    Research @relation(fields: [researchId], references: [id], onDelete: Cascade)
+  requesterId String
+  requester   User     @relation("CollaborationRequester", fields: [requesterId], references: [id], onDelete: Cascade)
+
+  message String?
+  status  CollaborationStatus @default(PENDING)
+
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
+
+  @@unique([researchId, requesterId])
+  @@index([requesterId, status])
+  @@index([researchId, status])
+  @@map(name: "collaboration_requests")
+}
+
+model SavedResearch {
+  id         String   @id @default(cuid()) @map("_id")
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  researchId String
+  research   Research @relation(fields: [researchId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
+
+  @@unique([userId, researchId])
+  @@index([userId, createdAt])
+  @@map(name: "saved_researches")
+}
+
+// ============================================================================
+// SKILLS & PROFESSIONAL PROFILE MODELS
+// ============================================================================
+
+model Skill {
+  id       String  @id @default(cuid()) @map("_id")
+  name     String  @unique
+  category String?
+
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
+
+  userSkills        UserSkill[]
+  skillEndorsements SkillEndorsement[]
+
+  @@index([category])
+  @@map(name: "skills")
 }
 
 model UserSkill {
@@ -198,19 +1074,18 @@ model UserSkill {
 
   title             String
   level             SkillLevel
-  yearsOfExperience Int
-  skillEndorsements SkillEndorsement[]
+  yearsOfExperience Int        @default(0)
+  description       String?
 
-  createdAt DateTime @default(now()) @map(name: "created_at")
-  updatedAt DateTime @updatedAt @map(name: "updated_at")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  @@map("user_skills")
-}
+  endorsements SkillEndorsement[]
 
-enum SkillLevel {
-  BEGINNER
-  INTERMEDIATE
-  EXPERT
+  @@unique([userId, skillId])
+  @@index([userId])
+  @@index([skillId, level])
+  @@map(name: "user_skills")
 }
 
 model SkillEndorsement {
@@ -222,275 +1097,17 @@ model SkillEndorsement {
   skillId     String
   skill       Skill     @relation(fields: [skillId], references: [id], onDelete: Cascade)
 
-  createdAt DateTime @default(now()) @map(name: "created_at")
-  updatedAt DateTime @updatedAt @map(name: "updated_at")
+  createdAt DateTime @default(now())
 
   @@unique([userSkillId, endorserId])
-  @@map("skill_endorsements")
-}
-
-model Post {
-  id      String @id @default(cuid()) @map("_id")
-  content String
-
-  createdAt DateTime @default(now()) @map(name: "created_at")
-  updatedAt DateTime @updatedAt @map(name: "updated_at")
-
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId String
-
-  comments            Comment[]
-  likes               Like[]
-  linkedNotifications Notification[]
-  attachments         Media[]
-  bookmarks           Bookmark[]
-
-  @@map(name: "posts")
-}
-
-model Bookmark {
-  id     String @id @default(cuid()) @map("_id")
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  postId String
-  post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now()) @map(name: "created_at")
-  updatedAt DateTime @updatedAt @map(name: "updated_at")
-
-  @@unique([userId, postId])
-  @@map(name: "bookmarks")
-}
-
-model Media {
-  id       String    @id @default(cuid()) @map("_id")
-  type     MediaType
-  url      String
-  fileKey  String?
-  fileSize Int?
-
-  postId     String?
-  post       Post?     @relation(fields: [postId], references: [id], onDelete: Cascade)
-  research   Research? @relation(fields: [researchId], references: [id])
-  researchId String?
-
-  createdAt DateTime @default(now()) @map(name: "created_at")
-  updatedAt DateTime @updatedAt @map(name: "updated_at")
-
-  @@map(name: "post_media")
-}
-
-enum MediaType {
-  IMAGE
-  VIDEO
-  PDF
-}
-
-model Comment {
-  id      String @id @default(cuid()) @map("_id")
-  content String
-
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  postId String // Changed to optional
-  post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade) // onDelete: Cascade is good here
-
-  createdAt DateTime @default(now()) @map(name: "created_at")
-  updatedAt DateTime @updatedAt @map(name: "updated_at")
-
-  @@map("comments")
-}
-
-model Like {
-  id String @id @default(cuid()) @map("_id")
-
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  postId String
-  post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now()) @map(name: "created_at")
-  updatedAt DateTime @updatedAt @map(name: "updated_at")
-
-  @@map(name: "likes")
-}
-
-model Follow {
-  id          String @id @default(cuid()) @map("_id")
-  followerId  String
-  follower    User   @relation("UserFollowings", fields: [followerId], references: [id], onDelete: Cascade)
-  followingId String
-  following   User   @relation("UserFollowers", fields: [followingId], references: [id], onDelete: Cascade)
-
-  @@unique([followerId, followingId])
-  @@map(name: "follows")
-}
-
-model Block {
-  id String @id @default(cuid()) @map("_id")
-
-  createdAt DateTime @default(now()) @map(name: "created_at")
-  updatedAt DateTime @updatedAt @map(name: "updated_at")
-  blocker   User     @relation("BlocksSent", fields: [blockerId], references: [id], onDelete: Cascade)
-  blockerId String
-  blocked   User     @relation("BlocksReceived", fields: [blockedId], references: [id], onDelete: Cascade)
-  blockedId String
-
-  @@unique([blockerId, blockedId])
-  @@map(name: "blocks")
-}
-
-model Job {
-  id              String   @id @default(cuid()) @map("_id")
-  title           String
-  description     String
-  summary         String
-  endDate         DateTime
-  weeklyHours     Int
-  requirements    String[]
-  salary          Float
-  location        String
-  type            String
-  experienceLevel String
-  duration        Int?
-  courseId        String?
-  course          Course?   @relation(fields: [courseId], references: [id])
-
-  createdAt DateTime @default(now()) @map(name: "created_at")
-  updatedAt DateTime @updatedAt @map(name: "updated_at")
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId    String
-
-  linkedNotifications Notification[]
-  application         Application[]
-  saveJob             SaveJob[]
-
-  @@map(name: "jobs")
-}
-
-enum ApplicationStatus {
-  pending
-  accepted
-  rejected
-}
-
-model Application {
-  id String @id @default(cuid()) @map("_id")
-
-  applicantId String
-  applicant   User   @relation(fields: [applicantId], references: [id])
-  jobId       String
-  job         Job    @relation(fields: [jobId], references: [id])
-
-  status ApplicationStatus @default(pending)
-
-  createdAt DateTime @default(now()) @map(name: "created_at")
-  updatedAt DateTime @updatedAt @map(name: "updated_at")
-
-  @@map(name: "applications")
-}
-
-model SaveJob {
-  id     String @id @default(cuid()) @map("_id")
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  job    Job    @relation(fields: [jobId], references: [id])
-  jobId  String
-
-  createdAt DateTime @default(now()) @map(name: "created_at")
-  updatedAt DateTime @updatedAt @map(name: "updated_at")
-
-  @@unique([userId, jobId])
-  @@map(name: "save_jobs")
-}
-
-model Research {
-  id String @id @default(cuid()) @map("_id")
-
-  title       String
-  description String
-
-  createdAt DateTime @default(now()) @map(name: "created_at")
-  updatedAt DateTime @updatedAt @map(name: "updated_at")
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId    String
-
-  linkedNotifications   Notification[]
-  attachments           Media[]
-  saveResearch          SaveResearch[]
-  collaborationRequests CollaborationRequest[] @relation("ResearchRequests")
-  collaborators         User[]                 @relation("ResearchCollaborators", fields: [collaboratorIds], references: [id])
-  collaboratorIds       String[]
-
-  @@map(name: "researches")
-}
-
-enum CollaborationStatus {
-  PENDING
-  ACCEPTED
-  DECLINED
-}
-
-model CollaborationRequest {
-  id          String              @id @default(cuid()) @map("_id")
-  researchId  String
-  requesterId String
-  research    Research            @relation("ResearchRequests", fields: [researchId], references: [id], onDelete: Cascade)
-  requester   User                @relation("Requester", fields: [requesterId], references: [id], onDelete: Cascade)
-  status      CollaborationStatus @default(PENDING)
-
-  createdAt DateTime @default(now()) @map(name: "created_at")
-  updatedAt DateTime @updatedAt @map(name: "updated_at")
-
-  @@map("collaboration_requests")
-}
-
-model SaveResearch {
-  id         String   @id @default(cuid()) @map("_id")
-  userId     String
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  researchId String
-  research   Research @relation(fields: [researchId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now()) @map(name: "created_at")
-  updatedAt DateTime @updatedAt @map(name: "updated_at")
-
-  @@unique([userId, researchId])
-  @@map(name: "save_researches")
-}
-
-model Notification {
-  id          String           @id @default(cuid()) @map("_id")
-  recipientId String
-  recipient   User             @relation("Recipient", fields: [recipientId], references: [id], onDelete: Cascade)
-  issuerId    String
-  issuer      User             @relation("Issuer", fields: [issuerId], references: [id], onDelete: Cascade)
-  postId      String?
-  post        Post?            @relation(fields: [postId], references: [id], onDelete: Cascade)
-  job         Job?             @relation(fields: [jobId], references: [id])
-  jobId       String?
-  research    Research?        @relation(fields: [researchId], references: [id])
-  researchId  String?
-  type        NotificationType
-  read        Boolean          @default(false)
-
-  createdAt DateTime @default(now()) @map(name: "created_at")
-  updatedAt DateTime @updatedAt @map(name: "updated_at")
-
-  @@map(name: "notifications")
-}
-
-enum NotificationType {
-  LIKE
-  FOLLOW
-  COMMENT
-  POST
-  APPLICATION
-  ENROLLMENT
+  @@index([endorserId])
+  @@map(name: "skill_endorsements")
 }
 
 model Education {
-  id String @id @default(cuid()) @map("_id")
+  id     String @id @default(cuid()) @map("_id")
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   institution String
   degree      String
@@ -500,17 +1117,17 @@ model Education {
   grade       String?
   description String?
 
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
   createdAt DateTime @default(now()) @map(name: "created_at")
   updatedAt DateTime @updatedAt @map(name: "updated_at")
 
+  @@index([userId, startDate])
   @@map(name: "education")
 }
 
 model Experience {
-  id String @id @default(cuid()) @map("_id")
+  id     String @id @default(cuid()) @map("_id")
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   title       String
   company     String
@@ -521,242 +1138,94 @@ model Experience {
   current     Boolean   @default(false)
   description String?
 
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
   createdAt DateTime @default(now()) @map(name: "created_at")
   updatedAt DateTime @updatedAt @map(name: "updated_at")
 
+  @@index([userId, startDate])
   @@map(name: "experiences")
 }
 
-model Course {
-  id String @id @default(cuid()) @map("_id")
+// ============================================================================
+// NOTIFICATION SYSTEM
+// ============================================================================
 
-  title         String
-  description   String
-  code          String   @unique
-  credits       Int?
-  department    String
-  level         String? // Undergraduate, Graduate, etc.
-  duration      Int? // in weeks
-  status        String   @default("draft") // draft, published, archived
-  prerequisites String[] @default([])
+model Notification {
+  id          String @id @default(cuid()) @map("_id")
+  recipientId String
+  recipient   User   @relation("Recipient", fields: [recipientId], references: [id], onDelete: Cascade)
+  issuerId    String
+  issuer      User   @relation("Issuer", fields: [issuerId], references: [id], onDelete: Cascade)
 
-  facultyId    String
-  faculty      Faculty @relation("FacultyCourses", fields: [facultyId], references: [id], onDelete: Cascade)
-  instructorId String
-  instructor   User    @relation("InstructorCourses", fields: [instructorId], references: [id], onDelete: Cascade)
+  type    NotificationType
+  title   String?
+  message String?
+  read    Boolean          @default(false)
 
-  createdAt DateTime @default(now()) @map(name: "created_at")
-  updatedAt DateTime @updatedAt @map(name: "updated_at")
-
-  enrollments   Enrollment[]
-  announcements CourseAnnouncement[]
-  materials     CourseMaterial[]
-  jobs          Job[]
-
-  @@map(name: "courses")
-}
-
-model Enrollment {
-  id String @id @default(cuid()) @map("_id")
-
-  status   String  @default("enrolled") // enrolled, completed, dropped
-  progress Float   @default(0)
-  grade    String?
-
-  courseId  String
-  course    Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  studentId String
-  student   User   @relation("StudentEnrollments", fields: [studentId], references: [id], onDelete: Cascade)
+  // Polymorphic references
+  postId       String?
+  post         Post?       @relation(fields: [postId], references: [id], onDelete: Cascade)
+  jobId        String?
+  job          Job?        @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  researchId   String?
+  research     Research?   @relation(fields: [researchId], references: [id], onDelete: Cascade)
+  courseId     String?
+  course       Course?     @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  invitationId String?
+  invitation   Invitation? @relation(fields: [invitationId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now()) @map(name: "created_at")
   updatedAt DateTime @updatedAt @map(name: "updated_at")
 
-  @@unique([courseId, studentId])
-  @@map(name: "enrollments")
+  user   User?   @relation(fields: [userId], references: [id])
+  userId String?
+
+  @@index([recipientId, read, createdAt])
+  @@index([type, createdAt])
+  @@map(name: "notifications")
 }
 
-model CourseAnnouncement {
-  id String @id @default(cuid()) @map("_id")
-
-  title    String
-  content  String
-  priority String? // normal, important, urgent
-
-  courseId String
-  course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now()) @map(name: "created_at")
-  updatedAt DateTime @updatedAt @map(name: "updated_at")
-
-  @@map(name: "course_announcements")
-}
-
-model CourseMaterial {
-  id String @id @default(cuid()) @map("_id")
-
-  title   String
-  type    String // document, video, link, etc.
-  content String?
-  fileUrl String?
-  order   Int     @default(0)
-
-  courseId String
-  course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now()) @map(name: "created_at")
-  updatedAt DateTime @updatedAt @map(name: "updated_at")
-
-  @@map(name: "course_materials")
-}
-
-// Optional teams models (enable with organization({ teams: true }))
-model Team {
-  id             String    @id @default(cuid()) @map("_id")
-  name           String
-  organizationId String
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime? @updatedAt
-
-  organization Organization @relation(fields: [organizationId], references: [id])
-  teamMembers  TeamMember[]
-}
-
-model TeamMember {
-  id     String @id @default(cuid()) @map("_id")
-  teamId String
-  userId String
-
-  createdAt DateTime @default(now())
-
-  team Team @relation(fields: [teamId], references: [id])
-  user User @relation(fields: [userId], references: [id])
-}
-
-model Organization {
-  id          String       @id @default(cuid()) @map("_id")
-  name        String
-  slug        String?
-  logo        String?
-  createdAt   DateTime
-  metadata    String?
-  members     Member[]
-  invitations Invitation[]
-  team        Team[]
-
-  @@unique([slug])
-  @@map(name: "organization")
-}
-
-model Member {
-  id String @id @default(cuid()) @map("_id")
-
-  organizationId String
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  userId         String
-  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  facultyId      String?
-  faculty        Faculty?     @relation(fields: [facultyId], references: [id], onDelete: Cascade)
-
-  role             String
-  ProfessorProfile ProfessorProfile[]
-
-  createdAt DateTime @default(now()) @map(name: "created_at")
-  updatedAt DateTime @updatedAt @map(name: "updated_at")
-
-  @@map(name: "member")
-}
-
-model Invitation {
-  id             String       @id @default(cuid()) @map("_id")
-  organizationId String
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  email          String
-  role           String?
-  status         String
-  expiresAt      DateTime
-  inviterId      String
-  teamId         String?
-
-  user User @relation(fields: [inviterId], references: [id], onDelete: Cascade)
-
-  @@map(name: "invitation")
-}
-
-model School {
-  id          String  @id @default(cuid()) @map("_id")
-  name        String  @unique
-  slug        String? @unique
-  description String?
-  coverPhoto  String?
-  logo        String?
-  website     String?
-
-  createdAt DateTime @default(now()) @map(name: "created_at")
-  updatedAt DateTime @updatedAt @map(name: "updated_at")
-
-  instituteId String
-  institute   User   @relation(fields: [instituteId], references: [id], onDelete: Cascade)
-
-  faculties Faculty[] @relation("SchoolFaculties")
-
-  @@index([name, slug])
-  @@map(name: "schools")
-}
-
-// Updated Faculty model
-model Faculty {
-  id           String             @id @default(cuid()) @map("_id")
-  name         String             @unique
-  professors   ProfessorProfile[] @relation("ProfessorFaculties", fields: [professorIds], references: [id])
-  professorIds String[]
-  courses      Course[]           @relation("FacultyCourses")
-  slug         String?            @unique
-  description  String?
-  coverPhoto   String?
-  logo         String?
-
-  createdAt DateTime @default(now()) @map(name: "created_at")
-  updatedAt DateTime @updatedAt @map(name: "updated_at")
-
-  schoolId String
-  school   School   @relation("SchoolFaculties", fields: [schoolId], references: [id], onDelete: Cascade)
-  member   Member[]
-
-  @@index([name, slug])
-  @@map(name: "faculties")
-}
+// ============================================================================
+// EVENTS & CLUBS
+// ============================================================================
 
 model Event {
-  id String @id @default(cuid()) @map("_id")
+  id        String @id @default(cuid()) @map("_id")
+  creatorId String
+  creator   User   @relation(fields: [creatorId], references: [id], onDelete: Cascade)
 
-  name        String
-  description String
-  startDate   DateTime
-  location    String
-  coverPhoto  String?
+  name         String
+  description  String
+  location     String
+  startDate    DateTime
+  endDate      DateTime?
+  coverPhoto   String?
+  maxAttendees Int?
 
-  createdAt      DateTime @default(now()) @map(name: "created_at")
-  updatedAt      DateTime @updatedAt @map(name: "updated_at")
-  organizationId String
-  organization   User?    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  isActive Boolean @default(true)
 
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
+
+  @@index([creatorId, isActive])
+  @@index([startDate, isActive])
   @@map(name: "events")
 }
 
 model Club {
-  id String @id @default(cuid()) @map("_id")
+  id        String @id @default(cuid()) @map("_id")
+  creatorId String
+  creator   User   @relation(fields: [creatorId], references: [id], onDelete: Cascade)
 
   name        String
   description String
   coverPhoto  String?
 
-  createdAt      DateTime @default(now()) @map(name: "created_at")
-  updatedAt      DateTime @updatedAt @map(name: "updated_at")
-  organizationId String
-  organization   User?    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  isActive Boolean @default(true)
 
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
+
+  @@index([creatorId, isActive])
+  @@index([name])
   @@map(name: "clubs")
 }

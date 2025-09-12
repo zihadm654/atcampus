@@ -2,8 +2,12 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import { ChevronDownIcon, Loader2, MailPlus, PlusIcon } from "lucide-react";
+import { ChevronDownIcon, Loader2, MailPlus, PlusIcon, GraduationCap } from "lucide-react";
 import { toast } from "sonner";
+import { useQuery } from "@tanstack/react-query";
+import { z } from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 import type { ActiveOrganization, Session } from "@/types/auth-types";
 import {
@@ -33,6 +37,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -40,8 +45,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { AvatarInput } from "@/app/(profile)/[username]/_components/EditProfileDialog";
 import { motion, AnimatePresence } from "framer-motion";
+import { InvitationStatus } from "@prisma/client";
 
 export function OrganizationCard(props: {
   session: Session | null;
@@ -210,7 +224,7 @@ export function OrganizationCard(props: {
             <div className="flex flex-col gap-2">
               <AnimatePresence>
                 {optimisticOrg?.invitations
-                  .filter((invitation) => invitation.status === "pending")
+                  .filter((invitation) => invitation.status === (InvitationStatus.PENDING as string))
                   .map((invitation) => (
                     <motion.div
                       className="flex items-center justify-between"
@@ -303,14 +317,27 @@ export function OrganizationCard(props: {
             </div>
           </div>
         </div>
-        <div className="mt-4 flex w-full justify-end">
+        <div className="mt-4 flex w-full justify-end gap-2">
           <div>
             <div>
               {optimisticOrg?.id && (
-                <InviteMemberDialog
-                  optimisticOrg={optimisticOrg}
-                  setOptimisticOrg={setOptimisticOrg}
-                />
+                <>
+                  {/* <InviteMemberDialog
+                    optimisticOrg={optimisticOrg}
+                    setOptimisticOrg={setOptimisticOrg}
+                  /> */}
+                  {(currentMember?.role === "owner" ||
+                    currentMember?.role === "admin"
+                    // currentMember?.role === "ORGANIZATION_ADMIN" ||
+                    // currentMember?.role === "SCHOOL_ADMIN" ||
+                    // currentMember?.role === "FACULTY_ADMIN"
+                  ) && (
+                      <InviteProfessorDialog
+                        optimisticOrg={optimisticOrg}
+                        setOptimisticOrg={setOptimisticOrg}
+                      />
+                    )}
+                </>
               )}
             </div>
           </div>
@@ -494,36 +521,350 @@ function InviteMemberDialog({
             <Button
               disabled={loading}
               onClick={async () => {
-                const invite = organization.inviteMember({
-                  email: email,
-                  role: role as "member",
-                  resend: false,
-                  fetchOptions: {
-                    throw: true,
-                    onSuccess: (ctx) => {
-                      if (optimisticOrg) {
-                        setOptimisticOrg({
-                          ...optimisticOrg,
-                          invitations: [
-                            ...(optimisticOrg?.invitations || []),
-                            ctx.data,
-                          ],
-                        });
-                      }
+                try {
+                  setLoading(true);
+
+                  // Use our unified invitation API instead of better-auth's built-in method
+                  const response = await fetch("/api/invitations", {
+                    method: "POST",
+                    headers: {
+                      "Content-Type": "application/json",
                     },
-                  },
-                });
-                toast.promise(invite, {
-                  loading: "Inviting member...",
-                  success: "Member invited successfully",
-                  error: (error) => error.error.message,
-                });
+                    body: JSON.stringify({
+                      email: email,
+                      organizationId: optimisticOrg?.id,
+                      role: role === "admin" ? "ORGANIZATION_ADMIN" : "STUDENT",
+                      type: "ORGANIZATION_MEMBER",
+                    }),
+                  });
+
+                  if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || "Failed to send invitation");
+                  }
+
+                  const result = await response.json();
+
+                  // Update the optimistic state with the new invitation
+                  if (optimisticOrg && result.invitation) {
+                    setOptimisticOrg({
+                      ...optimisticOrg,
+                      invitations: [
+                        ...(optimisticOrg?.invitations || []),
+                        result.invitation,
+                      ],
+                    });
+                  }
+
+                  toast.success("Member invited successfully");
+                } catch (error: any) {
+                  toast.error(error.message || "Failed to send invitation");
+                } finally {
+                  setLoading(false);
+                }
               }}
             >
               Invite
             </Button>
           </DialogClose>
         </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// Professor invitation schema
+const professorInvitationSchema = z.object({
+  email: z.string().email("Invalid email address"),
+  firstName: z.string().min(1, "First name is required").optional(),
+  lastName: z.string().min(1, "Last name is required").optional(),
+  facultyId: z.string().min(1, "Faculty selection is required"),
+  title: z.string().optional(),
+  department: z.string().optional(),
+  message: z.string().optional(),
+  contractType: z.string().optional(),
+});
+
+function InviteProfessorDialog({
+  setOptimisticOrg,
+  optimisticOrg,
+}: {
+  setOptimisticOrg: (org: ActiveOrganization | null) => void;
+  optimisticOrg: ActiveOrganization | null;
+}) {
+  const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const form = useForm<z.infer<typeof professorInvitationSchema>>({
+    resolver: zodResolver(professorInvitationSchema),
+    defaultValues: {
+      email: "",
+      firstName: "",
+      lastName: "",
+      facultyId: "",
+      title: "Professor",
+      department: "",
+      message: "",
+      contractType: "Full-time",
+    },
+  });
+
+  // Fetch faculties for the current organization
+  const { data: faculties, isLoading: facultiesLoading } = useQuery({
+    queryKey: ["faculties", optimisticOrg?.id],
+    queryFn: async () => {
+      const response = await fetch("/api/faculties");
+      if (!response.ok) {
+        throw new Error("Failed to fetch faculties");
+      }
+      return response.json();
+    },
+    enabled: !!optimisticOrg?.id && open,
+  });
+
+  const onSubmit = async (values: z.infer<typeof professorInvitationSchema>) => {
+    try {
+      setLoading(true);
+
+      // Map professor invitation values to the general invitation schema
+      const invitationData = {
+        email: values.email,
+        firstName: values.firstName,
+        lastName: values.lastName,
+        facultyId: values.facultyId,
+        schoolId: faculties?.find((f: any) => f.id === values.facultyId)?.schoolId,
+        organizationId: optimisticOrg?.id,
+        role: "PROFESSOR",
+        type: "PROFESSOR_APPOINTMENT",
+        proposedTitle: values.title,
+        department: values.department,
+        message: values.message,
+        contractType: values.contractType,
+      };
+
+      const response = await fetch("/api/invitations", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(invitationData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to send professor invitation");
+      }
+
+      const result = await response.json();
+
+      // Update the optimistic state with the new invitation
+      if (optimisticOrg && result.invitation) {
+        setOptimisticOrg({
+          ...optimisticOrg,
+          invitations: [
+            ...(optimisticOrg?.invitations || []),
+            result.invitation,
+          ],
+        });
+      }
+
+      toast.success("Professor invitation sent successfully");
+      setOpen(false);
+      form.reset();
+      // Optionally refresh organization data here
+
+    } catch (error: any) {
+      toast.error(error.message || "Failed to send professor invitation");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button className="w-full gap-2 ml-2" size="sm" variant="outline">
+          <GraduationCap size={16} />
+          <p>Invite Professor</p>
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="w-11/12 sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Invite Professor</DialogTitle>
+          <DialogDescription>
+            Send a professor invitation to join your institution and assign them to a specific faculty.
+          </DialogDescription>
+        </DialogHeader>
+
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="firstName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>First Name</FormLabel>
+                    <FormControl>
+                      <Input placeholder="First name" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="lastName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Last Name</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Last name" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Email *</FormLabel>
+                  <FormControl>
+                    <Input placeholder="professor@university.edu" type="email" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="facultyId"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Faculty *</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a faculty" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {facultiesLoading ? (
+                        <SelectItem value="loading" disabled>
+                          Loading faculties...
+                        </SelectItem>
+                      ) : (
+                        faculties?.map((faculty: any) => (
+                          <SelectItem key={faculty.id} value={faculty.id}>
+                            {faculty.name}
+                          </SelectItem>
+                        ))
+                      )}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="title"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Academic Title</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Professor" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="department"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Department</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Computer Science" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <FormField
+              control={form.control}
+              name="contractType"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Employment Type</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select employment type" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="Full-time">Full-time</SelectItem>
+                      <SelectItem value="Part-time">Part-time</SelectItem>
+                      <SelectItem value="Visiting">Visiting</SelectItem>
+                      <SelectItem value="Adjunct">Adjunct</SelectItem>
+                      <SelectItem value="Research">Research</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="message"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Personal Message</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      placeholder="We would like to invite you to join our faculty..."
+                      rows={3}
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <DialogFooter className="flex flex-col sm:flex-row gap-2">
+              <DialogClose asChild>
+                <Button type="button" variant="outline" disabled={loading}>
+                  Cancel
+                </Button>
+              </DialogClose>
+              <Button type="submit" disabled={loading || facultiesLoading}>
+                {loading ? (
+                  <>
+                    <Loader2 className="animate-spin" size={16} />
+                    Sending...
+                  </>
+                ) : (
+                  "Send Invitation"
+                )}
+              </Button>
+            </DialogFooter>
+          </form>
+        </Form>
       </DialogContent>
     </Dialog>
   );

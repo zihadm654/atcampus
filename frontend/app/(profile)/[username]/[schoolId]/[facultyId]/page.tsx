@@ -29,12 +29,21 @@ const getUser = cache(async (username: string, loggedInUserId: string) => {
     },
     select: {
       ...getUserDataSelect(loggedInUserId),
-      schools: {
+      institution: true,
+      members: {
         include: {
-          faculties: true,
+          organization: {
+            include: {
+              schools: {
+                include: {
+                  faculties: true,
+                },
+              },
+            },
+          },
+          faculty: true,
         },
       },
-      institution: true,
     },
   });
 
@@ -48,7 +57,7 @@ const getFaculty = cache(async (facultyId: string) => {
       id: facultyId,
     },
     include: {
-      member: true,
+      members: true,
     },
   });
   return faculty;
@@ -85,8 +94,8 @@ export default async function Page({ params }: PageProps) {
       <h1 className="text-2xl pt-3">Faculty Members</h1>
       <div className="mt-2">
         <div className="grid grid-cols-3 max-md:grid-cols-2 gap-2 w-full">
-          {faculty && faculty.member && faculty.member.length > 0 ? (
-            faculty?.member.map((member) => (
+          {faculty && faculty.members && faculty.members.length > 0 ? (
+            faculty?.members.map((member) => (
               <div
                 key={member.id}
                 className="mt-2 text-md border rounded-lg p-2"
@@ -117,7 +126,7 @@ export default async function Page({ params }: PageProps) {
                       </DropdownMenu>
                     )}
                 </div>
-                <h3>{member.role}</h3>
+                {/* <h3>{profess}</h3> */}
               </div>
             ))
           ) : (

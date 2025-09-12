@@ -14,13 +14,8 @@ export default async function Dashboard({ children }: ProtectedLayoutProps) {
   if (!user) {
     redirect("/login");
   }
-  if (user.role === "ORGANIZATION" || user.role === "INSTITUTION") {
-    if (user.status === "PENDING") {
-      redirect("/pending-approval");
-    } else if (user.status === "REJECTED") {
-      redirect("/rejected-account");
-    }
-  }
+  
+  // Basic authentication check (middleware should handle detailed status checks)
   const filteredLinks = menubar.map((section) => ({
     ...section,
     items: section.items.filter(

@@ -107,7 +107,7 @@ export default async function DashboardPage() {
                       />
                     </TableCell>
                     <TableCell>
-                      {application.applicant.currentSeamster}
+                      {application.applicant.currentSemester}
                     </TableCell>
                   </TableRow>
                 ))}

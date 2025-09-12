@@ -1,13 +1,14 @@
-"use server";
+'use server';
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath } from 'next/cache';
 
-import { prisma } from "@/lib/db";
-import { getCurrentUser } from "@/lib/session";
+import { prisma } from '@/lib/db';
+import { getCurrentUser } from '@/lib/session';
+import { EnrollmentStatus, NotificationType } from '@prisma/client';
 
 export const enrollCourse = async (courseId: string) => {
   const user = await getCurrentUser();
-  if (!user) throw new Error("Unauthorized");
+  if (!user) throw new Error('Unauthorized');
 
   try {
     // Check if user is already enrolled
@@ -20,7 +21,10 @@ export const enrollCourse = async (courseId: string) => {
       },
     });
     if (existingEnrollment) {
-      return { success: false, message: "You are already enrolled in this course." };
+      return {
+        success: false,
+        message: 'You are already enrolled in this course.',
+      };
     }
 
     // Fetch course to get the instructor's userId
@@ -29,7 +33,7 @@ export const enrollCourse = async (courseId: string) => {
       select: { instructorId: true },
     });
     if (!course) {
-      return { success: false, message: "Course not found." };
+      return { success: false, message: 'Course not found.' };
     }
     if (course.instructorId === user.id) {
       return { success: false, message: "You cannot enroll in your own course." };
@@ -41,36 +45,36 @@ export const enrollCourse = async (courseId: string) => {
         data: {
           courseId,
           studentId: user.id,
-          status: "enrolled",
+          status: EnrollmentStatus.ENROLLED,
         },
       });
       await tx.notification.create({
         data: {
           issuerId: user.id,
           recipientId: course.instructorId,
-          type: "ENROLLMENT", // Custom type for course enrollments
+          type: NotificationType.COURSE_ENROLLMENT, // Custom type for course enrollments
           // Optionally add more fields (courseId, message, etc.)
         },
       });
     });
 
-    revalidatePath("/courses");
+    revalidatePath('/courses');
     return {
       success: true,
-      message: "Successfully enrolled in the course.",
+      message: 'Successfully enrolled in the course.',
     };
   } catch (error) {
-    console.error("Error enrolling in course:", error);
-    throw new Error("Failed to enroll in course.");
+    console.error('Error enrolling in course:', error);
+    throw new Error('Failed to enroll in course.');
   }
 };
 
 export const updateEnrollmentStatus = async (
   enrollmentId: string,
-  newStatus: "enrolled" | "completed" | "dropped",
+  newStatus: EnrollmentStatus
 ) => {
   const user = await getCurrentUser();
-  if (!user || user.role !== "PROFESSOR") throw new Error("Unauthorized");
+  if (!user || user.role !== 'PROFESSOR') throw new Error('Unauthorized');
 
   const enrollment = await prisma.enrollment.findUnique({
     where: { id: enrollmentId },
@@ -84,8 +88,8 @@ export const updateEnrollmentStatus = async (
     data: { status: newStatus },
   });
 
-  revalidatePath("/courses");
-  return { success: true, message: "Enrollment status updated successfully." };
+  revalidatePath('/courses');
+  return { success: true, message: 'Enrollment status updated successfully.' };
 };
 
 export async function isEnrolledInCourse(courseId: string) {
@@ -94,9 +98,9 @@ export async function isEnrolledInCourse(courseId: string) {
 
   const enrollment = await prisma.enrollment.findUnique({
     where: {
-      courseId_studentId: { courseId, studentId: user.id }
-    }
+      courseId_studentId: { courseId, studentId: user.id },
+    },
   });
 
-  return !!enrollment && enrollment.status === "enrolled";
+  return !!enrollment && enrollment.status === EnrollmentStatus.ENROLLED;
 }

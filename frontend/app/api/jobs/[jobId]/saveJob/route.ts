@@ -14,7 +14,7 @@ export async function GET(
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const saveJob = await prisma.saveJob.findUnique({
+    const saveJob = await prisma.savedJob.findUnique({
       where: {
         userId_jobId: {
           userId: loggedInUser.id,
@@ -46,7 +46,7 @@ export async function POST(
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    await prisma.saveJob.upsert({
+    await prisma.savedJob.upsert({
       where: {
         userId_jobId: {
           userId: loggedInUser.id,
@@ -79,7 +79,7 @@ export async function DELETE(
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    await prisma.saveJob.deleteMany({
+    await prisma.savedJob.deleteMany({
       where: {
         userId: loggedInUser.id,
         jobId,

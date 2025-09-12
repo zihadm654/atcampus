@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
-import type { User, Job } from "@prisma/client";
+import { User, Job, ExperienceLevel } from "@prisma/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { CalendarIcon } from "lucide-react";
@@ -14,11 +14,10 @@ import { getInstructorCourses } from "@/components/courses/actions";
 
 import { cn } from "@/lib/utils";
 import {
-  ExperienceLevel,
   jobSchema,
-  JobType,
   type TJob,
 } from "@/lib/validations/job";
+import { JobType } from "@prisma/client";
 import JobDescriptionEditor from "@/components/editor/richEditor";
 import { createJob, updateJob } from "@/components/jobs/actions";
 
@@ -72,26 +71,27 @@ export function CreateJobForm({ user, job }: CreateJobFormProps) {
     resolver: zodResolver(jobSchema),
     defaultValues: job
       ? {
-          ...job,
-          type: job.type as JobType,
-          experienceLevel: job.experienceLevel as ExperienceLevel,
-          endDate: new Date(job.endDate),
-          duration: job.duration || undefined,
-          courseId: job.courseId || undefined,
-        }
+        ...job,
+        type: job.type as JobType,
+        experienceLevel: job.experienceLevel as ExperienceLevel,
+        endDate: new Date(job.endDate),
+        duration: job.duration || undefined,
+        courseId: job.courseId || undefined,
+        summary: job.summary || "", // Convert null to empty string
+      }
       : {
-          title: "",
-          summary: "",
-          description: "",
-          location: "",
-          weeklyHours: 0,
-          type: JobType.INTERSHIP,
-          experienceLevel: ExperienceLevel.ENTRY,
-          salary: 0,
-          requirements: [],
-          endDate: new Date(),
-          courseId: "",
-        },
+        title: "",
+        summary: "",
+        description: "",
+        location: "",
+        weeklyHours: 0,
+        type: JobType.INTERNSHIP,
+        experienceLevel: ExperienceLevel.ENTRY_LEVEL,
+        salary: 0,
+        requirements: [],
+        endDate: new Date(),
+        courseId: "",
+      },
   });
   const queryClient = useQueryClient();
 
@@ -199,7 +199,7 @@ export function CreateJobForm({ user, job }: CreateJobFormProps) {
                         <SelectContent>
                           <SelectGroup>
                             <SelectLabel>Employment Type</SelectLabel>
-                            {Object.values(JobType).map((type) => (
+                            {(Object.values(JobType) as string[]).map((type) => (
                               <SelectItem key={type} value={type}>
                                 {type.charAt(0).toUpperCase() +
                                   type.slice(1).toLowerCase()}
@@ -231,7 +231,7 @@ export function CreateJobForm({ user, job }: CreateJobFormProps) {
                         <SelectContent>
                           <SelectGroup>
                             <SelectLabel>Experience Level</SelectLabel>
-                            {Object.values(ExperienceLevel).map((roleValue) => (
+                            {(Object.values(ExperienceLevel) as string[]).map((roleValue) => (
                               <SelectItem key={roleValue} value={roleValue}>
                                 {roleValue.charAt(0).toUpperCase() +
                                   roleValue.slice(1).toLowerCase()}
@@ -384,7 +384,7 @@ export function CreateJobForm({ user, job }: CreateJobFormProps) {
             <CardTitle>Duration</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            {type === JobType.INTERSHIP && (
+            {type === JobType.INTERNSHIP && (
               <FormField
                 control={form.control}
                 name="duration"
