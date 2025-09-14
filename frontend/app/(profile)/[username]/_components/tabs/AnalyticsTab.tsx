@@ -29,13 +29,12 @@ interface ExtendedOrganization {
 }
 
 interface AnalyticsTabProps {
-  organizationData: ExtendedOrganization[];
   user: any;
   permissions: any;
   loading?: boolean;
 }
 
-export default function AnalyticsTab({ organizationData, user, permissions, loading = false }: AnalyticsTabProps) {
+export default function AnalyticsTab({ user, permissions, loading = false }: AnalyticsTabProps) {
   // Check if user has permission to view analytics
   const canView = permissions.canViewPrivate || permissions.canEdit;
 
@@ -94,13 +93,12 @@ export default function AnalyticsTab({ organizationData, user, permissions, load
     );
   }
 
-  const organization = organizationData[0];
 
-  const totalSchools = organization?.schools?.length || 0;
-  const totalFaculties = organization?.schools?.reduce((sum: number, school: any) => sum + (school.faculties?.length || 0), 0) || 0;
-  const totalCourses = organization?.schools?.reduce((sum: number, school: any) =>
+  const totalSchools = user?.schools?.length || 0;
+  const totalFaculties = user?.schools?.reduce((sum: number, school: any) => sum + (school.faculties?.length || 0), 0) || 0;
+  const totalCourses = user?.schools?.reduce((sum: number, school: any) =>
     sum + (school.faculties?.reduce((fSum: number, faculty: any) => fSum + (faculty.courses?.length || 0), 0) || 0), 0) || 0;
-  const totalMembers = organization?._count?.members || 0;
+  const totalMembers = user?._count?.members || 0;
 
   return (
     <div className="space-y-6">
@@ -162,7 +160,7 @@ export default function AnalyticsTab({ organizationData, user, permissions, load
       <Card className="p-6">
         <h3 className="text-lg font-semibold mb-4">Academic Structure Overview</h3>
         <div className="space-y-4">
-          {organization?.schools?.map((school: any) => (
+          {user?.schools?.map((school: any) => (
             <div key={school.id} className="border rounded-lg p-4">
               <div className="flex items-center justify-between">
                 <h4 className="font-medium">{school.name}</h4>

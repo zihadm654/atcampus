@@ -49,7 +49,6 @@ export default function OverviewTab({
       return (
         <InstitutionOverview
           user={user}
-          // organizationData={user.organizations || []}
           permissions={permissions}
           isOwnProfile={isOwnProfile}
         />

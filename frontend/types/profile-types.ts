@@ -14,19 +14,6 @@ export interface ProfilePermissions {
   canViewPrivate: boolean;
 }
 
-export interface ExtendedOrganization {
-  id: string;
-  name: string;
-  slug?: string;
-  logo?: string;
-  schools: ExtendedSchool[];
-  members: Member[];
-  _count: {
-    schools: number;
-    members: number;
-  };
-}
-
 export interface ExtendedSchool {
   id: string;
   name: string;
@@ -255,7 +242,6 @@ export interface ProfileUserData {
   createdAt: Date;
   userSkills: UserSkill[];
   members: Member[];
-  organizations: ExtendedOrganization[];
   schools: ExtendedSchool[];
   courses: Course[];
   enrollments: Enrollment[];
@@ -299,7 +285,6 @@ export enum UserStatus {
 export interface ProfileData {
   user: ProfileUserData;
   permissions: ProfilePermissions;
-  organizationData?: ExtendedOrganization[];
 }
 
 // Tab configuration interface

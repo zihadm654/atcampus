@@ -4,8 +4,6 @@ import { useState } from "react";
 import { Building2, GraduationCap, BookOpen, Users2 } from "lucide-react";
 import { UserRole } from "@/lib/validations/auth";
 import type {
-  ProfileUserData,
-  ExtendedOrganization,
   TabConfig,
   ProfilePermissions,
 } from "@/types/profile-types";
@@ -205,14 +203,12 @@ interface ProfileTabsProps {
   courses: any;
   loggedInUserId: string;
   loggedInUserRole: string;
-  organizationData?: ExtendedOrganization[];
   activeTab?: string;
   onTabChange?: (tab: string) => void;
   loading?: {
     jobs?: boolean;
     researches?: boolean;
     courses?: boolean;
-    organizationData?: boolean;
   };
 }
 
@@ -239,7 +235,6 @@ export default function ProfileTabs({
   courses,
   loggedInUserId,
   loggedInUserRole,
-  organizationData = [],
   activeTab = "overview",
   onTabChange,
   loading,
@@ -336,10 +331,8 @@ export default function ProfileTabs({
 
         <TabsContent value="analytics" className="p-4">
           <AnalyticsTab
-            organizationData={organizationData}
             user={user}
             permissions={permissions}
-            loading={loading?.organizationData}
           />
         </TabsContent>
 
@@ -348,7 +341,6 @@ export default function ProfileTabs({
             user={user}
             loggedInUserId={loggedInUserId}
             permissions={permissions}
-            loading={loading?.organizationData}
           />
         </TabsContent>
 
@@ -358,7 +350,6 @@ export default function ProfileTabs({
             user={user}
             loggedInUserId={loggedInUserId}
             permissions={permissions}
-            loading={loading?.organizationData}
           />
         </TabsContent>
 
@@ -368,7 +359,6 @@ export default function ProfileTabs({
             user={user}
             loggedInUserId={loggedInUserId}
             permissions={permissions}
-            loading={loading?.organizationData}
           />
         </TabsContent>
 
@@ -377,7 +367,6 @@ export default function ProfileTabs({
             user={user}
             loggedInUserId={loggedInUserId}
             permissions={permissions}
-            loading={loading?.organizationData}
           />
         </TabsContent>
       </Tabs>

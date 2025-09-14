@@ -5,22 +5,18 @@ import { Building, Users, School } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import type {
-  ProfileUserData,
   ProfilePermissions,
-  ExtendedOrganization,
 } from "@/types/profile-types";
 import { UserData } from "@/types/types";
 
 interface InstitutionOverviewProps {
   user: UserData;
-  organizationData?: ExtendedOrganization[];
   permissions: ProfilePermissions;
   isOwnProfile: boolean;
 }
 
 export default function InstitutionOverview({
   user,
-  organizationData,
   permissions,
   isOwnProfile,
 }: InstitutionOverviewProps) {
