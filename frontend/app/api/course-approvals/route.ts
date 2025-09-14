@@ -119,7 +119,7 @@ export async function GET(req: NextRequest) {
                                 include: {
                                     school: {
                                         include: {
-                                            organization: true,
+                                            institution: true,
                                         },
                                     },
                                 },
@@ -151,7 +151,7 @@ export async function GET(req: NextRequest) {
 
             const course = approval.course;
             const userMember = memberRoles.find(member =>
-                member.organizationId === course.faculty.school.organizationId
+                member.organizationId === course.faculty.school.institutionId
             );
 
             if (!userMember) return false;
@@ -168,7 +168,7 @@ export async function GET(req: NextRequest) {
 
             // Institution admin can review level 3 approvals in their organization
             if (approval.level === 3 && currentUser.role === "INSTITUTION") {
-                return course.faculty.school.organizationId === currentUser.id;
+                return course.faculty.school.institutionId === currentUser.id;
             }
 
             return false;
@@ -230,7 +230,7 @@ export async function POST(req: NextRequest) {
                     include: {
                         school: {
                             include: {
-                                organization: true,
+                                institution: true,
                             },
                         },
                     },
@@ -264,7 +264,7 @@ export async function POST(req: NextRequest) {
         // Find a faculty admin to assign the review to
         const facultyAdmin = await prisma.member.findFirst({
             where: {
-                organizationId: course.faculty.school.organizationId,
+                organizationId: course.faculty.school.institutionId,
                 facultyId: course.facultyId,
                 role: "FACULTY_ADMIN",
                 isActive: true,

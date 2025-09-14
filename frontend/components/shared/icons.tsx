@@ -47,7 +47,9 @@ import {
   Pencil,
   ChartBar,
   Eye,
-  Star
+  Star,
+  Lock,
+  Calendar
 } from "lucide-react";
 
 export type Icon = LucideIcon;
@@ -71,6 +73,7 @@ export const Icons = {
   copy: Copy,
   dashboard: LayoutPanelLeft,
   ellipsis: MoreVertical,
+  lock: Lock,
   gitHub: ({ ...props }: LucideProps) => (
     <svg
       aria-hidden="true"
@@ -166,6 +169,7 @@ export const Icons = {
   school: School,
   card: IdCard,
   event: Calendar1,
+  calendar: Calendar,
   info: ShieldQuestion,
   video: Video
 };

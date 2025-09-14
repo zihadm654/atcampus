@@ -1,15 +1,22 @@
 import { cache } from "react";
 import { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 
 import {
   getProfileData,
   getCourseEnrollments,
+  getProfessorCourses,
   getJobApplications,
   getResearchProjects,
   logQueryPerformance,
 } from "./_components/lib/queries";
-import { FollowerInfo, getUserDataSelect, UserData } from "@/types/types";
+import {
+  FollowerInfo,
+  getJobDataInclude,
+  getResearchDataInclude,
+  getUserDataSelect,
+  UserData,
+} from "@/types/types";
 import { getCurrentUser } from "@/lib/session";
 
 import ProfileHeader from "./_components/ProfileHeader";
@@ -32,20 +39,20 @@ const getUser = cache(async (username: string, loggedInUserId: string) => {
     },
     select: {
       ...getUserDataSelect(loggedInUserId),
-      members: {
-        include: {
-          organization: {
-            include: {
-              schools: {
-                include: {
-                  faculties: true,
-                },
-              },
-            },
-          },
-          faculty: true,
-        },
-      },
+      // members: {
+      //   include: {
+      //     user: {
+      //       include: {
+      //         schools: {
+      //           include: {
+      //             faculties: true,
+      //           },
+      //         },
+      //       },
+      //     },
+      //     faculty: true,
+      //   },
+      // },
     },
   });
 
@@ -55,22 +62,27 @@ const getUser = cache(async (username: string, loggedInUserId: string) => {
 
 const getAppliedJobs = cache(async (userId: string) => {
   const startTime = Date.now();
-  const applications = await getJobApplications(userId, 10);
-  logQueryPerformance('getJobApplications', startTime);
+  const applications = await getJobDataInclude(userId);
+  logQueryPerformance("getJobApplications", startTime);
   return applications;
 });
 
-const getCourses = cache(async (userId: string) => {
+const getCourses = cache(async (user: UserData) => {
   const startTime = Date.now();
-  const enrolled = await getCourseEnrollments(userId, 10);
-  logQueryPerformance('getCourseEnrollments', startTime);
+  if (user.role === "PROFESSOR") {
+    const courses = await getProfessorCourses(user.id, 10);
+    logQueryPerformance("getProfessorCourses", startTime);
+    return courses;
+  }
+  const enrolled = await getCourseEnrollments(user.id, 10);
+  logQueryPerformance("getCourseEnrollments", startTime);
   return enrolled;
 });
 
 const getResearches = cache(async (userId: string) => {
   const startTime = Date.now();
-  const researches = await getResearchProjects(userId, 10);
-  logQueryPerformance('getResearchProjects', startTime);
+  const researches = await getResearchDataInclude(userId);
+  logQueryPerformance("getResearchProjects", startTime);
   return researches;
 });
 export async function generateMetadata({
@@ -103,7 +115,7 @@ export default async function Page({ params }: PageProps) {
   const user = await getUser(username, loggedInUser.id);
   const jobs = await getAppliedJobs(user.id);
   const researches = await getResearches(user.id);
-  const courses = await getCourses(user.id);
+  const courses = await getCourses(user);
   const followerInfo: FollowerInfo = {
     followers: user._count.followers,
     isFollowedByUser: user.followers.some(
@@ -112,10 +124,7 @@ export default async function Page({ params }: PageProps) {
   };
 
   return (
-    <ProfileProvider
-      initialUser={user as any}
-      loggedInUserId={loggedInUser.id}
-    >
+    <ProfileProvider initialUser={user} loggedInUserId={loggedInUser.id}>
       <div className="w-full min-w-0 space-y-5">
         <ProfileHeader
           user={user}
@@ -124,11 +133,12 @@ export default async function Page({ params }: PageProps) {
           isOwnProfile={user.id === loggedInUser.id}
         />
         <ProfileTabs
-          user={user as any}
+          user={user}
           jobs={jobs}
           researches={researches}
           courses={courses}
           loggedInUserId={loggedInUser.id}
+          loggedInUserRole={loggedInUser.role}
         />
       </div>
     </ProfileProvider>

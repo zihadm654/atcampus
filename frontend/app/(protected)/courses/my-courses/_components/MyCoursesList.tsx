@@ -32,9 +32,6 @@ interface Course {
         name: string;
         school: {
             name: string;
-            organization: {
-                name: string;
-            };
         };
     };
     approvalWorkflow?: {

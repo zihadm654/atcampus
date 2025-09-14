@@ -1,3 +1,4 @@
+import React from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -39,14 +40,14 @@ export default function ActivitySection({
   research,
   userRole,
   userId,
+  limit,
   canEdit,
-  limit = 3,
   showHeader = true,
   className = "",
   onViewAllJobs,
   onViewAllResearch,
 }: ActivitySectionProps) {
-  const displayJobs = limit ? jobs.slice(0, limit) : jobs;
+  const displayJobs = limit ? jobs?.slice(0, limit) : jobs;
   const displayResearch = limit ? research.slice(0, limit) : research;
   const hasMoreJobs = limit && jobs.length > limit;
   const hasMoreResearch = limit && research.length > limit;
@@ -82,7 +83,9 @@ export default function ActivitySection({
             ) : (
               <div className="flex flex-col items-center justify-center w-full col-span-2">
                 <Icons.job className="size-10 text-gray-400" />
-                <p className="text-gray-500 mt-2">No job activities added yet</p>
+                <p className="text-gray-500 mt-2">
+                  No job activities added yet
+                </p>
                 {canEdit && (
                   <Button
                     variant="outline"
@@ -131,7 +134,9 @@ export default function ActivitySection({
 
   // Full tabbed view for dedicated activity tabs
   return (
-    <Card className={`overflow-hidden rounded-xl border border-gray-100 shadow-sm ${className}`}>
+    <Card
+      className={`overflow-hidden rounded-xl border border-gray-100 shadow-sm ${className}`}
+    >
       <Tabs defaultValue="jobs" className="w-full">
         <div className="border-b px-4 pt-4">
           <TabsList className="grid w-full grid-cols-2">

@@ -40,7 +40,7 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
                             include: {
                                 school: {
                                     include: {
-                                        organization: true,
+                                        institution: true,
                                     },
                                 },
                             },
@@ -58,7 +58,7 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
             },
         });
 
-        if (!approval || !approval.course) {
+        if (!approval) {
             return NextResponse.json(
                 { error: "Course approval not found" },
                 { status: 404 }
@@ -66,7 +66,7 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
         }
 
         // Filter out soft deleted courses
-        if (approval.course.isDeleted) {
+        if (approval.course?.isDeleted) {
             return NextResponse.json(
                 { error: "Course approval not found" },
                 { status: 404 }
@@ -76,7 +76,7 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
         // Check access permissions
         const hasAccess =
             approval.reviewerId === currentUser.id || // Reviewer can view
-            approval.course.instructorId === currentUser.id; // Course creator can view
+            approval.course?.instructorId === currentUser.id; // Course creator can view
 
         if (!hasAccess) {
             return NextResponse.json(
@@ -124,7 +124,7 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
                             include: {
                                 school: {
                                     include: {
-                                        organization: true,
+                                        institution: true,
                                     },
                                 },
                             },
@@ -135,7 +135,7 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
             },
         });
 
-        if (!approval || !approval.course) {
+        if (!approval) {
             return NextResponse.json(
                 { error: "Course approval not found" },
                 { status: 404 }
@@ -143,7 +143,7 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
         }
 
         // Filter out soft deleted courses
-        if (approval.course.isDeleted) {
+        if (approval.course?.isDeleted) {
             return NextResponse.json(
                 { error: "Course approval not found" },
                 { status: 404 }
@@ -230,9 +230,9 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
                     const nextLevelAdmin = await findApprover(
                         tx,
                         nextLevel,
-                        approval.course.faculty.school.organizationId,
-                        approval.course.facultyId,
-                        approval.course.faculty.schoolId
+                        approval.course?.faculty?.school?.institutionId || '',
+                        approval.course?.facultyId,
+                        approval.course?.faculty?.schoolId
                     );
 
                     if (nextLevelAdmin) {
@@ -257,7 +257,7 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
                                 issuerId: currentUser.id,
                                 type: "COURSE_APPROVAL_REQUEST",
                                 title: "Course Approval Request",
-                                message: `Level ${nextLevel} approval needed for "${approval.course.title}"`,
+                                message: `Level ${nextLevel} approval needed for "${approval.course?.title}"`,
                                 courseId: approval.courseId,
                             },
                         });
@@ -274,11 +274,11 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
                     // Notify course creator of final approval
                     await tx.notification.create({
                         data: {
-                            recipientId: approval.course.instructorId,
+                            recipientId: approval.course?.instructorId || '',
                             issuerId: currentUser.id,
                             type: "COURSE_APPROVAL_RESULT",
                             title: "Course Approved",
-                            message: `Your course "${approval.course.title}" has been approved`,
+                            message: `Your course "${approval.course?.title}" has been approved`,
                             courseId: approval.courseId,
                         },
                     });
@@ -293,11 +293,11 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
                 // Notify course creator of rejection
                 await tx.notification.create({
                     data: {
-                        recipientId: approval.course.instructorId,
+                        recipientId: approval.course?.instructorId || '',
                         issuerId: currentUser.id,
                         type: "COURSE_APPROVAL_RESULT",
                         title: "Course Rejected",
-                        message: `Your course "${approval.course.title}" has been rejected`,
+                        message: `Your course "${approval.course?.title}" has been rejected`,
                         courseId: approval.courseId,
                     },
                 });
@@ -311,11 +311,11 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
                 // Notify course creator of revision request
                 await tx.notification.create({
                     data: {
-                        recipientId: approval.course.instructorId,
+                        recipientId: approval.course?.instructorId || '',
                         issuerId: currentUser.id,
                         type: "COURSE_APPROVAL_RESULT",
                         title: "Course Revision Requested",
-                        message: `Revisions requested for "${approval.course.title}"`,
+                        message: `Revisions requested for "${approval.course?.title}"`,
                         courseId: approval.courseId,
                     },
                 });
@@ -335,7 +335,7 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
             decision === "approve" ? "APPROVE" :
                 decision === "reject" ? "REJECT" : "REQUEST_REVISION",
             approval.courseId,
-            { status: approval.course.status },
+            { status: approval.course?.status },
             { status: result.updatedCourse.status },
             validatedData.comments || `${decision} by ${currentUser.name}`,
             {
@@ -369,7 +369,7 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
 async function findApprover(
     tx: any,
     level: number,
-    organizationId: string,
+    institutionId: string,
     facultyId?: string,
     schoolId?: string
 ): Promise<string | null> {
@@ -377,7 +377,7 @@ async function findApprover(
         // School admin
         const schoolAdmin = await tx.member.findFirst({
             where: {
-                organizationId,
+                organizationId: institutionId,
                 faculty: { schoolId },
                 role: "SCHOOL_ADMIN",
                 isActive: true,
@@ -390,7 +390,7 @@ async function findApprover(
         // Institution admin
         const institutionAdmin = await tx.member.findFirst({
             where: {
-                organizationId,
+                organizationId: institutionId,
                 role: "ORGANIZATION_ADMIN",
                 isActive: true,
             },

@@ -1,3 +1,4 @@
+import React from 'react';
 import { DotsHorizontalIcon } from "@radix-ui/react-icons";
 import { GraduationCap, BookOpen } from "lucide-react";
 
@@ -52,6 +53,11 @@ interface SchoolCardProps {
   onDelete?: (schoolId: string) => void;
   onDeleteFaculty?: (facultyId: string) => void;
   onAddFaculty?: (schoolId: string) => void;
+  onEditFaculty?: (faculty: ExtendedFaculty) => void;
+  onAddCourse?: (facultyId: string) => void;
+  onEditCourse?: (course: any) => void;
+  onDeleteCourse?: (courseId: string) => void;
+  onViewCourseDetails?: (courseId: string) => void;
 }
 
 export default function SchoolCard({
@@ -65,6 +71,11 @@ export default function SchoolCard({
   onDelete,
   onDeleteFaculty,
   onAddFaculty,
+  onEditFaculty,
+  onAddCourse,
+  onEditCourse,
+  onDeleteCourse,
+  onViewCourseDetails,
 }: SchoolCardProps) {
   const facultiesCount = school.faculties?.length || 0;
   const coursesCount = school.faculties?.reduce(
@@ -161,11 +172,12 @@ export default function SchoolCard({
                     expanded={expandedFaculties.has(faculty.id)}
                     onToggle={() => onToggleFaculty(faculty.id)}
                     canEdit={canEdit}
-                    onEdit={(faculty) => {
-                      // Handle faculty edit
-                      console.log('Edit faculty:', faculty);
-                    }}
+                    onEdit={onEditFaculty}
                     onDelete={onDeleteFaculty}
+                    onAddCourse={onAddCourse}
+                    onEditCourse={onEditCourse}
+                    onDeleteCourse={onDeleteCourse}
+                    onViewCourseDetails={onViewCourseDetails}
                   />
                 ))}
 

@@ -37,9 +37,43 @@ export function getUserDataSelect(loggedInUserId: string) {
       },
       take: 10, // Limit for performance
     },
+    // members: true,
     applications: true,
+    schools: {
+      include: {
+        faculties: {
+          include: {
+            courses: {
+              include: {
+                instructor: true,
+                _count: {
+                  select: {
+                    enrollments: true,
+                  },
+                },
+              },
+              orderBy: {
+                createdAt: Prisma.SortOrder.desc,
+              },
+              take: 5, // Limit courses per faculty for initial load
+            },
+            _count: {
+              select: {
+                courses: true,
+                members: true,
+              },
+            },
+          },
+          orderBy: {
+            name: Prisma.SortOrder.asc,
+          },
+        },
+      },
+    },
     members: true,
     clubs: true,
+    posts: true,
+    research: true,
     events: true,
     followers: {
       where: {
@@ -151,16 +185,21 @@ export function getCourseDataInclude(loggedInUserId: string) {
     instructor: {
       select: getUserDataSelect(loggedInUserId),
     },
+    instructorCourses: true,
     faculty: {
       include: {
         school: {
           include: {
-            organization: true,
+            institution: true,
           },
         },
       },
     },
-    enrollments: true,
+    enrollments: {
+      include: {
+        course: true
+      }
+    },
   } satisfies Prisma.CourseInclude;
 }
 export function getResearchDataInclude(loggedInUserId: string) {

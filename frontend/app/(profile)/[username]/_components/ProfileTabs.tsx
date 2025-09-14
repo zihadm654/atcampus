@@ -7,7 +7,7 @@ import type {
   ProfileUserData,
   ExtendedOrganization,
   TabConfig,
-  ProfilePermissions
+  ProfilePermissions,
 } from "@/types/profile-types";
 import { calculateProfilePermissions } from "@/lib/permissions";
 
@@ -26,56 +26,194 @@ import SettingsTab from "./tabs/SettingsTab";
 import MembersTab from "./tabs/MembersTab";
 import ClubsTab from "./tabs/ClubsTab";
 import EventsTab from "./tabs/EventsTab";
+import { CourseData, JobData, ResearchData, UserData } from "@/types/types";
 
 // Enhanced role-based tab configuration with permissions
 const TAB_CONFIGURATIONS: Record<UserRole, TabConfig[]> = {
   STUDENT: [
-    { value: "overview", label: "Overview", icon: Icons.home, roles: [UserRole.STUDENT] },
-    { value: "posts", label: "Posts", icon: Icons.post, roles: [UserRole.STUDENT] },
-    { value: "courses", label: "Courses", icon: BookOpen, roles: [UserRole.STUDENT] },
-    { value: "jobs", label: "Jobs & Activities", icon: Icons.job, roles: [UserRole.STUDENT] },
-    { value: "research", label: "Research", icon: Icons.bookMarked, roles: [UserRole.STUDENT] },
+    {
+      value: "overview",
+      label: "Overview",
+      icon: Icons.home,
+      roles: [UserRole.STUDENT],
+    },
+    {
+      value: "posts",
+      label: "Posts",
+      icon: Icons.post,
+      roles: [UserRole.STUDENT],
+    },
+    {
+      value: "courses",
+      label: "Courses",
+      icon: BookOpen,
+      roles: [UserRole.STUDENT],
+    },
+    {
+      value: "jobs",
+      label: "Jobs & Activities",
+      icon: Icons.job,
+      roles: [UserRole.STUDENT],
+    },
+    {
+      value: "research",
+      label: "Research",
+      icon: Icons.bookMarked,
+      roles: [UserRole.STUDENT],
+    },
   ],
   PROFESSOR: [
-    { value: "overview", label: "Overview", icon: Icons.home, roles: [UserRole.PROFESSOR] },
-    { value: "posts", label: "Posts", icon: Icons.post, roles: [UserRole.PROFESSOR] },
-    { value: "courses", label: "Courses", icon: BookOpen, permission: "canCreateCourses", roles: [UserRole.PROFESSOR] },
-    { value: "research", label: "Research", icon: Icons.bookMarked, roles: [UserRole.PROFESSOR] },
+    {
+      value: "overview",
+      label: "Overview",
+      icon: Icons.home,
+      roles: [UserRole.PROFESSOR],
+    },
+    {
+      value: "posts",
+      label: "Posts",
+      icon: Icons.post,
+      roles: [UserRole.PROFESSOR],
+    },
+    {
+      value: "courses",
+      label: "Courses",
+      icon: BookOpen,
+      permission: "canCreateCourses",
+      roles: [UserRole.PROFESSOR],
+    },
+    {
+      value: "research",
+      label: "Research",
+      icon: Icons.bookMarked,
+      roles: [UserRole.PROFESSOR],
+    },
   ],
   INSTITUTION: [
-    { value: "overview", label: "Overview", icon: Icons.home, roles: [UserRole.INSTITUTION] },
-    { value: "posts", label: "Posts", icon: Icons.post, roles: [UserRole.INSTITUTION] },
-    { value: "schools", label: "Schools", icon: Building2, permission: "canManageAcademic", roles: [UserRole.INSTITUTION] },
-    { value: "clubs", label: "Clubs", icon: Icons.chart, permission: "canViewPrivate", roles: [UserRole.INSTITUTION] },
-    { value: "events", label: "Events", icon: Icons.settings, permission: "canEdit", roles: [UserRole.INSTITUTION] },
+    {
+      value: "overview",
+      label: "Overview",
+      icon: Icons.home,
+      roles: [UserRole.INSTITUTION],
+    },
+    {
+      value: "posts",
+      label: "Posts",
+      icon: Icons.post,
+      roles: [UserRole.INSTITUTION],
+    },
+    {
+      value: "schools",
+      label: "Schools",
+      icon: Building2,
+      permission: "canManageAcademic",
+      roles: [UserRole.INSTITUTION],
+    },
+    {
+      value: "clubs",
+      label: "Clubs",
+      icon: Icons.chart,
+      permission: "canViewPrivate",
+      roles: [UserRole.INSTITUTION],
+    },
+    {
+      value: "events",
+      label: "Events",
+      icon: Icons.settings,
+      permission: "canEdit",
+      roles: [UserRole.INSTITUTION],
+    },
   ],
   ORGANIZATION: [
-    { value: "overview", label: "Overview", icon: Icons.home, roles: [UserRole.ORGANIZATION] },
-    { value: "posts", label: "Posts", icon: Icons.post, roles: [UserRole.ORGANIZATION] },
-    { value: "members", label: "Members", icon: Users2, permission: "canEdit", roles: [UserRole.ORGANIZATION] },
-    { value: "jobs", label: "Jobs", icon: Icons.job, roles: [UserRole.ORGANIZATION] },
-    { value: "research", label: "Research", icon: Icons.bookMarked, roles: [UserRole.ORGANIZATION] },
+    {
+      value: "overview",
+      label: "Overview",
+      icon: Icons.home,
+      roles: [UserRole.ORGANIZATION],
+    },
+    {
+      value: "posts",
+      label: "Posts",
+      icon: Icons.post,
+      roles: [UserRole.ORGANIZATION],
+    },
+    {
+      value: "members",
+      label: "Members",
+      icon: Users2,
+      permission: "canEdit",
+      roles: [UserRole.ORGANIZATION],
+    },
+    {
+      value: "jobs",
+      label: "Jobs",
+      icon: Icons.job,
+      roles: [UserRole.ORGANIZATION],
+    },
+    {
+      value: "research",
+      label: "Research",
+      icon: Icons.bookMarked,
+      roles: [UserRole.ORGANIZATION],
+    },
   ],
   ADMIN: [
-    { value: "overview", label: "Overview", icon: Icons.home, roles: [UserRole.ADMIN] },
-    { value: "posts", label: "Posts", icon: Icons.post, roles: [UserRole.ADMIN] },
-    { value: "courses", label: "Courses", icon: BookOpen, roles: [UserRole.ADMIN] },
-    { value: "schools", label: "Schools", icon: Building2, roles: [UserRole.ADMIN] },
-    { value: "members", label: "Members", icon: Users2, roles: [UserRole.ADMIN] },
+    {
+      value: "overview",
+      label: "Overview",
+      icon: Icons.home,
+      roles: [UserRole.ADMIN],
+    },
+    {
+      value: "posts",
+      label: "Posts",
+      icon: Icons.post,
+      roles: [UserRole.ADMIN],
+    },
+    {
+      value: "courses",
+      label: "Courses",
+      icon: BookOpen,
+      roles: [UserRole.ADMIN],
+    },
+    {
+      value: "schools",
+      label: "Schools",
+      icon: Building2,
+      roles: [UserRole.ADMIN],
+    },
+    {
+      value: "members",
+      label: "Members",
+      icon: Users2,
+      roles: [UserRole.ADMIN],
+    },
     { value: "jobs", label: "Jobs", icon: Icons.job, roles: [UserRole.ADMIN] },
-    { value: "settings", label: "Settings", icon: Icons.settings, roles: [UserRole.ADMIN] },
+    {
+      value: "settings",
+      label: "Settings",
+      icon: Icons.settings,
+      roles: [UserRole.ADMIN],
+    },
   ],
 };
 
 interface ProfileTabsProps {
-  user: ProfileUserData;
-  jobs: any[];
-  researches: any[];
-  courses: any[];
+  user: UserData;
+  jobs: any;
+  researches: any;
+  courses: any;
   loggedInUserId: string;
+  loggedInUserRole: string;
   organizationData?: ExtendedOrganization[];
   activeTab?: string;
   onTabChange?: (tab: string) => void;
+  loading?: {
+    jobs?: boolean;
+    researches?: boolean;
+    courses?: boolean;
+    organizationData?: boolean;
+  };
 }
 
 // Helper function to get role-based tabs with permission filtering
@@ -85,7 +223,7 @@ const getRoleBasedTabs = (
 ): TabConfig[] => {
   const tabsForRole = TAB_CONFIGURATIONS[role] || TAB_CONFIGURATIONS.STUDENT;
 
-  return tabsForRole.filter(tab => {
+  return tabsForRole.filter((tab) => {
     // If tab has a permission requirement, check if user has that permission
     if (tab.permission) {
       return permissions[tab.permission];
@@ -100,9 +238,11 @@ export default function ProfileTabs({
   researches,
   courses,
   loggedInUserId,
+  loggedInUserRole,
   organizationData = [],
   activeTab = "overview",
   onTabChange,
+  loading,
 }: ProfileTabsProps) {
   const [currentTab, setCurrentTab] = useState(activeTab);
 
@@ -110,9 +250,8 @@ export default function ProfileTabs({
   const permissions = calculateProfilePermissions(
     user.id,
     loggedInUserId,
-    user.role,
-    // We need to get the logged-in user's role - this would come from session/context
-    UserRole.STUDENT // Placeholder - should be actual logged-in user role
+    user.role as UserRole,
+    loggedInUserRole as UserRole
   );
 
   const roleTabs = getRoleBasedTabs(user.role as UserRole, permissions);
@@ -151,22 +290,19 @@ export default function ProfileTabs({
             jobs={jobs}
             loggedInUserId={loggedInUserId}
             permissions={permissions}
+            loading={loading?.courses || loading?.jobs}
           />
         </TabsContent>
 
         <TabsContent value="posts" className="mx-auto max-w-2xl p-6">
-          <PostsTab
-            user={user}
-            permissions={permissions}
-          />
+          <PostsTab user={user} permissions={permissions} />
         </TabsContent>
 
         <TabsContent value="courses" className="p-3">
           <CoursesTab
+            user={user}
             courses={courses}
-            userRole={user.role}
-            loggedInUserId={loggedInUserId}
-            permissions={permissions}
+            isCurrentUser={user.id === loggedInUserId}
           />
         </TabsContent>
 
@@ -176,6 +312,7 @@ export default function ProfileTabs({
             userRole={user.role}
             loggedInUserId={loggedInUserId}
             permissions={permissions}
+            loading={loading?.jobs}
           />
         </TabsContent>
 
@@ -185,16 +322,15 @@ export default function ProfileTabs({
             userRole={user.role}
             loggedInUserId={loggedInUserId}
             permissions={permissions}
+            loading={loading?.researches}
           />
         </TabsContent>
 
         {/* Institution-specific tabs */}
         <TabsContent value="schools" className="p-4">
           <SchoolsTab
-            organizationData={organizationData}
             user={user}
-            loggedInUserId={loggedInUserId}
-            permissions={permissions}
+            isCurrentUser={user.id === loggedInUserId}
           />
         </TabsContent>
 
@@ -203,6 +339,7 @@ export default function ProfileTabs({
             organizationData={organizationData}
             user={user}
             permissions={permissions}
+            loading={loading?.organizationData}
           />
         </TabsContent>
 
@@ -211,6 +348,7 @@ export default function ProfileTabs({
             user={user}
             loggedInUserId={loggedInUserId}
             permissions={permissions}
+            loading={loading?.organizationData}
           />
         </TabsContent>
 
@@ -220,6 +358,7 @@ export default function ProfileTabs({
             user={user}
             loggedInUserId={loggedInUserId}
             permissions={permissions}
+            loading={loading?.organizationData}
           />
         </TabsContent>
 
@@ -229,6 +368,7 @@ export default function ProfileTabs({
             user={user}
             loggedInUserId={loggedInUserId}
             permissions={permissions}
+            loading={loading?.organizationData}
           />
         </TabsContent>
 
@@ -237,6 +377,7 @@ export default function ProfileTabs({
             user={user}
             loggedInUserId={loggedInUserId}
             permissions={permissions}
+            loading={loading?.organizationData}
           />
         </TabsContent>
       </Tabs>

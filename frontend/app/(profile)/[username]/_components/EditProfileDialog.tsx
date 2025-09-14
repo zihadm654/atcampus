@@ -1,3 +1,5 @@
+"use client"
+
 import { useEffect, useRef, useState } from 'react';
 import Image, { StaticImageData } from 'next/image';
 import { zodResolver } from '@hookform/resolvers/zod';

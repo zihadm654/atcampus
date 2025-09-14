@@ -1,3 +1,4 @@
+import React from 'react';
 import { formatDate } from "date-fns";
 import { DotsHorizontalIcon } from "@radix-ui/react-icons";
 import { Users2, GraduationCap, MapPin } from "lucide-react";

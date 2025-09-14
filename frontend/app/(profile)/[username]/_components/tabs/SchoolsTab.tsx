@@ -1,36 +1,136 @@
-import AcademicStructure from "../academic/AcademicStructure";
+"use client";
+import React, { useMemo } from "react";
+import { EllipsisVertical, Ellipsis } from "lucide-react";
+import {
+  Card,
+  CardAction,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { UserData } from "@/types/types";
+import AddSchoolDialog from "./AddSchoolDialog";
+import EditSchoolDialog from "./EditSchoolDialog";
+import DeleteSchoolDialog from "./DeleteSchoolDialog";
+import AddFacultyDialog from "./AddFacultyDialog";
+import EditFacultyDialog from "./EditFacultyDialog";
+import DeleteFacultyDialog from "./DeleteFacultyDialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 
-export default function SchoolsTab({ organizationData, user, loggedInUserId }: any) {
-  const canEdit = user.id === loggedInUserId && user.role === 'INSTITUTION';
+export interface Faculty {
+  id: string;
+  name: string;
+}
 
-  const handleEditSchool = (school: any) => {
-    console.log('Edit school:', school);
-    // Implementation will be added later
-  };
+export interface School {
+  id: string;
+  name: string;
+  slug: string;
+  // description: string| undefined;
+  faculties: Faculty[];
+}
 
-  const handleDeleteSchool = (schoolId: string) => {
-    console.log('Delete school:', schoolId);
-    // Implementation will be added later
-  };
+interface SchoolsTabProps {
+  user: UserData;
+  isCurrentUser: boolean;
+}
 
-  const handleDeleteFaculty = (facultyId: string) => {
-    console.log('Delete faculty:', facultyId);
-    // Implementation will be added later
-  };
+const SchoolManagement = ({ school, user }: { school: School; user: any }) => {
+  const router = useRouter();
+  return (
+    <Card className="my-2">
+      <CardHeader>
+        <CardTitle
+          className="text-xl hover:cursor-pointer"
+          onClick={() => router.push(`/${user.username}/${school.id}`)}
+        >
+          {school.name}
+        </CardTitle>
+        <CardAction>
+          <DropdownMenu>
+            <DropdownMenuTrigger className="flex items-center justify-center">
+              <EllipsisVertical className="size-4" />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem>
+                <EditSchoolDialog school={school} />
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <DeleteSchoolDialog schoolId={school.id} />
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <AddFacultyDialog schoolId={school.id} />
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </CardAction>
+      </CardHeader>
+      <CardContent>
+        {school.faculties.map((faculty) => (
+          <div className="flex items-center justify-between" key={faculty.id}>
+            <h4>{faculty.name}</h4>
+            <DropdownMenu>
+              <DropdownMenuTrigger>
+                <Ellipsis className="size-4" />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem>
+                  <EditFacultyDialog faculty={faculty} />
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                  <DeleteFacultyDialog facultyId={faculty.id} />
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                  <AddFacultyDialog schoolId={school.id} />
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        ))}
+      </CardContent>
+    </Card>
+  );
+};
 
-  const handleAddSchool = () => {
-    console.log('Add school');
-    // Implementation will be added later
-  };
+export default function SchoolsTab({ user, isCurrentUser }: SchoolsTabProps) {
+  const canManage = useMemo(() => {
+    return isCurrentUser && user.role === "INSTITUTION";
+  }, [isCurrentUser, user.role]);
+
+  if (!canManage) {
+    return (
+      <div className="p-4 text-center text-gray-500">
+        This section is only available to the institution administration.
+      </div>
+    );
+  }
 
   return (
-    <AcademicStructure
-      organizationData={organizationData}
-      canEdit={canEdit}
-      onEditSchool={handleEditSchool}
-      onDeleteSchool={handleDeleteSchool}
-      onDeleteFaculty={handleDeleteFaculty}
-      onAddSchool={handleAddSchool}
-    />
+    <Card>
+      <CardHeader>
+        <div className="flex justify-between items-center">
+          <CardTitle>Academic Structure</CardTitle>
+          <AddSchoolDialog />
+        </div>
+      </CardHeader>
+      <CardContent className="grid lg:grid-cols-2 gap-2">
+        {user.schools.map((school) => (
+          <SchoolManagement key={school.id} school={school} user={user} />
+        ))}
+      </CardContent>
+    </Card>
   );
 }

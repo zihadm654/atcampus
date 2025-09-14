@@ -1,17 +1,9 @@
 "use client";
 
 import { createContext, useContext, useReducer, ReactNode } from "react";
+import type { UserData } from "@/types/types";
 
 // Types
-interface User {
-  id: string;
-  name: string;
-  username: string;
-  role: string;
-  image?: string;
-  bio?: string;
-}
-
 interface ProfilePermissions {
   canEdit: boolean;
   canDelete: boolean;
@@ -20,7 +12,7 @@ interface ProfilePermissions {
 }
 
 interface ProfileState {
-  user: User | null;
+  user: UserData | null;
   permissions: ProfilePermissions;
   expandedSections: Set<string>;
   activeTab: string;
@@ -29,7 +21,7 @@ interface ProfileState {
 }
 
 type ProfileAction =
-  | { type: 'SET_USER'; payload: User }
+  | { type: 'SET_USER'; payload: UserData }
   | { type: 'SET_PERMISSIONS'; payload: ProfilePermissions }
   | { type: 'TOGGLE_SECTION'; payload: string }
   | { type: 'SET_ACTIVE_TAB'; payload: string }
@@ -38,7 +30,7 @@ type ProfileAction =
   | { type: 'EXPAND_SECTION'; payload: string }
   | { type: 'COLLAPSE_SECTION'; payload: string }
   | { type: 'EXPAND_ALL_SECTIONS'; payload: string[] }
-  | { type: 'COLLAPSE_ALL_SECTIONS' };
+  | { type: 'COLLAPSE_ALL_SECTIONS' }
 
 interface ProfileContextType {
   state: ProfileState;
@@ -126,7 +118,7 @@ const ProfileContext = createContext<ProfileContextType | undefined>(undefined);
 // Provider Props
 interface ProfileProviderProps {
   children: ReactNode;
-  initialUser?: User;
+  initialUser?: UserData;
   loggedInUserId?: string;
 }
 

@@ -104,7 +104,7 @@ export async function getInstructorCourses() {
         include: {
           school: {
             include: {
-              organization: true,
+              institution: true,
             },
           },
         },
@@ -137,7 +137,7 @@ export async function submitCourseForApproval(courseId: string) {
           include: {
             school: {
               include: {
-                organization: true,
+                institution: true,
               },
             },
           },
@@ -164,7 +164,7 @@ export async function submitCourseForApproval(courseId: string) {
     // Find a faculty admin to assign the review to
     const facultyAdmin = await prisma.member.findFirst({
       where: {
-        organizationId: course.faculty.school.organizationId,
+        organizationId: course.faculty.school.institutionId,
         facultyId: course.facultyId,
         role: "FACULTY_ADMIN",
         isActive: true,

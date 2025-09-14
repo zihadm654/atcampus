@@ -1,4 +1,5 @@
 "use client";
+import React from 'react';
 
 import { useState } from "react";
 import { School, Faculty } from "@prisma/client";
@@ -14,7 +15,7 @@ interface SchoolListProps {
 
 export default function SchoolList({ schools }: SchoolListProps) {
   const [showEditSchoolDialog, setShowEditSchoolDialog] = useState(false);
-  const [selectedSchool, setSelectedSchool] = useState< (School & { faculties: Faculty[] }) | undefined >(undefined);
+  const [selectedSchool, setSelectedSchool] = useState<(School & { faculties: Faculty[] }) | undefined>(undefined);
 
   const handleEditClick = (school: (School & { faculties: Faculty[] })) => {
     setSelectedSchool(school);

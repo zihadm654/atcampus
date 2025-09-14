@@ -289,6 +289,7 @@ model User {
   // Institutional
   members     Member[]
   invitations Invitation[]
+  schools     School[]
 
   // Course management - simplified relationships
   primaryCourses    Course[]           @relation("PrimaryCourseInstructor")
@@ -326,7 +327,6 @@ model Organization {
 
   members     Member[]
   invitations Invitation[]
-  schools     School[]
 
   @@index([name])
   @@map(name: "organizations")
@@ -466,8 +466,8 @@ model School {
   website     String?
   isActive    Boolean @default(true)
 
-  organizationId String
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  institutionId String
+  institution   User   @relation(fields: [institutionId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now()) @map(name: "created_at")
   updatedAt DateTime @updatedAt @map(name: "updated_at")
@@ -475,9 +475,9 @@ model School {
   faculties   Faculty[]
   invitations Invitation[]
 
-  @@unique([slug, organizationId])
-  @@unique([name, organizationId])
-  @@index([organizationId, isActive])
+  @@unique([slug, institutionId])
+  @@unique([name, institutionId])
+  @@index([institutionId, isActive])
   @@map(name: "schools")
 }
 

@@ -1,3 +1,4 @@
+import React from 'react';
 import { DotsHorizontalIcon } from "@radix-ui/react-icons";
 import { BookOpen, Users2 } from "lucide-react";
 
@@ -52,6 +53,9 @@ interface FacultyCardProps {
   onEdit?: (faculty: FacultySummary) => void;
   onDelete?: (facultyId: string) => void;
   onAddCourse?: (facultyId: string) => void;
+  onEditCourse?: (course: Course) => void;
+  onDeleteCourse?: (courseId: string) => void;
+  onViewCourseDetails?: (courseId: string) => void;
 }
 
 export default function FacultyCard({
@@ -62,6 +66,9 @@ export default function FacultyCard({
   onEdit,
   onDelete,
   onAddCourse,
+  onEditCourse,
+  onDeleteCourse,
+  onViewCourseDetails,
 }: FacultyCardProps) {
   const coursesCount = faculty.courses?.length || 0;
   const membersCount = faculty._count?.members || 0;
@@ -144,7 +151,7 @@ export default function FacultyCard({
 
         <CollapsibleContent>
           <div className="px-4 pb-4">
-            {/* {faculty?.courses?.length > 0 ? (
+            {faculty?.courses && faculty.courses.length > 0 ? (
               <div className="space-y-2 pl-4 border-l border-gray-200">
                 <div className="flex items-center justify-between mb-2">
                   <h5 className="text-sm font-medium text-gray-700">Courses</h5>
@@ -157,46 +164,42 @@ export default function FacultyCard({
                       <Icons.add className="size-3 mr-1" />
                       Add Course
                     </Button>
-                  )} 
+                  )}
                 </div>
-                  
 
-            <div className="space-y-2">
-              {faculty.courses.map((course) => (
+                <div className="space-y-2">
+                  {faculty.courses.map((course) => (
                     <CourseItem
                       key={course.id}
                       course={course}
                       canEdit={canEdit}
-                      onEdit={(course) => {
-                        console.log('Edit course:', course);
-                      }}
-                      onDelete={(courseId) => {
-                        console.log('Delete course:', courseId);
-                      }}
+                      onEdit={onEditCourse}
+                      onDelete={onDeleteCourse}
+                      onViewDetails={onViewCourseDetails}
                     />
                   ))}
-            </div>
-          </div>
-          ) : (
-          <div className="text-center py-6 text-gray-500">
-            <BookOpen className="size-8 mx-auto mb-2 opacity-50" />
-            <p className="text-sm">No courses in this faculty yet</p>
-            {canEdit && (
-              <Button
-                variant="outline"
-                size="sm"
-                className="mt-3"
-                onClick={() => onAddCourse?.(faculty.id)}
-              >
-                <Icons.add className="size-4 mr-2" />
-                Add Course
-              </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="text-center py-6 text-gray-500">
+                <BookOpen className="size-8 mx-auto mb-2 opacity-50" />
+                <p className="text-sm">No courses in this faculty yet</p>
+                {canEdit && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="mt-3"
+                    onClick={() => onAddCourse?.(faculty.id)}
+                  >
+                    <Icons.add className="size-4 mr-2" />
+                    Add Course
+                  </Button>
+                )}
+              </div>
             )}
-          </div>
-            )} */}
           </div>
         </CollapsibleContent>
       </Collapsible>
-    </Card >
+    </Card>
   );
 }

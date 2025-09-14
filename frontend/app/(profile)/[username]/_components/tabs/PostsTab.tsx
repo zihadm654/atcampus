@@ -1,3 +1,4 @@
+import React from 'react';
 import { Icons } from "@/components/shared/icons";
 import UserPosts from "../UserPosts";
 

@@ -68,7 +68,7 @@ interface CourseApproval {
         objectives?: string[];
         outcomes?: string[];
         year?: number;
-        createdBy: {
+        user: {
             id: string;
             name: string;
             email: string;
@@ -274,7 +274,7 @@ export function CourseReviewForm({ approval, canReview }: CourseReviewFormProps)
                     </CardHeader>
                     <CardContent className="space-y-4 text-sm">
                         <div>
-                            <strong>Creator:</strong> {approval.course.createdBy.name}
+                            <strong>Creator:</strong> {approval.course.user.name}
                         </div>
                         <div>
                             <strong>School:</strong> {approval.course.faculty.school.name}

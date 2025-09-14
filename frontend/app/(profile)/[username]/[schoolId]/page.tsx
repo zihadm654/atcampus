@@ -31,20 +31,20 @@ const getUser = cache(async (username: string, loggedInUserId: string) => {
     select: {
       ...getUserDataSelect(loggedInUserId),
       institution: true,
-      members: {
+      schools: {
         include: {
-          organization: {
-            include: {
-              schools: {
-                include: {
-                  faculties: true,
-                },
-              },
-            },
-          },
-          faculty: true,
+          faculties: true,
         },
       },
+      // members: {
+      //   include: {
+      //     organization: {
+      //       include: {
+      //       },
+      //     },
+      //     faculty: true,
+      //   },
+      // },
     },
   });
 

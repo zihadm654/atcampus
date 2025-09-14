@@ -61,7 +61,8 @@ export async function getInstitutionalHierarchy(
   organizationId: string
 ): Promise<InstitutionalHierarchy | null> {
   try {
-    const organization = await prisma.organization.findUnique({
+    // Note: We're using organizationId here but it actually refers to institutionId in the new schema
+    const institution = await prisma.user.findUnique({
       where: { id: organizationId },
       include: {
         schools: {
@@ -87,21 +88,21 @@ export async function getInstitutionalHierarchy(
       },
     });
 
-    if (!organization) {
+    if (!institution) {
       return null;
     }
 
     return {
       organization: {
-        id: organization.id,
-        name: organization.name,
-        slug: organization.slug,
-        logo: organization.logo || undefined,
-        description: organization.description || undefined,
-        website: organization.website || undefined,
-        isActive: organization.isActive,
+        id: institution.id,
+        name: institution.name,
+        slug: institution.username || '',
+        logo: institution.image || undefined,
+        description: institution.bio || undefined,
+        website: institution.institution || undefined,
+        isActive: true,
       },
-      schools: organization.schools.map((school) => ({
+      schools: institution.schools.map((school) => ({
         id: school.id,
         name: school.name,
         shortName: school.shortName || undefined,
@@ -136,11 +137,11 @@ export async function getInstitutionalHierarchy(
  * Fetches all schools within an organization
  * Requirements: 1.1, 1.3
  */
-export async function getOrganizationSchools(organizationId: string) {
+export async function getInstitutionSchools(institutionId: string) {
   try {
     return await prisma.school.findMany({
       where: {
-        organizationId,
+        institutionId,
         isActive: true,
       },
       include: {
@@ -198,11 +199,7 @@ export async function getFacultyDetails(facultyId: string) {
     return await prisma.faculty.findUnique({
       where: { id: facultyId },
       include: {
-        school: {
-          include: {
-            organization: true,
-          },
-        },
+        school: true,
         members: {
           include: {
             user: {
@@ -306,7 +303,7 @@ export async function validateSchoolManagementAccess(
   try {
     const school = await prisma.school.findUnique({
       where: { id: schoolId },
-      select: { organizationId: true },
+      select: { institutionId: true },
     });
 
     if (!school) {
@@ -317,7 +314,7 @@ export async function validateSchoolManagementAccess(
       where: {
         userId_organizationId: {
           userId,
-          organizationId: school.organizationId,
+          organizationId: school.institutionId,
         },
       },
       include: {
@@ -361,7 +358,7 @@ export async function validateFacultyManagementAccess(
       where: { id: facultyId },
       include: {
         school: {
-          select: { organizationId: true },
+          select: { institutionId: true },
         },
       },
     });
@@ -374,7 +371,7 @@ export async function validateFacultyManagementAccess(
       where: {
         userId_organizationId: {
           userId,
-          organizationId: faculty.school.organizationId,
+          organizationId: faculty.school.institutionId,
         },
       },
       include: {
@@ -469,7 +466,7 @@ export async function getProfessorFacultyAssignments(
             school: {
               select: {
                 name: true,
-                organization: {
+                institution: {
                   select: {
                     name: true,
                   },
@@ -554,16 +551,7 @@ export async function canAssignProfessorToFaculty(
       where: { id: facultyId },
       select: {
         isActive: true,
-        school: {
-          select: {
-            isActive: true,
-            organization: {
-              select: {
-                isActive: true,
-              },
-            },
-          },
-        },
+        schoolId: true,
       },
     });
 
@@ -574,14 +562,46 @@ export async function canAssignProfessorToFaculty(
       };
     }
 
+    // Get the school to check its active status
+    const school = await prisma.school.findUnique({
+      where: { id: faculty.schoolId },
+      select: {
+        isActive: true,
+        institutionId: true,
+      },
+    });
+
+    if (!school) {
+      return {
+        canAssign: false,
+        reason: 'School not found',
+      };
+    }
+
+    // Get the institution to check its active status
+    const institution = await prisma.user.findUnique({
+      where: { id: school.institutionId },
+      select: {
+        // isActive doesn't exist on User model, check if the user is active by checking status
+        status: true,
+      },
+    });
+
+    if (!institution) {
+      return {
+        canAssign: false,
+        reason: 'Institution not found',
+      };
+    }
+
     if (
       !faculty.isActive ||
-      !faculty.school.isActive ||
-      !faculty.school.organization.isActive
+      !school.isActive ||
+      institution.status !== 'ACTIVE' // User model uses status instead of isActive
     ) {
       return {
         canAssign: false,
-        reason: 'Faculty, school, or organization is not active',
+        reason: 'Faculty, school, or institution is not active',
       };
     }
 
@@ -599,10 +619,10 @@ export async function canAssignProfessorToFaculty(
 }
 
 /**
- * Gets the organizational context for a faculty (faculty → school → organization)
+ * Gets the institutional context for a faculty (faculty → school → institution)
  * Requirements: 1.1, 1.5
  */
-export async function getFacultyOrganizationalContext(facultyId: string) {
+export async function getFacultyInstitutionalContext(facultyId: string) {
   try {
     return await prisma.faculty.findUnique({
       where: { id: facultyId },
@@ -615,11 +635,11 @@ export async function getFacultyOrganizationalContext(facultyId: string) {
             id: true,
             name: true,
             slug: true,
-            organization: {
+            institution: {
               select: {
                 id: true,
                 name: true,
-                slug: true,
+                username: true,
               },
             },
           },
@@ -627,7 +647,7 @@ export async function getFacultyOrganizationalContext(facultyId: string) {
       },
     });
   } catch (error) {
-    console.error('Error getting faculty organizational context:', error);
-    throw new Error('Failed to get faculty organizational context');
+    console.error('Error getting faculty institutional context:', error);
+    throw new Error('Failed to get faculty institutional context');
   }
 }

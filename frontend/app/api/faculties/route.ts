@@ -11,7 +11,7 @@ export async function GET(req: NextRequest) {
     const faculties = await prisma.faculty.findMany({
       where: {
         school: {
-          organizationId: user.id
+          institutionId: user.id
         }
       },
       orderBy: { name: "asc" }

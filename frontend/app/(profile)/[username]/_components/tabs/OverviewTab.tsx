@@ -1,3 +1,4 @@
+import React from "react";
 import { Fragment } from "react";
 import { Star } from "lucide-react";
 
@@ -10,22 +11,26 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Icons } from "@/components/shared/icons";
-import type { ProfileUserData, ProfilePermissions } from "@/types/profile-types";
-import type { UserSkillData } from "@/types/types";
+import type {
+  ProfileUserData,
+  ProfilePermissions,
+} from "@/types/profile-types";
+import type { UserData, UserSkillData } from "@/types/types";
 
 import SkillsSection from "../sections/SkillsSection";
 import CoursesSection from "../sections/CoursesSection";
 import ActivitySection from "../sections/ActivitySection";
-import InstitutionOverview from "@/app/(profile)/[username]/_components/sections/InstitutionOverview";
-import OrganizationOverview from "@/app/(profile)/[username]/_components/sections/OrganizationOverview";
-import ProfessorOverview from "@/app/(profile)/[username]/_components/sections/ProfessorOverview";
+import InstitutionOverview from "../sections/InstitutionOverview";
+import OrganizationOverview from "../sections/OrganizationOverview";
+import ProfessorOverview from "../sections/ProfessorOverview";
 
 interface OverviewTabProps {
-  user: ProfileUserData;
-  courses: any[];
-  jobs: any[];
+  user: UserData;
+  courses: any;
+  jobs: any;
   loggedInUserId: string;
   permissions: ProfilePermissions;
+  loading?: boolean;
 }
 
 export default function OverviewTab({
@@ -34,6 +39,7 @@ export default function OverviewTab({
   jobs,
   loggedInUserId,
   permissions,
+  loading,
 }: OverviewTabProps) {
   const isOwnProfile = user.id === loggedInUserId;
 
@@ -43,7 +49,7 @@ export default function OverviewTab({
       return (
         <InstitutionOverview
           user={user}
-          organizationData={user.organizations || []}
+          // organizationData={user.organizations || []}
           permissions={permissions}
           isOwnProfile={isOwnProfile}
         />
@@ -94,27 +100,28 @@ function StudentOverview({
   permissions,
   isOwnProfile,
 }: {
-  user: ProfileUserData;
+  user: UserData;
   courses: any[];
   jobs: any[];
   permissions: ProfilePermissions;
   isOwnProfile: boolean;
 }) {
   // Transform userSkills to match UserSkillData type expected by SkillsSection
-  const userSkillsData: UserSkillData[] = user.userSkills?.map(skill => ({
-    id: skill.id,
-    title: skill.title,
-    level: skill.level,
-    yearsOfExperience: skill.yearsOfExperience ?? 0,
-    skillId: skill.skillId,
-    skill: {
-      name: skill.title,
-      category: skill.skill?.category || null
-    },
-    _count: {
-      endorsements: skill._count?.endorsements || 0
-    }
-  })) || [];
+  const userSkillsData: UserSkillData[] =
+    user.userSkills?.map((skill) => ({
+      id: skill.id,
+      title: skill.title,
+      level: skill.level,
+      yearsOfExperience: skill.yearsOfExperience ?? 0,
+      skillId: skill.skillId,
+      skill: {
+        name: skill.title,
+        category: skill.skill?.category || null,
+      },
+      _count: {
+        endorsements: skill._count?.endorsements || 0,
+      },
+    })) || [];
 
   return (
     <Fragment>
@@ -144,7 +151,6 @@ function StudentOverview({
           userRole={user.role}
           userId={user.id}
           canEdit={permissions.canEdit}
-          limit={3}
           showHeader={false}
         />
 

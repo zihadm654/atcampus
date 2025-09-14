@@ -11,7 +11,7 @@ export async function getOrganizationFaculties(organizationId: string) {
     // Find all schools for this organization
     const schools = await prisma.school.findMany({
       where: {
-        organizationId: organizationId,
+        institutionId: organizationId,
       },
       include: {
         faculties: true,

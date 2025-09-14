@@ -1,10 +1,21 @@
 "use client";
+import React from "react";
 
 import { Fragment, useState } from "react";
 import Image from "next/image";
 import { DotsHorizontalIcon } from "@radix-ui/react-icons";
 import { useQuery } from "@tanstack/react-query";
-import { Star, Building2, GraduationCap, BookOpen, Users2, MapPin, ChevronDown, BarChart3, Pencil } from "lucide-react";
+import {
+  Star,
+  Building2,
+  GraduationCap,
+  BookOpen,
+  Users2,
+  MapPin,
+  ChevronDown,
+  BarChart3,
+  Pencil,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import { formatDate } from "date-fns";
 import {
@@ -60,23 +71,29 @@ import {
 
 // Enhanced types for profile data with proper schema relationships
 type ExtendedSchool = School & {
-  faculties: Array<Faculty & {
-    courses: Array<Course & {
-      instructor: User;
-      enrollments: Enrollment[];
-      _count: { enrollments: number };
-    }>;
-    _count: { courses: number; members: number };
-  }>;
+  faculties: Array<
+    Faculty & {
+      courses: Array<
+        Course & {
+          instructor: User;
+          enrollments: Enrollment[];
+          _count: { enrollments: number };
+        }
+      >;
+      _count: { courses: number; members: number };
+    }
+  >;
   _count: { faculties: number };
 };
 
 type ExtendedOrganization = Organization & {
   schools: ExtendedSchool[];
-  members: Array<Member & {
-    user: User;
-    faculty?: Faculty;
-  }>;
+  members: Array<
+    Member & {
+      user: User;
+      faculty?: Faculty;
+    }
+  >;
   _count: { schools: number; members: number };
 };
 
@@ -86,10 +103,12 @@ type ProfileUser = User & {
     followers: number;
     following: number;
   };
-  members: Array<Member & {
-    organization: Organization;
-    faculty: Faculty | null;
-  }>;
+  members: Array<
+    Member & {
+      organization: Organization;
+      faculty: Faculty | null;
+    }
+  >;
   userSkills: Array<{
     id: string;
     title: string;
@@ -206,7 +225,7 @@ function InstitutionSchoolsContent({
   toggleFaculty,
   onEditSchool,
   onDeleteSchool,
-  onDeleteFaculty
+  onDeleteFaculty,
 }: {
   organizationData: ExtendedOrganization[];
   user: ProfileUser;
@@ -225,9 +244,12 @@ function InstitutionSchoolsContent({
       <Card className="overflow-hidden rounded-xl border border-gray-100 shadow-sm">
         <CardContent className="flex flex-col items-center py-12">
           <Building2 className="size-16 text-gray-400" />
-          <h3 className="text-lg font-medium text-gray-700 mt-4">No Schools Found</h3>
+          <h3 className="text-lg font-medium text-gray-700 mt-4">
+            No Schools Found
+          </h3>
           <p className="text-gray-500 mt-2 text-center max-w-md">
-            This institution doesn't have any schools yet. Schools help organize faculties and courses.
+            This institution doesn't have any schools yet. Schools help organize
+            faculties and courses.
           </p>
           <Button className="mt-6" variant="outline">
             <Icons.add className="size-4 mr-2" />
@@ -246,13 +268,17 @@ function InstitutionSchoolsContent({
           Schools & Academic Structure
         </h2>
         <Badge variant="secondary" className="px-3 py-1">
-          {organization.schools.length} School{organization.schools.length !== 1 ? 's' : ''}
+          {organization.schools.length} School
+          {organization.schools.length !== 1 ? "s" : ""}
         </Badge>
       </div>
 
       <div className="grid gap-4">
         {organization.schools.map((school) => (
-          <Card key={school.id} className="overflow-hidden rounded-xl border border-gray-100 shadow-sm transition-all hover:border-gray-200 hover:shadow">
+          <Card
+            key={school.id}
+            className="overflow-hidden rounded-xl border border-gray-100 shadow-sm transition-all hover:border-gray-200 hover:shadow"
+          >
             <Collapsible
               open={expandedSchools.has(school.id)}
               onOpenChange={() => toggleSchool(school.id)}
@@ -264,9 +290,11 @@ function InstitutionSchoolsContent({
                       {school.name.charAt(0)}
                     </div>
                     <div className="text-left">
-                      <CardTitle className="text-lg font-semibold">{school.name}</CardTitle>
+                      <CardTitle className="text-lg font-semibold">
+                        {school.name}
+                      </CardTitle>
                       <p className="text-sm text-gray-600 mt-1">
-                        {school.description || 'No description available'}
+                        {school.description || "No description available"}
                       </p>
                       <div className="flex items-center gap-4 mt-2">
                         <Badge variant="outline" className="text-xs">
@@ -275,25 +303,45 @@ function InstitutionSchoolsContent({
                         </Badge>
                         <Badge variant="outline" className="text-xs">
                           <BookOpen className="size-3 mr-1" />
-                          {school.faculties?.reduce((total, faculty) => total + (faculty.courses?.length || 0), 0) || 0} Courses
+                          {school.faculties?.reduce(
+                            (total, faculty) =>
+                              total + (faculty.courses?.length || 0),
+                            0
+                          ) || 0}{" "}
+                          Courses
                         </Badge>
                       </div>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
                     <DropdownMenu>
-                      <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                      <DropdownMenuTrigger
+                        asChild
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 w-8 p-0"
+                        >
                           <DotsHorizontalIcon className="h-4 w-4" />
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onEditSchool(school); }}>
+                        <DropdownMenuItem
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onEditSchool(school);
+                          }}
+                        >
                           <Icons.pencil className="size-4 mr-2" />
                           Edit School
                         </DropdownMenuItem>
                         <DropdownMenuItem
-                          onClick={(e) => { e.stopPropagation(); onDeleteSchool(school.id); }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onDeleteSchool(school.id);
+                          }}
                           className="text-red-600"
                         >
                           <Icons.trash className="size-4 mr-2" />
@@ -301,8 +349,11 @@ function InstitutionSchoolsContent({
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
-                    <Icons.chevronDown className={`size-5 transition-transform ${expandedSchools.has(school.id) ? 'rotate-180' : ''
-                      }`} />
+                    <Icons.chevronDown
+                      className={`size-5 transition-transform ${
+                        expandedSchools.has(school.id) ? "rotate-180" : ""
+                      }`}
+                    />
                   </div>
                 </CardHeader>
               </CollapsibleTrigger>
@@ -312,7 +363,10 @@ function InstitutionSchoolsContent({
                   {school.faculties?.length > 0 ? (
                     <div className="space-y-3 pl-4 border-l-2 border-gray-100">
                       {school.faculties.map((faculty) => (
-                        <Card key={faculty.id} className="border border-gray-200 rounded-lg">
+                        <Card
+                          key={faculty.id}
+                          className="border border-gray-200 rounded-lg"
+                        >
                           <Collapsible
                             open={expandedFaculties.has(faculty.id)}
                             onOpenChange={() => toggleFaculty(faculty.id)}
@@ -324,16 +378,25 @@ function InstitutionSchoolsContent({
                                     {faculty.name.charAt(0)}
                                   </div>
                                   <div className="text-left">
-                                    <h4 className="font-medium">{faculty.name}</h4>
+                                    <h4 className="font-medium">
+                                      {faculty.name}
+                                    </h4>
                                     <p className="text-sm text-gray-600">
-                                      {faculty.description || 'No description available'}
+                                      {faculty.description ||
+                                        "No description available"}
                                     </p>
                                     <div className="flex items-center gap-3 mt-1">
-                                      <Badge variant="secondary" className="text-xs">
+                                      <Badge
+                                        variant="secondary"
+                                        className="text-xs"
+                                      >
                                         <BookOpen className="size-3 mr-1" />
                                         {faculty.courses?.length || 0} Courses
                                       </Badge>
-                                      <Badge variant="secondary" className="text-xs">
+                                      <Badge
+                                        variant="secondary"
+                                        className="text-xs"
+                                      >
                                         <Users2 className="size-3 mr-1" />
                                         {faculty._count?.members || 0} Members
                                       </Badge>
@@ -342,18 +405,30 @@ function InstitutionSchoolsContent({
                                 </div>
                                 <div className="flex items-center gap-2">
                                   <DropdownMenu>
-                                    <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                                    <DropdownMenuTrigger
+                                      asChild
+                                      onClick={(e) => e.stopPropagation()}
+                                    >
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        className="h-8 w-8 p-0"
+                                      >
                                         <DotsHorizontalIcon className="h-4 w-4" />
                                       </Button>
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent align="end">
-                                      <DropdownMenuItem onClick={(e) => e.stopPropagation()}>
+                                      <DropdownMenuItem
+                                        onClick={(e) => e.stopPropagation()}
+                                      >
                                         <Icons.pencil className="size-4 mr-2" />
                                         Edit Faculty
                                       </DropdownMenuItem>
                                       <DropdownMenuItem
-                                        onClick={(e) => { e.stopPropagation(); onDeleteFaculty(faculty.id); }}
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          onDeleteFaculty(faculty.id);
+                                        }}
                                         className="text-red-600"
                                       >
                                         <Icons.trash className="size-4 mr-2" />
@@ -361,8 +436,13 @@ function InstitutionSchoolsContent({
                                       </DropdownMenuItem>
                                     </DropdownMenuContent>
                                   </DropdownMenu>
-                                  <Icons.chevronDown className={`size-4 transition-transform ${expandedFaculties.has(faculty.id) ? 'rotate-180' : ''
-                                    }`} />
+                                  <Icons.chevronDown
+                                    className={`size-4 transition-transform ${
+                                      expandedFaculties.has(faculty.id)
+                                        ? "rotate-180"
+                                        : ""
+                                    }`}
+                                  />
                                 </div>
                               </div>
                             </CollapsibleTrigger>
@@ -371,14 +451,24 @@ function InstitutionSchoolsContent({
                               <div className="px-4 pb-4">
                                 {faculty.courses?.length > 0 ? (
                                   <div className="space-y-2 pl-4 border-l border-gray-200">
-                                    <h5 className="text-sm font-medium text-gray-700 mb-2">Courses</h5>
+                                    <h5 className="text-sm font-medium text-gray-700 mb-2">
+                                      Courses
+                                    </h5>
                                     {faculty.courses.map((course) => (
-                                      <div key={course.id} className="bg-gray-50 rounded-lg p-3 border">
+                                      <div
+                                        key={course.id}
+                                        className="bg-gray-50 rounded-lg p-3 border"
+                                      >
                                         <div className="flex items-start justify-between">
                                           <div className="flex-1">
                                             <div className="flex items-center gap-2">
-                                              <h6 className="font-medium text-sm">{course.title}</h6>
-                                              <Badge variant="outline" className="text-xs">
+                                              <h6 className="font-medium text-sm">
+                                                {course.title}
+                                              </h6>
+                                              <Badge
+                                                variant="outline"
+                                                className="text-xs"
+                                              >
                                                 {course.code}
                                               </Badge>
                                             </div>
@@ -388,11 +478,14 @@ function InstitutionSchoolsContent({
                                             <div className="flex items-center gap-4 mt-2">
                                               <span className="text-xs text-gray-500">
                                                 <Users2 className="size-3 inline mr-1" />
-                                                Instructor: {course.instructor.name}
+                                                Instructor:{" "}
+                                                {course.instructor.name}
                                               </span>
                                               <span className="text-xs text-gray-500">
                                                 <GraduationCap className="size-3 inline mr-1" />
-                                                {course._count?.enrollments || 0} Students
+                                                {course._count?.enrollments ||
+                                                  0}{" "}
+                                                Students
                                               </span>
                                               <span className="text-xs text-gray-500">
                                                 {course.credits || 3} Credits
@@ -400,7 +493,11 @@ function InstitutionSchoolsContent({
                                             </div>
                                             <div className="flex items-center gap-2 mt-2">
                                               <Badge
-                                                variant={course.status === 'ACTIVE' ? 'default' : 'secondary'}
+                                                variant={
+                                                  course.status === "ACTIVE"
+                                                    ? "default"
+                                                    : "secondary"
+                                                }
                                                 className="text-xs"
                                               >
                                                 {course.status.toLowerCase()}
@@ -408,7 +505,10 @@ function InstitutionSchoolsContent({
                                               {course.startDate && (
                                                 <span className="text-xs text-gray-500">
                                                   <MapPin className="size-3 inline mr-1" />
-                                                  {formatDate(new Date(course.startDate), 'MMM yyyy')}
+                                                  {formatDate(
+                                                    new Date(course.startDate),
+                                                    "MMM yyyy"
+                                                  )}
                                                 </span>
                                               )}
                                             </div>
@@ -420,7 +520,9 @@ function InstitutionSchoolsContent({
                                 ) : (
                                   <div className="text-center py-6 text-gray-500">
                                     <BookOpen className="size-8 mx-auto mb-2 opacity-50" />
-                                    <p className="text-sm">No courses in this faculty yet</p>
+                                    <p className="text-sm">
+                                      No courses in this faculty yet
+                                    </p>
                                   </div>
                                 )}
                               </div>
@@ -449,13 +551,29 @@ function InstitutionSchoolsContent({
   );
 }
 
-function InstitutionAnalyticsContent({ organizationData }: { organizationData: ExtendedOrganization[] }) {
+function InstitutionAnalyticsContent({
+  organizationData,
+}: {
+  organizationData: ExtendedOrganization[];
+}) {
   const organization = organizationData[0];
 
   const totalSchools = organization?.schools?.length || 0;
-  const totalFaculties = organization?.schools?.reduce((sum, school) => sum + (school.faculties?.length || 0), 0) || 0;
-  const totalCourses = organization?.schools?.reduce((sum, school) =>
-    sum + (school.faculties?.reduce((fSum, faculty) => fSum + (faculty.courses?.length || 0), 0) || 0), 0) || 0;
+  const totalFaculties =
+    organization?.schools?.reduce(
+      (sum, school) => sum + (school.faculties?.length || 0),
+      0
+    ) || 0;
+  const totalCourses =
+    organization?.schools?.reduce(
+      (sum, school) =>
+        sum +
+        (school.faculties?.reduce(
+          (fSum, faculty) => fSum + (faculty.courses?.length || 0),
+          0
+        ) || 0),
+      0
+    ) || 0;
   const totalMembers = organization?._count?.members || 0;
 
   return (
@@ -516,7 +634,9 @@ function InstitutionAnalyticsContent({ organizationData }: { organizationData: E
       </div>
 
       <Card className="p-6">
-        <h3 className="text-lg font-semibold mb-4">Academic Structure Overview</h3>
+        <h3 className="text-lg font-semibold mb-4">
+          Academic Structure Overview
+        </h3>
         <div className="space-y-4">
           {organization?.schools?.map((school) => (
             <div key={school.id} className="border rounded-lg p-4">
@@ -525,17 +645,21 @@ function InstitutionAnalyticsContent({ organizationData }: { organizationData: E
                 <div className="flex gap-4 text-sm text-gray-600">
                   <span>{school.faculties?.length || 0} Faculties</span>
                   <span>
-                    {school.faculties?.reduce((sum, f) => sum + (f.courses?.length || 0), 0) || 0} Courses
+                    {school.faculties?.reduce(
+                      (sum, f) => sum + (f.courses?.length || 0),
+                      0
+                    ) || 0}{" "}
+                    Courses
                   </span>
                 </div>
               </div>
             </div>
           )) || (
-              <div className="text-center py-8 text-gray-500">
-                <Icons.chart className="size-12 mx-auto mb-3 opacity-50" />
-                <p>No data available for analytics</p>
-              </div>
-            )}
+            <div className="text-center py-8 text-gray-500">
+              <Icons.chart className="size-12 mx-auto mb-3 opacity-50" />
+              <p>No data available for analytics</p>
+            </div>
+          )}
         </div>
       </Card>
     </div>
@@ -555,11 +679,15 @@ function InstitutionSettingsContent({ user }: { user: ProfileUser }) {
           <h3 className="text-lg font-semibold mb-4">General Settings</h3>
           <div className="space-y-4">
             <div>
-              <label className="text-sm font-medium text-gray-700">Institution Name</label>
+              <label className="text-sm font-medium text-gray-700">
+                Institution Name
+              </label>
               <p className="text-gray-900 mt-1">{user.name}</p>
             </div>
             <div>
-              <label className="text-sm font-medium text-gray-700">Username</label>
+              <label className="text-sm font-medium text-gray-700">
+                Username
+              </label>
               <p className="text-gray-900 mt-1">@{user.username}</p>
             </div>
             <div>
@@ -568,7 +696,9 @@ function InstitutionSettingsContent({ user }: { user: ProfileUser }) {
             </div>
             <div>
               <label className="text-sm font-medium text-gray-700">Bio</label>
-              <p className="text-gray-900 mt-1">{user.bio || 'No bio available'}</p>
+              <p className="text-gray-900 mt-1">
+                {user.bio || "No bio available"}
+              </p>
             </div>
           </div>
         </Card>
@@ -579,14 +709,18 @@ function InstitutionSettingsContent({ user }: { user: ProfileUser }) {
             <div className="flex items-center justify-between">
               <div>
                 <p className="font-medium">Current Academic Year</p>
-                <p className="text-sm text-gray-600">Set the current academic year for course scheduling</p>
+                <p className="text-sm text-gray-600">
+                  Set the current academic year for course scheduling
+                </p>
               </div>
               <Button variant="outline">Configure</Button>
             </div>
             <div className="flex items-center justify-between">
               <div>
                 <p className="font-medium">Semester System</p>
-                <p className="text-sm text-gray-600">Configure semester or quarter system</p>
+                <p className="text-sm text-gray-600">
+                  Configure semester or quarter system
+                </p>
               </div>
               <Button variant="outline">Configure</Button>
             </div>
@@ -599,14 +733,18 @@ function InstitutionSettingsContent({ user }: { user: ProfileUser }) {
             <div className="flex items-center justify-between">
               <div>
                 <p className="font-medium">Course Approval Workflow</p>
-                <p className="text-sm text-gray-600">Configure approval levels for new courses</p>
+                <p className="text-sm text-gray-600">
+                  Configure approval levels for new courses
+                </p>
               </div>
               <Button variant="outline">Configure</Button>
             </div>
             <div className="flex items-center justify-between">
               <div>
                 <p className="font-medium">Enrollment Settings</p>
-                <p className="text-sm text-gray-600">Set enrollment periods and limits</p>
+                <p className="text-sm text-gray-600">
+                  Set enrollment periods and limits
+                </p>
               </div>
               <Button variant="outline">Configure</Button>
             </div>
@@ -619,14 +757,18 @@ function InstitutionSettingsContent({ user }: { user: ProfileUser }) {
             <div className="flex items-center justify-between">
               <div>
                 <p className="font-medium">User Roles & Permissions</p>
-                <p className="text-sm text-gray-600">Manage roles and their permissions</p>
+                <p className="text-sm text-gray-600">
+                  Manage roles and their permissions
+                </p>
               </div>
               <Button variant="outline">Manage</Button>
             </div>
             <div className="flex items-center justify-between">
               <div>
                 <p className="font-medium">Faculty Management</p>
-                <p className="text-sm text-gray-600">Configure faculty creation and management</p>
+                <p className="text-sm text-gray-600">
+                  Configure faculty creation and management
+                </p>
               </div>
               <Button variant="outline">Configure</Button>
             </div>
@@ -647,10 +789,16 @@ export default function ProfileClient({
 }: Props) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedSchool, setSelectedSchool] = useState(null);
-  const [isAssignFacultyDialogOpen, setIsAssignFacultyDialogOpen] = useState(false);
-  const [selectedMemberForFaculty, setSelectedMemberForFaculty] = useState<Member | null>(null);
-  const [expandedSchools, setExpandedSchools] = useState<Set<string>>(new Set());
-  const [expandedFaculties, setExpandedFaculties] = useState<Set<string>>(new Set());
+  const [isAssignFacultyDialogOpen, setIsAssignFacultyDialogOpen] =
+    useState(false);
+  const [selectedMemberForFaculty, setSelectedMemberForFaculty] =
+    useState<Member | null>(null);
+  const [expandedSchools, setExpandedSchools] = useState<Set<string>>(
+    new Set()
+  );
+  const [expandedFaculties, setExpandedFaculties] = useState<Set<string>>(
+    new Set()
+  );
 
   const router = useRouter();
   const deleteSchoolMutation = useDeleteSchoolMutation();
@@ -734,8 +882,8 @@ export default function ProfileClient({
 
           <TabsContent value="overview" className="space-y-2 p-3">
             {user.role === "STUDENT" ||
-              user.role === "PROFESSOR" ||
-              user.role === "ADMIN" ? (
+            user.role === "PROFESSOR" ||
+            user.role === "ADMIN" ? (
               <Fragment>
                 <div className="grid grid-cols-2 gap-2 max-md:grid-cols-1">
                   <Card className="overflow-hidden rounded-xl border border-gray-100 shadow-sm transition-all hover:border-gray-200 hover:shadow">
@@ -754,10 +902,14 @@ export default function ProfileClient({
                           <UserSkillList
                             skills={user.userSkills.map((skill) => ({
                               ...skill,
-                              _count: { endorsements: skill._count?.endorsements || 0 },
+                              _count: {
+                                endorsements: skill._count?.endorsements || 0,
+                              },
                               skillId: skill.id,
                               level: skill.level as any,
-                              skill: { category: skill.skill?.category || null },
+                              skill: {
+                                category: skill.skill?.category || null,
+                              },
                             }))}
                             userId={user.id}
                           />
@@ -794,12 +946,17 @@ export default function ProfileClient({
                         <div className="max-h-40 overflow-y-auto">
                           <div className="space-y-2">
                             {courses.slice(0, 3).map((enrollment) => (
-                              <div key={enrollment.id} className="border p-2 rounded-md bg-gray-50">
+                              <div
+                                key={enrollment.id}
+                                className="border p-2 rounded-md bg-gray-50"
+                              >
                                 <div className="font-medium text-sm">
-                                  {enrollment.course.title} ({enrollment.course.code})
+                                  {enrollment.course.title} (
+                                  {enrollment.course.code})
                                 </div>
                                 <div className="text-xs text-gray-500">
-                                  {enrollment.course.faculty.name} • {enrollment.course.credits} credits
+                                  {enrollment.course.faculty.name} •{" "}
+                                  {enrollment.course.credits} credits
                                 </div>
                                 <div className="text-xs text-blue-600 capitalize">
                                   {enrollment.status.toLowerCase()}
@@ -840,7 +997,10 @@ export default function ProfileClient({
                     <CardContent className="grid grid-cols-2 gap-2 max-md:grid-cols-1">
                       {jobs.length > 0 ? (
                         jobs.map((application) => (
-                          <JobComponent key={application.id} job={application.job} />
+                          <JobComponent
+                            key={application.id}
+                            job={application.job}
+                          />
                         ))
                       ) : (
                         <div className="flex flex-col items-center justify-center w-full">
@@ -940,7 +1100,10 @@ export default function ProfileClient({
                 <CardContent className="grid grid-cols-3 gap-2 max-md:grid-cols-1">
                   {jobs.length > 0 ? (
                     jobs.map((application) => (
-                      <JobComponent key={application.id} job={application.job} />
+                      <JobComponent
+                        key={application.id}
+                        job={application.job}
+                      />
                     ))
                   ) : (
                     <div className="flex flex-col items-center">
@@ -1001,24 +1164,36 @@ export default function ProfileClient({
                 <CardContent className="grid grid-cols-1 gap-3">
                   {courses.length > 0 ? (
                     courses.map((enrollment) => (
-                      <div key={enrollment.id} className="border rounded-lg p-4 hover:shadow-sm transition-shadow">
+                      <div
+                        key={enrollment.id}
+                        className="border rounded-lg p-4 hover:shadow-sm transition-shadow"
+                      >
                         <div className="flex justify-between items-start">
                           <div className="flex-1">
                             <div className="font-semibold text-lg">
                               {enrollment.course.title}
                             </div>
                             <div className="text-sm text-gray-600">
-                              {enrollment.course.code} • {enrollment.course.faculty.name}
+                              {enrollment.course.code} •{" "}
+                              {enrollment.course.faculty.name}
                             </div>
                             <div className="text-sm text-gray-500 mt-1">
-                              {enrollment.course.credits ? `${enrollment.course.credits} credits` : 'Credits not specified'}
+                              {enrollment.course.credits
+                                ? `${enrollment.course.credits} credits`
+                                : "Credits not specified"}
                             </div>
                             <div className="flex items-center gap-2 mt-2">
-                              <span className={`px-2 py-1 rounded-full text-xs ${enrollment.status === 'ENROLLED' ? 'bg-green-100 text-green-700' :
-                                enrollment.status === 'COMPLETED' ? 'bg-blue-100 text-blue-700' :
-                                  enrollment.status === 'PENDING' ? 'bg-yellow-100 text-yellow-700' :
-                                    'bg-gray-100 text-gray-700'
-                                }`}>
+                              <span
+                                className={`px-2 py-1 rounded-full text-xs ${
+                                  enrollment.status === "ENROLLED"
+                                    ? "bg-green-100 text-green-700"
+                                    : enrollment.status === "COMPLETED"
+                                      ? "bg-blue-100 text-blue-700"
+                                      : enrollment.status === "PENDING"
+                                        ? "bg-yellow-100 text-yellow-700"
+                                        : "bg-gray-100 text-gray-700"
+                                }`}
+                              >
                                 {enrollment.status.toLowerCase()}
                               </span>
                               {enrollment.grade && (
@@ -1034,7 +1209,9 @@ export default function ProfileClient({
                   ) : (
                     <div className="flex flex-col items-center py-8">
                       <Icons.bookOpen className="size-12 text-gray-400" />
-                      <p className="text-gray-500 mt-2">No courses enrolled yet</p>
+                      <p className="text-gray-500 mt-2">
+                        No courses enrolled yet
+                      </p>
                       <Button
                         variant="outline"
                         size="sm"
@@ -1150,15 +1327,21 @@ export default function ProfileClient({
                   {user.members && user.members.length > 0 ? (
                     <div className="space-y-3">
                       {user.members.map((member) => (
-                        <div key={member.id} className="flex items-center justify-between p-3 border rounded-lg">
+                        <div
+                          key={member.id}
+                          className="flex items-center justify-between p-3 border rounded-lg"
+                        >
                           <div className="flex items-center gap-3">
                             <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-semibold">
-                              {member.organization?.name?.charAt(0) || 'O'}
+                              {member.organization?.name?.charAt(0) || "O"}
                             </div>
                             <div>
-                              <div className="font-medium">{member.organization?.name || 'Unknown Organization'}</div>
+                              <div className="font-medium">
+                                {member.organization?.name ||
+                                  "Unknown Organization"}
+                              </div>
                               <div className="text-sm text-gray-500 capitalize">
-                                {member.role.toLowerCase().replace('_', ' ')}
+                                {member.role.toLowerCase().replace("_", " ")}
                               </div>
                               {member.faculty && (
                                 <div className="text-xs text-blue-600">
@@ -1173,7 +1356,9 @@ export default function ProfileClient({
                   ) : (
                     <div className="flex flex-col items-center py-8">
                       <Icons.users className="size-12 text-gray-400" />
-                      <p className="text-gray-500 mt-2">No organization memberships</p>
+                      <p className="text-gray-500 mt-2">
+                        No organization memberships
+                      </p>
                     </div>
                   )}
                 </CardContent>

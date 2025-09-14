@@ -40,7 +40,7 @@ export default async function CourseReviewPage({ params }: PageProps) {
                         include: {
                             school: {
                                 include: {
-                                    organization: true,
+                                    faculties: true,
                                 },
                             },
                         },

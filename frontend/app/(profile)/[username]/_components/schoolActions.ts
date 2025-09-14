@@ -28,7 +28,7 @@ export async function createSchool(values: z.infer<typeof createSchoolSchema>) {
     const school = await prisma.school.create({
       data: {
         ...validatedValues,
-        organizationId: user.id,
+        institutionId: user.id,
         slug: validatedValues.slug || validatedValues.name
           .toLowerCase()
           .replace(/[^a-z0-9-]+/g, '-')
@@ -58,7 +58,7 @@ export async function updateSchool(values: z.infer<typeof updateSchoolSchema>) {
     throw new Error('Unauthorized');
   }
   const school = await prisma.school.update({
-    where: { id: id, organizationId: user.id },
+    where: { id: id, institutionId: user.id },
     data: dataToUpdate,
   });
   return school;
@@ -70,7 +70,7 @@ export async function deleteSchool(schoolId: string) {
     throw new Error('Unauthorized');
   }
   await prisma.school.delete({
-    where: { id: schoolId, organizationId: user.id },
+    where: { id: schoolId, institutionId: user.id },
   });
 }
 
@@ -94,7 +94,7 @@ export async function createFaculty(
   }
 
   const school = await prisma.school.findUnique({
-    where: { id: validatedValues.schoolId, organizationId: user.id },
+    where: { id: validatedValues.schoolId, institutionId: user.id },
   });
 
   if (!school) throw new Error('School not found');
@@ -105,7 +105,7 @@ export async function createFaculty(
       data: {
         userId: user.id,
         role: MemberRole.ORGANIZATION_ADMIN,
-        organizationId: school.organizationId,
+        organizationId: school.institutionId,
         facultyId: null, // Will be set after faculty creation
       },
     });

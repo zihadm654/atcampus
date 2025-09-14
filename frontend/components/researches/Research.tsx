@@ -16,7 +16,7 @@ import ResearchMoreButton from "./ResearchMoreButton";
 import SaveResearchButton from "./SaveResearchButton";
 
 interface ResearchProps {
-  research: ResearchData;
+  research: any;
 }
 
 export default function Research({ research }: ResearchProps) {
@@ -83,7 +83,7 @@ export default function Research({ research }: ResearchProps) {
             disabled={research.collaborators.some((c) => c.id === user.id)}
           >
             {research.collaborators.some((c) => c.id === user.id) &&
-              research.collaborationRequests.some((c) => c.id === user.id)
+            research.collaborationRequests.some((c) => c.id === user.id)
               ? "Already Requested"
               : "Request Collaborate"}
           </Button>
