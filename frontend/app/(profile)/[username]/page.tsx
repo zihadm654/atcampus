@@ -3,11 +3,8 @@ import { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 
 import {
-  getProfileData,
   getCourseEnrollments,
   getProfessorCourses,
-  getJobApplications,
-  getResearchProjects,
   logQueryPerformance,
 } from "./_components/lib/queries";
 import {
@@ -39,6 +36,7 @@ const getUser = cache(async (username: string, loggedInUserId: string) => {
     },
     select: {
       ...getUserDataSelect(loggedInUserId),
+      members: true,
       // members: {
       //   include: {
       //     user: {

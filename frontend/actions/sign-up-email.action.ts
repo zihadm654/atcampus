@@ -18,10 +18,19 @@ export async function signUpEmailAction(data: TRegister) {
   const { name, email, password, institution, phone, role, instituteId } =
     result.data;
   const generatedUsername = generateUsername(name);
-  let status: "PENDING" | "ACTIVE" | "REJECTED" = "PENDING";
-  if (role === "STUDENT") {
-    status = "ACTIVE";
-  }
+
+  // Status is now handled by auth.ts database hooks based on role
+  // No need to set it here - keeping the logic centralized
+
+  // Add logging for debugging purposes
+  console.log("Registration data being sent:", {
+    name,
+    email,
+    role,
+    institution,
+    instituteId,
+    phone
+  });
 
   try {
     // Register the user with Better Auth and get the response
@@ -31,8 +40,7 @@ export async function signUpEmailAction(data: TRegister) {
         username: generatedUsername,
         email,
         password,
-        role,
-        status,
+        role: role, // Ensure role is explicitly passed
         phone: phone ?? "",
         institution: institution ?? "",
         instituteId: instituteId ?? "",

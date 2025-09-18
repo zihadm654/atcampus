@@ -5,18 +5,31 @@ import { CourseData } from "@/types/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Icons } from "@/components/shared/icons";
+import { useRouter } from "next/navigation";
 
 interface ProfessorCoursesProps {
   courses: CourseData[];
   isCurrentUser: boolean;
 }
 
-export default function ProfessorCourses({ courses, isCurrentUser }: ProfessorCoursesProps) {
+export default function ProfessorCourses({
+  courses,
+  isCurrentUser,
+}: ProfessorCoursesProps) {
+  const router = useRouter();
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle>My Courses</CardTitle>
-        {isCurrentUser && <Button variant="link">Create New Course</Button>}
+        {isCurrentUser && (
+          <Button
+            onClick={() => router.push("/courses/createCourse")}
+            className="cursor-pointer"
+            variant="link"
+          >
+            Create New Course
+          </Button>
+        )}
       </CardHeader>
       <CardContent>
         <div className="space-y-4">

@@ -41,8 +41,8 @@ export default function ProfessorOverview({
               <Badge variant="secondary">Professor</Badge>
             )}
           </CardHeader>
-          <CardContent className="pt-4">
-            <div className="space-y-4">
+          <CardContent>
+            <div className="space-y-2">
               <div>
                 <h3 className="font-medium">{user.name}</h3>
                 {user.members && user.members.length > 0 && (

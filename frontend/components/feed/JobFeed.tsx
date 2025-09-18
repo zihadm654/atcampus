@@ -1,11 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition, useOptimistic, useMemo } from "react";
 import Link from "next/link";
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { Loader2 } from "lucide-react";
+import {
+  Loader2,
+  Search,
+  Briefcase,
+  MapPin,
+  Clock,
+  DollarSign,
+} from "lucide-react";
 
-import { JobsPage } from "@/types/types";
+import { JobsPage, JobData } from "@/types/types";
 import kyInstance from "@/lib/ky";
 import useDebounce from "@/hooks/useDebounce";
 import InfiniteScrollContainer from "@/components/feed/InfiniteScrollContainer";
@@ -15,15 +22,34 @@ import JobsLoadingSkeleton from "../jobs/JobsLoadingSkeleton";
 import { Button } from "../ui/button";
 import { JobType } from "@prisma/client";
 
+import {
+  FilterContainer,
+  FilterSearchInput,
+  FilterSection,
+} from "@/components/shared/FilterComponents";
+
 interface Props {
   user: any;
+  initialData?: JobsPage;
 }
 
-export default function JobFeed({ user }: Props) {
+export default function JobFeed({ user, initialData }: Props) {
   const [searchQuery, setSearchQuery] = useState("");
   const [jobTypes, setJobTypes] = useState<JobType[]>([]);
+  const [location, setLocation] = useState("");
+  const [salaryRange, setSalaryRange] = useState<[number, number]>([0, 100000]);
+  const [isPending, startTransition] = useTransition();
 
   const debouncedSearchQuery = useDebounce(searchQuery);
+  const debouncedLocation = useDebounce(location);
+
+  // Optimistic state for filters
+  const [optimisticFilters, setOptimisticFilters] = useOptimistic({
+    searchQuery: debouncedSearchQuery,
+    jobTypes,
+    location: debouncedLocation,
+    salaryRange,
+  });
 
   const {
     data,
@@ -33,37 +59,103 @@ export default function JobFeed({ user }: Props) {
     isFetchingNextPage,
     status,
   } = useInfiniteQuery({
-    queryKey: ["job-feed", "for-you", debouncedSearchQuery, jobTypes],
+    queryKey: ["job-feed", "for-you", optimisticFilters],
     queryFn: ({ pageParam }) =>
       kyInstance
         .get("/api/jobs", {
           searchParams: {
             ...(pageParam ? { cursor: pageParam } : {}),
-            ...(debouncedSearchQuery ? { q: debouncedSearchQuery } : {}),
-            ...(jobTypes.length ? { type: jobTypes.join(",") } : {}),
+            ...(optimisticFilters.searchQuery
+              ? { q: optimisticFilters.searchQuery }
+              : {}),
+            ...(optimisticFilters.jobTypes.length
+              ? { type: optimisticFilters.jobTypes.join(",") }
+              : {}),
+            ...(optimisticFilters.location
+              ? { location: optimisticFilters.location }
+              : {}),
+            ...(optimisticFilters.salaryRange[0] > 0
+              ? { minSalary: optimisticFilters.salaryRange[0] }
+              : {}),
+            ...(optimisticFilters.salaryRange[1] < 100000
+              ? { maxSalary: optimisticFilters.salaryRange[1] }
+              : {}),
           },
         })
         .json<JobsPage>(),
     initialPageParam: null as string | null,
     getNextPageParam: (lastPage) => lastPage.nextCursor,
+    initialData: initialData
+      ? { pages: [initialData], pageParams: [null] }
+      : undefined,
   });
 
-  const jobs = data?.pages.flatMap((page) => page.jobs) || [];
+  const jobs = useMemo(
+    () => data?.pages.flatMap((page) => page.jobs) || [],
+    [data]
+  );
 
   const handleJobTypeFilter = (type: JobType) => {
-    setJobTypes((prev) =>
-      prev.includes(type) ? prev.filter((t) => t !== type) : [...prev, type]
-    );
+    startTransition(() => {
+      setOptimisticFilters((prev) => ({
+        ...prev,
+        jobTypes: prev.jobTypes.includes(type)
+          ? prev.jobTypes.filter((t) => t !== type)
+          : [...prev.jobTypes, type],
+      }));
+      setJobTypes((prev) =>
+        prev.includes(type) ? prev.filter((t) => t !== type) : [...prev, type]
+      );
+    });
   };
-  if (status === "pending") {
-    return <JobsLoadingSkeleton />;
-  }
+
+  const handleSearch = (query: string) => {
+    startTransition(() => {
+      setOptimisticFilters((prev) => ({ ...prev, searchQuery: query }));
+      setSearchQuery(query);
+    });
+  };
+
+  const handleLocation = (loc: string) => {
+    startTransition(() => {
+      setOptimisticFilters((prev) => ({ ...prev, location: loc }));
+      setLocation(loc);
+    });
+  };
+
+  const handleSalaryRange = (range: [number, number]) => {
+    startTransition(() => {
+      setOptimisticFilters((prev) => ({ ...prev, salaryRange: range }));
+      setSalaryRange(range);
+    });
+  };
+
+  const handleFiltersChange = (newFilters: any) => {
+    startTransition(() => {
+      setOptimisticFilters({
+        searchQuery: newFilters.searchQuery || "",
+        jobTypes: newFilters.jobTypes || [],
+        location: newFilters.location || "",
+        salaryRange: newFilters.salaryRange || [0, 100000],
+      });
+      setSearchQuery(newFilters.searchQuery || "");
+      setJobTypes(newFilters.jobTypes || []);
+      setLocation(newFilters.location || "");
+      setSalaryRange(newFilters.salaryRange || [0, 100000]);
+    });
+  };
+  // if (status !== "success") {
+  //   return <JobsLoadingSkeleton />;
+  // }
 
   if (status === "success" && !jobs.length && !hasNextPage) {
     return (
-      <p className="text-muted-foreground text-center">
-        No one has posted anything yet.
-      </p>
+      <>
+        <h2 className="text-2xl">Jobs</h2>
+        <p className="text-muted-foreground text-center">
+          No one has posted anything yet.
+        </p>
+      </>
     );
   }
 
@@ -75,98 +167,131 @@ export default function JobFeed({ user }: Props) {
     );
   }
   return (
-    <div>
-      {/* Header with gradient background */}
-      {/* <div className="rounded-xl bg-gradient-to-r from-blue-500/80 to-indigo-600/80 p-6 text-white shadow-md">
-        <div className="flex flex-col gap-3">
-          <div className="flex items-center gap-2">
-            <Briefcase className="h-6 w-6" />
-            <h1 className="font-bold text-3xl">Supplement Jobs</h1>
+    <div className="space-y-3">
+      {/* Header Section */}
+      <div className="rounded-xl bg-gradient-to-r  p-3 shadow-lg">
+        <div className="flex flex-col gap-4">
+          <div className="flex items-center gap-3">
+            <Briefcase className="h-8 w-8" />
+            <h1 className="font-bold text-3xl">Find Your Dream Job</h1>
           </div>
-          <p className="max-w-2xl text-white/90">
-            Find and apply for supplement jobs to gain practical experience and
-            enhance your skills while studying
+          <p className="max-w-2xl">
+            Discover exciting opportunities to gain practical experience and
+            advance your career
           </p>
 
-          <div className="mt-4 flex w-full max-w-md items-center gap-2 rounded-lg bg-white/10 p-1 backdrop-blur-sm">
-            <div className="flex h-10 w-full items-center gap-2 rounded-md bg-white px-3 text-gray-800">
-              <Search className="h-4 w-4 text-gray-500" />
-              <input
-                className="h-full w-full border-0 bg-transparent outline-none placeholder:text-gray-400"
-                placeholder="Search for jobs..."
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+          {/* Search Bar */}
+          <FilterSearchInput
+            placeholder="Search job titles, companies, or keywords..."
+            value={searchQuery}
+            onChange={handleSearch}
+            isPending={isPending}
+          />
+
+          {/* Filters Section */}
+          <FilterContainer
+            filters={{
+              searchQuery,
+              jobTypes,
+              location,
+              salaryRange,
+            }}
+            onFiltersChange={handleFiltersChange}
+          >
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 p-2">
+              <FilterSection
+                title="Job Type"
+                options={Object.values(JobType).map((type) => ({
+                  value: type,
+                  label: type.replace("_", " "),
+                }))}
+                selected={jobTypes}
+                onToggle={(value) => handleJobTypeFilter(value as JobType)}
+                type="multiple"
+              />
+              <FilterSection
+                title="Location"
+                options={[
+                  { value: "remote", label: "Remote" },
+                  { value: "onsite", label: "On-site" },
+                  { value: "hybrid", label: "Hybrid" },
+                ]}
+                selected={location ? [location] : []}
+                onToggle={(value) =>
+                  handleLocation(location === value ? "" : value)
+                }
+                type="single"
+              />
+              <FilterSection
+                title="Salary Range"
+                options={[
+                  { value: "0-50000", label: "< $50k" },
+                  { value: "50000-80000", label: "$50k-$80k" },
+                  { value: "80000-120000", label: "$80k-$120k" },
+                  { value: "120000+", label: "$120k+" },
+                ]}
+                selected={[]}
+                onToggle={() => {}} // Handle salary range separately
+                type="single"
               />
             </div>
-            <Button
-              className="h-10 rounded-md hover:bg-blue-800"
-              size="sm"
-              onClick={() => { }}
-            >
-              Search
-            </Button>
+          </FilterContainer>
+        </div>
+        {/* Results Section */}
+        <div>
+          <div className="mb-2 flex items-center justify-between">
+            {/* <h2 className="text-2xl font-semibold">
+              {jobs.length} {jobs.length === 1 ? "Job" : "Jobs"} Found
+            </h2> */}
+            {isPending && (
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Updating results...
+              </div>
+            )}
           </div>
-        </div>
-      </div> */}
 
-      {/* Filters */}
-      <div className="flex items-center justify-between gap-2 p-2">
-        <h1 className="text-3xl font-bold pb-4">Jobs</h1>
-        {/* 
-        <div className="flex flex-wrap items-center gap-2 group-hover:cursor-pointer">
-          <Button
-            className="rounded-full"
-            size="sm"
-            variant={jobTypes.length === 0 ? "default" : "outline"}
-            onClick={() => setJobTypes([])}
-          >
-            All Jobs
-          </Button>
-          <Button
-            className="rounded-full"
-            size="sm"
-          // variant={jobTypes.includes("PARTTIME") ? "default" : "outline"}
-          // onClick={() => handleJobTypeFilter("REMOTE")}
-          >
-            Remote
-          </Button>
-          <Button
-            className="rounded-full"
-            size="sm"
-          // variant={jobTypes.includes("PART_TIME") ? "default" : "outline"}
-          // onClick={() => handleJobTypeFilter("PART_TIME")}
-          >
-            Part-time
-          </Button>
-          <Button
-            className="rounded-full"
-            size="sm"
-          // variant={jobTypes.includes("FULL_TIME") ? "default" : "outline"}
-          // onClick={() => handleJobTypeFilter("FULL_TIME")}
-          >
-            Full-time
-          </Button>
+          {status !== "success" ? (
+            <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-8 text-center">
+              <p className="text-destructive">
+                Failed to load jobs. Please try again.
+              </p>
+              <Button
+                variant="outline"
+                size="sm"
+                className="mt-2"
+                // onClick={() => refetch()}
+              >
+                Retry
+              </Button>
+            </div>
+          ) : status === "success" && jobs.length === 0 ? (
+            <div className="rounded-lg border bg-muted/50 p-6 text-center">
+              <Briefcase className="mx-auto h-12 w-12 text-muted-foreground" />
+              <h3 className="mt-4 text-lg font-semibold">No jobs found</h3>
+              <p className="mt-2 text-sm text-muted-foreground">
+                Try adjusting your filters or search terms
+              </p>
+            </div>
+          ) : (
+            <InfiniteScrollContainer
+              className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3"
+              onBottomReached={() =>
+                hasNextPage && !isFetching && fetchNextPage()
+              }
+            >
+              {jobs.map((job) => (
+                <Job key={job.id} job={job} />
+              ))}
+              {isFetchingNextPage && (
+                <div className="col-span-full flex justify-center py-8">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+              )}
+            </InfiniteScrollContainer>
+          )}
         </div>
-        */}
-        {user.role === "ORGANIZATION" && (
-          <Button className="rounded-xl" size="sm" variant="outline">
-            <Link href="/jobs/createJob">Create Job</Link>
-          </Button>
-        )}
       </div>
-
-      <InfiniteScrollContainer
-        className="grid grid-cols-3 gap-4 space-y-5 max-md:grid-cols-1"
-        onBottomReached={() => hasNextPage && !isFetching && fetchNextPage()}
-      >
-        {jobs.map((job) => (
-          <Job key={job.id} job={job} />
-        ))}
-        {isFetchingNextPage && (
-          <Loader2 className="mx-auto my-3 animate-spin" />
-        )}
-      </InfiniteScrollContainer>
     </div>
   );
 }

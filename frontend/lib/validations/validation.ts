@@ -33,6 +33,45 @@ export const updateUserProfileSchema = z.object({
   institution: z.string().max(100, "Must be at most 100 characters").optional(),
   instituteId: z.string().optional(),
 });
+
+export type UpdateUserProfileValues = z.infer<typeof updateUserProfileSchema>;
+
+export const updateUserSchoolSchema = z.object({
+  name: requiredString,
+  description: requiredString,
+});
+
+export type UpdateUserSchoolValues = z.infer<typeof updateUserSchoolSchema>;
+
+export const createCommentSchema = z.object({
+  content: requiredString,
+});
+
+export const userSkillSchema = z.object({
+  title: requiredString
+    .min(2, "Skill name must be at least 2 characters")
+    .max(100, "Skill name must be at most 100 characters")
+    .regex(
+      /^[a-zA-Z0-9\s\-_&+()#@]+$/,
+      "Skill name can only contain letters, numbers, spaces, and common symbols"
+    ),
+  category: requiredString
+    .min(2, "Category must be at least 2 characters")
+    .max(50, "Category must be at most 50 characters")
+    .regex(
+      /^[a-zA-Z\s\-_&]+$/,
+      "Category can only contain letters, spaces, and hyphens"
+    ),
+  level: nativeEnum(SkillLevel),
+  yearsOfExperience: z.coerce
+    .number()
+    .min(0, "Years of experience must be at least 0")
+    .max(50, "Years of experience must be at most 50")
+    .int("Years of experience must be a whole number"),
+});
+
+export type TUserSkillSchema = z.infer<typeof userSkillSchema>;
+
 // Define schema for school
 export const schoolSchema = z.object({
   id: z.string().optional(),
@@ -47,27 +86,4 @@ export const schoolSchema = z.object({
     }),
   ),
 });
-
 export type TSchool = z.infer<typeof schoolSchema>;
-
-export type UpdateUserProfileValues = z.infer<typeof updateUserProfileSchema>;
-export const updateUserSchoolSchema = z.object({
-  name: requiredString,
-  description: requiredString,
-});
-
-export type UpdateUserSchoolValues = z.infer<typeof updateUserSchoolSchema>;
-
-export const createCommentSchema = z.object({
-  content: requiredString,
-});
-export const userSkillSchema = z.object({
-  title: requiredString,
-  category: requiredString,
-  level: nativeEnum(SkillLevel),
-  yearsOfExperience: z.coerce
-    .number()
-    .min(0, "at least one year of experience"),
-});
-
-export type TUserSkillSchema = z.infer<typeof userSkillSchema>;

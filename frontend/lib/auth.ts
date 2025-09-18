@@ -51,7 +51,7 @@ const options = {
   },
   emailAndPassword: {
     enabled: true,
-    minPasswordLength: 6,
+    minPasswordLength: 8,
     autoSignIn: false,
     password: {
       hash: hashPassword,
@@ -84,9 +84,32 @@ const options = {
         }
 
         const name = normalizeName(ctx.body.name);
+        const selectedRole = ctx.body.role;
+
+        // Validate and normalize the role
+        const validRoles = ["STUDENT", "PROFESSOR", "INSTITUTION", "ORGANIZATION", "ADMIN"];
+        let role = "STUDENT"; // Default fallback
+
+        if (selectedRole && validRoles.includes(String(selectedRole).toUpperCase())) {
+          role = String(selectedRole).toUpperCase();
+        }
+
+        // Determine status based on role
+        let status = "ACTIVE";
+        if (role === "INSTITUTION" || role === "ORGANIZATION") {
+          status = "PENDING";
+        }
 
         return {
-          context: { ...ctx, body: { ...ctx.body, name } },
+          context: {
+            ...ctx,
+            body: {
+              ...ctx.body,
+              name,
+              role,
+              status
+            }
+          },
         };
       }
 
@@ -111,26 +134,60 @@ const options = {
     user: {
       create: {
         before: async (user: ExtendedUser) => {
-          const newRole = user.role;
-          const validRoles = ["STUDENT", "PROFESSOR", "INSTITUTION", "ORGANIZATION", "ADMIN"];
-          const safeRole = validRoles.includes(newRole) ? newRole : "STUDENT";
+          // Log the incoming user data for debugging
+          console.log("Database hook received user:", {
+            email: user.email,
+            role: user.role,
+            status: user.status
+          });
 
-          if (
-            safeRole === "INSTITUTION" ||
-            safeRole === "ORGANIZATION" ||
-            safeRole === "PROFESSOR"
-          ) {
-            user = { ...user, role: safeRole, status: "PENDING" };
-          } else {
-            user = { ...user, role: safeRole, status: "ACTIVE" };
+          // The role and status should already be properly set by the auth middleware
+          // We only need to handle admin override here
+
+          let finalRole = user.role || "STUDENT";
+          let finalStatus = user.status || "PENDING";
+
+          // Ensure role is a valid enum value
+          const validRoles = ["STUDENT", "PROFESSOR", "INSTITUTION", "ORGANIZATION", "ADMIN"];
+          if (!validRoles.includes(finalRole)) {
+            console.log("Invalid role detected, defaulting to STUDENT:", finalRole);
+            finalRole = "STUDENT";
           }
 
+          // Ensure status is a valid enum value
+          const validStatuses = ["PENDING", "ACTIVE", "REJECTED", "SUSPENDED"];
+          if (!validStatuses.includes(finalStatus)) {
+            finalStatus = "PENDING";
+          }
+
+          // Admin override - only if email matches admin list
           const ADMIN_EMAILS = process.env.ADMIN_EMAILS?.split(";") ?? [];
           if (ADMIN_EMAILS.includes(user.email)) {
-            user = { ...user, role: "ADMIN" };
+            console.log("Admin override triggered for email:", user.email);
+            finalRole = "ADMIN";
+            finalStatus = "ACTIVE"; // Admin always active
           }
 
-          return { data: user };
+          // Only update if values have changed
+          if (finalRole !== user.role || finalStatus !== user.status) {
+            console.log("Updating user role/status:", {
+              original: { role: user.role, status: user.status },
+              updated: { role: finalRole, status: finalStatus }
+            });
+
+            return {
+              data: {
+                ...user,
+                role: finalRole,
+                status: finalStatus
+              }
+            };
+          }
+
+          // Return unchanged user data
+          return {
+            data: user
+          };
         },
       },
     },
@@ -153,6 +210,7 @@ const options = {
       institution: {
         type: "string",
         input: true,
+        required: false
       },
       instituteId: {
         type: "string",
@@ -165,8 +223,9 @@ const options = {
         required: true
       },
       status: {
-        type: ["PENDING", "ACTIVE", "REJECTED"],
-        input: true,
+        type: ["PENDING", "ACTIVE", "REJECTED", "SUSPENDED"],
+        input: false,
+        required: true
       },
       phone: {
         type: "string",
@@ -213,8 +272,54 @@ const options = {
         const institution = user.role === "INSTITUTION";
         return institution;
       },
-      // Set invitation expiration to 30 days (in seconds)
-      invitationExpiresIn: 60 * 60 * 24 * 30,
+      // Configure organization schema mapping
+      schema: {
+        organization: {
+          modelName: "Organization",
+          fields: {
+            name: "name",
+            slug: "slug",
+            logo: "logo",
+            createdAt: "createdAt",
+          },
+        },
+        member: {
+          modelName: "Member",
+          fields: {
+            userId: "userId",
+            organizationId: "organizationId",
+            role: "role",
+            createdAt: "createdAt",
+          },
+        },
+        invitation: {
+          modelName: "Invitation",
+          fields: {
+            email: "email",
+            organizationId: "organizationId",
+            inviterId: "inviterId",
+            role: "role",
+            status: "status",
+            expiresAt: "expiresAt",
+          },
+        },
+      },
+      // Configure invitation settings
+      invitation: {
+        // Enable invitation expiration
+        expiresIn: 7 * 24 * 60 * 60, // 7 days in seconds
+        // Allow organization members to send invitations
+        requireAdmin: false,
+        // Enable invitation metadata support
+        allowCustomMetadata: true,
+      },
+
+      // Enable multi-organization support
+      allowUsersToCreateOrganizations: true,
+      // Enable teams support
+      teams: {
+        enabled: true,
+      },
       async sendInvitationEmail(data) {
         await transporter.sendMail({
           to: data.email,
@@ -298,9 +403,16 @@ export const auth = betterAuth({
 });
 
 export type ErrorCode = keyof typeof auth.$ERROR_CODES | "UNKNOWN";
-interface ExtendedUser extends User {
+
+// Define our custom user properties
+interface CustomUserProperties {
   role: "STUDENT" | "PROFESSOR" | "INSTITUTION" | "ORGANIZATION" | "ADMIN";
-  status: "PENDING" | "ACTIVE" | "REJECTED";
-  username: string
-  // ... other additional fields
+  status: "PENDING" | "ACTIVE" | "REJECTED" | "SUSPENDED";
+  username?: string;
+  institution?: string;
+  instituteId?: string;
+  phone?: string;
 }
+
+// Extended user type that combines better-auth User with our custom properties
+type ExtendedUser = User & CustomUserProperties;

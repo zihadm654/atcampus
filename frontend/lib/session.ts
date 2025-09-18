@@ -53,3 +53,30 @@ export const isSessionExpiringSoon = (
   const thresholdMs = thresholdMinutes * 60 * 1000;
   return timeRemaining > 0 && timeRemaining <= thresholdMs;
 };
+
+// Optimized session retrieval with caching
+export const getSession = getCurrentSession;
+
+// Lightweight role/status check for server components
+export const getUserRoleAndStatus = cache(async () => {
+  const session = await getCurrentSession();
+  
+  if (!session?.user) return null;
+  
+  return {
+    role: session.user.role,
+    status: session.user.status,
+    user: session.user
+  };
+});
+
+// Permission check utilities
+export const hasRole = cache(async (allowedRoles: string[]) => {
+  const user = await getCurrentUser();
+  return user && allowedRoles.includes(user.role);
+});
+
+export const hasActiveStatus = cache(async () => {
+  const user = await getCurrentUser();
+  return user?.status === "ACTIVE";
+});

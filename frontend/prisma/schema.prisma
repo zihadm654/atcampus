@@ -180,8 +180,9 @@ model Session {
   userAgent      String?
   impersonatedBy String?
 
-  // Active context
+  // Active context - Better Auth organization plugin fields
   activeOrganizationId String?
+  activeTeamId        String?
 
   createdAt DateTime @default(now()) @map(name: "created_at")
   updatedAt DateTime @updatedAt @map(name: "updated_at")
@@ -322,11 +323,17 @@ model Organization {
   website     String?
   isActive    Boolean @default(true)
 
+  // Better Auth organization plugin fields
+  metadata    Json? // For custom fields
   createdAt DateTime @default(now()) @map(name: "created_at")
   updatedAt DateTime @updatedAt @map(name: "updated_at")
 
   members     Member[]
   invitations Invitation[]
+  
+  // Better Auth organization plugin relationships
+  teams       Team[]
+  organizationTeams OrganizationTeam[]
 
   @@index([name])
   @@map(name: "organizations")
@@ -341,9 +348,12 @@ model Member {
   facultyId      String?
   faculty        Faculty?     @relation(fields: [facultyId], references: [id])
 
-  role        String
+  // Better Auth organization plugin fields
+  role        String   @default("member") // Better Auth role field
+  permissions Json?    // Better Auth permissions field
+  
+  // Legacy fields (keep for compatibility)
   isActive    Boolean  @default(true)
-  permissions String[] @default([])
 
   // Professor-specific fields
   academicTitle     String? // Professor, Associate Professor, Assistant Professor, etc.
@@ -395,14 +405,17 @@ model Invitation {
   inviterId      String
   inviter        User         @relation(fields: [inviterId], references: [id], onDelete: Cascade)
 
-  // Basic invitation details
+  // Better Auth organization plugin fields
   email     String
+  role      String   @default("member") // Better Auth role field
+  status    String   @default("pending") // Better Auth status field
+  expiresAt DateTime
+  metadata  Json?    // For custom fields like firstName, lastName, type, etc.
+  
+  // Legacy fields (keep for compatibility)
   firstName String?
   lastName  String?
-  role      MemberRole       @default(STUDENT)
   type      InvitationType   @default(ORGANIZATION_MEMBER)
-  status    InvitationStatus @default(PENDING)
-  expiresAt DateTime
   message   String?
 
   // Academic context (for professor invitations)
@@ -427,7 +440,7 @@ model Invitation {
   reminderCount Int       @default(0)
 
   // Security and validation
-  invitationToken String? @unique // Secure invitation token
+  invitationToken String? // Secure invitation token (no longer needed with better-auth)
   ipAddress       String? // IP from which invitation was created
   userAgent       String? // User agent info
 
@@ -447,6 +460,32 @@ model Invitation {
   @@index([expiresAt, isDeleted])
   @@index([status, expiresAt]) // For cleanup jobs
   @@map(name: "invitations")
+}
+
+// Better Auth organization plugin models
+model Team {
+  id             String         @id @default(cuid()) @map("_id")
+  name           String
+  organizationId String
+  organization   Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  
+  organizationTeams OrganizationTeam[]
+  
+  @@index([organizationId])
+  @@map(name: "teams")
+}
+
+model OrganizationTeam {
+  id             String       @id @default(cuid()) @map("_id")
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  teamId         String
+  team           Team         @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  
+  @@unique([organizationId, teamId])
+  @@map(name: "organization_teams")
 }
 
 // Removed - functionality merged into unified Invitation model

@@ -232,7 +232,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
                 </span>
                 Description
               </h2>
-              <JsonToHtml json={JSON.parse(course.description)} />
+              {/* <JsonToHtml json={JSON.parse(course.description)} /> */}
             </div>
           </TabsContent>
           <TabsContent className="p-3 space-y-2" value="assets">

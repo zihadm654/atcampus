@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Icons } from "@/components/shared/icons";
 import ResearchComponent from "@/components/researches/Research";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useRouter } from "next/navigation";
 
 interface ResearchItem {
   id: string;
@@ -29,7 +30,7 @@ export default function ResearchTab({
   const canEdit = loggedInUserId && permissions.canEdit;
   const isOwnProfile =
     researches.length > 0 ? loggedInUserId === researches[0]?.userId : false;
-
+  const router = useRouter();
   // Show loading skeleton if data is loading
   if (loading) {
     return (
@@ -95,9 +96,10 @@ export default function ResearchTab({
               </p>
               {canEdit && (
                 <Button
+                  onClick={() => router.push("/researches/createResearch")}
                   variant="outline"
                   size="sm"
-                  className="mt-4 rounded-full"
+                  className="mt-4 rounded-full cursor-pointer"
                 >
                   <Icons.add className="size-4 mr-2" />
                   Add Research

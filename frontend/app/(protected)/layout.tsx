@@ -11,17 +11,29 @@ interface ProtectedLayoutProps {
 
 export default async function Dashboard({ children }: ProtectedLayoutProps) {
   const user = await getCurrentUser();
+
   if (!user) {
     redirect("/login");
   }
-  
-  // Basic authentication check (middleware should handle detailed status checks)
+
+  // Server-side role and status validation
+  // This is more reliable and performant than API calls
+  // if ((user.role === "ORGANIZATION" || user.role === "INSTITUTION") && user.status !== "ACTIVE") {
+  //   if (user.status === "PENDING") {
+  //     redirect("/pending-approval");
+  //   } else if (user.status === "REJECTED") {
+  //     redirect("/rejected-account");
+  //   }
+  // }
+
+  // Filter navigation based on user role
   const filteredLinks = menubar.map((section) => ({
     ...section,
     items: section.items.filter(
       ({ authorizeOnly }) => !authorizeOnly || authorizeOnly === user?.role
     ),
   }));
+
   return (
     <div className="flex min-h-screen flex-col">
       <NavBarServer scroll />

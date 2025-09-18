@@ -58,7 +58,7 @@ export async function createJob(values: TJob) {
     const data = {
       ...validatedFields.data,
       userId: user.id,
-      level: validatedFields.data?.experienceLevel as ExperienceLevel,
+      experienceLevel: validatedFields.data?.experienceLevel as ExperienceLevel,
       type: validatedFields.data.type as JobType,
       courseId: validatedFields.data.courseId || undefined,
     };

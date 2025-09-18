@@ -1,8 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Image from "next/image";
-import { ChevronDownIcon, Loader2, MailPlus, PlusIcon, GraduationCap } from "lucide-react";
+import { ChevronDownIcon, Loader2, MailPlus, PlusIcon } from "lucide-react";
 import { toast } from "sonner";
 import { useQuery } from "@tanstack/react-query";
 import { z } from "zod";
@@ -55,7 +54,6 @@ import {
 } from "@/components/ui/form";
 import { AvatarInput } from "@/app/(profile)/[username]/_components/EditProfileDialog";
 import { motion, AnimatePresence } from "framer-motion";
-import { InvitationStatus } from "@prisma/client";
 
 export function OrganizationCard(props: {
   session: Session | null;
@@ -224,7 +222,7 @@ export function OrganizationCard(props: {
             <div className="flex flex-col gap-2">
               <AnimatePresence>
                 {optimisticOrg?.invitations
-                  .filter((invitation) => invitation.status === (InvitationStatus.PENDING as string))
+                  .filter((invitation) => invitation.status === "pending")
                   .map((invitation) => (
                     <motion.div
                       className="flex items-center justify-between"
@@ -322,21 +320,13 @@ export function OrganizationCard(props: {
             <div>
               {optimisticOrg?.id && (
                 <>
-                  {/* <InviteMemberDialog
-                    optimisticOrg={optimisticOrg}
-                    setOptimisticOrg={setOptimisticOrg}
-                  /> */}
                   {(currentMember?.role === "owner" ||
-                    currentMember?.role === "admin"
-                    // currentMember?.role === "ORGANIZATION_ADMIN" ||
-                    // currentMember?.role === "SCHOOL_ADMIN" ||
-                    // currentMember?.role === "FACULTY_ADMIN"
-                  ) && (
-                      <InviteProfessorDialog
-                        optimisticOrg={optimisticOrg}
-                        setOptimisticOrg={setOptimisticOrg}
-                      />
-                    )}
+                    currentMember?.role === "admin") && (
+                    <InviteMemberDialog
+                      optimisticOrg={optimisticOrg}
+                      setOptimisticOrg={setOptimisticOrg}
+                    />
+                  )}
                 </>
               )}
             </div>
@@ -480,136 +470,29 @@ function InviteMemberDialog({
   optimisticOrg: ActiveOrganization | null;
 }) {
   const [open, setOpen] = useState(false);
-  const [email, setEmail] = useState("");
-  const [role, setRole] = useState("member");
-  const [loading, setLoading] = useState(false);
-  return (
-    <Dialog>
-      <DialogTrigger asChild>
-        <Button className="w-full gap-2" size="sm" variant="secondary">
-          <MailPlus size={16} />
-          <p>Invite Member</p>
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="w-11/12 sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle>Invite Member</DialogTitle>
-          <DialogDescription>
-            Invite a member to your organization.
-          </DialogDescription>
-        </DialogHeader>
-        <div className="flex flex-col gap-2">
-          <Label>Email</Label>
-          <Input
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="Email"
-            value={email}
-          />
-          <Label>Role</Label>
-          <Select onValueChange={setRole} value={role}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select a role" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="admin">Admin</SelectItem>
-              <SelectItem value="member">Member</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <DialogFooter>
-          <DialogClose>
-            <Button
-              disabled={loading}
-              onClick={async () => {
-                try {
-                  setLoading(true);
-
-                  // Use our unified invitation API instead of better-auth's built-in method
-                  const response = await fetch("/api/invitations", {
-                    method: "POST",
-                    headers: {
-                      "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({
-                      email: email,
-                      organizationId: optimisticOrg?.id,
-                      role: role === "admin" ? "ORGANIZATION_ADMIN" : "STUDENT",
-                      type: "ORGANIZATION_MEMBER",
-                    }),
-                  });
-
-                  if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.error || "Failed to send invitation");
-                  }
-
-                  const result = await response.json();
-
-                  // Update the optimistic state with the new invitation
-                  if (optimisticOrg && result.invitation) {
-                    setOptimisticOrg({
-                      ...optimisticOrg,
-                      invitations: [
-                        ...(optimisticOrg?.invitations || []),
-                        result.invitation,
-                      ],
-                    });
-                  }
-
-                  toast.success("Member invited successfully");
-                } catch (error: any) {
-                  toast.error(error.message || "Failed to send invitation");
-                } finally {
-                  setLoading(false);
-                }
-              }}
-            >
-              Invite
-            </Button>
-          </DialogClose>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-// Professor invitation schema
-const professorInvitationSchema = z.object({
-  email: z.string().email("Invalid email address"),
-  firstName: z.string().min(1, "First name is required").optional(),
-  lastName: z.string().min(1, "Last name is required").optional(),
-  facultyId: z.string().min(1, "Faculty selection is required"),
-  title: z.string().optional(),
-  department: z.string().optional(),
-  message: z.string().optional(),
-  contractType: z.string().optional(),
-});
-
-function InviteProfessorDialog({
-  setOptimisticOrg,
-  optimisticOrg,
-}: {
-  setOptimisticOrg: (org: ActiveOrganization | null) => void;
-  optimisticOrg: ActiveOrganization | null;
-}) {
-  const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const form = useForm<z.infer<typeof professorInvitationSchema>>({
-    resolver: zodResolver(professorInvitationSchema),
+  const form = useForm<InvitationFormData>({
+    resolver: zodResolver(invitationSchema),
     defaultValues: {
       email: "",
+      role: "member",
       firstName: "",
       lastName: "",
       facultyId: "",
-      title: "Professor",
+      schoolId: "",
+      title: "",
       department: "",
       message: "",
       contractType: "Full-time",
+      proposedTitle: "",
+      startDate: "",
     },
   });
 
-  // Fetch faculties for the current organization
+  const watchRole = form.watch("role");
+
+  // Fetch faculties for the current organization when inviting professors
   const { data: faculties, isLoading: facultiesLoading } = useQuery({
     queryKey: ["faculties", optimisticOrg?.id],
     queryFn: async () => {
@@ -619,62 +502,71 @@ function InviteProfessorDialog({
       }
       return response.json();
     },
-    enabled: !!optimisticOrg?.id && open,
+    enabled: !!optimisticOrg?.id && open && watchRole === "professor",
   });
 
-  const onSubmit = async (values: z.infer<typeof professorInvitationSchema>) => {
+  const onSubmit = async (values: InvitationFormData) => {
     try {
       setLoading(true);
 
-      // Map professor invitation values to the general invitation schema
-      const invitationData = {
-        email: values.email,
-        firstName: values.firstName,
-        lastName: values.lastName,
-        facultyId: values.facultyId,
-        schoolId: faculties?.find((f: any) => f.id === values.facultyId)?.schoolId,
-        organizationId: optimisticOrg?.id,
-        role: "PROFESSOR",
-        type: "PROFESSOR_APPOINTMENT",
-        proposedTitle: values.title,
-        department: values.department,
-        message: values.message,
-        contractType: values.contractType,
-      };
+      // Prepare metadata based on invitation type
+      const metadata: Record<string, any> = {};
 
-      const response = await fetch("/api/invitations", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
+      if (values.firstName) metadata.firstName = values.firstName;
+      if (values.lastName) metadata.lastName = values.lastName;
+      if (values.message) metadata.message = values.message;
+
+      // Professor-specific metadata
+      if (watchRole === "professor") {
+        if (values.facultyId) metadata.facultyId = values.facultyId;
+        if (values.schoolId) metadata.schoolId = values.schoolId;
+        if (values.title) metadata.title = values.title;
+        if (values.department) metadata.department = values.department;
+        if (values.contractType) metadata.contractType = values.contractType;
+        if (values.proposedTitle) metadata.proposedTitle = values.proposedTitle;
+        if (values.startDate) metadata.startDate = values.startDate;
+
+        // Set invitation type for professors
+        metadata.type = "PROFESSOR_APPOINTMENT";
+      } else {
+        // Regular member invitation
+        metadata.type = "ORGANIZATION_MEMBER";
+      }
+
+      // Use better-auth organization inviteMember method
+      const invitation = await organization.inviteMember({
+        email: values.email,
+        role:
+          watchRole === "professor"
+            ? "member"
+            : (watchRole as "member" | "admin"),
+        organizationId: optimisticOrg?.id,
+        fetchOptions: {
+          throw: true,
+          onError: (ctx) => {
+            console.log(ctx.error);
+            toast.error(ctx.error.message);
+          },
+          onSuccess: (ctx) => {
+            if (optimisticOrg) {
+              setOptimisticOrg({
+                ...optimisticOrg,
+                invitations: [...(optimisticOrg?.invitations || []), ctx.data],
+              });
+            }
+          },
         },
-        body: JSON.stringify(invitationData),
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to send professor invitation");
-      }
-
-      const result = await response.json();
-
-      // Update the optimistic state with the new invitation
-      if (optimisticOrg && result.invitation) {
-        setOptimisticOrg({
-          ...optimisticOrg,
-          invitations: [
-            ...(optimisticOrg?.invitations || []),
-            result.invitation,
-          ],
-        });
-      }
-
-      toast.success("Professor invitation sent successfully");
+      toast.promise(Promise.resolve(invitation), {
+        loading: "Inviting member...",
+        success: "Member invited successfully",
+        error: (error) => error.error.message,
+      });
       setOpen(false);
       form.reset();
-      // Optionally refresh organization data here
-
     } catch (error: any) {
-      toast.error(error.message || "Failed to send professor invitation");
+      toast.error(error.message || "Failed to send invitation");
     } finally {
       setLoading(false);
     }
@@ -683,51 +575,21 @@ function InviteProfessorDialog({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="w-full gap-2 ml-2" size="sm" variant="outline">
-          <GraduationCap size={16} />
-          <p>Invite Professor</p>
+        <Button className="w-full gap-2" size="sm" variant="secondary">
+          <MailPlus size={16} />
+          <p>Invite Member</p>
         </Button>
       </DialogTrigger>
       <DialogContent className="w-11/12 sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Invite Professor</DialogTitle>
+          <DialogTitle>Invite Member</DialogTitle>
           <DialogDescription>
-            Send a professor invitation to join your institution and assign them to a specific faculty.
+            Invite a member to your organization.
           </DialogDescription>
         </DialogHeader>
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="firstName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>First Name</FormLabel>
-                    <FormControl>
-                      <Input placeholder="First name" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="lastName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Last Name</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Last name" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
             <FormField
               control={form.control}
               name="email"
@@ -735,109 +597,9 @@ function InviteProfessorDialog({
                 <FormItem>
                   <FormLabel>Email *</FormLabel>
                   <FormControl>
-                    <Input placeholder="professor@university.edu" type="email" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="facultyId"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Faculty *</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a faculty" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {facultiesLoading ? (
-                        <SelectItem value="loading" disabled>
-                          Loading faculties...
-                        </SelectItem>
-                      ) : (
-                        faculties?.map((faculty: any) => (
-                          <SelectItem key={faculty.id} value={faculty.id}>
-                            {faculty.name}
-                          </SelectItem>
-                        ))
-                      )}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="title"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Academic Title</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Professor" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="department"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Department</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Computer Science" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            <FormField
-              control={form.control}
-              name="contractType"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Employment Type</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select employment type" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="Full-time">Full-time</SelectItem>
-                      <SelectItem value="Part-time">Part-time</SelectItem>
-                      <SelectItem value="Visiting">Visiting</SelectItem>
-                      <SelectItem value="Adjunct">Adjunct</SelectItem>
-                      <SelectItem value="Research">Research</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="message"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Personal Message</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder="We would like to invite you to join our faculty..."
-                      rows={3}
+                    <Input
+                      placeholder="email@example.com"
+                      type="email"
                       {...field}
                     />
                   </FormControl>
@@ -845,6 +607,172 @@ function InviteProfessorDialog({
                 </FormItem>
               )}
             />
+            <FormField
+              control={form.control}
+              name="role"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Role *</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a role" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="member">Member</SelectItem>
+                      <SelectItem value="admin">Admin</SelectItem>
+                      <SelectItem value="professor">Professor</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {watchRole === "professor" && (
+              <>
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="firstName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>First Name</FormLabel>
+                        <FormControl>
+                          <Input placeholder="First name" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="lastName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Last Name</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Last name" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <FormField
+                  control={form.control}
+                  name="facultyId"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Faculty *</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select a faculty" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {facultiesLoading ? (
+                            <SelectItem value="loading" disabled>
+                              Loading faculties...
+                            </SelectItem>
+                          ) : (
+                            faculties?.map((faculty: any) => (
+                              <SelectItem key={faculty.id} value={faculty.id}>
+                                {faculty.name}
+                              </SelectItem>
+                            ))
+                          )}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="title"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Academic Title</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Professor" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="department"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Department</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Computer Science" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <FormField
+                  control={form.control}
+                  name="contractType"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Employment Type</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select employment type" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="Full-time">Full-time</SelectItem>
+                          <SelectItem value="Part-time">Part-time</SelectItem>
+                          <SelectItem value="Visiting">Visiting</SelectItem>
+                          <SelectItem value="Adjunct">Adjunct</SelectItem>
+                          <SelectItem value="Research">Research</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="message"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Personal Message</FormLabel>
+                      <FormControl>
+                        <Textarea
+                          placeholder="We would like to invite you to join our faculty..."
+                          rows={3}
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </>
+            )}
 
             <DialogFooter className="flex flex-col sm:flex-row gap-2">
               <DialogClose asChild>
@@ -852,7 +780,12 @@ function InviteProfessorDialog({
                   Cancel
                 </Button>
               </DialogClose>
-              <Button type="submit" disabled={loading || facultiesLoading}>
+              <Button
+                type="submit"
+                disabled={
+                  loading || (watchRole === "professor" && facultiesLoading)
+                }
+              >
                 {loading ? (
                   <>
                     <Loader2 className="animate-spin" size={16} />
@@ -869,3 +802,23 @@ function InviteProfessorDialog({
     </Dialog>
   );
 }
+
+// Unified invitation schema that supports both member and professor invitations
+const invitationSchema = z.object({
+  email: z.string().email("Invalid email address"),
+  role: z.enum(["member", "admin", "professor"]),
+  firstName: z.string().optional(),
+  lastName: z.string().optional(),
+  facultyId: z.string().optional(),
+  schoolId: z.string().optional(),
+  title: z.string().optional(), // Academic title for professors
+  department: z.string().optional(),
+  message: z.string().optional(),
+  contractType: z
+    .enum(["Full-time", "Part-time", "Visiting", "Adjunct", "Research"])
+    .optional(),
+  proposedTitle: z.string().optional(), // Proposed academic title
+  startDate: z.string().optional(), // Start date for professor appointments
+});
+
+type InvitationFormData = z.infer<typeof invitationSchema>;

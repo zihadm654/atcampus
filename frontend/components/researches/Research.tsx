@@ -1,7 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { Calendar, ShieldCheck } from "lucide-react";
+import {
+  Calendar,
+  ShieldCheck,
+  Users,
+  BookOpen,
+  Clock,
+  Tag,
+} from "lucide-react";
 import { toast } from "sonner";
 
 import { ResearchData } from "@/types/types";
@@ -14,6 +21,17 @@ import UserTooltip from "../UserTooltip";
 import { sendCollaborationRequest } from "./collaboration-actions";
 import ResearchMoreButton from "./ResearchMoreButton";
 import SaveResearchButton from "./SaveResearchButton";
+import { useTransition, useOptimistic } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { JsonToHtml } from "../editor/JsonToHtml";
 
 interface ResearchProps {
   research: any;
@@ -25,78 +43,156 @@ export default function Research({ research }: ResearchProps) {
   if (!user) {
     return null;
   }
-  const handleCollaborationRequest = async () => {
-    const res = await sendCollaborationRequest(research.id);
-    if (!res.success) {
-      toast(res.message);
-    } else {
-      toast(res.message);
-    }
+  const [isPending, startTransition] = useTransition();
+
+  const isCollaborator = research.collaborators.some(
+    (c: any) => c.id === user.id
+  );
+  const hasRequested = research.collaborationRequests.some(
+    (c: any) => c.id === user.id
+  );
+
+  const [optimisticRequested, setOptimisticRequested] = useOptimistic(
+    hasRequested,
+    (_, newState: boolean) => newState
+  );
+
+  const handleCollaborationRequest = () => {
+    startTransition(async () => {
+      setOptimisticRequested(true);
+      const res = await sendCollaborationRequest(research.id);
+      if (!res.success) {
+        setOptimisticRequested(false);
+        toast.error(res.message);
+      } else {
+        toast.success(res.message);
+      }
+    });
   };
   return (
-    <article className="group/post bg-card relative space-y-3 rounded-2xl p-5 shadow-sm border">
-      <div className="flex items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <UserTooltip user={research.user}>
-            <Link href={`/${research.user.username}`}>
-              <UserAvatar user={research?.user} />
-            </Link>
-          </UserTooltip>
-          <div>
-            <UserTooltip user={research?.user}>
-              <Link
-                href={`/${research.user.username}`}
-                className="text-md flex items-center gap-1 font-medium hover:underline"
-              >
-                {research.user.name}
-                <ShieldCheck className="size-5 text-blue-700" />
+    <Card className="group hover:shadow-lg transition-shadow duration-200">
+      <CardHeader className="pb-3">
+        <div className="flex items-start justify-between">
+          <div className="flex items-center gap-3">
+            <UserTooltip user={research.user}>
+              <Link href={`/${research.user.username}`}>
+                <UserAvatar user={research?.user} />
               </Link>
             </UserTooltip>
-            <Link
-              href={`/researches/${research.id}`}
-              className="text-muted-foreground block text-sm hover:underline"
-              suppressHydrationWarning
-            >
-              <span>@{research.user.username}</span>{" "}
-              {formatRelativeDate(research.createdAt)}
-            </Link>
+            <div>
+              <UserTooltip user={research?.user}>
+                <Link
+                  href={`/${research.user.username}`}
+                  className="flex items-center gap-1 font-semibold hover:underline"
+                >
+                  {research.user.name}
+                  {research.user.verified && (
+                    <ShieldCheck className="size-4 text-blue-700" />
+                  )}
+                </Link>
+              </UserTooltip>
+              <div className="text-sm text-muted-foreground">
+                <Link
+                  href={`/researches/${research.id}`}
+                  className="hover:underline"
+                  suppressHydrationWarning
+                >
+                  <span>@{research.user.username}</span> •{" "}
+                  {formatRelativeDate(research.createdAt)}
+                </Link>
+              </div>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <Badge variant="outline" className="text-xs">
+              {research.category}
+            </Badge>
+            {research.user.id === user.id && (
+              <ResearchMoreButton research={research} />
+            )}
           </div>
         </div>
-        {research.user.id === user.id && (
-          <ResearchMoreButton research={research} />
-        )}
-      </div>
+      </CardHeader>
+
       <Link href={`/researches/${research.id}`}>
-        <h3 className="text-xl font-semibold">{research.title}</h3>
-        {research.collaborators.length > 0 && (
-          <p className="text-muted-foreground text-sm">
-            Collaborators:{" "}
-            {research.collaborators.map((c) => c.name).join(", ")}
-          </p>
-        )}
+        <CardContent className="pt-0 pb-4">
+          <CardTitle className="text-lg mb-2 line-clamp-2">
+            {research.title}
+          </CardTitle>
+          <CardDescription className="mb-4 line-clamp-3">
+            <JsonToHtml json={JSON.parse(research.description)} />
+          </CardDescription>
+
+          <div className="grid grid-cols-2 gap-4 text-sm">
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <Tag className="size-4" />
+              <span className="capitalize">
+                {research.category?.toLowerCase()}
+              </span>
+            </div>
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <Calendar className="size-4" />
+              {/* <span>{formatDate(research.deadline)}</span> */}
+            </div>
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <Users className="size-4" />
+              <span>{research.collaborators?.length || 0} collaborators</span>
+            </div>
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <BookOpen className="size-4" />
+              <span>{research.applications?.length || 0} applications</span>
+            </div>
+          </div>
+
+          {research.tags && research.tags.length > 0 && (
+            <div className="mt-3">
+              <span className="text-sm font-medium text-muted-foreground">
+                Tags:
+              </span>
+              <div className="flex flex-wrap gap-1 mt-1">
+                {research.tags.map((tag: string, index: number) => (
+                  <Badge key={index} variant="secondary" className="text-xs">
+                    {tag}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+          )}
+        </CardContent>
       </Link>
-      <hr className="text-muted-foreground" />
-      <div className="flex justify-between gap-5">
-        {research.user.id !== user.id && (
-          <Button
-            onClick={handleCollaborationRequest}
-            disabled={research.collaborators.some((c) => c.id === user.id)}
-          >
-            {research.collaborators.some((c) => c.id === user.id) &&
-            research.collaborationRequests.some((c) => c.id === user.id)
-              ? "Already Requested"
-              : "Request Collaborate"}
-          </Button>
-        )}
-        <SaveResearchButton
-          researchId={research.id}
-          initialState={{
-            isSaveResearchByUser: research.savedResearch.some(
-              (bookmark) => bookmark.userId === user.id
-            ),
-          }}
-        />
-      </div>
-    </article>
+
+      <CardFooter className="pt-0">
+        <div className="flex items-center justify-between w-full gap-2">
+          {research.user.id !== user.id && (
+            <Button
+              onClick={handleCollaborationRequest}
+              variant={
+                isCollaborator
+                  ? "secondary"
+                  : optimisticRequested
+                    ? "outline"
+                    : "default"
+              }
+              disabled={isCollaborator || optimisticRequested || isPending}
+              className="flex-1"
+            >
+              {isCollaborator
+                ? "Already Collaborating"
+                : optimisticRequested
+                  ? "Request Sent"
+                  : "Request to Collaborate"}
+            </Button>
+          )}
+          <SaveResearchButton
+            researchId={research.id}
+            initialState={{
+              isSaveResearchByUser: research.savedResearch.some(
+                (bookmark: any) => bookmark.userId === user.id
+              ),
+            }}
+          />
+        </div>
+      </CardFooter>
+    </Card>
   );
 }

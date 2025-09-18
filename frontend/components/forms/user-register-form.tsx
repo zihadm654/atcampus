@@ -31,12 +31,6 @@ interface UserRegisterFormProps {
   className?: string;
 }
 
-// const roleIcons: Record<UserRole, React.ElementType> = {
-//   STUDENT: GraduationCap,
-//   ORGANIZATION: Briefcase,
-//   INSTITUTION: HomeIcon, // Or UsersIcon if HomeIcon is not suitable
-// };
-
 interface UserAuthFormProps extends React.HTMLAttributes<HTMLDivElement> {}
 
 export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
@@ -48,7 +42,7 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
       email: "",
       password: "",
       name: "",
-      role: UserRole.STUDENT, // Default to undefined or a specific role if preferred
+      role: UserRole.STUDENT,
       institution: "",
       instituteId: "",
     },
@@ -74,8 +68,7 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
         form.reset();
         if (
           data.role === UserRole.INSTITUTION ||
-          data.role === UserRole.ORGANIZATION ||
-          data.role === UserRole.PROFESSOR
+          data.role === UserRole.ORGANIZATION
         ) {
           router.push("/pending-approval");
         } else {
@@ -98,7 +91,6 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
     if (currentStep === 1) {
       fieldsToValidate = ["role"];
     }
-    // Add more steps and fields to validate as needed
 
     const isValidStep = await form.trigger(fieldsToValidate);
     if (isValidStep) {
@@ -133,48 +125,86 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
                       <FormControl>
                         <RadioGroup
                           onValueChange={field.onChange}
-                          defaultValue={field.value} // Removed defaultValue to ensure selected value is captured
-                          className="flex items-center justify-center space-x-3 max-md:space-x-1.5 flex-wrap"
+                          value={field.value}
+                          className="grid grid-cols-2 gap-4 max-md:grid-cols-1"
                         >
-                          <FormItem className="flex items-center gap-3 border p-3 rounded-xl">
+                          <FormItem className="flex items-start gap-3 border p-4 rounded-xl hover:bg-accent/50 transition-colors">
                             <FormControl>
-                              <RadioGroupItem value={UserRole.STUDENT} />
+                              <RadioGroupItem
+                                value={UserRole.STUDENT}
+                                className="mt-1"
+                              />
                             </FormControl>
-                            <FormLabel className="font-normal flex flex-col items-center justify-center">
-                              <GraduationCap className="size-7" />
-                              STUDENT
-                            </FormLabel>
+                            <div className="space-y-1">
+                              <FormLabel className="font-medium flex items-center gap-2">
+                                <GraduationCap className="size-5" />
+                                Student
+                              </FormLabel>
+                              <p className="text-sm text-muted-foreground">
+                                Join as a student to access courses and learning
+                                materials
+                              </p>
+                            </div>
                           </FormItem>
-                          <FormItem className="flex items-center gap-3 border p-3 rounded-xl">
+                          <FormItem className="flex items-start gap-3 border p-4 rounded-xl hover:bg-accent/50 transition-colors">
                             <FormControl>
-                              <RadioGroupItem value={UserRole.ORGANIZATION} />
+                              <RadioGroupItem
+                                value={UserRole.PROFESSOR}
+                                className="mt-1"
+                              />
                             </FormControl>
-                            <FormLabel className="font-normal flex flex-col items-center justify-center">
-                              <Briefcase className="size-7" />
-                              ORGANIZATION
-                            </FormLabel>
+                            <div className="space-y-1">
+                              <FormLabel className="font-medium flex items-center gap-2">
+                                <HomeIcon className="size-5" />
+                                Professor
+                              </FormLabel>
+                              <p className="text-sm text-muted-foreground">
+                                Teach courses and manage student interactions
+                              </p>
+                            </div>
                           </FormItem>
-                          <FormItem className="flex items-center gap-3 border p-3 rounded-xl">
+                          <FormItem className="flex items-start gap-3 border p-4 rounded-xl hover:bg-accent/50 transition-colors">
                             <FormControl>
-                              <RadioGroupItem value={UserRole.INSTITUTION} />
+                              <RadioGroupItem
+                                value={UserRole.ORGANIZATION}
+                                className="mt-1"
+                              />
                             </FormControl>
-                            <FormLabel className="font-normal flex flex-col items-center justify-center">
-                              <HomeIcon className="size-7" />
-                              INSTITUTION
-                            </FormLabel>
+                            <div className="space-y-1">
+                              <FormLabel className="font-medium flex items-center gap-2">
+                                <Briefcase className="size-5" />
+                                Organization
+                              </FormLabel>
+                              <p className="text-sm text-muted-foreground">
+                                Register your company for recruitment and
+                                partnerships
+                              </p>
+                            </div>
                           </FormItem>
-                          <FormItem className="flex items-center gap-3 border p-3 rounded-xl">
+                          <FormItem className="flex items-start gap-3 border p-4 rounded-xl hover:bg-accent/50 transition-colors">
                             <FormControl>
-                              <RadioGroupItem value={UserRole.PROFESSOR} />
+                              <RadioGroupItem
+                                value={UserRole.INSTITUTION}
+                                className="mt-1"
+                              />
                             </FormControl>
-                            <FormLabel className="font-normal flex flex-col items-center justify-center">
-                              <HomeIcon className="size-7" />
-                              PROFESSOR
-                            </FormLabel>
+                            <div className="space-y-1">
+                              <FormLabel className="font-medium flex items-center gap-2">
+                                <HomeIcon className="size-5" />
+                                Institution
+                              </FormLabel>
+                              <p className="text-sm text-muted-foreground">
+                                Register your university or college for
+                                institutional access
+                              </p>
+                            </div>
                           </FormItem>
                         </RadioGroup>
                       </FormControl>
-                      <FormDescription>Select your role</FormDescription>
+                      <FormDescription>
+                        Choose the role that best describes you. This determines
+                        your access level and features.
+                      </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}

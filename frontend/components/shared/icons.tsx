@@ -49,7 +49,9 @@ import {
   Eye,
   Star,
   Lock,
-  Calendar
+  Calendar,
+  ChevronUp,
+  RefreshCcw,
 } from "lucide-react";
 
 export type Icon = LucideIcon;
@@ -65,6 +67,7 @@ export const Icons = {
   chevronLeft: ChevronLeft,
   chevronRight: ChevronRight,
   chevronDown: ChevronDown,
+  chevronUp: ChevronUp,
   eye: Eye,
   pencil: Pencil,
   chart: ChartBar,
@@ -134,6 +137,7 @@ export const Icons = {
   messages: MessagesSquare,
   moon: Moon,
   package: Package,
+  refresh: RefreshCcw,
   page: File,
   post: FileText,
   search: Search,
@@ -171,5 +175,5 @@ export const Icons = {
   event: Calendar1,
   calendar: Calendar,
   info: ShieldQuestion,
-  video: Video
+  video: Video,
 };

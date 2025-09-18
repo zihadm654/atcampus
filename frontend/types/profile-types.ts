@@ -32,6 +32,7 @@ export interface ExtendedSchool {
 }
 
 export interface ExtendedFaculty {
+  shortName: any;
   id: string;
   name: string;
   slug: string;

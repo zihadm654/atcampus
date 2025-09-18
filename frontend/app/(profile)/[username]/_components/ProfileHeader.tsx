@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import Image from "next/image";
 import { formatDate } from "date-fns";
 
@@ -124,9 +124,9 @@ interface AcademicInformationProps {
 }
 
 function AcademicInformation({ user }: AcademicInformationProps) {
-  const hasStudentInfo = 
+  const hasStudentInfo =
     user.institution || user.instituteId || user.currentSemester;
-  const showAcademicSection = 
+  const showAcademicSection =
     (hasStudentInfo && user.role === "STUDENT") || user.role === "PROFESSOR";
 
   if (showAcademicSection) {
@@ -154,7 +154,9 @@ function AcademicInformation({ user }: AcademicInformationProps) {
               <Icons.card className="size-5 text-green-600" />
               <div>
                 <span className="font-medium">{user.instituteId}</span>
-                <p className="text-sm text-gray-500">Student ID</p>
+                <p className="text-sm text-gray-500">
+                  {user.role === "STUDENT" ? "Student Id" : "Professor Id"}
+                </p>
               </div>
             </div>
           )}

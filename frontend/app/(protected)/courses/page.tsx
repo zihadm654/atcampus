@@ -7,10 +7,50 @@ import CourseFeed from "@/components/feed/CourseFeed";
 import { Button } from "@/components/ui/button";
 import { prisma } from "@/lib/db";
 import Link from "next/link";
+import { cache } from "react";
 
 export const metadata: Metadata = constructMetadata({
   title: "Courses - AtCampus",
   description: "Browse and enroll in courses to enhance your skills.",
+});
+
+const getInitialCourses = cache(async () => {
+  const courses = await prisma.course.findMany({
+    where: {
+      isDeleted: false,
+      isActive: true,
+    },
+    include: {
+      instructor: {
+        select: {
+          id: true,
+          name: true,
+          image: true,
+          role: true,
+        },
+      },
+      faculty: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+      _count: {
+        select: {
+          enrollments: true,
+        },
+      },
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+    take: 12,
+  });
+
+  return {
+    courses,
+    nextCursor: courses.length === 12 ? courses[11].id : null,
+  };
 });
 
 export default async function CoursesPage() {
@@ -28,17 +68,20 @@ export default async function CoursesPage() {
   });
 
   // Check if user has approval permissions
-  const hasApprovalPermissions = await prisma.member.findFirst({
-    where: {
-      userId: user.id,
-      isActive: true,
-      role: {
-        in: ["FACULTY_ADMIN", "SCHOOL_ADMIN"]
-      }
-    },
-  }) || user.role === "INSTITUTION";
+  const hasApprovalPermissions =
+    (await prisma.member.findFirst({
+      where: {
+        userId: user.id,
+        isActive: true,
+        role: {
+          in: ["FACULTY_ADMIN", "SCHOOL_ADMIN", "owner", "admin"],
+        },
+      },
+    })) || user.role === "INSTITUTION";
 
   const canCreateCourses = professorMember !== null;
+
+  const initialCoursesData = await getInitialCourses();
 
   return (
     <div className="flex w-full flex-col gap-6">
@@ -67,7 +110,7 @@ export default async function CoursesPage() {
           )}
         </div>
       </div>
-      <CourseFeed user={user} />
+      <CourseFeed user={user} initialData={initialCoursesData} />
     </div>
   );
 }

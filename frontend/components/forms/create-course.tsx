@@ -77,15 +77,39 @@ export function CreateCourseForm({ user, course }: CreateCourseFormProps) {
   });
   const queryClient = useQueryClient();
 
-  const { data: faculties } = useQuery<Faculty[]>({
+  const { data: faculties, isLoading: isLoadingFaculties, error: facultiesError } = useQuery<Faculty[]>({
     queryKey: ["faculties"],
     queryFn: async () => {
       const res = await fetch("/api/faculties");
-      if (!res.ok) throw new Error("Failed to fetch faculties");
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || "Failed to fetch faculties");
+      }
       return res.json();
     },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    retry: 2,
   });
-  console.log(faculties, "faculties");
+
+  // Determine available status options based on user role
+  const getAvailableStatuses = (): CourseStatus[] => {
+    // If user is a professor, they can only save as DRAFT or submit for review
+    if (user?.role === "PROFESSOR") {
+      return [CourseStatus.DRAFT, CourseStatus.UNDER_REVIEW];
+    }
+    
+    // Institution users can set any status
+    return Object.values(CourseStatus);
+  };
+
+  const availableStatuses = getAvailableStatuses();
+
+  // Auto-set status for professors creating new courses
+  useEffect(() => {
+    if (!course && user?.role === "PROFESSOR" && form.getValues("status") !== CourseStatus.DRAFT) {
+      form.setValue("status", CourseStatus.DRAFT);
+    }
+  }, [user?.role, course, form]);
 
   const schools = coursesData.schools;
   const [selectedSchool, setSelectedSchool] = useState<string>("");
@@ -397,6 +421,7 @@ export function CreateCourseForm({ user, course }: CreateCourseFormProps) {
                     <Select
                       defaultValue={field.value}
                       onValueChange={field.onChange}
+                      disabled={user?.role === "PROFESSOR" && course?.status === "APPROVED"}
                     >
                       <FormControl>
                         <SelectTrigger>
@@ -405,15 +430,26 @@ export function CreateCourseForm({ user, course }: CreateCourseFormProps) {
                       </FormControl>
                       <SelectContent>
                         <SelectGroup>
-                          {Object.values(CourseStatus).map((status) => (
+                          {availableStatuses.map((status) => (
                             <SelectItem key={status} value={status}>
                               {status.charAt(0).toUpperCase() +
                                 status.slice(1).toLowerCase()}
+                              {user?.role === "PROFESSOR" && status === "UNDER_REVIEW" && (
+                                <span className="ml-2 text-xs text-muted-foreground">
+                                  (Submit for institution approval)
+                                </span>
+                              )}
                             </SelectItem>
                           ))}
                         </SelectGroup>
                       </SelectContent>
                     </Select>
+                    {user?.role === "PROFESSOR" && (
+                      <p className="text-sm text-muted-foreground">
+                        Professors can save courses as drafts or submit for review. 
+                        Institution approval is required before courses can be published.
+                      </p>
+                    )}
                     <FormMessage />
                   </FormItem>
                 )}
@@ -428,20 +464,44 @@ export function CreateCourseForm({ user, course }: CreateCourseFormProps) {
                   <Select
                     onValueChange={field.onChange}
                     defaultValue={field.value}
+                    disabled={isLoadingFaculties || !!facultiesError}
                   >
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select a faculty" />
+                        <SelectValue 
+                          placeholder={
+                            isLoadingFaculties 
+                              ? "Loading faculties..." 
+                              : facultiesError 
+                                ? "Error loading faculties" 
+                                : "Select a faculty"
+                          } 
+                        />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
+                      {facultiesError && (
+                        <SelectItem value="error" disabled>
+                          Failed to load faculties. Please refresh.
+                        </SelectItem>
+                      )}
                       {faculties?.map((faculty) => (
                         <SelectItem key={faculty.id} value={faculty.id}>
                           {faculty.name}
                         </SelectItem>
                       ))}
+                      {!isLoadingFaculties && !faculties?.length && (
+                        <SelectItem value="empty" disabled>
+                          No faculties available
+                        </SelectItem>
+                      )}
                     </SelectContent>
                   </Select>
+                  {facultiesError && (
+                    <p className="text-sm text-destructive">
+                      {facultiesError instanceof Error ? facultiesError.message : "Failed to load faculties"}
+                    </p>
+                  )}
                   <FormMessage />
                 </FormItem>
               )}
