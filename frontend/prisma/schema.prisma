@@ -22,15 +22,6 @@ enum UserRole {
   ADMIN
 }
 
-enum MemberRole {
-  STUDENT
-  PROFESSOR
-  FACULTY_ADMIN
-  SCHOOL_ADMIN
-  ORGANIZATION_ADMIN
-  SUPER_ADMIN
-}
-
 enum UserStatus {
   PENDING
   ACTIVE
@@ -126,20 +117,6 @@ enum ApprovalStatus {
   NEEDS_REVISION
 }
 
-enum InvitationStatus {
-  PENDING
-  ACCEPTED
-  DECLINED
-  EXPIRED
-  CANCELLED
-}
-
-enum InvitationType {
-  ORGANIZATION_MEMBER
-  PROFESSOR_APPOINTMENT
-  FACULTY_ASSIGNMENT
-}
-
 // ============================================================================
 // AUTHENTICATION & SESSION MODELS
 // ============================================================================
@@ -182,7 +159,7 @@ model Session {
 
   // Active context - Better Auth organization plugin fields
   activeOrganizationId String?
-  activeTeamId        String?
+  activeTeamId         String?
 
   createdAt DateTime @default(now()) @map(name: "created_at")
   updatedAt DateTime @updatedAt @map(name: "updated_at")
@@ -241,7 +218,7 @@ model User {
 
   // System fields
   role             UserRole   @default(STUDENT)
-  twoFactorEnabled Boolean    @default(false)
+  twoFactorEnabled Boolean?   @default(false)
   status           UserStatus @default(PENDING)
 
   // Moderation
@@ -307,6 +284,7 @@ model User {
   auditActions AuditLog[] @relation("AuditActor")
 
   // Removed professor invitation relations - now handled by unified Invitation model
+  teamMember teamMember[]
 
   @@index([role, status])
   @@index([status, createdAt])
@@ -324,16 +302,15 @@ model Organization {
   isActive    Boolean @default(true)
 
   // Better Auth organization plugin fields
-  metadata    Json? // For custom fields
+  metadata  Json? // For custom fields
   createdAt DateTime @default(now()) @map(name: "created_at")
   updatedAt DateTime @updatedAt @map(name: "updated_at")
 
   members     Member[]
   invitations Invitation[]
-  
+
   // Better Auth organization plugin relationships
-  teams       Team[]
-  organizationTeams OrganizationTeam[]
+  teams Team[]
 
   @@index([name])
   @@map(name: "organizations")
@@ -349,51 +326,15 @@ model Member {
   faculty        Faculty?     @relation(fields: [facultyId], references: [id])
 
   // Better Auth organization plugin fields
-  role        String   @default("member") // Better Auth role field
-  permissions Json?    // Better Auth permissions field
-  
-  // Legacy fields (keep for compatibility)
-  isActive    Boolean  @default(true)
-
-  // Professor-specific fields
-  academicTitle     String? // Professor, Associate Professor, Assistant Professor, etc.
-  department        String? // Department within faculty
-  officeLocation    String?
-  officeHours       String?
-  researchInterests String[] @default([])
-  academicDegrees   String[] @default([])
-  specializations   String[] @default([])
-
-  // Contact information
-  officePhone     String?
-  alternateEmail  String?
-  personalWebsite String?
-
-  // Employment details
-  employmentType    String? // Full-time, Part-time, Visiting, Adjunct
-  contractStartDate DateTime?
-  contractEndDate   DateTime?
-  tenure            Boolean   @default(false)
-
-  // Lifecycle tracking
-  joinedAt      DateTime    @default(now())
-  lastActive    DateTime?
-  roleChangedAt DateTime?
-  previousRole  MemberRole?
-
-  // Assignment tracking
-  assignedAt DateTime? // When assigned as professor
-  assignedBy String? // User ID who made the assignment
+  role        String @default("member") // Better Auth role field
+  permissions Json? // Better Auth permissions field
 
   createdAt DateTime @default(now()) @map(name: "created_at")
   updatedAt DateTime @updatedAt @map(name: "updated_at")
 
   @@unique([userId, organizationId])
   @@index([organizationId, role])
-  @@index([userId, isActive])
   @@index([facultyId, role])
-  @@index([role, academicTitle])
-  @@index([assignedAt, role])
   @@map(name: "members")
 }
 
@@ -405,87 +346,48 @@ model Invitation {
   inviterId      String
   inviter        User         @relation(fields: [inviterId], references: [id], onDelete: Cascade)
 
+  teamId    String?
   // Better Auth organization plugin fields
   email     String
   role      String   @default("member") // Better Auth role field
   status    String   @default("pending") // Better Auth status field
   expiresAt DateTime
-  metadata  Json?    // For custom fields like firstName, lastName, type, etc.
-  
-  // Legacy fields (keep for compatibility)
-  firstName String?
-  lastName  String?
-  type      InvitationType   @default(ORGANIZATION_MEMBER)
-  message   String?
-
-  // Academic context (for professor invitations)
-  facultyId String?
-  faculty   Faculty? @relation(fields: [facultyId], references: [id], onDelete: Cascade)
-  schoolId  String?
-  school    School?  @relation(fields: [schoolId], references: [id], onDelete: Cascade)
-
-  // Professor-specific fields with validation
-  proposedTitle String? // "Associate Professor", etc.
-  department    String?
-  startDate     DateTime?
-  contractType  String? // Full-time, Part-time, Visiting
-
-  // Enhanced tracking and audit
-  sentAt        DateTime  @default(now())
-  respondedAt   DateTime?
-  acceptedAt    DateTime?
-  declinedAt    DateTime?
-  cancelledAt   DateTime?
-  lastReminder  DateTime?
-  reminderCount Int       @default(0)
-
-  // Security and validation
-  invitationToken String? // Secure invitation token (no longer needed with better-auth)
-  ipAddress       String? // IP from which invitation was created
-  userAgent       String? // User agent info
-
-  // Soft delete for audit trail
-  deletedAt DateTime?
-  isDeleted Boolean   @default(false)
 
   createdAt DateTime @default(now()) @map(name: "created_at")
   updatedAt DateTime @updatedAt @map(name: "updated_at")
 
   notifications Notification[]
 
-  @@index([email, status, isDeleted])
-  @@index([organizationId, status, isDeleted])
-  @@index([facultyId, status, isDeleted])
-  @@index([type, status, isDeleted])
-  @@index([expiresAt, isDeleted])
   @@index([status, expiresAt]) // For cleanup jobs
   @@map(name: "invitations")
 }
 
 // Better Auth organization plugin models
 model Team {
-  id             String         @id @default(cuid()) @map("_id")
+  id             String       @id @default(cuid()) @map("_id")
   name           String
   organizationId String
-  organization   Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
-  
-  organizationTeams OrganizationTeam[]
-  
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime?    @updatedAt
+
+  teamMember teamMember[]
+
   @@index([organizationId])
   @@map(name: "teams")
 }
 
-model OrganizationTeam {
-  id             String       @id @default(cuid()) @map("_id")
-  organizationId String
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  teamId         String
-  team           Team         @relation(fields: [teamId], references: [id], onDelete: Cascade)
-  
-  @@unique([organizationId, teamId])
-  @@map(name: "organization_teams")
+model teamMember {
+  id     String @id @default(cuid()) @map("_id")
+  userId String
+  user   User   @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  teamId String
+  team   Team   @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, teamId])
+  @@map(name: "team_members")
 }
 
 // Removed - functionality merged into unified Invitation model
@@ -511,8 +413,7 @@ model School {
   createdAt DateTime @default(now()) @map(name: "created_at")
   updatedAt DateTime @updatedAt @map(name: "updated_at")
 
-  faculties   Faculty[]
-  invitations Invitation[]
+  faculties Faculty[]
 
   @@unique([slug, institutionId])
   @@unique([name, institutionId])
@@ -537,9 +438,8 @@ model Faculty {
   createdAt DateTime @default(now()) @map(name: "created_at")
   updatedAt DateTime @updatedAt @map(name: "updated_at")
 
-  courses     Course[]
-  members     Member[]
-  invitations Invitation[]
+  courses Course[]
+  members Member[]
 
   @@unique([slug, schoolId])
   @@unique([name, schoolId])

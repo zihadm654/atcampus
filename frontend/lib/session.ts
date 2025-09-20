@@ -4,8 +4,9 @@ import { cache } from "react";
 import { headers } from "next/headers";
 
 import { auth } from "./auth";
+import { ExtendedUser, SessionUser } from "@/types/auth-types";
 
-export const getCurrentUser = cache(async () => {
+export const getCurrentUser = cache(async (): Promise<ExtendedUser | undefined> => {
   const headersList = await headers();
 
   const session = await auth.api.getSession({
@@ -15,7 +16,9 @@ export const getCurrentUser = cache(async () => {
   if (!session?.user) {
     return undefined;
   }
-  return session.user;
+
+  // Cast to our extended user type
+  return session.user as ExtendedUser;
 });
 
 export const getCurrentSession = cache(async () => {
@@ -60,23 +63,60 @@ export const getSession = getCurrentSession;
 // Lightweight role/status check for server components
 export const getUserRoleAndStatus = cache(async () => {
   const session = await getCurrentSession();
-  
+
   if (!session?.user) return null;
-  
+
+  const user = session.user as ExtendedUser;
+
   return {
-    role: session.user.role,
-    status: session.user.status,
-    user: session.user
+    role: user.role,
+    status: user.status,
+    user: user
   };
 });
 
 // Permission check utilities
-export const hasRole = cache(async (allowedRoles: string[]) => {
+export const hasRole = cache(async (allowedRoles: ExtendedUser["role"][]): Promise<boolean> => {
   const user = await getCurrentUser();
-  return user && allowedRoles.includes(user.role);
+  return user ? allowedRoles.includes(user.role) : false;
 });
 
-export const hasActiveStatus = cache(async () => {
+export const hasAnyRole = cache(async (allowedRoles: ExtendedUser["role"][]): Promise<boolean> => {
+  const user = await getCurrentUser();
+  return user ? allowedRoles.includes(user.role) : false;
+});
+
+export const hasActiveStatus = cache(async (): Promise<boolean> => {
   const user = await getCurrentUser();
   return user?.status === "ACTIVE";
+});
+
+export const isUserApproved = cache(async (): Promise<boolean> => {
+  const user = await getCurrentUser();
+  return user ? (user.status === "ACTIVE" || user.status === "SUSPENDED") : false;
+});
+
+export const isUserPending = cache(async (): Promise<boolean> => {
+  const user = await getCurrentUser();
+  return user?.status === "PENDING";
+});
+
+export const isUserRejected = cache(async (): Promise<boolean> => {
+  const user = await getCurrentUser();
+  return user?.status === "REJECTED";
+});
+
+export const canCreateOrganizations = cache(async (): Promise<boolean> => {
+  const user = await getCurrentUser();
+  return user ? (user.role === "INSTITUTION" || user.role === "ORGANIZATION") : false;
+});
+
+export const isAdmin = cache(async (): Promise<boolean> => {
+  const user = await getCurrentUser();
+  return user?.role === "ADMIN";
+});
+
+export const canReviewCourses = cache(async (): Promise<boolean> => {
+  const user = await getCurrentUser();
+  return user ? (user.role === "ADMIN" || user.role === "PROFESSOR") : false;
 });

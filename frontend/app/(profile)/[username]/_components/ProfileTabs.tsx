@@ -3,10 +3,7 @@
 import { useState } from "react";
 import { Building2, GraduationCap, BookOpen, Users2 } from "lucide-react";
 import { UserRole } from "@/lib/validations/auth";
-import type {
-  TabConfig,
-  ProfilePermissions,
-} from "@/types/profile-types";
+import type { TabConfig, ProfilePermissions } from "@/types/profile-types";
 import { calculateProfilePermissions } from "@/lib/permissions";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -323,17 +320,11 @@ export default function ProfileTabs({
 
         {/* Institution-specific tabs */}
         <TabsContent value="schools" className="p-4">
-          <SchoolsTab
-            user={user}
-            isCurrentUser={user.id === loggedInUserId}
-          />
+          <SchoolsTab user={user} isCurrentUser={user.id === loggedInUserId} />
         </TabsContent>
 
         <TabsContent value="analytics" className="p-4">
-          <AnalyticsTab
-            user={user}
-            permissions={permissions}
-          />
+          <AnalyticsTab user={user} permissions={permissions} />
         </TabsContent>
 
         <TabsContent value="settings" className="p-4">

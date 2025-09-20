@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { signInEmailAction } from "@/actions/sign-in-email.action";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -35,6 +35,8 @@ export function UserAuthForm({ className, type, ...props }: UserAuthFormProps) {
   const [isGoogleLoading, setIsGoogleLoading] = React.useState<boolean>(false);
 
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const from = searchParams.get("from") || "/";
 
   async function onSubmit(data: TLogin) {
     setIsLoading(true);
@@ -50,7 +52,8 @@ export function UserAuthForm({ className, type, ...props }: UserAuthFormProps) {
       toast.success("Login successfully", {
         description: res.message,
       });
-      router.push("/");
+      // Redirect to the intended destination or home page
+      router.push(from);
     }
     setIsLoading(false);
   }
@@ -134,7 +137,7 @@ export function UserAuthForm({ className, type, ...props }: UserAuthFormProps) {
           setIsGoogleLoading(true);
           await signIn.social({
             provider: "google",
-            callbackURL: "/",
+            callbackURL: from, // Use the 'from' parameter for OAuth callback
             errorCallbackURL: "/login/error",
           });
         }}

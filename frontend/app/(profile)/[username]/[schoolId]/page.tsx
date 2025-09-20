@@ -43,24 +43,52 @@ const getUser = cache(async (username: string, loggedInUserId: string) => {
     },
     select: {
       ...getUserDataSelect(loggedInUserId),
-      institution: true,
+      members: true,
+      userSkills: {
+        include: {
+          skill: {
+            select: {
+              name: true,
+              category: true,
+            },
+          },
+          _count: {
+            select: {
+              endorsements: true,
+            },
+          },
+        },
+        take: 10, // Limit for performance
+      },
       schools: {
         include: {
-          faculties: true,
-        },
-      },
-      members: {
-        include: {
-          organization: {
-            include: {},
+          faculties: {
+            include: {
+              courses: {
+                include: {
+                  instructor: true,
+                  _count: {
+                    select: {
+                      enrollments: true,
+                    },
+                  },
+                },
+                take: 5, // Limit courses per faculty for initial load
+              },
+              _count: {
+                select: {
+                  courses: true,
+                  members: true,
+                },
+              },
+            },
           },
-          faculty: true,
         },
       },
+      events: true,
+      clubs: true,
     },
   });
-
-  if (!user) notFound();
 
   return user;
 });
@@ -92,7 +120,7 @@ const getSchool = cache(async (schoolId: string) => {
                 },
               },
             },
-            take: 5, // Limit recent members preview
+            take: 10, // Limit recent members preview
           },
           courses: {
             select: {
@@ -100,6 +128,7 @@ const getSchool = cache(async (schoolId: string) => {
               title: true,
               code: true,
               isActive: true,
+              enrollments: true,
             },
             where: {
               isActive: true,
@@ -132,6 +161,7 @@ export async function generateMetadata({
   if (!loggedInUser) throw new Error("User not logged in");
 
   const user = await getUser(username, loggedInUser.id);
+  if (!user) return {};
   return {
     title: `${schoolId} (@${user.username})`,
   };
@@ -149,7 +179,7 @@ export default async function Page({ params }: PageProps) {
   }
   const user = await getUser(username, loggedInUser.id);
   const school = await getSchool(schoolId);
-
+  if (!user) return {};
   if (!school) {
     return notFound();
   }

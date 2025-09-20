@@ -20,9 +20,8 @@ export default async function CourseApprovalsPage() {
   const memberRoles = await prisma.member.findMany({
     where: {
       userId: user.id,
-      isActive: true,
       role: {
-        in: ["FACULTY_ADMIN", "SCHOOL_ADMIN"],
+        in: ["admin", "owner"],
       },
     },
     include: {
@@ -30,6 +29,7 @@ export default async function CourseApprovalsPage() {
       faculty: {
         include: {
           school: true,
+          courses: true,
         },
       },
     },

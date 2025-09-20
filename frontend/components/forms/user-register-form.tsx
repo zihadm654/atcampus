@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { signUpEmailAction } from "@/actions/sign-up-email.action";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Briefcase, GraduationCap, HomeIcon } from "lucide-react";
@@ -31,7 +31,7 @@ interface UserRegisterFormProps {
   className?: string;
 }
 
-interface UserAuthFormProps extends React.HTMLAttributes<HTMLDivElement> {}
+interface UserAuthFormProps extends React.HTMLAttributes<HTMLDivElement> { }
 
 export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
   const [currentStep, setCurrentStep] = React.useState(1);
@@ -51,6 +51,8 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
   const [isGoogleLoading, setIsGoogleLoading] = React.useState<boolean>(false);
 
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const from = searchParams.get("from") || "/";
 
   const role = form.watch("role");
   async function onSubmit(data: TRegister) {
@@ -72,7 +74,8 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
         ) {
           router.push("/pending-approval");
         } else {
-          router.push("/register/success");
+          // Redirect to the intended destination or success page
+          router.push(from === "/" ? "/register/success" : from);
         }
         toast.success(
           result.message || "Verification link has been sent to your mail"
@@ -296,29 +299,29 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
               />
               {(role === UserRole.ORGANIZATION ||
                 role === UserRole.INSTITUTION) && (
-                <FormField
-                  control={form.control}
-                  name="phone"
-                  render={({ field }) => (
-                    <FormItem className="grid gap-1">
-                      <FormLabel htmlFor="telephone">Phone Number</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="telephone"
-                          {...field}
-                          id="telephone"
-                          placeholder="05555555555"
-                          autoCapitalize="none"
-                          autoComplete="tel"
-                          autoCorrect="off"
-                          disabled={isLoading || isGoogleLoading}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              )}
+                  <FormField
+                    control={form.control}
+                    name="phone"
+                    render={({ field }) => (
+                      <FormItem className="grid gap-1">
+                        <FormLabel htmlFor="telephone">Phone Number</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="telephone"
+                            {...field}
+                            id="telephone"
+                            placeholder="05555555555"
+                            autoCapitalize="none"
+                            autoComplete="tel"
+                            autoCorrect="off"
+                            disabled={isLoading || isGoogleLoading}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                )}
               <FormField
                 control={form.control}
                 name="email"
@@ -417,7 +420,7 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
           setIsGoogleLoading(true);
           await signIn.social({
             provider: "google",
-            callbackURL: "/",
+            callbackURL: from, // Use the 'from' parameter for OAuth callback
             errorCallbackURL: "/login/error",
           });
         }}

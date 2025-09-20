@@ -84,11 +84,21 @@ export function ApprovalDashboard({ user, memberRoles }: ApprovalDashboardProps)
     const fetchApprovals = async () => {
         try {
             setLoading(true);
-            const response = await fetch(`/api/course-approvals?status=${activeTab}`);
+            // Map the tab values to the API expected status values
+            const statusMap: Record<string, string> = {
+                "pending": "PENDING",
+                "approved": "APPROVED",
+                "rejected": "REJECTED",
+                "needs_revision": "NEEDS_REVISION"
+            };
+            const apiStatus = statusMap[activeTab.toLowerCase()] || activeTab;
+            const response = await fetch(`/api/course-approvals?status=${apiStatus}`);
             if (response.ok) {
                 const data = await response.json();
                 setApprovals(data.approvals || []);
             } else {
+                const errorData = await response.json();
+                console.error("API Error:", errorData);
                 toast.error("Failed to fetch course approvals");
             }
         } catch (error) {
@@ -144,7 +154,7 @@ export function ApprovalDashboard({ user, memberRoles }: ApprovalDashboardProps)
                     <Card>
                         <CardContent className="flex flex-col items-center justify-center py-12">
                             <p className="text-muted-foreground text-center">
-                                No {activeTab} course approvals found.
+                                No {activeTab.replace("_", " ")} course approvals found.
                             </p>
                         </CardContent>
                     </Card>
@@ -164,7 +174,7 @@ export function ApprovalDashboard({ user, memberRoles }: ApprovalDashboardProps)
                                         </div>
                                         <div className="flex flex-col gap-1 shrink-0">
                                             <Badge
-                                                // variant={getStatusColor(approval.status)}
+                                                variant={getStatusColor(approval.status) as any}
                                                 className="text-xs"
                                             >
                                                 {approval.status.replace("_", " ")}

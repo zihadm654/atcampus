@@ -95,7 +95,7 @@ export function CreateJobForm({ user, job }: CreateJobFormProps) {
   });
   const queryClient = useQueryClient();
 
-  const { data: courses } = useQuery({
+  const { data: courses, isLoading: isLoadingCourses } = useQuery({
     queryKey: ["instructor-courses"],
     queryFn: getInstructorCourses,
   });
@@ -270,20 +270,30 @@ export function CreateJobForm({ user, job }: CreateJobFormProps) {
                     <Select
                       onValueChange={field.onChange}
                       defaultValue={field.value}
+                      disabled={isLoadingCourses}
                     >
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select associated course" />
+                          <SelectValue
+                            placeholder={
+                              isLoadingCourses
+                                ? "Loading courses..."
+                                : "Select associated course"
+                            }
+                          />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectGroup>
-                          {courses?.map((course) => (
-                            <SelectItem key={course.id} value={course.id}>
-                              {course.title} ({course.code})
-                            </SelectItem>
-                          ))}
-                        </SelectGroup>
+                        {courses?.map((course) => (
+                          <SelectItem key={course.id} value={course.id}>
+                            {course.title} ({course.code})
+                          </SelectItem>
+                        ))}
+                        {!isLoadingCourses && !courses?.length && (
+                          <SelectItem value="empty" disabled>
+                            No courses available
+                          </SelectItem>
+                        )}
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -310,7 +320,7 @@ export function CreateJobForm({ user, job }: CreateJobFormProps) {
               name="endDate"
               render={({ field }) => (
                 <FormItem className="flex flex-col">
-                  <FormLabel>Date of birth</FormLabel>
+                  <FormLabel>Application Deadline</FormLabel>
                   <Popover>
                     <PopoverTrigger asChild>
                       <FormControl>
@@ -342,7 +352,7 @@ export function CreateJobForm({ user, job }: CreateJobFormProps) {
                       />
                     </PopoverContent>
                   </Popover>
-                  <FormDescription>Job Deadline.</FormDescription>
+                  <FormDescription>Last date to apply for this job.</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -390,10 +400,10 @@ export function CreateJobForm({ user, job }: CreateJobFormProps) {
                 name="duration"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Duration</FormLabel>
+                    <FormLabel>Duration (months)</FormLabel>
                     <FormControl>
                       <Input
-                        placeholder="Duration in days"
+                        placeholder="Duration in months"
                         type="number"
                         {...field}
                       />
@@ -425,7 +435,7 @@ export function CreateJobForm({ user, job }: CreateJobFormProps) {
               name="salary"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Salary</FormLabel>
+                  <FormLabel>Salary (USD)</FormLabel>
                   <FormControl>
                     <Input
                       placeholder="Salary in USD"

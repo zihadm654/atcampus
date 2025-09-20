@@ -37,20 +37,49 @@ const getUser = cache(async (username: string, loggedInUserId: string) => {
     select: {
       ...getUserDataSelect(loggedInUserId),
       members: true,
-      // members: {
-      //   include: {
-      //     user: {
-      //       include: {
-      //         schools: {
-      //           include: {
-      //             faculties: true,
-      //           },
-      //         },
-      //       },
-      //     },
-      //     faculty: true,
-      //   },
-      // },
+      userSkills: {
+        include: {
+          skill: {
+            select: {
+              name: true,
+              category: true,
+            },
+          },
+          _count: {
+            select: {
+              endorsements: true,
+            },
+          },
+        },
+        take: 10, // Limit for performance
+      },
+      schools: {
+        include: {
+          faculties: {
+            include: {
+              courses: {
+                include: {
+                  instructor: true,
+                  _count: {
+                    select: {
+                      enrollments: true,
+                    },
+                  },
+                },
+                take: 5, // Limit courses per faculty for initial load
+              },
+              _count: {
+                select: {
+                  courses: true,
+                  members: true,
+                },
+              },
+            },
+          },
+        },
+      },
+      events: true,
+      clubs: true,
     },
   });
 
@@ -120,7 +149,6 @@ export default async function Page({ params }: PageProps) {
       ({ followerId }) => followerId === loggedInUser.id
     ),
   };
-
   return (
     <ProfileProvider initialUser={user} loggedInUserId={loggedInUser.id}>
       <div className="w-full min-w-0 space-y-5">

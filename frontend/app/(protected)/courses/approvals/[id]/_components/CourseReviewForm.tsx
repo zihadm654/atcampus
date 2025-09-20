@@ -186,7 +186,7 @@ export function CourseReviewForm({ approval, canReview }: CourseReviewFormProps)
                             </div>
                             <div className="flex flex-col gap-2">
                                 <Badge
-                                    // variant={getStatusColor(approval.status)}
+                                    variant={getStatusColor(approval.status) as any}
                                     className="text-sm"
                                 >
                                     {approval.status.replace("_", " ")}

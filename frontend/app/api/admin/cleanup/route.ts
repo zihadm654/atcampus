@@ -27,7 +27,6 @@ export async function POST(req: NextRequest) {
                 expiresAt: {
                     lt: new Date(),
                 },
-                isDeleted: false,
             },
             data: {
                 status: "EXPIRED",
@@ -84,13 +83,7 @@ export async function POST(req: NextRequest) {
                     gt: new Date(),
                     lt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // Expires within 7 days
                 },
-                lastReminder: {
-                    lt: new Date(Date.now() - 24 * 60 * 60 * 1000), // Last reminded more than 1 day ago
-                },
-                reminderCount: {
-                    lt: 3, // Max 3 reminders
-                },
-                isDeleted: false,
+
             },
             include: {
                 inviter: {
@@ -106,20 +99,6 @@ export async function POST(req: NextRequest) {
                 },
             },
         });
-
-        // Update reminder count and timestamp
-        for (const invitation of pendingInvitations) {
-            await prisma.invitation.update({
-                where: { id: invitation.id },
-                data: {
-                    lastReminder: new Date(),
-                    reminderCount: { increment: 1 },
-                },
-            });
-
-            // TODO: Send reminder email
-            // await sendInvitationReminder(invitation);
-        }
 
         // Create audit log for cleanup job
         await createAuditLog({
@@ -174,21 +153,13 @@ export async function GET(req: NextRequest) {
             pendingInvitations: await prisma.invitation.count({
                 where: {
                     status: "PENDING",
-                    isDeleted: false,
                 },
             }),
             expiredInvitations: await prisma.invitation.count({
                 where: {
                     status: "PENDING",
                     expiresAt: { lt: new Date() },
-                    isDeleted: false,
                 },
-            }),
-            softDeletedCourses: await prisma.course.count({
-                where: { isDeleted: true },
-            }),
-            softDeletedInvitations: await prisma.invitation.count({
-                where: { isDeleted: true },
             }),
             totalAuditLogs: await prisma.auditLog.count(),
             oldAuditLogs: await prisma.auditLog.count({

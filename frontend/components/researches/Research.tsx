@@ -86,7 +86,7 @@ export default function Research({ research }: ResearchProps) {
                   className="flex items-center gap-1 font-semibold hover:underline"
                 >
                   {research.user.name}
-                  {research.user.verified && (
+                  {research.user.emailVerified && (
                     <ShieldCheck className="size-4 text-blue-700" />
                   )}
                 </Link>
@@ -103,14 +103,14 @@ export default function Research({ research }: ResearchProps) {
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          {research.user.id === user.id && (
+            <ResearchMoreButton research={research} />
+          )}
+          {/* <div className="flex items-center gap-2">
             <Badge variant="outline" className="text-xs">
               {research.category}
             </Badge>
-            {research.user.id === user.id && (
-              <ResearchMoreButton research={research} />
-            )}
-          </div>
+          </div> */}
         </div>
       </CardHeader>
 

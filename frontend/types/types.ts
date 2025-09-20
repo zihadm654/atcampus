@@ -71,10 +71,8 @@ export function getUserDataSelect(loggedInUserId: string) {
       },
     },
     members: true,
-    clubs: true,
     posts: true,
     research: true,
-    events: true,
     followers: {
       where: {
         followerId: loggedInUserId,

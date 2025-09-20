@@ -80,23 +80,23 @@ export function calculateProfilePermissions(
   return {
     canEdit: isOwnProfile || isAdmin,
     canDelete: isAdmin,
-    canManageAcademic: 
+    canManageAcademic:
       (profileUserRole === "INSTITUTION" && isOwnProfile) ||
       (profileUserRole === "INSTITUTION" && isAdmin),
-    canAssignProfessors: 
+    canAssignProfessors:
       (profileUserRole === "INSTITUTION" && isOwnProfile) ||
       (profileUserRole === "INSTITUTION" && isAdmin),
-    canCreateSchools: 
+    canCreateSchools:
       (profileUserRole === "INSTITUTION" && isOwnProfile) ||
       (profileUserRole === "INSTITUTION" && isAdmin),
-    canCreateFaculties: 
+    canCreateFaculties:
       (profileUserRole === "INSTITUTION" && isOwnProfile) ||
       (profileUserRole === "INSTITUTION" && isAdmin),
-    canCreateCourses: 
+    canCreateCourses:
       (profileUserRole === "PROFESSOR" && isOwnProfile) ||
       (profileUserRole === "INSTITUTION" && isOwnProfile) ||
       isAdmin,
-    canViewPrivate: 
+    canViewPrivate:
       isOwnProfile ||
       isAdmin ||
       (profileUserRole === "INSTITUTION" && loggedInUserRole === "INSTITUTION"),

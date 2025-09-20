@@ -9,22 +9,28 @@ export async function middleware(req: NextRequest) {
   const sessionCookie = await getSessionCookie(req);
 
   const isLoggedIn = !!sessionCookie;
-  const isProtectedRoute = protectedRoutes.some(route => 
+  const isProtectedRoute = protectedRoutes.some(route =>
     nextUrl.pathname === route || nextUrl.pathname.startsWith(route + "/")
   );
-  const isAuthRoute = authRoutes.some(route => 
+  const isAuthRoute = authRoutes.some(route =>
     nextUrl.pathname === route || nextUrl.pathname.startsWith(route + "/")
   );
 
   // Handle unauthenticated access to protected routes
   if (isProtectedRoute && !isLoggedIn) {
     const loginUrl = new URL("/login", req.url);
+    // Preserve the original destination in the 'from' parameter
     loginUrl.searchParams.set("from", nextUrl.pathname);
     return NextResponse.redirect(loginUrl);
   }
 
   // Redirect authenticated users away from auth routes
   if (isAuthRoute && isLoggedIn) {
+    // Check if there's a 'from' parameter to redirect to the intended destination
+    const from = nextUrl.searchParams.get("from");
+    if (from && !from.startsWith("/login") && !from.startsWith("/register")) {
+      return NextResponse.redirect(new URL(from, req.url));
+    }
     return NextResponse.redirect(new URL("/", req.url));
   }
 

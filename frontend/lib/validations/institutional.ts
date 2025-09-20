@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { MemberRole, UserRole } from '@prisma/client';
+import { UserRole } from '@prisma/client';
 
 // ============================================================================
 // ORGANIZATION VALIDATION SCHEMAS
@@ -123,7 +123,6 @@ export const updateFacultySchema = facultySchema.partial().extend({
 // MEMBER & INVITATION VALIDATION SCHEMAS
 // ============================================================================
 
-export const memberRoleSchema = z.nativeEnum(MemberRole);
 export const userRoleSchema = z.nativeEnum(UserRole);
 
 export const inviteProfessorSchema = z.object({
@@ -133,7 +132,7 @@ export const inviteProfessorSchema = z.object({
     .trim()
     .toLowerCase(),
   facultyId: z.string().cuid('Invalid faculty ID'),
-  role: z.literal(MemberRole.PROFESSOR),
+  role: z.string(),
   message: z
     .string()
     .max(500, 'Message must not exceed 500 characters')
@@ -144,13 +143,13 @@ export const memberAssignmentSchema = z.object({
   userId: z.string().cuid('Invalid user ID'),
   organizationId: z.string().cuid('Invalid organization ID'),
   facultyId: z.string().cuid('Invalid faculty ID').optional(),
-  role: memberRoleSchema,
+  role: z.string(),
   permissions: z.array(z.string()).default([]),
 });
 
 export const updateMemberRoleSchema = z.object({
   memberId: z.string().cuid('Invalid member ID'),
-  role: memberRoleSchema,
+  role: z.string(),
   facultyId: z.string().cuid('Invalid faculty ID').optional(),
 });
 
@@ -271,7 +270,7 @@ export const hierarchySearchSchema = z.object({
 
 export const memberFilterSchema = z.object({
   organizationId: z.string().cuid('Invalid organization ID'),
-  roles: z.array(memberRoleSchema).optional(),
+  roles: z.array(z.string()).optional(),
   facultyId: z.string().cuid('Invalid faculty ID').optional(),
   isActive: z.boolean().optional(),
   search: z.string().max(100).optional(),

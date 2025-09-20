@@ -45,12 +45,6 @@ export default function ProfessorOverview({
             <div className="space-y-2">
               <div>
                 <h3 className="font-medium">{user.name}</h3>
-                {user.members && user.members.length > 0 && (
-                  <p className="text-sm text-gray-500">
-                    {user.members[0].academicTitle} •{" "}
-                    {user.members[0].department}
-                  </p>
-                )}
               </div>
 
               {courses && courses.length > 0 && (

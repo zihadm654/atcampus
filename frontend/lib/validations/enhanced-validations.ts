@@ -230,10 +230,10 @@ export const approvalDecisionSchema = z.object({
 // Query parameter validation
 export const courseApprovalQuerySchema = z.object({
     status: z.enum(["PENDING", "APPROVED", "REJECTED", "NEEDS_REVISION"]).default("PENDING"),
-    level: z.coerce.string().regex(/^[1-3]$/).optional(),
+    level: z.coerce.number().int().min(1).max(3).optional(),
     priority: z.enum(["LOW", "NORMAL", "HIGH", "URGENT"]).optional(),
-    page: z.coerce.string().regex(/^\d+$/),
-    limit: z.coerce.string().regex(/^\d+$/).max(100),
+    page: z.coerce.number().int().min(1).default(1),
+    limit: z.coerce.number().int().min(1).max(100).default(10),
 });
 
 // Soft delete validation

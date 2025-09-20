@@ -1,6 +1,6 @@
 'use server';
 
-import { MemberRole, Prisma } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 import { z } from 'zod';
 
 import { prisma } from '@/lib/db';
@@ -104,7 +104,7 @@ export async function createFaculty(
     const defaultMember = await prisma.member.create({
       data: {
         userId: user.id,
-        role: MemberRole.ORGANIZATION_ADMIN,
+        role: "member",
         organizationId: school.institutionId,
         facultyId: null, // Will be set after faculty creation
       },
@@ -273,7 +273,7 @@ export async function assignMemberToFaculty(
     const updatedMember = await prisma.member.update({
       where: { id: memberId },
       data: {
-        role: MemberRole.PROFESSOR,
+        role: "member",
         faculty: {
           connect: { id: facultyId },
         },
@@ -284,7 +284,7 @@ export async function assignMemberToFaculty(
     await prisma.user.update({
       where: { id: member.userId },
       data: {
-        role: MemberRole.PROFESSOR,
+        role: "PROFESSOR",
       },
     });
 
@@ -317,7 +317,7 @@ export async function getFacultyMembers(facultyId: string) {
       include: {
         members: {
           where: {
-            role: MemberRole.STUDENT,
+            role: "member",
           },
           include: {
             user: {
@@ -367,7 +367,7 @@ export async function removeProfessorFromFaculty(
     const updatedMember = await prisma.member.update({
       where: { id: memberId },
       data: {
-        role: MemberRole.STUDENT,
+        role: "member",
         faculty: {
           disconnect: true,
         },

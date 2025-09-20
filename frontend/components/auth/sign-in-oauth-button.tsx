@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useSearchParams } from "next/navigation";
 
 import { signIn } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
@@ -15,13 +16,15 @@ export const SignInOauthButton = ({
   signUp,
 }: SignInOauthButtonProps) => {
   const [isPending, setIsPending] = useState(false);
+  const searchParams = useSearchParams();
+  const from = searchParams.get("from") || "/";
 
   async function handleClick() {
     setIsPending(true);
 
     await signIn.social({
       provider,
-      callbackURL: "/",
+      callbackURL: from, // Use the 'from' parameter for OAuth callback
       errorCallbackURL: "/login/error",
     });
 

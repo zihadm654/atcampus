@@ -5,39 +5,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Image from "next/image";
 import Link from "next/link";
 import { Users, BookOpen, GraduationCap } from "lucide-react";
-interface FacultyCardData {
-  id: string;
-  name: string;
-  slug: string;
-  description?: string | null;
-  logo?: string | null;
-  coverPhoto?: string | null;
-  website?: string | null;
-  isActive: boolean;
-  schoolId: string;
-  members?: Array<{
-    id: string;
-    role: string;
-    user: {
-      id: string;
-      name: string;
-      username: string | null;
-      image?: string | null;
-      email: string;
-    };
-  }>;
-  courses?: Array<{
-    id: string;
-    title: string;
-    code: string;
-    isActive: boolean;
-  }>;
-  _count?: {
-    members: number;
-    courses: number;
-  };
-  shortName?: string | null;
-}
 
 interface FacultyCardProps {
   faculty: any;
@@ -58,8 +25,7 @@ export function FacultyCard({
 }: FacultyCardProps) {
   const memberCount = faculty._count?.members || faculty.members?.length || 0;
   const professorCount =
-    faculty.members?.filter((member) => member.role === "PROFESSOR").length ||
-    0;
+    faculty.members?.filter((member) => member.role === "member").length || 0;
   const courseCount = faculty._count?.courses || faculty.courses?.length || 0;
 
   return (
@@ -141,9 +107,10 @@ export function FacultyCard({
         )}
       </div>
 
-      <CardContent className="p-6">
+      <CardContent className="p-2">
         {/* Faculty Name and Short Name */}
-        <div className="mb-4">
+        <div className="mb-2">
+          {/* <h3>{faculty.courses?.instructor.name}</h3> */}
           <Link
             href={`/${username}/${schoolId}/${faculty.id}`}
             className="group-hover:text-primary transition-colors"
@@ -157,13 +124,13 @@ export function FacultyCard({
 
         {/* Description */}
         {faculty.description && (
-          <p className="text-sm text-muted-foreground mb-4 line-clamp-3">
+          <p className="text-sm text-muted-foreground mb-2 line-clamp-3">
             {faculty.description}
           </p>
         )}
 
         {/* Statistics */}
-        <div className="grid grid-cols-3 gap-4 mb-4">
+        <div className="grid grid-cols-3 gap-4 mb-2">
           <div className="text-center">
             <div className="flex items-center justify-center gap-1 mb-1">
               <Users className="h-4 w-4 text-blue-600" />
@@ -191,12 +158,12 @@ export function FacultyCard({
 
         {/* Recent Members Preview */}
         {faculty.members && faculty.members.length > 0 && (
-          <div className="pt-4 border-t">
-            <h4 className="text-sm font-medium mb-3 flex items-center gap-2">
+          <div className="border-t space-y-2">
+            <h4 className="text-sm font-medium flex items-center gap-2">
               <Users className="h-4 w-4" />
               Recent Members
             </h4>
-            <div className="flex -space-x-2">
+            <div className="flex items-center">
               {faculty.members.slice(0, 5).map((member) => (
                 <Avatar
                   key={member.id}

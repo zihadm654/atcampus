@@ -100,3 +100,10 @@ export type TestimonialType = {
   image: string;
   review: string;
 };
+
+// Export all types from auth-types
+export * from "./auth-types";
+
+// Export other existing types
+export * from "./profile-types";
+export * from "./types";

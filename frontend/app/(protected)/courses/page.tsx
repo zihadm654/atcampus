@@ -63,7 +63,6 @@ export default async function CoursesPage() {
     where: {
       userId: user.id,
       role: "PROFESSOR",
-      isActive: true,
     },
   });
 
@@ -72,9 +71,8 @@ export default async function CoursesPage() {
     (await prisma.member.findFirst({
       where: {
         userId: user.id,
-        isActive: true,
         role: {
-          in: ["FACULTY_ADMIN", "SCHOOL_ADMIN", "owner", "admin"],
+          in: ["admin", "owner", "member"],
         },
       },
     })) || user.role === "INSTITUTION";

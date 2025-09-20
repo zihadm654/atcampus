@@ -44,12 +44,32 @@ const getUser = cache(async (username: string, loggedInUserId: string) => {
     },
     select: {
       ...getUserDataSelect(loggedInUserId),
-      institution: true,
       schools: {
         include: {
-          faculties: true,
+          faculties: {
+            include: {
+              courses: {
+                include: {
+                  instructor: true,
+                  _count: {
+                    select: {
+                      enrollments: true,
+                    },
+                  },
+                },
+                take: 5, // Limit courses per faculty for initial load
+              },
+              _count: {
+                select: {
+                  courses: true,
+                  members: true,
+                },
+              },
+            },
+          },
         },
       },
+      members: true,
       // members: {
       //   include: {
       //     organization: {
@@ -76,7 +96,6 @@ const getFaculty = cache(async (facultyId: string) => {
         select: {
           id: true,
           role: true,
-          department: true,
           user: {
             select: {
               id: true,
@@ -109,6 +128,12 @@ const getFaculty = cache(async (facultyId: string) => {
               username: true,
             },
           },
+        },
+      },
+      courses: {
+        include: {
+          instructor: true,
+          instructorCourses: true,
         },
       },
       _count: {
@@ -155,143 +180,130 @@ export default async function Page({ params }: PageProps) {
 
   // Group members by role
   const professors = faculty?.members.filter(
-    (member) => member.role === "PROFESSOR"
+    (member) => member.role === "member"
   );
   const students = faculty.members.filter(
     (member) => member.role === "STUDENT"
   );
   const admins = faculty.members.filter((member) =>
-    [
-      "FACULTY_ADMIN",
-      "SCHOOL_ADMIN",
-      "ORGANIZATION_ADMIN",
-      "SUPER_ADMIN",
-    ].includes(member.role)
+    ["owner", "admin"].includes(member.role)
   );
 
   const MemberCard = ({ member }: { member: (typeof faculty.members)[0] }) => {
     const userData = member.user;
-    const isProfessor = member.role === "PROFESSOR";
-    const isAdmin = [
-      "FACULTY_ADMIN",
-      "SCHOOL_ADMIN",
-      "ORGANIZATION_ADMIN",
-      "SUPER_ADMIN",
-    ].includes(member.role);
+    const isProfessor = member.role === "member";
+    const isAdmin = ["admin", "owner"].includes(member.role);
 
     return (
       <Card className="group hover:shadow-lg transition-all duration-300">
-        <CardContent className="p-6">
-          <div className="flex items-start gap-4">
-            <Avatar className="h-16 w-16">
-              <AvatarImage
-                src={userData.image || undefined}
-                alt={userData.name}
-              />
-              <AvatarFallback className="text-lg">
-                {userData.name
-                  .split(" ")
-                  .map((n) => n[0])
-                  .join("")
-                  .toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
+        <CardHeader>
+          <CardTitle>
+            <div className="flex items-center gap-3">
+              <Avatar className="size-8">
+                <AvatarImage
+                  src={userData.image || undefined}
+                  alt={userData.name}
+                />
+                <AvatarFallback className="text-lg">
+                  {userData.name
+                    .split(" ")
+                    .map((n) => n[0])
+                    .join("")
+                    .toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
 
-            <div className="flex-1 min-w-0">
-              <div className="flex items-start justify-between mb-2">
-                <div>
-                  <h3 className="text-lg font-semibold text-foreground">
-                    {userData.name}
-                  </h3>
-                  <p className="text-sm text-muted-foreground">
-                    @{userData.username}
-                  </p>
-                </div>
-                <div className="flex items-center gap-2">
-                  {isAdmin && (
-                    <Badge variant="secondary" className="text-xs">
-                      Admin
-                    </Badge>
-                  )}
-                  {isProfessor && (
-                    <Badge variant="outline" className="text-xs">
-                      Professor
-                    </Badge>
-                  )}
-                  {user.role === "INSTITUTION" &&
-                    loggedInUser.id === user.id && (
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                          >
-                            <DotsHorizontalIcon className="h-4 w-4" />
-                            <span className="sr-only">Open menu</span>
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-32">
-                          <DropdownMenuItem className="text-sm">
-                            Edit Member
-                          </DropdownMenuItem>
-                          <DropdownMenuItem className="text-sm text-destructive">
-                            Remove Member
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-start justify-between mb-2">
+                  <div>
+                    <h3 className="text-lg font-semibold text-foreground">
+                      {userData.name}
+                    </h3>
+                    <p className="text-sm text-muted-foreground">
+                      @{userData.username}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {isAdmin && (
+                      <Badge variant="secondary" className="text-xs">
+                        Admin
+                      </Badge>
                     )}
+                    {isProfessor && (
+                      <Badge variant="outline" className="text-xs">
+                        Professor
+                      </Badge>
+                    )}
+                    {user.role === "INSTITUTION" &&
+                      loggedInUser.id === user.id && (
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                            >
+                              <DotsHorizontalIcon className="h-4 w-4" />
+                              <span className="sr-only">Open menu</span>
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="w-32">
+                            <DropdownMenuItem className="text-sm">
+                              Edit Member
+                            </DropdownMenuItem>
+                            <DropdownMenuItem className="text-sm text-destructive">
+                              Remove Member
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      )}
+                  </div>
                 </div>
               </div>
-
-              {/* Contact Information */}
-              <div className="space-y-2 mb-4">
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Mail className="h-4 w-4" />
-                  <span>{userData.email}</span>
-                </div>
-                {member.department && (
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Building className="h-4 w-4" />
-                    <span>{member.department}</span>
-                  </div>
-                )}
-                {userData.phone && (
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <MapPin className="h-4 w-4" />
-                    <span>{userData.phone}</span>
-                  </div>
-                )}
-                {userData.bio && (
-                  <div className="text-sm text-muted-foreground">
-                    <span>{userData.bio}</span>
-                  </div>
-                )}
+            </div>
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="px-6">
+          {/* Contact Information */}
+          <div className="space-y-2 mb-4">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Mail className="h-4 w-4" />
+              <span>{userData.email}</span>
+            </div>
+            {userData.phone && (
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <MapPin className="h-4 w-4" />
+                <span>{userData.phone}</span>
               </div>
+            )}
+            {userData.bio && (
+              <div className="text-sm text-muted-foreground">
+                <span>{userData.bio}</span>
+              </div>
+            )}
+          </div>
 
-              {/* Academic Information for Professors */}
-              {isProfessor && (
-                <div className="space-y-3 pt-4 border-t">
-                  {userData.institution && (
-                    <div className="flex items-center gap-2 text-sm">
-                      <GraduationCap className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-muted-foreground">
-                        {userData.institution}
-                      </span>
-                    </div>
-                  )}
-                  {userData.graduationYear && (
-                    <div className="flex items-center gap-2 text-sm">
-                      <Award className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-muted-foreground">
-                        Graduated {userData.graduationYear}
-                      </span>
-                    </div>
-                  )}
+          {/* Academic Information for Professors */}
+          {isProfessor && (
+            <div className="space-y-3 pt-4 border-t">
+              {userData.institution && (
+                <div className="flex items-center gap-2 text-sm">
+                  <GraduationCap className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-muted-foreground">
+                    {userData.institution}
+                  </span>
+                </div>
+              )}
+              {userData.graduationYear && (
+                <div className="flex items-center gap-2 text-sm">
+                  <Award className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-muted-foreground">
+                    Graduated {userData.graduationYear}
+                  </span>
                 </div>
               )}
             </div>
-          </div>
+          )}
         </CardContent>
       </Card>
     );
@@ -350,8 +362,8 @@ export default async function Page({ params }: PageProps) {
 
       {/* Faculty Details */}
       <Card className="border-none shadow-sm">
-        <CardContent className="p-6">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <CardContent className="p-4">
+          <div className="grid grid-cols-4 max-md:grid-cols-2 gap-4">
             <div className="text-center">
               <div className="flex items-center justify-center gap-2 mb-2">
                 <Users className="h-5 w-5 text-blue-600" />

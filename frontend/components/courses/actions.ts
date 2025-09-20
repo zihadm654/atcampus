@@ -64,7 +64,6 @@ export async function createCourse(values: TCourse) {
         userId: user.id,
         facultyId: validatedFields.data.facultyId,
         role: "PROFESSOR",
-        isActive: true,
       },
     });
 
@@ -72,11 +71,15 @@ export async function createCourse(values: TCourse) {
       throw new Error("You must be a professor in the selected faculty to create courses");
     }
 
+    // For professors, ensure the course is created with DRAFT status by default
+    const courseData = {
+      instructorId: user.id,
+      ...validatedFields.data,
+      status: user.role === "PROFESSOR" ? CourseStatus.DRAFT : validatedFields.data.status,
+    };
+
     const course = await prisma.course.create({
-      data: {
-        instructorId: user.id,
-        ...validatedFields.data,
-      },
+      data: courseData,
     });
 
     revalidatePath("/courses");
@@ -167,7 +170,6 @@ export async function submitCourseForApproval(courseId: string) {
         organizationId: course.faculty.school.institutionId,
         facultyId: course.facultyId,
         role: "FACULTY_ADMIN",
-        isActive: true,
       },
     });
 
@@ -244,13 +246,20 @@ export async function updateCourse(values: TCourse, courseId: string) {
       throw new Error("Course not found or you don't have permission to edit it");
     }
 
+    // For professors, ensure they can't change the status to published or approved directly
+    const updateData = {
+      ...validatedFields.data,
+      status: user.role === "PROFESSOR" &&
+        (validatedFields.data.status === CourseStatus.PUBLISHED ||
+          validatedFields.data.status === CourseStatus.APPROVED)
+        ? existingCourse.status : validatedFields.data.status,
+    };
+
     const course = await prisma.course.update({
       where: {
         id: courseId
       },
-      data: {
-        ...validatedFields.data,
-      },
+      data: updateData,
     });
 
     revalidatePath("/courses");

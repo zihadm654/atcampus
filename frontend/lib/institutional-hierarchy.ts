@@ -1,5 +1,5 @@
 import { prisma } from '@/lib/db';
-import { MemberRole, UserRole } from '@prisma/client';
+import { UserRole } from '@prisma/client';
 
 // ============================================================================
 // TYPES
@@ -45,8 +45,7 @@ export interface FacultyAssignment {
   userId: string;
   organizationId: string;
   facultyId: string;
-  role: MemberRole;
-  isActive: boolean;
+  role: string;
 }
 
 // ============================================================================
@@ -270,17 +269,16 @@ export async function validateInstitutionalAccess(
       },
     });
 
-    if (!member || !member.isActive) {
+    if (!member) {
       return false;
     }
 
     // Check if user has institutional role
     const hasInstitutionalRole =
       member.user.role === UserRole.INSTITUTION ||
-      member.role === MemberRole.ORGANIZATION_ADMIN ||
-      member.role === MemberRole.SCHOOL_ADMIN ||
-      member.role === MemberRole.FACULTY_ADMIN ||
-      member.role === MemberRole.SUPER_ADMIN;
+      member.role === "admin" ||
+      member.role === "owner" ||
+      member.role === "member"
 
     // Check if user account is active
     const isUserActive = member.user.status === 'ACTIVE';
@@ -327,7 +325,7 @@ export async function validateSchoolManagementAccess(
       },
     });
 
-    if (!member || !member.isActive || member.user.status !== 'ACTIVE') {
+    if (!member || member.user.status !== 'ACTIVE') {
       return false;
     }
 
@@ -335,9 +333,9 @@ export async function validateSchoolManagementAccess(
     // School admin can manage their specific school (would need additional logic for specific school assignment)
     return (
       member.user.role === UserRole.INSTITUTION ||
-      member.role === MemberRole.ORGANIZATION_ADMIN ||
-      member.role === MemberRole.SCHOOL_ADMIN ||
-      member.role === MemberRole.SUPER_ADMIN
+      member.role === "owner" ||
+      member.role === "admin" ||
+      member.role === "member"
     );
   } catch (error) {
     console.error('Error validating school management access:', error);
@@ -384,20 +382,19 @@ export async function validateFacultyManagementAccess(
       },
     });
 
-    if (!member || !member.isActive || member.user.status !== 'ACTIVE') {
+    if (!member || member.user.status !== 'ACTIVE') {
       return false;
     }
 
     // Check if user has faculty management permissions
     const canManageFaculty =
       member.user.role === UserRole.INSTITUTION ||
-      member.role === MemberRole.ORGANIZATION_ADMIN ||
-      member.role === MemberRole.SCHOOL_ADMIN ||
-      member.role === MemberRole.FACULTY_ADMIN ||
-      member.role === MemberRole.SUPER_ADMIN;
+      member.role === "owner" ||
+      member.role === "admin" ||
+      member.role === "member";
 
     // Additional check: if user is faculty admin, they should be assigned to this faculty
-    if (member.role === MemberRole.FACULTY_ADMIN) {
+    if (member.role === "admin") {
       return member.facultyId === facultyId;
     }
 
@@ -425,8 +422,7 @@ export async function verifyProfessorFacultyAssignment(
       where: {
         userId,
         facultyId,
-        role: MemberRole.PROFESSOR,
-        isActive: true,
+        role: "member",
       },
       include: {
         user: {
@@ -455,8 +451,7 @@ export async function getProfessorFacultyAssignments(
     const assignments = await prisma.member.findMany({
       where: {
         userId,
-        role: MemberRole.PROFESSOR,
-        isActive: true,
+        role: "member",
       },
       include: {
         faculty: {
@@ -482,8 +477,7 @@ export async function getProfessorFacultyAssignments(
       userId: assignment.userId,
       organizationId: assignment.organizationId,
       facultyId: assignment.facultyId!,
-      role: assignment.role as MemberRole, // Cast string to MemberRole enum
-      isActive: assignment.isActive,
+      role: assignment.role, // Cast string to MemberRole enum
     }));
   } catch (error) {
     console.error('Error getting professor faculty assignments:', error);
@@ -505,7 +499,7 @@ export async function canAssignProfessorToFaculty(
       where: {
         userId,
         facultyId,
-        role: MemberRole.PROFESSOR,
+        role: "member",
       },
     });
 

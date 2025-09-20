@@ -97,7 +97,7 @@ export function CreateCourseForm({ user, course }: CreateCourseFormProps) {
     if (user?.role === "PROFESSOR") {
       return [CourseStatus.DRAFT, CourseStatus.UNDER_REVIEW];
     }
-    
+
     // Institution users can set any status
     return Object.values(CourseStatus);
   };
@@ -389,9 +389,9 @@ export function CreateCourseForm({ user, course }: CreateCourseFormProps) {
                 name="estimatedHours"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>estimatedHours (weeks)</FormLabel>
+                    <FormLabel>Estimated Hours (weeks)</FormLabel>
                     <FormControl>
-                      <Input type="number" placeholder="estimatedHours" {...field} />
+                      <Input type="number" placeholder="Estimated Hours" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -446,7 +446,7 @@ export function CreateCourseForm({ user, course }: CreateCourseFormProps) {
                     </Select>
                     {user?.role === "PROFESSOR" && (
                       <p className="text-sm text-muted-foreground">
-                        Professors can save courses as drafts or submit for review. 
+                        Professors can save courses as drafts or submit for review.
                         Institution approval is required before courses can be published.
                       </p>
                     )}
@@ -468,14 +468,14 @@ export function CreateCourseForm({ user, course }: CreateCourseFormProps) {
                   >
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue 
+                        <SelectValue
                           placeholder={
-                            isLoadingFaculties 
-                              ? "Loading faculties..." 
-                              : facultiesError 
-                                ? "Error loading faculties" 
+                            isLoadingFaculties
+                              ? "Loading faculties..."
+                              : facultiesError
+                                ? "Error loading faculties"
                                 : "Select a faculty"
-                          } 
+                          }
                         />
                       </SelectTrigger>
                     </FormControl>

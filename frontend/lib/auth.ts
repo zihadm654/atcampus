@@ -26,13 +26,27 @@ import transporter from "./nodemailer";
 import { getActiveOrganization } from "@/actions/organizations";
 import VerifyEmail from "@/emails/verify-email";
 
+// Define our custom user properties with proper TypeScript types
+interface CustomUserProperties {
+  role: "STUDENT" | "PROFESSOR" | "INSTITUTION" | "ORGANIZATION" | "ADMIN";
+  status: "PENDING" | "ACTIVE" | "REJECTED" | "SUSPENDED";
+  username?: string;
+  institution?: string;
+  instituteId?: string;
+  phone?: string;
+}
+
+// Extended user type that combines better-auth User with our custom properties
+export type ExtendedUser = User & CustomUserProperties;
+
 const options = {
   database: prismaAdapter(prisma, {
     provider: "mongodb",
   }),
+  baseURL: env.NEXT_PUBLIC_APP_URL,
   emailVerification: {
-    sendOnSignUp: false,
-    expiresIn: 60 * 60,
+    sendOnSignUp: true,
+    expiresIn: 60 * 60 * 24, // 24 hours
     autoSignInAfterVerification: true,
     sendVerificationEmail: async ({ user, url }) => {
       const link = new URL(url);
@@ -77,28 +91,32 @@ const options = {
         const email = String(ctx.body.email);
         const domain = email.split("@")[1].toLowerCase();
 
+        // Validate email domain
         if (!VALID_DOMAINS().includes(domain)) {
           throw new APIError("BAD_REQUEST", {
-            message: "Invalid domain. Please use a valid email.",
+            message: "Invalid domain. Please use a valid institutional email.",
           });
         }
 
+        // Normalize user name
         const name = normalizeName(ctx.body.name);
-        const selectedRole = ctx.body.role;
 
         // Validate and normalize the role
         const validRoles = ["STUDENT", "PROFESSOR", "INSTITUTION", "ORGANIZATION", "ADMIN"];
         let role = "STUDENT"; // Default fallback
 
-        if (selectedRole && validRoles.includes(String(selectedRole).toUpperCase())) {
-          role = String(selectedRole).toUpperCase();
+        if (ctx.body.role && validRoles.includes(String(ctx.body.role).toUpperCase())) {
+          role = String(ctx.body.role).toUpperCase() as CustomUserProperties["role"];
         }
 
         // Determine status based on role
-        let status = "ACTIVE";
-        if (role === "INSTITUTION" || role === "ORGANIZATION") {
-          status = "PENDING";
+        let status: CustomUserProperties["status"] = "PENDING";
+        if (role === "ADMIN") {
+          status = "ACTIVE"; // Admins are automatically active
+        } else if (role === "STUDENT" || role === "PROFESSOR") {
+          status = "ACTIVE"; // Students and professors are automatically active
         }
+        // INSTITUTION and ORGANIZATION remain PENDING for approval
 
         return {
           context: {
@@ -115,7 +133,6 @@ const options = {
 
       if (ctx.path === "/sign-in/magic-link") {
         const name = normalizeName(ctx.body.name);
-
         return {
           context: { ...ctx, body: { ...ctx.body, name } },
         };
@@ -123,17 +140,18 @@ const options = {
 
       if (ctx.path === "/update-user") {
         const name = normalizeName(ctx.body.name);
-
         return {
           context: { ...ctx, body: { ...ctx.body, name } },
         };
       }
+
+      return ctx;
     }),
   },
   databaseHooks: {
     user: {
       create: {
-        before: async (user: ExtendedUser) => {
+        before: async (user: any) => {
           // Log the incoming user data for debugging
           console.log("Database hook received user:", {
             email: user.email,
@@ -148,14 +166,14 @@ const options = {
           let finalStatus = user.status || "PENDING";
 
           // Ensure role is a valid enum value
-          const validRoles = ["STUDENT", "PROFESSOR", "INSTITUTION", "ORGANIZATION", "ADMIN"];
+          const validRoles: string[] = ["STUDENT", "PROFESSOR", "INSTITUTION", "ORGANIZATION", "ADMIN"];
           if (!validRoles.includes(finalRole)) {
             console.log("Invalid role detected, defaulting to STUDENT:", finalRole);
             finalRole = "STUDENT";
           }
 
           // Ensure status is a valid enum value
-          const validStatuses = ["PENDING", "ACTIVE", "REJECTED", "SUSPENDED"];
+          const validStatuses: string[] = ["PENDING", "ACTIVE", "REJECTED", "SUSPENDED"];
           if (!validStatuses.includes(finalStatus)) {
             finalStatus = "PENDING";
           }
@@ -224,7 +242,7 @@ const options = {
       },
       status: {
         type: ["PENDING", "ACTIVE", "REJECTED", "SUSPENDED"],
-        input: false,
+        input: false, // Status is managed by the system, not user input
         required: true
       },
       phone: {
@@ -235,17 +253,16 @@ const options = {
     },
   },
   session: {
-    expiresIn: 60 * 60 * 24 * 7,
-    updateAge: 60 * 60 * 24,
+    expiresIn: 60 * 60 * 24 * 7, // 7 days
+    updateAge: 60 * 60 * 24, // Update session if older than 24 hours
     cookieCache: {
       enabled: true,
-      maxAge: 5 * 60,
+      maxAge: 5 * 60, // 5 minutes
     },
   },
   account: {
     accountLinking: {
-      enabled: false,
-      trustedProviders: ["google", "github", "demo-app"],
+      trustedProviders: ["google", "github"],
     },
   },
   advanced: {
@@ -269,49 +286,108 @@ const options = {
     }),
     organization({
       allowUserToCreateOrganization: async (user: ExtendedUser) => {
-        const institution = user.role === "INSTITUTION";
-        return institution;
+        // Only institutions and organizations can create organizations
+        return user.role === "INSTITUTION" || user.role === "ORGANIZATION";
       },
-      // Configure organization schema mapping
-      schema: {
-        organization: {
-          modelName: "Organization",
-          fields: {
-            name: "name",
-            slug: "slug",
-            logo: "logo",
-            createdAt: "createdAt",
-          },
+      organizationHooks: {
+        // Before creating an invitation
+        beforeCreateInvitation: async ({
+          invitation,
+          inviter,
+          organization,
+        }) => {
+          // Custom validation or expiration logic
+          const customExpiration = new Date(
+            Date.now() + 1000 * 60 * 60 * 24 * 7
+          ); // 7 days
+
+          return {
+            data: {
+              ...invitation,
+              expiresAt: customExpiration,
+            },
+          };
         },
-        member: {
-          modelName: "Member",
-          fields: {
-            userId: "userId",
-            organizationId: "organizationId",
-            role: "role",
-            createdAt: "createdAt",
-          },
+
+        // After creating an invitation
+        afterCreateInvitation: async ({
+          invitation,
+          inviter,
+          organization,
+        }: any) => {
+          // Send custom invitation email
+          try {
+            await transporter.sendMail({
+              to: invitation.email,
+              subject: `You've been invited to join ${organization.name}`,
+              html: await render(
+                reactInvitationEmail({
+                  username: invitation.email,
+                  invitedByUsername: inviter.name || inviter.email,
+                  invitedByEmail: inviter.email,
+                  teamName: organization.name,
+                  inviteLink:
+                    process.env.NODE_ENV === "development"
+                      ? `http://localhost:3000/accept-invitation/${invitation.id}`
+                      : `${process.env.NEXT_PUBLIC_APP_URL}/accept-invitation/${invitation.id}`,
+                }),
+              ),
+            });
+          } catch (error) {
+            console.error("Error sending invitation email:", error);
+          }
         },
-        invitation: {
-          modelName: "Invitation",
-          fields: {
-            email: "email",
-            organizationId: "organizationId",
-            inviterId: "inviterId",
-            role: "role",
-            status: "status",
-            expiresAt: "expiresAt",
-          },
+
+        // Before accepting an invitation
+        beforeAcceptInvitation: async ({ invitation, user, organization }: any) => {
+          // Check if invitation is still valid
+          if (invitation.expiresAt < new Date()) {
+            throw new APIError("BAD_REQUEST", {
+              message: "Invitation has expired",
+            });
+          }
+
+          if (invitation.status !== "pending") {
+            throw new APIError("BAD_REQUEST", {
+              message: "Invitation is no longer valid",
+            });
+          }
+
+          return {
+            data: {
+              invitation,
+              user,
+              organization
+            }
+          };
+        },
+
+        // After accepting an invitation
+        afterAcceptInvitation: async ({
+          invitation,
+          member,
+          user,
+          organization,
+        }: any) => {
+          // Update invitation status
+          // Fix: only update if invitation exists
+          if (invitation && invitation.id) {
+            try {
+              await prisma.invitation.update({
+                where: { id: invitation.id },
+                data: { status: "accepted" }
+              });
+            } catch (error) {
+              console.error("Error updating invitation:", error);
+            }
+          }
         },
       },
       // Configure invitation settings
       invitation: {
-        // Enable invitation expiration
         expiresIn: 7 * 24 * 60 * 60, // 7 days in seconds
-        // Allow organization members to send invitations
-        requireAdmin: false,
-        // Enable invitation metadata support
-        allowCustomMetadata: true,
+        requireAdmin: false, // Allow organization members to send invitations
+        allowCustomMetadata: true, // Enable invitation metadata support
       },
 
       // Enable multi-organization support
@@ -320,14 +396,16 @@ const options = {
       teams: {
         enabled: true,
       },
-      async sendInvitationEmail(data) {
+      async sendInvitationEmail(data: any) {
+        // This is now handled in afterCreateInvitation hook for more control
+        // Keeping this as fallback
         await transporter.sendMail({
           to: data.email,
           subject: "You've been invited to join an organization",
           html: await render(
             reactInvitationEmail({
               username: data.email,
-              invitedByUsername: data.inviter.user.name,
+              invitedByUsername: data.inviter.user.name || data.inviter.user.email,
               invitedByEmail: data.inviter.user.email,
               teamName: data.organization.name,
               inviteLink:
@@ -347,14 +425,14 @@ const options = {
         async sendOTP({ user, otp }) {
           await transporter.sendMail({
             to: user.email,
-            subject: "Your OTP",
-            html: `Your OTP is ${otp}`,
+            subject: "Your Two-Factor Authentication Code",
+            html: `Your verification code is: ${otp}`,
           });
         },
       },
     }),
     magicLink({
-      sendMagicLink: async ({ email, url }) => {
+      sendMagicLink: async ({ email, url }: { email: string; url: string }) => {
         await sendEmailAction({
           to: email,
           subject: "Magic Link Login",
@@ -375,12 +453,15 @@ export const auth = betterAuth({
     customSession(async ({ user, session }) => {
       return {
         session: {
+          ...session,
+          ipAddress: session.ipAddress,
           expiresAt: session.expiresAt,
           token: session.token,
           userAgent: session.userAgent,
           impersonatedBy: session.impersonatedBy,
         },
         user: {
+          ...user,
           id: user.id,
           username: user.username,
           displayUsername: user.displayUsername,
@@ -403,16 +484,3 @@ export const auth = betterAuth({
 });
 
 export type ErrorCode = keyof typeof auth.$ERROR_CODES | "UNKNOWN";
-
-// Define our custom user properties
-interface CustomUserProperties {
-  role: "STUDENT" | "PROFESSOR" | "INSTITUTION" | "ORGANIZATION" | "ADMIN";
-  status: "PENDING" | "ACTIVE" | "REJECTED" | "SUSPENDED";
-  username?: string;
-  institution?: string;
-  instituteId?: string;
-  phone?: string;
-}
-
-// Extended user type that combines better-auth User with our custom properties
-type ExtendedUser = User & CustomUserProperties;

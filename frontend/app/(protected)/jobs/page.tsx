@@ -7,9 +7,6 @@ import JobFeed from "@/components/feed/JobFeed";
 import { cache } from "react";
 import { prisma } from "@/lib/db";
 import { getJobDataInclude } from "@/types/types";
-import { Icons } from "@/components/shared/icons";
-import { Button } from "@/components/ui/button";
-import Job from "@/components/jobs/Job";
 
 export const metadata: Metadata = constructMetadata({
   title: "Supplement Jobs - AtCampus",

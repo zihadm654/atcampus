@@ -32,7 +32,6 @@ import LoadingButton from "@/components/feed/LoadingButton";
 import CropImageDialog from "@/components/shared/CropImageDialog";
 import { Icons } from "@/components/shared/icons";
 
-import { createFaculty, deleteFaculty, updateFaculty } from "./schoolActions"; // Import faculty actions
 import {
   useCreateFacultyMutation,
   useCreateSchoolMutation,

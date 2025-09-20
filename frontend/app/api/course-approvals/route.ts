@@ -21,11 +21,19 @@ export async function GET(req: NextRequest) {
             status: url.searchParams.get("status") || "PENDING",
             level: url.searchParams.get("level"),
             priority: url.searchParams.get("priority"),
-            page: url.searchParams.get("page") || 1,
-            limit: url.searchParams.get("limit") || 10,
+            page: url.searchParams.get("page") || "1",
+            limit: url.searchParams.get("limit") || "10",
         };
 
-        const validatedQuery = courseApprovalQuerySchema.parse(queryParams);
+        // Parse numeric values
+        const parsedParams = {
+            ...queryParams,
+            level: queryParams.level ? parseInt(queryParams.level, 10) : undefined,
+            page: parseInt(queryParams.page, 10),
+            limit: parseInt(queryParams.limit, 10),
+        };
+
+        const validatedQuery = courseApprovalQuerySchema.parse(parsedParams);
 
         // Determine user's review capabilities based on role and memberships
         let reviewCapability: string[] = [];
@@ -45,16 +53,15 @@ export async function GET(req: NextRequest) {
                 faculty: {
                     include: {
                         school: true,
+                        courses: true
                     },
                 },
             },
         });
 
         memberRoles.forEach(member => {
-            if (member.role === "FACULTY_ADMIN") {
+            if (member.role === "admin" || member.role === "owner") {
                 reviewCapability.push("FACULTY_ADMIN");
-            }
-            if (member.role === "SCHOOL_ADMIN") {
                 reviewCapability.push("SCHOOL_ADMIN");
             }
         });
@@ -157,12 +164,12 @@ export async function GET(req: NextRequest) {
             if (!userMember) return false;
 
             // Faculty admin can review level 1 approvals in their faculty
-            if (approval.level === 1 && userMember.role === "FACULTY_ADMIN") {
+            if (approval.level === 1 && (userMember.role === "admin" || userMember.role === "owner")) {
                 return userMember.facultyId === course.facultyId;
             }
 
             // School admin can review level 2 approvals in their school
-            if (approval.level === 2 && userMember.role === "SCHOOL_ADMIN") {
+            if (approval.level === 2 && (userMember.role === "admin" || userMember.role === "owner")) {
                 return userMember.faculty?.schoolId === course.faculty.schoolId;
             }
 
@@ -261,13 +268,12 @@ export async function POST(req: NextRequest) {
             );
         }
 
-        // Find a faculty admin to assign the review to
+        // Find a faculty admin to assign the review to (member with role admin or owner)
         const facultyAdmin = await prisma.member.findFirst({
             where: {
                 organizationId: course.faculty.school.institutionId,
                 facultyId: course.facultyId,
-                role: "FACULTY_ADMIN",
-                isActive: true,
+                role: { in: ["admin", "owner"] },
             },
         });
 

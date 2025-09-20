@@ -2,7 +2,7 @@
 
 import { APIError } from "better-auth/api";
 
-import { auth, type ErrorCode } from "@/lib/auth";
+import { auth, type ErrorCode, type ExtendedUser } from "@/lib/auth";
 import streamServerClient from "@/lib/stream";
 import { generateUsername } from "@/lib/utils";
 import { registerSchema, type TRegister } from "@/lib/validations/auth";
@@ -18,9 +18,6 @@ export async function signUpEmailAction(data: TRegister) {
   const { name, email, password, institution, phone, role, instituteId } =
     result.data;
   const generatedUsername = generateUsername(name);
-
-  // Status is now handled by auth.ts database hooks based on role
-  // No need to set it here - keeping the logic centralized
 
   // Add logging for debugging purposes
   console.log("Registration data being sent:", {
@@ -40,10 +37,10 @@ export async function signUpEmailAction(data: TRegister) {
         username: generatedUsername,
         email,
         password,
-        role: role, // Ensure role is explicitly passed
-        phone: phone ?? "",
-        institution: institution ?? "",
-        instituteId: instituteId ?? "",
+        role: role as ExtendedUser["role"], // Ensure role is explicitly passed with correct type
+        phone: phone ?? undefined,
+        institution: institution ?? undefined,
+        instituteId: instituteId ?? undefined,
         callbackURL: "/dashboard"
       },
     });
@@ -67,12 +64,15 @@ export async function signUpEmailAction(data: TRegister) {
 
       switch (errCode) {
         case "USER_ALREADY_EXISTS":
-          return { error: "Oops! Something went wrong. Please try again." };
+          return { error: "A user with this email already exists. Please try logging in instead." };
+        case "INVALID_EMAIL":
+          return { error: "Please provide a valid institutional email address." };
         default:
           return { error: err.message };
       }
     }
 
-    return { error: "Internal Server Error" };
+    console.error("Registration error:", err);
+    return { error: "Internal Server Error. Please try again later." };
   }
 }

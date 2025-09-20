@@ -13,18 +13,22 @@ export default async function Dashboard({ children }: ProtectedLayoutProps) {
   const user = await getCurrentUser();
 
   if (!user) {
+    // Redirect to login, preserving the current path as the destination
+    const loginUrl = new URL("/login", process.env.NEXT_PUBLIC_APP_URL);
+    // In server components, we can't access the current path directly
+    // The middleware should handle this redirect with the 'from' parameter
     redirect("/login");
   }
 
   // Server-side role and status validation
   // This is more reliable and performant than API calls
-  // if ((user.role === "ORGANIZATION" || user.role === "INSTITUTION") && user.status !== "ACTIVE") {
-  //   if (user.status === "PENDING") {
-  //     redirect("/pending-approval");
-  //   } else if (user.status === "REJECTED") {
-  //     redirect("/rejected-account");
-  //   }
-  // }
+  if ((user.role === "ORGANIZATION" || user.role === "INSTITUTION") && user.status !== "ACTIVE") {
+    if (user.status === "PENDING") {
+      redirect("/pending-approval");
+    } else if (user.status === "REJECTED") {
+      redirect("/rejected-account");
+    }
+  }
 
   // Filter navigation based on user role
   const filteredLinks = menubar.map((section) => ({

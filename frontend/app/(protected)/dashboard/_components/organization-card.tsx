@@ -47,6 +47,7 @@ import {
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -55,15 +56,46 @@ import {
 import { AvatarInput } from "@/app/(profile)/[username]/_components/EditProfileDialog";
 import { motion, AnimatePresence } from "framer-motion";
 
+// Add this interface for Faculty
+interface Faculty {
+  id: string;
+  name: string;
+  slug: string;
+  description?: string | null;
+}
+
+// Extended Member type to include faculty information
+interface ExtendedMember {
+  id: string;
+  userId: string;
+  organizationId: string;
+  role: "member" | "admin" | "owner";
+  createdAt: Date;
+  facultyId?: string | null;
+  faculty?: Faculty | null;
+  user: {
+    email: string;
+    name: string;
+    image?: string;
+  };
+}
+
+// Extended ActiveOrganization type with proper member typing
+interface ExtendedActiveOrganization extends Omit<ActiveOrganization, 'members'> {
+  members: ExtendedMember[];
+}
+
 export function OrganizationCard(props: {
   session: Session | null;
   activeOrganization: ActiveOrganization | null;
 }) {
   const organizations = useListOrganizations();
-  const [optimisticOrg, setOptimisticOrg] = useState<ActiveOrganization | null>(
-    props.activeOrganization
+  const [optimisticOrg, setOptimisticOrg] = useState<ExtendedActiveOrganization | null>(
+    props.activeOrganization ? { ...props.activeOrganization, members: props.activeOrganization.members as ExtendedMember[] } : null
   );
   const [isRevoking, setIsRevoking] = useState<string[]>([]);
+  const [faculties, setFaculties] = useState<Faculty[]>([]);
+  const [loadingFaculties, setLoadingFaculties] = useState(false);
   const inviteVariants = {
     hidden: { opacity: 0, height: 0 },
     visible: { opacity: 1, height: "auto" },
@@ -76,6 +108,61 @@ export function OrganizationCard(props: {
   const currentMember = optimisticOrg?.members.find(
     (member) => member.userId === session?.user.id
   );
+
+  // Fetch faculties when organization changes
+  useEffect(() => {
+    if (optimisticOrg?.id) {
+      fetchFaculties(optimisticOrg.id);
+    }
+  }, [optimisticOrg?.id]);
+
+  const fetchFaculties = async (organizationId: string) => {
+    setLoadingFaculties(true);
+    try {
+      const response = await fetch(`/api/faculties?organizationId=${organizationId}`);
+      if (response.ok) {
+        const data = await response.json();
+        setFaculties(data);
+      }
+    } catch (error) {
+      console.error("Error fetching faculties:", error);
+      toast.error("Failed to load faculties");
+    } finally {
+      setLoadingFaculties(false);
+    }
+  };
+
+  // Function to assign faculty to member
+  const assignFacultyToMember = async (memberId: string, facultyId: string | null) => {
+    try {
+      const response = await fetch(`/api/members/${memberId}/faculty`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ facultyId }),
+      });
+
+      if (response.ok) {
+        const updatedMember: ExtendedMember = await response.json();
+        // Update the optimistic org with the new member data
+        if (optimisticOrg) {
+          setOptimisticOrg({
+            ...optimisticOrg,
+            members: optimisticOrg.members.map((member) =>
+              member.id === memberId ? updatedMember : member
+            ),
+          });
+        }
+        toast.success("Faculty assigned successfully");
+      } else {
+        toast.error("Failed to assign faculty");
+      }
+    } catch (error) {
+      console.error("Error assigning faculty:", error);
+      toast.error("Failed to assign faculty");
+    }
+  };
 
   return (
     <Card>
@@ -117,11 +204,13 @@ export function OrganizationCard(props: {
                       members: [],
                       invitations: [],
                       ...org,
-                    });
+                    } as ExtendedActiveOrganization);
                     const { data } = await organization.setActive({
                       organizationId: org.id,
                     });
-                    setOptimisticOrg(data);
+                    if (data) {
+                      setOptimisticOrg({ ...data, members: data.members as ExtendedMember[], id: data.id || '' });
+                    }
                   }}
                 >
                   <p className="sm text-sm">{org.name}</p>
@@ -178,23 +267,54 @@ export function OrganizationCard(props: {
                       <p className="text-muted-foreground text-xs">
                         {member.role}
                       </p>
+                      {member.faculty && (
+                        <p className="text-muted-foreground text-xs">
+                          Faculty: {member.faculty.name}
+                        </p>
+                      )}
                     </div>
                   </div>
-                  {member.role !== "owner" &&
-                    (currentMember?.role === "owner" ||
-                      currentMember?.role === "admin") && (
-                      <Button
-                        onClick={() => {
-                          organization.removeMember({
-                            memberIdOrEmail: member.id,
-                          });
-                        }}
-                        size="sm"
-                        variant="destructive"
-                      >
-                        {currentMember?.id === member.id ? "Leave" : "Remove"}
-                      </Button>
-                    )}
+                  <div className="flex items-center gap-2">
+                    {(currentMember?.role === "owner" ||
+                      currentMember?.role === "admin") && member.role === "member" && (
+                        <Select
+                          value={member.facultyId || ""}
+                          onValueChange={(value) =>
+                            assignFacultyToMember(
+                              member.id,
+                              value === "none" ? null : value
+                            )
+                          }
+                        >
+                          <SelectTrigger className="w-[120px]">
+                            <SelectValue placeholder="Assign Faculty" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="none">None</SelectItem>
+                            {faculties.map((faculty) => (
+                              <SelectItem key={faculty.id} value={faculty.id}>
+                                {faculty.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
+                    {member.role !== "owner" &&
+                      (currentMember?.role === "owner" ||
+                        currentMember?.role === "admin") && (
+                        <Button
+                          onClick={() => {
+                            organization.removeMember({
+                              memberIdOrEmail: member.id,
+                            });
+                          }}
+                          size="sm"
+                          variant="destructive"
+                        >
+                          {currentMember?.id === member.id ? "Leave" : "Remove"}
+                        </Button>
+                      )}
+                  </div>
                 </div>
               ))}
               {!optimisticOrg?.id && (
@@ -260,13 +380,15 @@ export function OrganizationCard(props: {
                                       (id) => id !== invitation.id
                                     )
                                   );
-                                  setOptimisticOrg({
-                                    ...optimisticOrg,
-                                    invitations:
-                                      optimisticOrg?.invitations.filter(
-                                        (inv) => inv.id !== invitation.id
-                                      ),
-                                  });
+                                  if (optimisticOrg) {
+                                    setOptimisticOrg({
+                                      ...optimisticOrg,
+                                      invitations:
+                                        optimisticOrg.invitations.filter(
+                                          (inv) => inv.id !== invitation.id
+                                        ),
+                                    });
+                                  }
                                 },
                                 onError: (ctx) => {
                                   toast.error(ctx.error.message);
@@ -322,11 +444,11 @@ export function OrganizationCard(props: {
                 <>
                   {(currentMember?.role === "owner" ||
                     currentMember?.role === "admin") && (
-                    <InviteMemberDialog
-                      optimisticOrg={optimisticOrg}
-                      setOptimisticOrg={setOptimisticOrg}
-                    />
-                  )}
+                      <InviteMemberDialog
+                        optimisticOrg={optimisticOrg as unknown as ActiveOrganization}
+                        setOptimisticOrg={(org) => setOptimisticOrg(org as ExtendedActiveOrganization)}
+                      />
+                    )}
                 </>
               )}
             </div>
@@ -461,7 +583,6 @@ function CreateOrganizationDialog({ currentMember }) {
     </Dialog>
   );
 }
-
 function InviteMemberDialog({
   setOptimisticOrg,
   optimisticOrg,
@@ -470,355 +591,77 @@ function InviteMemberDialog({
   optimisticOrg: ActiveOrganization | null;
 }) {
   const [open, setOpen] = useState(false);
+  const [email, setEmail] = useState("");
+  const [role, setRole] = useState("member");
   const [loading, setLoading] = useState(false);
-
-  const form = useForm<InvitationFormData>({
-    resolver: zodResolver(invitationSchema),
-    defaultValues: {
-      email: "",
-      role: "member",
-      firstName: "",
-      lastName: "",
-      facultyId: "",
-      schoolId: "",
-      title: "",
-      department: "",
-      message: "",
-      contractType: "Full-time",
-      proposedTitle: "",
-      startDate: "",
-    },
-  });
-
-  const watchRole = form.watch("role");
-
-  // Fetch faculties for the current organization when inviting professors
-  const { data: faculties, isLoading: facultiesLoading } = useQuery({
-    queryKey: ["faculties", optimisticOrg?.id],
-    queryFn: async () => {
-      const response = await fetch("/api/faculties");
-      if (!response.ok) {
-        throw new Error("Failed to fetch faculties");
-      }
-      return response.json();
-    },
-    enabled: !!optimisticOrg?.id && open && watchRole === "professor",
-  });
-
-  const onSubmit = async (values: InvitationFormData) => {
-    try {
-      setLoading(true);
-
-      // Prepare metadata based on invitation type
-      const metadata: Record<string, any> = {};
-
-      if (values.firstName) metadata.firstName = values.firstName;
-      if (values.lastName) metadata.lastName = values.lastName;
-      if (values.message) metadata.message = values.message;
-
-      // Professor-specific metadata
-      if (watchRole === "professor") {
-        if (values.facultyId) metadata.facultyId = values.facultyId;
-        if (values.schoolId) metadata.schoolId = values.schoolId;
-        if (values.title) metadata.title = values.title;
-        if (values.department) metadata.department = values.department;
-        if (values.contractType) metadata.contractType = values.contractType;
-        if (values.proposedTitle) metadata.proposedTitle = values.proposedTitle;
-        if (values.startDate) metadata.startDate = values.startDate;
-
-        // Set invitation type for professors
-        metadata.type = "PROFESSOR_APPOINTMENT";
-      } else {
-        // Regular member invitation
-        metadata.type = "ORGANIZATION_MEMBER";
-      }
-
-      // Use better-auth organization inviteMember method
-      const invitation = await organization.inviteMember({
-        email: values.email,
-        role:
-          watchRole === "professor"
-            ? "member"
-            : (watchRole as "member" | "admin"),
-        organizationId: optimisticOrg?.id,
-        fetchOptions: {
-          throw: true,
-          onError: (ctx) => {
-            console.log(ctx.error);
-            toast.error(ctx.error.message);
-          },
-          onSuccess: (ctx) => {
-            if (optimisticOrg) {
-              setOptimisticOrg({
-                ...optimisticOrg,
-                invitations: [...(optimisticOrg?.invitations || []), ctx.data],
-              });
-            }
-          },
-        },
-      });
-
-      toast.promise(Promise.resolve(invitation), {
-        loading: "Inviting member...",
-        success: "Member invited successfully",
-        error: (error) => error.error.message,
-      });
-      setOpen(false);
-      form.reset();
-    } catch (error: any) {
-      toast.error(error.message || "Failed to send invitation");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="w-full gap-2" size="sm" variant="secondary">
+        <Button size="sm" className="w-full gap-2" variant="secondary">
           <MailPlus size={16} />
           <p>Invite Member</p>
         </Button>
       </DialogTrigger>
-      <DialogContent className="w-11/12 sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[425px] w-11/12">
         <DialogHeader>
           <DialogTitle>Invite Member</DialogTitle>
           <DialogDescription>
             Invite a member to your organization.
           </DialogDescription>
         </DialogHeader>
-
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email *</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="email@example.com"
-                      type="email"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="role"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Role *</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a role" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="member">Member</SelectItem>
-                      <SelectItem value="admin">Admin</SelectItem>
-                      <SelectItem value="professor">Professor</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {watchRole === "professor" && (
-              <>
-                <div className="grid grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="firstName"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>First Name</FormLabel>
-                        <FormControl>
-                          <Input placeholder="First name" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="lastName"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Last Name</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Last name" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
-                <FormField
-                  control={form.control}
-                  name="facultyId"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Faculty *</FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        value={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select a faculty" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {facultiesLoading ? (
-                            <SelectItem value="loading" disabled>
-                              Loading faculties...
-                            </SelectItem>
-                          ) : (
-                            faculties?.map((faculty: any) => (
-                              <SelectItem key={faculty.id} value={faculty.id}>
-                                {faculty.name}
-                              </SelectItem>
-                            ))
-                          )}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <div className="grid grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="title"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Academic Title</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Professor" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="department"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Department</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Computer Science" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
-                <FormField
-                  control={form.control}
-                  name="contractType"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Employment Type</FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        value={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select employment type" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="Full-time">Full-time</SelectItem>
-                          <SelectItem value="Part-time">Part-time</SelectItem>
-                          <SelectItem value="Visiting">Visiting</SelectItem>
-                          <SelectItem value="Adjunct">Adjunct</SelectItem>
-                          <SelectItem value="Research">Research</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="message"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Personal Message</FormLabel>
-                      <FormControl>
-                        <Textarea
-                          placeholder="We would like to invite you to join our faculty..."
-                          rows={3}
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </>
-            )}
-
-            <DialogFooter className="flex flex-col sm:flex-row gap-2">
-              <DialogClose asChild>
-                <Button type="button" variant="outline" disabled={loading}>
-                  Cancel
-                </Button>
-              </DialogClose>
-              <Button
-                type="submit"
-                disabled={
-                  loading || (watchRole === "professor" && facultiesLoading)
-                }
-              >
-                {loading ? (
-                  <>
-                    <Loader2 className="animate-spin" size={16} />
-                    Sending...
-                  </>
-                ) : (
-                  "Send Invitation"
-                )}
-              </Button>
-            </DialogFooter>
-          </form>
-        </Form>
+        <div className="flex flex-col gap-2">
+          <Label>Email</Label>
+          <Input
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+          <Label>Role</Label>
+          <Select value={role} onValueChange={setRole}>
+            <SelectTrigger>
+              <SelectValue placeholder="Select a role" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="admin">Admin</SelectItem>
+              <SelectItem value="member">Member</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <DialogFooter>
+          <DialogClose>
+            <Button
+              disabled={loading}
+              onClick={async () => {
+                const invite = organization.inviteMember({
+                  email: email,
+                  role: role as "member",
+                  fetchOptions: {
+                    throw: true,
+                    onSuccess: (ctx) => {
+                      if (optimisticOrg) {
+                        setOptimisticOrg({
+                          ...optimisticOrg,
+                          invitations: [
+                            ...(optimisticOrg?.invitations || []),
+                            ctx.data,
+                          ],
+                        });
+                      }
+                    },
+                  },
+                });
+                toast.promise(invite, {
+                  loading: "Inviting member...",
+                  success: "Member invited successfully",
+                  error: (error) => error.error.message,
+                });
+              }}
+            >
+              Invite
+            </Button>
+          </DialogClose>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );
 }
-
-// Unified invitation schema that supports both member and professor invitations
-const invitationSchema = z.object({
-  email: z.string().email("Invalid email address"),
-  role: z.enum(["member", "admin", "professor"]),
-  firstName: z.string().optional(),
-  lastName: z.string().optional(),
-  facultyId: z.string().optional(),
-  schoolId: z.string().optional(),
-  title: z.string().optional(), // Academic title for professors
-  department: z.string().optional(),
-  message: z.string().optional(),
-  contractType: z
-    .enum(["Full-time", "Part-time", "Visiting", "Adjunct", "Research"])
-    .optional(),
-  proposedTitle: z.string().optional(), // Proposed academic title
-  startDate: z.string().optional(), // Start date for professor appointments
-});
-
-type InvitationFormData = z.infer<typeof invitationSchema>;

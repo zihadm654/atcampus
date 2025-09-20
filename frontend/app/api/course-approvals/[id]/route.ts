@@ -373,13 +373,26 @@ async function findApprover(
     facultyId?: string,
     schoolId?: string
 ): Promise<string | null> {
+    if (level === 1) {
+        // Faculty admin (member with role admin or owner)
+        const facultyAdmin = await tx.member.findFirst({
+            where: {
+                organizationId: institutionId,
+                facultyId: facultyId,
+                role: { in: ["admin", "owner"] },
+                isActive: true,
+            },
+        });
+        return facultyAdmin?.userId || null;
+    }
+
     if (level === 2) {
-        // School admin
+        // School admin (member with role admin or owner)
         const schoolAdmin = await tx.member.findFirst({
             where: {
                 organizationId: institutionId,
                 faculty: { schoolId },
-                role: "SCHOOL_ADMIN",
+                role: { in: ["admin", "owner"] },
                 isActive: true,
             },
         });
@@ -387,11 +400,11 @@ async function findApprover(
     }
 
     if (level === 3) {
-        // Institution admin
+        // Institution admin (member with role admin or owner)
         const institutionAdmin = await tx.member.findFirst({
             where: {
                 organizationId: institutionId,
-                role: "ORGANIZATION_ADMIN",
+                role: { in: ["admin", "owner"] },
                 isActive: true,
             },
         });

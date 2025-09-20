@@ -79,7 +79,7 @@ export interface Member {
   userId: string;
   organizationId: string;
   facultyId?: string;
-  role: MemberRole;
+  role: string;
   title?: string;
   department?: string;
   office?: string;

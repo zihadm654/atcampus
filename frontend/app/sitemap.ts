@@ -66,22 +66,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.5,
     },
     {
-      url: `${env.NEXT_PUBLIC_APP_URL}/admin`,
+      url: `${env.NEXT_PUBLIC_APP_URL}/research`,
       lastModified: new Date(),
       changefreq: "monthly",
       priority: 0.8,
-    },
-    {
-      url: `${env.NEXT_PUBLIC_APP_URL}/admin/products`,
-      lastModified: new Date(),
-      changefreq: "weekly",
-      priority: 0.5,
-    },
-    {
-      url: `${env.NEXT_PUBLIC_APP_URL}/admin/orders`,
-      lastModified: new Date(),
-      changefreq: "weekly",
-      priority: 0.5,
     },
     {
       url: `${env.NEXT_PUBLIC_APP_URL}/posts`,
@@ -90,7 +78,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.8,
     },
     {
-      url: `${env.NEXT_PUBLIC_APP_URL}/dashboard/settings`,
+      url: `${env.NEXT_PUBLIC_APP_URL}/dashboard`,
       lastModified: new Date(),
       changefreq: "yearly",
       priority: 1,

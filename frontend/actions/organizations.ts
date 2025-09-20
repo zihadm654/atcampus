@@ -2,6 +2,8 @@
 
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/session";
+import { createInvitation, acceptInvitation, getPendingInvitations } from "@/lib/organization-invitations";
+import { APIError } from "better-auth/api";
 
 
 export async function getOrganizations() {
@@ -11,23 +13,19 @@ export async function getOrganizations() {
         where: {
             userId: user?.id
         },
+        include: {
+            organization: true,
+        }
     });
 
-    const organizations = await prisma.organization.findMany({
-        where: {
-            id: {
-                in: members.map((member) => member.organizationId)
-            }
-        }
-    },
-    );
-
-    return organizations;
+    return members.map(member => member.organization);
 }
 
 export async function getActiveOrganization(userId: string) {
     const memberUser = await prisma.member.findFirst({
-        where: { id: userId },
+        where: {
+            userId: userId,
+        },
     });
 
     if (!memberUser) {
@@ -58,5 +56,80 @@ export async function getOrganizationBySlug(slug: string) {
     } catch (error) {
         console.error(error);
         return null;
+    }
+}
+
+/**
+ * Server action to create an invitation
+ */
+export async function inviteMember(organizationId: string, email: string, role: string = "member") {
+    try {
+        const user = await getCurrentUser();
+
+        if (!user) {
+            throw new APIError("UNAUTHORIZED", {
+                message: "You must be logged in to invite members",
+            });
+        }
+
+        const invitation = await createInvitation(organizationId, user.id, email, role);
+
+        return { success: true, invitation };
+    } catch (error) {
+        if (error instanceof APIError) {
+            return { success: false, error: error.message };
+        }
+        console.error("Error inviting member:", error);
+        return { success: false, error: "Failed to invite member" };
+    }
+}
+
+/**
+ * Server action to accept an invitation
+ */
+export async function acceptOrganizationInvitation(invitationId: string) {
+    try {
+        const user = await getCurrentUser();
+
+        if (!user) {
+            throw new APIError("UNAUTHORIZED", {
+                message: "You must be logged in to accept invitations",
+            });
+        }
+
+        const result = await acceptInvitation(invitationId, user.id);
+
+        return { success: true, result };
+    } catch (error) {
+        if (error instanceof APIError) {
+            return { success: false, error: error.message };
+        }
+        console.error("Error accepting invitation:", error);
+        return { success: false, error: "Failed to accept invitation" };
+    }
+}
+
+/**
+ * Server action to get pending invitations for current user
+ */
+export async function fetchPendingInvitations() {
+    try {
+        const user = await getCurrentUser();
+
+        if (!user) {
+            throw new APIError("UNAUTHORIZED", {
+                message: "You must be logged in to view invitations",
+            });
+        }
+
+        const invitations = await getPendingInvitations(user.email);
+
+        return { success: true, invitations };
+    } catch (error) {
+        if (error instanceof APIError) {
+            return { success: false, error: error.message };
+        }
+        console.error("Error fetching invitations:", error);
+        return { success: false, error: "Failed to fetch invitations" };
     }
 }

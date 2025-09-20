@@ -211,12 +211,59 @@ export async function getProfileData(username: string, loggedInUserId: string) {
         mode: "insensitive",
       },
     },
-    select: getUserDataSelect(loggedInUserId),
-  });
-
-  return user;
+    select: {
+      ...getUserDataSelect(loggedInUserId),
+      members: true,
+      userSkills: {
+        include: {
+          skill: {
+            select: {
+              name: true,
+              category: true,
+            },
+          },
+          _count: {
+            select: {
+              endorsements: true,
+            },
+          },
+        },
+        take: 10, // Limit for performance
+      },
+      schools: {
+        include: {
+          faculties: {
+            include: {
+              courses: {
+                include: {
+                  instructor: true,
+                  _count: {
+                    select: {
+                      enrollments: true,
+                    },
+                  },
+                },
+                take: 5, // Limit courses per faculty for initial load
+              },
+              _count: {
+                select: {
+                  courses: true,
+                  members: true,
+                },
+              },
+            },
+          },
+        },
+      },
+      events: true,
+      clubs: true,
+    }
+  })
+  return user
 }
-
+// export type UserProfileData = Prisma.UserGetPayload<{
+//   select: ReturnType<typeOf getProfileData >;
+// }>;
 export async function getAcademicStructure(organizationId: string) {
   const organization = await prisma.organization.findUnique({
     where: { id: organizationId },
