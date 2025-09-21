@@ -163,7 +163,7 @@ export function FacultyCard({
               <Users className="h-4 w-4" />
               Recent Members
             </h4>
-            <div className="flex items-center">
+            <div className="flex items-center space-x-2">
               {faculty.members.slice(0, 5).map((member) => (
                 <Avatar
                   key={member.id}

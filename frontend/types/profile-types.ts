@@ -102,17 +102,6 @@ export interface Member {
   };
 }
 
-export enum MemberRole {
-  MEMBER = "MEMBER",
-  ADMIN = "ADMIN",
-  PROFESSOR = "PROFESSOR",
-  FACULTY_ADMIN = "FACULTY_ADMIN",
-  SCHOOL_ADMIN = "SCHOOL_ADMIN",
-  ORGANIZATION_ADMIN = "ORGANIZATION_ADMIN",
-  SUPER_ADMIN = "SUPER_ADMIN",
-  HEAD_OF_FACULTY = "HEAD_OF_FACULTY",
-  DEAN = "DEAN"
-}
 
 export interface Course {
   id: string;
@@ -355,80 +344,6 @@ export function getProfileUserDataSelect(loggedInUserId: string) {
         },
       },
     },
-    // organizations: {
-    //   include: {
-    //     schools: {
-    //       include: {
-    //         faculties: {
-    //           include: {
-    //             members: {
-    //               include: {
-    //                 user: {
-    //                   select: {
-    //                     id: true,
-    //                     name: true,
-    //                     username: true,
-    //                     image: true,
-    //                     email: true,
-    //                   },
-    //                 },
-    //               },
-    //             },
-    //             courses: {
-    //               include: {
-    //                 instructor: {
-    //                   select: {
-    //                     id: true,
-    //                     name: true,
-    //                     username: true,
-    //                     image: true,
-    //                   },
-    //                 },
-    //                 _count: {
-    //                   select: {
-    //                     enrollments: true,
-    //                   },
-    //                 },
-    //               },
-    //             },
-    //             _count: {
-    //               select: {
-    //                 professors: true,
-    //                 courses: true,
-    //                 students: true,
-    //               },
-    //             },
-    //           },
-    //         },
-    //         _count: {
-    //           select: {
-    //             faculties: true,
-    //             courses: true,
-    //           },
-    //         },
-    //       },
-    //     },
-    //     members: {
-    //       include: {
-    //         user: {
-    //           select: {
-    //             id: true,
-    //             name: true,
-    //             username: true,
-    //             image: true,
-    //             email: true,
-    //           },
-    //         },
-    //       },
-    //     },
-    //     _count: {
-    //       select: {
-    //         schools: true,
-    //         members: true,
-    //       },
-    //     },
-    //   },
-    // },
     _count: {
       select: {
         posts: true,

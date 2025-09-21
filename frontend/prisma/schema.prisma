@@ -159,7 +159,6 @@ model Session {
 
   // Active context - Better Auth organization plugin fields
   activeOrganizationId String?
-  activeTeamId         String?
 
   createdAt DateTime @default(now()) @map(name: "created_at")
   updatedAt DateTime @updatedAt @map(name: "updated_at")
@@ -283,9 +282,6 @@ model User {
   // Audit trail
   auditActions AuditLog[] @relation("AuditActor")
 
-  // Removed professor invitation relations - now handled by unified Invitation model
-  teamMember teamMember[]
-
   @@index([role, status])
   @@index([status, createdAt])
   @@index([instituteId, role]) // For institution queries
@@ -308,9 +304,6 @@ model Organization {
 
   members     Member[]
   invitations Invitation[]
-
-  // Better Auth organization plugin relationships
-  teams Team[]
 
   @@index([name])
   @@map(name: "organizations")
@@ -346,7 +339,6 @@ model Invitation {
   inviterId      String
   inviter        User         @relation(fields: [inviterId], references: [id], onDelete: Cascade)
 
-  teamId    String?
   // Better Auth organization plugin fields
   email     String
   role      String   @default("member") // Better Auth role field
@@ -360,34 +352,6 @@ model Invitation {
 
   @@index([status, expiresAt]) // For cleanup jobs
   @@map(name: "invitations")
-}
-
-// Better Auth organization plugin models
-model Team {
-  id             String       @id @default(cuid()) @map("_id")
-  name           String
-  organizationId String
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime?    @updatedAt
-
-  teamMember teamMember[]
-
-  @@index([organizationId])
-  @@map(name: "teams")
-}
-
-model teamMember {
-  id     String @id @default(cuid()) @map("_id")
-  userId String
-  user   User   @relation(fields: [teamId], references: [id], onDelete: Cascade)
-  teamId String
-  team   Team   @relation(fields: [teamId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now())
-
-  @@unique([userId, teamId])
-  @@map(name: "team_members")
 }
 
 // Removed - functionality merged into unified Invitation model

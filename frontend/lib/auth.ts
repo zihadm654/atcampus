@@ -392,10 +392,6 @@ const options = {
 
       // Enable multi-organization support
       allowUsersToCreateOrganizations: true,
-      // Enable teams support
-      teams: {
-        enabled: true,
-      },
       async sendInvitationEmail(data: any) {
         // This is now handled in afterCreateInvitation hook for more control
         // Keeping this as fallback

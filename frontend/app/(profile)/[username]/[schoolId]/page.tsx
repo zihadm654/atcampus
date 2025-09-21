@@ -73,7 +73,7 @@ const getUser = cache(async (username: string, loggedInUserId: string) => {
                     },
                   },
                 },
-                take: 5, // Limit courses per faculty for initial load
+                take: 10, // Limit courses per faculty for initial load
               },
               _count: {
                 select: {
@@ -185,7 +185,7 @@ export default async function Page({ params }: PageProps) {
   }
 
   return (
-    <div className="w-full space-y-6">
+    <div className="w-full space-y-6 container mx-auto">
       {/* School Header Section */}
       <div className="relative">
         {/* Cover Photo */}

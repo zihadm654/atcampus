@@ -53,6 +53,10 @@ export async function GET(req: NextRequest) {
         // Professor: use organizationId from their membership (which is the institution)
         const member = currentUser.members[0]; // Assuming first membership
         institutionId = member.organizationId;
+      } else if (currentUser.role === "STUDENT" && currentUser.members?.length > 0) {
+        // Student: use organizationId from their membership (which is the institution)
+        const member = currentUser.members[0]; // Assuming first membership
+        institutionId = member.organizationId;
       }
     }
 
