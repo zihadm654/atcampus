@@ -143,7 +143,8 @@ export function CreateCourseForm({ user, course }: CreateCourseFormProps) {
         setPending(true);
         const result = await createCourse(values);
         if (result.success) {
-          const message = "Course created and submitted for approval successfully!";
+          const message =
+            "Course created and submitted for approval successfully!";
           toast.success(message);
           queryClient.invalidateQueries({ queryKey: ["course-feed"] });
           form.reset();
@@ -346,7 +347,6 @@ export function CreateCourseForm({ user, course }: CreateCourseFormProps) {
                   <FormItem>
                     <FormLabel>Difficulty Level</FormLabel>
                     <FormControl>
-                      {/* <Input placeholder="Level (e.g., BEGINNER)" {...field} /> */}
                       <Select
                         defaultValue={field.value}
                         onValueChange={field.onChange}
@@ -396,20 +396,22 @@ export function CreateCourseForm({ user, course }: CreateCourseFormProps) {
                       </FormControl>
                       <SelectContent>
                         <SelectGroup>
-                          {[CourseStatus.DRAFT, CourseStatus.UNDER_REVIEW].map(
-                            (status) => (
-                              <SelectItem key={status} value={status}>
-                                {status.charAt(0).toUpperCase() +
-                                  status.slice(1).toLowerCase().replace("_", " ")}
-                                {user?.role === "PROFESSOR" &&
-                                  status === CourseStatus.UNDER_REVIEW && (
-                                    <span className="ml-2 text-xs text-muted-foreground">
-                                      (Submit for institution approval)
-                                    </span>
-                                  )}
-                              </SelectItem>
-                            )
-                          )}
+                          {[
+                            CourseStatus.DRAFT,
+                            CourseStatus.UNDER_REVIEW,
+                            CourseStatus.PUBLISHED,
+                          ].map((status) => (
+                            <SelectItem key={status} value={status}>
+                              {status.charAt(0).toUpperCase() +
+                                status.slice(1).toLowerCase().replace("_", " ")}
+                              {user?.role === "PROFESSOR" &&
+                                status === CourseStatus.UNDER_REVIEW && (
+                                  <span className="ml-2 text-xs text-muted-foreground">
+                                    (Submit for institution approval)
+                                  </span>
+                                )}
+                            </SelectItem>
+                          ))}
                         </SelectGroup>
                       </SelectContent>
                     </Select>

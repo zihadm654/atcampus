@@ -86,7 +86,7 @@ export async function submitCourseForApproval(courseId: string) {
     const institutionReviewer = await prisma.member.findFirst({
       where: {
         userId: institutionUserId,
-        role: { in: ["ORGANIZATION_ADMIN", "SUPER_ADMIN", "owner", "admin"] },
+        role: { in: ["owner", "admin"] },
         user: {
           status: "ACTIVE",
         },
@@ -203,7 +203,7 @@ export async function createCourse(values: TCourse) {
       throw new Error(validatedFields.error.message);
     }
 
-    const { facultyId, status, ...courseData } = validatedFields.data;
+    const { facultyId, status } = validatedFields.data;
 
     // Verify faculty exists and get institution info
     const faculty = await prisma.faculty.findUnique({
@@ -240,9 +240,10 @@ export async function createCourse(values: TCourse) {
       // Professors create courses as DRAFT first.
       const course = await prisma.course.create({
         data: {
-          ...courseData,
+          ...validatedFields.data,
+          status: validatedFields.data.status as CourseStatus,
+          difficulty: validatedFields.data.difficulty || undefined,
           facultyId,
-          status: CourseStatus.DRAFT, // Always create as DRAFT
           instructorId: user.id,
         },
         include: getCourseDataInclude(user.id),
@@ -252,12 +253,12 @@ export async function createCourse(values: TCourse) {
         "CREATE",
         course.id,
         {},
-        { status: CourseStatus.DRAFT },
-        "Course created as draft",
+        { status: validatedFields.data.status },
+        "Course created",
       );
 
       // If the intention is to submit for approval immediately
-      if (status === "PENDING") {
+      if (status === CourseStatus.UNDER_REVIEW) {
         const submissionResult = await submitCourseForApproval(course.id);
         if (!submissionResult.success) {
           // Even if submission fails, the course is already created as a draft.
@@ -288,7 +289,7 @@ export async function createCourse(values: TCourse) {
       const isInstitutionAdmin = await prisma.member.findFirst({
         where: {
           userId: user.id,
-          role: { in: ["ORGANIZATION_ADMIN", "SUPER_ADMIN", "admin", "owner"] },
+          role: { in: ["admin", "owner"] },
         },
       });
 
