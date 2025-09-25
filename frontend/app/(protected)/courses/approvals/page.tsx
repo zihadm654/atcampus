@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/session";
 import { constructMetadata } from "@/lib/utils";
 import { prisma } from "@/lib/db";
-import { ApprovalDashboard } from "./_components/ApprovalDashboard";
+import { ApprovalDashboard } from "../approvals/_components/ApprovalDashboard";
 
 export const metadata = constructMetadata({
   title: "Course Approvals - AtCampus",
@@ -28,7 +28,11 @@ export default async function CourseApprovalsPage() {
       organization: true,
       faculty: {
         include: {
-          school: true,
+          school: {
+            include: {
+              institution: true,
+            }
+          },
           courses: true,
         },
       },

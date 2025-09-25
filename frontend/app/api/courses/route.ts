@@ -3,6 +3,7 @@ import { NextRequest } from "next/server";
 import { getCourseDataInclude, CoursesPage } from "@/types/types";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/session";
+import { CourseStatus } from "@prisma/client";
 
 export async function GET(req: NextRequest) {
   try {
@@ -17,6 +18,9 @@ export async function GET(req: NextRequest) {
     }
 
     const courses = await prisma.course.findMany({
+      where: {
+        status: CourseStatus.PUBLISHED
+      },
       include: getCourseDataInclude(user.id),
       orderBy: { createdAt: "desc" },
       take: pageSize + 1,

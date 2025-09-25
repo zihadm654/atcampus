@@ -1,17 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
-import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/session";
-import { auditCourseAction } from "@/lib/audit";
-import { excludeDeleted } from "@/lib/soft-delete";
-import { approvalDecisionSchema } from "@/lib/validations/enhanced-validations";
+import { prisma } from "@/lib/db";
+import { CourseStatus } from "@prisma/client";
 
-interface RouteParams {
-    params: Promise<{
-        id: string;
-    }>;
-}
+type RouteParams = {
+    params: Promise<{ id: string }>;
+};
 
 // GET /api/course-approvals/[id] - Get specific course approval
 export async function GET(req: NextRequest, { params }: RouteParams) {
@@ -74,9 +70,26 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
         }
 
         // Check access permissions
-        const hasAccess =
-            approval.reviewerId === currentUser.id || // Reviewer can view
-            approval.course?.instructorId === currentUser.id; // Course creator can view
+        // Users can view approvals if they are:
+        // 1. The assigned reviewer
+        // 2. The course instructor
+        // 3. An admin in the organization
+        const isReviewer = approval.reviewerId === currentUser.id;
+        const isCourseInstructor = approval.course?.instructorId === currentUser.id;
+
+        let isAdmin = false;
+        if (approval.course?.faculty?.school?.institutionId) {
+            const adminRole = await prisma.member.findFirst({
+                where: {
+                    userId: currentUser.id,
+                    organizationId: approval.course.faculty.school.institutionId,
+                    role: { in: ["admin", "owner"] },
+                },
+            });
+            isAdmin = !!adminRole;
+        }
+
+        const hasAccess = isReviewer || isCourseInstructor || isAdmin;
 
         if (!hasAccess) {
             return NextResponse.json(
@@ -95,20 +108,56 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
     }
 }
 
+const reviewSchema = z.object({
+  decision: z.enum(["PUBLISHED", "REJECTED", "NEEDS_REVISION"]),
+  comments: z.string().optional(),
+  qualityScore: z.number().min(0).max(100).optional(),
+  contentQualityScore: z.number().min(0).max(100).optional(),
+  pedagogyQualityScore: z.number().min(0).max(100).optional(),
+});
+
 // PATCH /api/course-approvals/[id] - Make approval decision
 export async function PATCH(req: NextRequest, { params }: RouteParams) {
-    try {
-        const { id } = await params;
-        const currentUser = await getCurrentUser();
+  try {
+    const { id } = await params;
+    const currentUser = await getCurrentUser();
 
-        if (!currentUser) {
-            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!currentUser) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const body = await req.json();
+    const validation = reviewSchema.safeParse(body);
+
+    if (!validation.success) {
+      return NextResponse.json(
+        { error: "Invalid request body", details: validation.error.errors },
+        { status: 400 }
+      );
+    }
+
+    const { decision, comments, qualityScore, contentQualityScore, pedagogyQualityScore } = validation.data;
+
+        // Convert decision to proper CourseStatus
+        let courseStatus: CourseStatus;
+        switch (decision) {
+            case "PUBLISHED":
+                courseStatus = CourseStatus.PUBLISHED;
+                break;
+            case "REJECTED":
+                courseStatus = CourseStatus.REJECTED;
+                break;
+            case "NEEDS_REVISION":
+                courseStatus = CourseStatus.NEEDS_REVISION;
+                break;
+            default:
+                return NextResponse.json(
+                    { error: "Invalid decision" },
+                    { status: 400 }
+                );
         }
 
-        const body = await req.json();
-        const validatedData = approvalDecisionSchema.parse(body);
-
-        const approval = await prisma.courseApproval.findUnique({
+    const approval = await prisma.courseApproval.findUnique({
             where: { id },
             include: {
                 course: {
@@ -158,258 +207,65 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
             );
         }
 
-        if (approval.status !== "PENDING") {
+        if (approval.status !== "UNDER_REVIEW") {
             return NextResponse.json(
                 { error: "This approval has already been processed" },
                 { status: 409 }
             );
         }
 
-        const { decision } = validatedData;
-
         const result = await prisma.$transaction(async (tx) => {
-            // Calculate overall score if individual scores provided
-            let calculatedOverallScore: number | null = null;
-            if (validatedData.contentScore && validatedData.academicRigor && validatedData.resourceScore) {
-                const scores = [
-                    validatedData.contentScore,
-                    validatedData.academicRigor,
-                    validatedData.resourceScore,
-                ];
-                if (validatedData.innovationScore) {
-                    scores.push(validatedData.innovationScore);
-                }
-                calculatedOverallScore = Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
-            }
-
-            // Update the current approval
+            // Update the approval
             const updatedApproval = await tx.courseApproval.update({
-                where: { id },
-                data: {
-                    status: decision === "approve" ? "APPROVED" :
-                        decision === "reject" ? "REJECTED" : "NEEDS_REVISION",
-                    comments: validatedData.comments,
-                    internalNotes: validatedData.internalNotes,
-                    reviewedAt: new Date(),
-                    contentScore: validatedData.contentScore,
-                    academicRigor: validatedData.academicRigor,
-                    resourceScore: validatedData.resourceScore,
-                    innovationScore: validatedData.innovationScore,
-                    overallScore: calculatedOverallScore,
-                    requiredChanges: validatedData.requiredChanges || [],
-                    suggestedChanges: validatedData.suggestedChanges || [],
-                    revisionDeadline: validatedData.revisionDeadline ?
-                        new Date(validatedData.revisionDeadline) : null,
-                    isActive: false,
-                    conflictOfInterest: validatedData.conflictOfInterest || false,
-                    reviewMethodology: validatedData.reviewMethodology,
-                    estimatedReviewTime: validatedData.estimatedReviewTime,
-                },
+              where: { id },
+              data: {
+                status: decision,
+                comments: comments || "",
+                reviewedAt: new Date(),
+                qualityScore,
+                contentQualityScore,
+                pedagogyQualityScore,
+            },
+            select: {
+                id: true,
+                status: true,
+                comments: true,
+                reviewedAt: true,
+                courseId: true,
+                reviewerId: true,
+            },
             });
 
-            let courseUpdate: any = {
-                approvalHistory: {
-                    push: JSON.stringify({
-                        action: decision.toUpperCase(),
-                        timestamp: new Date(),
-                        userId: currentUser.id,
-                        level: approval.level,
-                        comments: validatedData.comments,
-                        score: calculatedOverallScore,
-                    })
-                }
-            };
-
-            if (decision === "approve") {
-                // Check if we need to proceed to next level
-                const nextLevel = approval.level + 1;
-                const maxLevel = 3; // Can be configurable per institution
-
-                if (nextLevel <= maxLevel) {
-                    // Move to next level
-                    const nextLevelAdmin = await findApprover(
-                        tx,
-                        nextLevel,
-                        approval.course?.faculty?.school?.institutionId || '',
-                        approval.course?.facultyId,
-                        approval.course?.faculty?.schoolId
-                    );
-
-                    if (nextLevelAdmin) {
-                        // Create next level approval
-                        await tx.courseApproval.create({
-                            data: {
-                                courseId: approval.courseId,
-                                reviewerId: nextLevelAdmin,
-                                level: nextLevel,
-                                isActive: true,
-                                status: "PENDING",
-                                priority: approval.priority,
-                            },
-                        });
-
-                        courseUpdate.currentApprovalLevel = nextLevel;
-
-                        // Notify next level reviewer
-                        await tx.notification.create({
-                            data: {
-                                recipientId: nextLevelAdmin,
-                                issuerId: currentUser.id,
-                                type: "COURSE_APPROVAL_REQUEST",
-                                title: "Course Approval Request",
-                                message: `Level ${nextLevel} approval needed for "${approval.course?.title}"`,
-                                courseId: approval.courseId,
-                            },
-                        });
-                    } else {
-                        // No reviewer found for next level, approve automatically
-                        courseUpdate.status = "APPROVED";
-                        courseUpdate.currentApprovalLevel = 0;
-                    }
-                } else {
-                    // Final approval - publish course
-                    courseUpdate.status = "APPROVED";
-                    courseUpdate.currentApprovalLevel = 0;
-
-                    // Notify course creator of final approval
-                    await tx.notification.create({
-                        data: {
-                            recipientId: approval.course?.instructorId || '',
-                            issuerId: currentUser.id,
-                            type: "COURSE_APPROVAL_RESULT",
-                            title: "Course Approved",
-                            message: `Your course "${approval.course?.title}" has been approved`,
-                            courseId: approval.courseId,
-                        },
-                    });
-                }
-
-            } else if (decision === "reject") {
-                // Reject the course
-                courseUpdate.status = "REJECTED";
-                courseUpdate.currentApprovalLevel = 0;
-                courseUpdate.rejectionReason = validatedData.comments;
-
-                // Notify course creator of rejection
-                await tx.notification.create({
-                    data: {
-                        recipientId: approval.course?.instructorId || '',
-                        issuerId: currentUser.id,
-                        type: "COURSE_APPROVAL_RESULT",
-                        title: "Course Rejected",
-                        message: `Your course "${approval.course?.title}" has been rejected`,
-                        courseId: approval.courseId,
-                    },
-                });
-
-            } else if (decision === "request_revision") {
-                // Request revisions
-                courseUpdate.status = "NEEDS_REVISION";
-                courseUpdate.currentApprovalLevel = 0;
-                courseUpdate.revisionNotes = validatedData.comments;
-
-                // Notify course creator of revision request
-                await tx.notification.create({
-                    data: {
-                        recipientId: approval.course?.instructorId || '',
-                        issuerId: currentUser.id,
-                        type: "COURSE_APPROVAL_RESULT",
-                        title: "Course Revision Requested",
-                        message: `Revisions requested for "${approval.course?.title}"`,
-                        courseId: approval.courseId,
-                    },
-                });
-            }
-
-            // Update course
+            // Update course status
             const updatedCourse = await tx.course.update({
                 where: { id: approval.courseId },
-                data: courseUpdate,
+                data: { status: courseStatus },
+            });
+
+            // Notify course creator
+            await tx.notification.create({
+              data: {
+                recipientId: approval.course?.instructorId || '',
+                issuerId: currentUser.id,
+                type: "COURSE_APPROVAL_RESULT",
+                title: `Course ${decision}`,
+                message: `Your course \"${approval.course?.title}\" has been ${decision}`,
+                courseId: approval.courseId,
+              },
             });
 
             return { updatedApproval, updatedCourse };
         });
-
-        // Create audit log
-        await auditCourseAction(
-            decision === "approve" ? "APPROVE" :
-                decision === "reject" ? "REJECT" : "REQUEST_REVISION",
-            approval.courseId,
-            { status: approval.course?.status },
-            { status: result.updatedCourse.status },
-            validatedData.comments || `${decision} by ${currentUser.name}`,
-            {
-                level: approval.level,
-                score: result.updatedApproval.overallScore,
-                reviewerId: currentUser.id,
-            }
-        );
 
         return NextResponse.json({
             message: `Course ${decision} processed successfully`,
             approval: result.updatedApproval,
         });
     } catch (error) {
-        if (error instanceof z.ZodError) {
-            return NextResponse.json(
-                { error: "Invalid request data", details: error.errors },
-                { status: 400 }
-            );
-        }
-
         console.error("Error processing course approval:", error);
         return NextResponse.json(
             { error: "Internal server error" },
             { status: 500 }
         );
     }
-}
-
-// Helper function to find appropriate approver for next level
-async function findApprover(
-    tx: any,
-    level: number,
-    institutionId: string,
-    facultyId?: string,
-    schoolId?: string
-): Promise<string | null> {
-    if (level === 1) {
-        // Faculty admin (member with role admin or owner)
-        const facultyAdmin = await tx.member.findFirst({
-            where: {
-                organizationId: institutionId,
-                facultyId: facultyId,
-                role: { in: ["admin", "owner"] },
-                isActive: true,
-            },
-        });
-        return facultyAdmin?.userId || null;
-    }
-
-    if (level === 2) {
-        // School admin (member with role admin or owner)
-        const schoolAdmin = await tx.member.findFirst({
-            where: {
-                organizationId: institutionId,
-                faculty: { schoolId },
-                role: { in: ["admin", "owner"] },
-                isActive: true,
-            },
-        });
-        return schoolAdmin?.userId || null;
-    }
-
-    if (level === 3) {
-        // Institution admin (member with role admin or owner)
-        const institutionAdmin = await tx.member.findFirst({
-            where: {
-                organizationId: institutionId,
-                role: { in: ["admin", "owner"] },
-                isActive: true,
-            },
-        });
-        return institutionAdmin?.userId || null;
-    }
-
-    return null;
 }

@@ -1,8 +1,9 @@
+import { CourseStatus } from "@prisma/client";
 import { z } from "zod";
 
 // Enhanced course approval schema with comprehensive validation
 export const courseApprovalSchema = z.object({
-    status: z.enum(["APPROVED", "REJECTED", "NEEDS_REVISION"]),
+    status: z.nativeEnum(CourseStatus),
     comments: z.string().max(2000).optional(),
     internalNotes: z.string().max(1000).optional(),
 
@@ -173,7 +174,7 @@ export const invitationSchema = z.object({
 
 // Course approval decision schema
 export const approvalDecisionSchema = z.object({
-    decision: z.enum(["approve", "reject", "request_revision"]),
+    decision: z.enum(["PUBLISHED", "REJECTED", "NEEDS_REVISION"]),
 
     comments: z.string()
         .max(2000, "Comments cannot exceed 2000 characters")
@@ -184,10 +185,10 @@ export const approvalDecisionSchema = z.object({
         .optional(),
 
     // Enhanced scoring
-    contentScore: z.number().min(1).max(10).optional(),
-    academicRigor: z.number().min(1).max(10).optional(),
-    resourceScore: z.number().min(1).max(10).optional(),
-    innovationScore: z.number().min(1).max(10).optional(),
+    contentScore: z.number().min(0).max(100).optional(),
+    academicRigor: z.number().min(0).max(100).optional(),
+    resourceScore: z.number().min(0).max(100).optional(),
+    innovationScore: z.number().min(0).max(100).optional(),
 
     // Feedback
     requiredChanges: z.array(z.string().max(500)).max(20).default([]),
@@ -203,7 +204,7 @@ export const approvalDecisionSchema = z.object({
     .refine(
         (data) => {
             // If requesting revision, require at least one change or comment
-            if (data.decision === "request_revision") {
+            if (data.decision === "NEEDS_REVISION") {
                 return data.requiredChanges.length > 0 || data.comments;
             }
             return true;
@@ -216,7 +217,7 @@ export const approvalDecisionSchema = z.object({
     .refine(
         (data) => {
             // If rejecting, require comments
-            if (data.decision === "reject") {
+            if (data.decision === "REJECTED") {
                 return data.comments && data.comments.trim().length > 0;
             }
             return true;
@@ -229,7 +230,7 @@ export const approvalDecisionSchema = z.object({
 
 // Query parameter validation
 export const courseApprovalQuerySchema = z.object({
-    status: z.enum(["PENDING", "APPROVED", "REJECTED", "NEEDS_REVISION"]).default("PENDING"),
+    status: z.enum(["UNDER_REVIEW", "PUBLISHED", "REJECTED", "NEEDS_REVISION"]).optional(),
     level: z.coerce.number().int().min(1).max(3).optional(),
     priority: z.enum(["LOW", "NORMAL", "HIGH", "URGENT"]).optional(),
     page: z.coerce.number().int().min(1).default(1),

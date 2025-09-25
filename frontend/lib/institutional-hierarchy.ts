@@ -74,7 +74,7 @@ export async function getInstitutionalHierarchy(
                   select: {
                     members: true,
                     courses: {
-                      where: { isActive: true },
+                      where: { status: "PUBLISHED" },
                     },
                   },
                 },
@@ -176,7 +176,7 @@ export async function getSchoolFaculties(schoolId: string) {
           select: {
             members: true,
             courses: {
-              where: { isActive: true },
+              where: { status: "PUBLISHED" },
             },
           },
         },
@@ -212,7 +212,7 @@ export async function getFacultyDetails(facultyId: string) {
           },
         },
         courses: {
-          where: { isActive: true },
+          where: { status: "PUBLISHED" },
           include: {
             instructor: {
               select: {

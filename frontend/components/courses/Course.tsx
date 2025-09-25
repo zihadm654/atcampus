@@ -10,7 +10,6 @@ import {
   Star,
 } from "lucide-react";
 
-import { Course as CourseType, Enrollment } from "@prisma/client";
 import { useSession } from "@/lib/auth-client";
 import { formatRelativeDate } from "@/lib/utils";
 
@@ -30,16 +29,12 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { JsonToHtml } from "../editor/JsonToHtml";
+import { CourseData } from "@/types";
+import { Enrollment } from "@prisma/client";
 
-interface CourseProps {
-  course: CourseType & {
-    instructor: { username: string; image?: string; name?: string };
-    faculty?: { name: string };
-    enrollments: Enrollment[];
-  };
-}
 
-export default function Course({ course }: any) {
+export default function Course({ course }: { course: CourseData }) {
   const { data: session } = useSession();
   const user = session?.user;
   const [isPending, startTransition] = useTransition();
@@ -99,9 +94,6 @@ export default function Course({ course }: any) {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Badge variant="outline" className="text-xs">
-              {course.code}
-            </Badge>
             {course.instructorId === user.id && (
               <CourseMoreButton course={course} />
             )}
@@ -111,17 +103,20 @@ export default function Course({ course }: any) {
 
       <Link href={`/courses/${course.id}`}>
         <CardContent className="pt-0 pb-4">
-          <CardTitle className="text-lg mb-2 line-clamp-2">
+          <h1 className="text-xl font-semibold">
             {course.title}
-          </CardTitle>
+          </h1>
+          <Badge variant="outline" className="text-xs">
+            {course.code}
+          </Badge>
           {course.faculty && (
-            <div className="flex items-center justify-center">
+            <div className="flex items-center justify-start">
               <Building className="size-3" />
               <span>{course.faculty.name}</span>
             </div>
           )}
-          <CardDescription className="mb-4 line-clamp-2">
-            {course.description}
+          <CardDescription className="my-3 line-clamp-2">
+            <JsonToHtml json={JSON.parse(course.description)} />
           </CardDescription>
 
           <div className="grid grid-cols-2 gap-4 text-sm">
@@ -131,11 +126,11 @@ export default function Course({ course }: any) {
             </div>
             <div className="flex items-center gap-2 text-muted-foreground">
               <Clock className="size-4" />
-              <span>{course.duration} weeks</span>
+              <span>{course.estimatedHours} weeks</span>
             </div>
             <div className="flex items-center gap-2 text-muted-foreground">
               <Users className="size-4" />
-              <span className="capitalize">{course.level?.toLowerCase()}</span>
+              <span className="capitalize">{course.difficulty}</span>
             </div>
             <div className="flex items-center gap-2 text-muted-foreground">
               <BookOpen className="size-4" />
@@ -143,7 +138,7 @@ export default function Course({ course }: any) {
             </div>
           </div>
 
-          {course.prerequisites && course.prerequisites.length > 0 && (
+          {/* {course. && course.prerequisites.length > 0 && (
             <div className="mt-3">
               <span className="text-sm font-medium text-muted-foreground">
                 Prerequisites:
@@ -156,7 +151,7 @@ export default function Course({ course }: any) {
                 ))}
               </div>
             </div>
-          )}
+          )} */}
         </CardContent>
       </Link>
 

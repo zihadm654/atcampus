@@ -30,16 +30,12 @@ enum UserStatus {
 }
 
 enum CourseStatus {
-  DRAFT
-  UNDER_REVIEW
-  APPROVED
-  PUBLISHED
-  ACTIVE
-  COMPLETED
-  ARCHIVED
-  REJECTED
-  NEEDS_REVISION
-  WITHDRAWN
+  DRAFT // Course is being created, not yet submitted for review
+  UNDER_REVIEW // Course has been submitted and is pending review
+  PUBLISHED // Course is approved and visible to students
+  ARCHIVED // Course is no longer active but kept for records
+  REJECTED // Course has been reviewed and rejected
+  NEEDS_REVISION // Course requires changes before re-submission
 }
 
 enum EnrollmentStatus {
@@ -108,13 +104,6 @@ enum ExperienceLevel {
   MID_LEVEL
   SENIOR_LEVEL
   EXECUTIVE
-}
-
-enum ApprovalStatus {
-  PENDING
-  APPROVED
-  REJECTED
-  NEEDS_REVISION
 }
 
 // ============================================================================
@@ -422,7 +411,6 @@ model Course {
   title       String  @db.String
   description String  @db.String
   department  String?
-  level       String? // undergraduate, graduate, doctoral
   credits     Int?    @default(3)
   maxStudents Int?
   minStudents Int?    @default(1)
@@ -434,24 +422,15 @@ model Course {
   difficulty     String?  @default("BEGINNER") // BEGINNER, INTERMEDIATE, ADVANCED
   estimatedHours Int? // Total course hours
 
-  // Scheduling with validation
+  // Scheduling
   startDate DateTime?
   endDate   DateTime?
   semester  String?
   year      Int?
 
-  // Enhanced status tracking
-  status               CourseStatus @default(DRAFT)
-  isActive             Boolean      @default(true)
-  isArchived           Boolean      @default(false)
-  submittedForApproval DateTime?
-  lastModified         DateTime     @updatedAt
-
-  // Approval tracking
-  currentApprovalLevel Int?     @default(0) // 0=not submitted, 1-3=levels
-  approvalHistory      String[] @default([]) // JSON log of approval actions
-  rejectionReason      String?
-  revisionNotes        String?
+  // Status and approval tracking
+  status     CourseStatus @default(DRAFT)
+  isArchived Boolean      @default(false)
 
   // Academic context with constraints
   facultyId String
@@ -486,10 +465,7 @@ model Course {
   @@index([facultyId, status, isDeleted])
   @@index([instructorId, status, isDeleted])
   @@index([status, isDeleted, startDate])
-  @@index([isActive, isDeleted, startDate])
-  @@index([currentApprovalLevel, status])
   @@index([keywords]) // For search functionality
-  @@index([level, difficulty]) // For filtering
   @@index([semester, year, facultyId]) // Academic calendar queries
   @@map(name: "courses")
 }
@@ -580,63 +556,22 @@ model CourseApproval {
   reviewerId String
   reviewer   User   @relation("CourseReviewer", fields: [reviewerId], references: [id], onDelete: Cascade)
 
-  // Approval workflow
-  level    Int            @default(1) // 1=Faculty, 2=School, 3=Institution
-  status   ApprovalStatus @default(PENDING)
-  isActive Boolean        @default(true)
-  priority String         @default("NORMAL") // LOW, NORMAL, HIGH, URGENT
+  // Unified approval status
+  status      CourseStatus @default(UNDER_REVIEW)
+  comments    String? // Review comments
+  reviewedAt  DateTime? // When the review was completed
+  submittedAt DateTime     @default(now()) // When submitted for approval
 
-  // Review details
-  comments      String?
-  internalNotes String? // Private notes for reviewers
-  reviewedAt    DateTime?
-  submittedAt   DateTime  @default(now())
-
-  // Comprehensive scoring system
-  contentScore    Int? // 1-10
-  academicRigor   Int? // 1-10
-  resourceScore   Int? // 1-10
-  innovationScore Int? // 1-10
-  overallScore    Int? // Calculated average
-
-  // Detailed feedback
-  requiredChanges     String[]  @default([])
-  suggestedChanges    String[]  @default([])
-  revisionDeadline    DateTime?
-  estimatedReviewTime Int? // Hours estimated for review
-
-  // Workflow tracking
-  approvalPath     String[]  @default([]) // Track approval route
-  delegatedFrom    String? // If delegated from another reviewer
-  delegatedTo      String? // If delegated to another reviewer
-  escalatedAt      DateTime?
-  escalatedBy      String?
-  escalationReason String?
-
-  // Communication
-  lastNotificationSent DateTime?
-  reminderCount        Int       @default(0)
-
-  // Audit and compliance
-  reviewDuration     Int? // Minutes spent reviewing
-  conflictOfInterest Boolean @default(false)
-  reviewerQualified  Boolean @default(true)
-  reviewMethodology  String? // How the review was conducted
-
-  // Metadata
-  reviewCriteria String[] @default([]) // Which criteria were evaluated
-  attachments    String[] @default([]) // File URLs
+  // Quality scores
+  qualityScore         Int?
+  contentQualityScore  Int?
+  pedagogyQualityScore Int?
 
   createdAt DateTime @default(now()) @map(name: "created_at")
   updatedAt DateTime @updatedAt @map(name: "updated_at")
 
-  @@index([courseId, level, isActive])
   @@index([reviewerId, status])
-  @@index([status, level, priority])
-  @@index([courseId, isActive, submittedAt])
-  @@index([status, submittedAt]) // For SLA tracking
-  @@index([level, status, reviewedAt]) // For metrics
-  @@index([priority, isActive]) // For urgent reviews
+  @@index([status, submittedAt])
   @@map("course_approvals")
 }
 

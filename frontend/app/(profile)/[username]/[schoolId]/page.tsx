@@ -127,11 +127,10 @@ const getSchool = cache(async (schoolId: string) => {
               id: true,
               title: true,
               code: true,
-              isActive: true,
               enrollments: true,
             },
             where: {
-              isActive: true,
+              status: "PUBLISHED",
             },
             take: 10, // Limit courses for performance
           },

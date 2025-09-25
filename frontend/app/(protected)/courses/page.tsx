@@ -18,7 +18,7 @@ const getInitialCourses = cache(async () => {
   const courses = await prisma.course.findMany({
     where: {
       isDeleted: false,
-      isActive: true,
+      status: "PUBLISHED",
     },
     include: {
       instructor: {
@@ -62,7 +62,7 @@ export default async function CoursesPage() {
   const professorMember = await prisma.member.findFirst({
     where: {
       userId: user.id,
-      role: "PROFESSOR",
+      role: "member",
     },
   });
 
@@ -72,7 +72,7 @@ export default async function CoursesPage() {
       where: {
         userId: user.id,
         role: {
-          in: ["admin", "owner", "member"],
+          in: ["admin", "owner"],
         },
       },
     })) || user.role === "INSTITUTION";

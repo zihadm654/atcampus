@@ -9,7 +9,7 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
 import { courseSchema, TCourse } from "@/lib/validations/course";
-import { createCourse, submitCourseForApproval, updateCourse } from "@/components/courses/actions";
+import { createCourse, updateCourse } from "@/components/courses/actions";
 import { coursesData } from "@/config/course";
 
 import { Button } from "../ui/button";
@@ -42,42 +42,45 @@ interface CreateCourseFormProps {
 export function CreateCourseForm({ user, course }: CreateCourseFormProps) {
   const router = useRouter();
   const [pending, setPending] = useState(false);
-  const [submittingForApproval, setSubmittingForApproval] = useState(false);
   const form = useForm<TCourse>({
-    resolver: zodResolver(courseSchema) as any,
+    resolver: zodResolver(courseSchema),
     defaultValues: course
       ? {
-        title: course.title || "",
-        description: course.description || "",
-        status: course.status as CourseStatus,
-        code: course.code || "",
-        department: course.department || "",
-        credits: course.credits || 0,
-        level: course.level || "",
-        estimatedHours: course.estimatedHours || 0,
-        facultyId: course.facultyId || "",
-        objectives: course.objectives || [],
-        outcomes: course.outcomes || [],
-        year: course.year || new Date().getFullYear(),
-      }
+          title: course.title || "",
+          description: course.description || "",
+          code: course.code || "",
+          department: course.department || "",
+          credits: course.credits || 0,
+          difficulty: course.difficulty || "",
+          estimatedHours: course.estimatedHours || 0,
+          facultyId: course.facultyId || "",
+          objectives: course.objectives || [""],
+          outcomes: course.outcomes || [""],
+          year: course.year || 1,
+          status: course.status || CourseStatus.DRAFT, // Default to DRAFT
+        }
       : {
-        title: "",
-        description: "",
-        status: CourseStatus.DRAFT,
-        code: "",
-        department: "",
-        estimatedHours: 0,
-        credits: 0,
-        level: "",
-        facultyId: "",
-        objectives: [],
-        outcomes: [],
-        year: new Date().getFullYear(),
-      },
+          title: "",
+          description: "",
+          code: "",
+          department: "",
+          estimatedHours: 10,
+          credits: 3,
+          difficulty: "BEGINNER",
+          facultyId: "",
+          objectives: [],
+          outcomes: [],
+          year: 1,
+          status: CourseStatus.DRAFT, // Default to DRAFT
+        },
   });
   const queryClient = useQueryClient();
 
-  const { data: faculties, isLoading: isLoadingFaculties, error: facultiesError } = useQuery<Faculty[]>({
+  const {
+    data: faculties,
+    isLoading: isLoadingFaculties,
+    error: facultiesError,
+  } = useQuery<Faculty[]>({
     queryKey: ["faculties"],
     queryFn: async () => {
       const res = await fetch("/api/faculties");
@@ -90,26 +93,6 @@ export function CreateCourseForm({ user, course }: CreateCourseFormProps) {
     staleTime: 5 * 60 * 1000, // 5 minutes
     retry: 2,
   });
-
-  // Determine available status options based on user role
-  const getAvailableStatuses = (): CourseStatus[] => {
-    // If user is a professor, they can only save as DRAFT or submit for review
-    if (user?.role === "PROFESSOR") {
-      return [CourseStatus.DRAFT, CourseStatus.UNDER_REVIEW];
-    }
-
-    // Institution users can set any status
-    return Object.values(CourseStatus);
-  };
-
-  const availableStatuses = getAvailableStatuses();
-
-  // Auto-set status for professors creating new courses
-  useEffect(() => {
-    if (!course && user?.role === "PROFESSOR" && form.getValues("status") !== CourseStatus.DRAFT) {
-      form.setValue("status", CourseStatus.DRAFT);
-    }
-  }, [user?.role, course, form]);
 
   const schools = coursesData.schools;
   const [selectedSchool, setSelectedSchool] = useState<string>("");
@@ -160,7 +143,8 @@ export function CreateCourseForm({ user, course }: CreateCourseFormProps) {
         setPending(true);
         const result = await createCourse(values);
         if (result.success) {
-          toast.success("Course created successfully!");
+          const message = "Course created and submitted for approval successfully!";
+          toast.success(message);
           queryClient.invalidateQueries({ queryKey: ["course-feed"] });
           form.reset();
           router.push("/courses");
@@ -172,54 +156,6 @@ export function CreateCourseForm({ user, course }: CreateCourseFormProps) {
         toast.error("Something went wrong. Please try again.");
       } finally {
         setPending(false);
-      }
-    }
-  }
-
-  async function handleSubmitForApproval(values: TCourse) {
-    if (!course) {
-      // Create course first, then submit for approval
-      try {
-        setPending(true);
-        const result = await createCourse({ ...values, status: CourseStatus.DRAFT });
-        if (result.success && result.data) {
-          setSubmittingForApproval(true);
-          const approvalResult = await submitCourseForApproval(result.data.id);
-          if (approvalResult.success) {
-            toast.success("Course created and submitted for approval!");
-            queryClient.invalidateQueries({ queryKey: ["course-feed"] });
-            form.reset();
-            router.push("/courses");
-          } else {
-            toast.error(approvalResult.error || "Failed to submit for approval");
-          }
-        } else {
-          toast.error(result.error || "Failed to create course");
-        }
-      } catch (error) {
-        console.error(error);
-        toast.error("Something went wrong. Please try again.");
-      } finally {
-        setPending(false);
-        setSubmittingForApproval(false);
-      }
-    } else {
-      // Submit existing course for approval
-      try {
-        setSubmittingForApproval(true);
-        const result = await submitCourseForApproval(course.id);
-        if (result.success) {
-          toast.success("Course submitted for approval!");
-          queryClient.invalidateQueries({ queryKey: ["course-feed"] });
-          router.push("/courses");
-        } else {
-          toast.error(result.error || "Failed to submit for approval");
-        }
-      } catch (error) {
-        console.error(error);
-        toast.error("Something went wrong. Please try again.");
-      } finally {
-        setSubmittingForApproval(false);
       }
     }
   }
@@ -391,7 +327,11 @@ export function CreateCourseForm({ user, course }: CreateCourseFormProps) {
                   <FormItem>
                     <FormLabel>Estimated Hours (weeks)</FormLabel>
                     <FormControl>
-                      <Input type="number" placeholder="Estimated Hours" {...field} />
+                      <Input
+                        type="number"
+                        placeholder="Estimated Hours"
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -401,12 +341,35 @@ export function CreateCourseForm({ user, course }: CreateCourseFormProps) {
             <div className="grid gap-6 md:grid-cols-2">
               <FormField
                 control={form.control}
-                name="level"
+                name="difficulty"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Level</FormLabel>
+                    <FormLabel>Difficulty Level</FormLabel>
                     <FormControl>
-                      <Input placeholder="Level (e.g., Beginner)" {...field} />
+                      {/* <Input placeholder="Level (e.g., BEGINNER)" {...field} /> */}
+                      <Select
+                        defaultValue={field.value}
+                        onValueChange={field.onChange}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select course difficulty" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectGroup>
+                            {["BEGINNER", "INTERMEDIATE", "ADVANCED"].map(
+                              (level) => (
+                                <SelectItem
+                                  key={level}
+                                  value={level.toLowerCase()}
+                                >
+                                  {level.charAt(0).toUpperCase() +
+                                    level.slice(1).toLowerCase()}
+                                </SelectItem>
+                              )
+                            )}
+                          </SelectGroup>
+                        </SelectContent>
+                      </Select>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -421,7 +384,10 @@ export function CreateCourseForm({ user, course }: CreateCourseFormProps) {
                     <Select
                       defaultValue={field.value}
                       onValueChange={field.onChange}
-                      disabled={user?.role === "PROFESSOR" && course?.status === "APPROVED"}
+                      disabled={
+                        user?.role === "PROFESSOR" &&
+                        course?.status === CourseStatus.PUBLISHED
+                      }
                     >
                       <FormControl>
                         <SelectTrigger>
@@ -430,24 +396,81 @@ export function CreateCourseForm({ user, course }: CreateCourseFormProps) {
                       </FormControl>
                       <SelectContent>
                         <SelectGroup>
-                          {availableStatuses.map((status) => (
-                            <SelectItem key={status} value={status}>
-                              {status.charAt(0).toUpperCase() +
-                                status.slice(1).toLowerCase()}
-                              {user?.role === "PROFESSOR" && status === "UNDER_REVIEW" && (
-                                <span className="ml-2 text-xs text-muted-foreground">
-                                  (Submit for institution approval)
-                                </span>
-                              )}
-                            </SelectItem>
-                          ))}
+                          {[CourseStatus.DRAFT, CourseStatus.UNDER_REVIEW].map(
+                            (status) => (
+                              <SelectItem key={status} value={status}>
+                                {status.charAt(0).toUpperCase() +
+                                  status.slice(1).toLowerCase().replace("_", " ")}
+                                {user?.role === "PROFESSOR" &&
+                                  status === CourseStatus.UNDER_REVIEW && (
+                                    <span className="ml-2 text-xs text-muted-foreground">
+                                      (Submit for institution approval)
+                                    </span>
+                                  )}
+                              </SelectItem>
+                            )
+                          )}
                         </SelectGroup>
                       </SelectContent>
                     </Select>
                     {user?.role === "PROFESSOR" && (
                       <p className="text-sm text-muted-foreground">
-                        Professors can save courses as drafts or submit for review.
-                        Institution approval is required before courses can be published.
+                        Professors can save courses as drafts or submit for
+                        review. Institution approval is required before courses
+                        can be published.
+                      </p>
+                    )}
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="facultyId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Faculty</FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                      disabled={isLoadingFaculties || !!facultiesError}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue
+                            placeholder={
+                              isLoadingFaculties
+                                ? "Loading faculties..."
+                                : facultiesError
+                                  ? "Error loading faculties"
+                                  : "Select a faculty"
+                            }
+                          />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {facultiesError && (
+                          <SelectItem value="error" disabled>
+                            Failed to load faculties. Please refresh.
+                          </SelectItem>
+                        )}
+                        {faculties?.map((faculty) => (
+                          <SelectItem key={faculty.id} value={faculty.id}>
+                            {faculty.name}
+                          </SelectItem>
+                        ))}
+                        {!isLoadingFaculties && !faculties?.length && (
+                          <SelectItem value="empty" disabled>
+                            No faculties available
+                          </SelectItem>
+                        )}
+                      </SelectContent>
+                    </Select>
+                    {facultiesError && (
+                      <p className="text-sm text-destructive">
+                        {facultiesError instanceof Error
+                          ? facultiesError.message
+                          : "Failed to load faculties"}
                       </p>
                     )}
                     <FormMessage />
@@ -455,57 +478,6 @@ export function CreateCourseForm({ user, course }: CreateCourseFormProps) {
                 )}
               />
             </div>
-            <FormField
-              control={form.control}
-              name="facultyId"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Faculty</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                    disabled={isLoadingFaculties || !!facultiesError}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue
-                          placeholder={
-                            isLoadingFaculties
-                              ? "Loading faculties..."
-                              : facultiesError
-                                ? "Error loading faculties"
-                                : "Select a faculty"
-                          }
-                        />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {facultiesError && (
-                        <SelectItem value="error" disabled>
-                          Failed to load faculties. Please refresh.
-                        </SelectItem>
-                      )}
-                      {faculties?.map((faculty) => (
-                        <SelectItem key={faculty.id} value={faculty.id}>
-                          {faculty.name}
-                        </SelectItem>
-                      ))}
-                      {!isLoadingFaculties && !faculties?.length && (
-                        <SelectItem value="empty" disabled>
-                          No faculties available
-                        </SelectItem>
-                      )}
-                    </SelectContent>
-                  </Select>
-                  {facultiesError && (
-                    <p className="text-sm text-destructive">
-                      {facultiesError instanceof Error ? facultiesError.message : "Failed to load faculties"}
-                    </p>
-                  )}
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
             <div className="grid gap-6 md:grid-cols-2">
               <FormField
                 control={form.control}
@@ -532,10 +504,13 @@ export function CreateCourseForm({ user, course }: CreateCourseFormProps) {
                       placeholder="Enter learning objectives separated by commas"
                       onChange={(e) =>
                         field.onChange(
-                          e.target.value.split(",").map((o) => o.trim()).filter(o => o.length > 0)
+                          e.target.value
+                            .split(",")
+                            .map((o) => o.trim())
+                            .filter((o) => o.length > 0)
                         )
                       }
-                      value={field.value?.join(", ") || ""}
+                      value={field.value?.join(", ") || [""]}
                     />
                   </FormControl>
                   <FormMessage />
@@ -553,10 +528,13 @@ export function CreateCourseForm({ user, course }: CreateCourseFormProps) {
                       placeholder="Enter learning outcomes separated by commas"
                       onChange={(e) =>
                         field.onChange(
-                          e.target.value.split(",").map((o) => o.trim()).filter(o => o.length > 0)
+                          e.target.value
+                            .split(",")
+                            .map((o) => o.trim())
+                            .filter((o) => o.length > 0)
                         )
                       }
-                      value={field.value?.join(", ") || ""}
+                      value={field.value?.join(", ") || [""]}
                     />
                   </FormControl>
                   <FormMessage />
@@ -580,29 +558,15 @@ export function CreateCourseForm({ user, course }: CreateCourseFormProps) {
         </Card>
 
         <div className="flex gap-4">
-          <Button className="flex-1" disabled={pending || submittingForApproval} type="submit">
+          <Button className="flex-1" disabled={pending} type="submit">
             {pending
               ? "Saving..."
               : course
                 ? "Update Course"
-                : "Save as Draft"}
-          </Button>
-
-          {(!course || course.status === "DRAFT" || course.status === "REJECTED") && (
-            <Button
-              className="flex-1"
-              disabled={pending || submittingForApproval}
-              type="button"
-              variant="default"
-              onClick={form.handleSubmit(handleSubmitForApproval as any)}
-            >
-              {submittingForApproval
-                ? "Submitting..."
-                : course
+                : user?.role === "PROFESSOR"
                   ? "Submit for Approval"
-                  : "Create & Submit for Approval"}
-            </Button>
-          )}
+                  : "Save Course"}
+          </Button>
         </div>
       </form>
     </Form>

@@ -3,11 +3,17 @@ import { z } from "zod";
 
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/session";
-import { auditCourseAction } from "@/lib/audit";
 import { excludeDeleted } from "@/lib/soft-delete";
-import { courseApprovalQuerySchema } from "@/lib/validations/enhanced-validations";
+import { CourseStatus } from "@prisma/client";
 
-// GET /api/course-approvals - Get pending course approvals for reviewer
+// Simple query schema for course approvals
+const courseApprovalQuerySchema = z.object({
+    status: z.nativeEnum(CourseStatus).optional(),
+    page: z.number().int().positive().optional().default(1),
+    limit: z.number().int().positive().max(100).optional().default(10),
+});
+
+// GET /api/course-approvals - Get course approvals for institution reviewers
 export async function GET(req: NextRequest) {
     try {
         const currentUser = await getCurrentUser();
@@ -17,92 +23,113 @@ export async function GET(req: NextRequest) {
         }
 
         const url = new URL(req.url);
-        const queryParams = {
-            status: url.searchParams.get("status") || "PENDING",
-            level: url.searchParams.get("level"),
-            priority: url.searchParams.get("priority"),
-            page: url.searchParams.get("page") || "1",
-            limit: url.searchParams.get("limit") || "10",
-        };
 
-        // Parse numeric values
-        const parsedParams = {
-            ...queryParams,
-            level: queryParams.level ? parseInt(queryParams.level, 10) : undefined,
-            page: parseInt(queryParams.page, 10),
-            limit: parseInt(queryParams.limit, 10),
-        };
-
-        const validatedQuery = courseApprovalQuerySchema.parse(parsedParams);
-
-        // Determine user's review capabilities based on role and memberships
-        let reviewCapability: string[] = [];
-
-        if (currentUser.role === "INSTITUTION") {
-            reviewCapability = ["INSTITUTION_ADMIN"];
+        // Validate query parameters
+        let validatedQuery;
+        try {
+            validatedQuery = courseApprovalQuerySchema.parse({
+                status: url.searchParams.get("status"),
+                page: url.searchParams.get("page") ? parseInt(url.searchParams.get("page")!) : undefined,
+                limit: url.searchParams.get("limit") ? parseInt(url.searchParams.get("limit")!) : undefined,
+            });
+        } catch (error) {
+            console.error("Query validation error:", error);
+            return NextResponse.json(
+                { error: "Invalid query parameters", details: error.errors },
+                { status: 400 }
+            );
         }
 
-        // Get user's member roles in organizations
-        const memberRoles = await prisma.member.findMany({
-            where: excludeDeleted({
-                userId: currentUser.id,
-                isActive: true,
-            }),
-            include: {
-                organization: true,
-                faculty: {
-                    include: {
-                        school: true,
-                        courses: true
-                    },
-                },
-            },
-        });
+        // Check if user has permission to view course approvals
+        const hasReviewPermission = currentUser.role === "INSTITUTION"
+                                  
 
-        memberRoles.forEach(member => {
-            if (member.role === "admin" || member.role === "owner") {
-                reviewCapability.push("FACULTY_ADMIN");
-                reviewCapability.push("SCHOOL_ADMIN");
-            }
-        });
-
-        if (reviewCapability.length === 0) {
+        if (!hasReviewPermission) {
             return NextResponse.json(
-                { error: "You don't have permission to review courses" },
+                { error: "Only authenticated users can view course approvals" },
                 { status: 403 }
             );
         }
 
-        // Build where clause based on review capability
-        let whereClause: any = {
-            status: validatedQuery.status,
-            isActive: true,
-        };
+        // Debug logging
+        console.log(`User ${currentUser.id} (${currentUser.role}) requesting course approvals with status: ${validatedQuery.status}`);
 
-        if (validatedQuery.priority) {
-            whereClause.priority = validatedQuery.priority;
+        // Get institution memberships for the user based on their role
+        let institutionIds: string[] = [];
+        
+        if (currentUser.role === "ADMIN") {
+            // Admins can see all approvals
+            const allInstitutions = await prisma.organization.findMany({
+                select: { id: true }
+            });
+            institutionIds = allInstitutions.map(org => org.id);
+        } else if (currentUser.role === "INSTITUTION") {
+            // Institution users need admin/owner memberships
+            const institutionMemberships = await prisma.member.findMany({
+                where: {
+                    userId: currentUser.id,
+                    role: { in: ["admin", "owner"] },
+                },
+                select: {
+                    organizationId: true,
+                },
+            });
+            institutionIds = institutionMemberships.map(m => m.organizationId);
+        } else if (currentUser.role === "PROFESSOR") {
+            // Professors can see approvals for their institution
+            const professorMemberships = await prisma.member.findMany({
+                where: {
+                    userId: currentUser.id,
+                    role: { in: ["admin", "owner", "professor"] },
+                },
+                select: {
+                    organizationId: true,
+                },
+            });
+            institutionIds = professorMemberships.map(m => m.organizationId);
+        } else if (currentUser.role === "STUDENT") {
+            // Students can see approvals for their institution (read-only)
+            const studentMemberships = await prisma.member.findMany({
+                where: {
+                    userId: currentUser.id,
+                    role: { in: ["student"] },
+                },
+                select: {
+                    organizationId: true,
+                },
+            });
+            institutionIds = studentMemberships.map(m => m.organizationId);
         }
 
-        // Add level filter if specified
-        if (validatedQuery.level) {
-            whereClause.level = validatedQuery.level;
-        } else {
-            // Show approvals relevant to user's role
-            const levelConditions: any[] = [];
+        if (institutionIds.length === 0) {
+            console.log(`No institution memberships found for user ${currentUser.id}`);
+            return NextResponse.json({
+                approvals: [],
+                pagination: {
+                    page: validatedQuery.page,
+                    limit: validatedQuery.limit,
+                    total: 0,
+                    totalPages: 0,
+                },
+            });
+        }
 
-            if (reviewCapability.includes("FACULTY_ADMIN")) {
-                levelConditions.push({ level: 1 });
-            }
-            if (reviewCapability.includes("SCHOOL_ADMIN")) {
-                levelConditions.push({ level: 2 });
-            }
-            if (reviewCapability.includes("INSTITUTION_ADMIN")) {
-                levelConditions.push({ level: 3 });
-            }
+        console.log(`Found ${institutionIds.length} institution IDs for user ${currentUser.id}:`, institutionIds);
 
-            if (levelConditions.length > 0) {
-                whereClause.OR = levelConditions;
-            }
+        // Build where clause for institution courses
+        const whereClause: any = {
+            course: {
+                faculty: {
+                    school: {
+                        institutionId: { in: institutionIds },
+                    },
+                },
+            },
+        };
+
+        // Only add status filter if provided and not 'all'
+        if (validatedQuery.status) {
+            whereClause.status = validatedQuery.status;
         }
 
         // Calculate pagination
@@ -143,7 +170,6 @@ export async function GET(req: NextRequest) {
                     },
                 },
                 orderBy: [
-                    { priority: 'desc' },
                     { submittedAt: 'asc' },
                 ],
                 skip,
@@ -152,37 +178,8 @@ export async function GET(req: NextRequest) {
             prisma.courseApproval.count({ where: whereClause })
         ]);
 
-        // Filter approvals based on user's actual access to the courses
-        const accessibleApprovals = approvals.filter(approval => {
-            if (!approval.course) return false;
-
-            const course = approval.course;
-            const userMember = memberRoles.find(member =>
-                member.organizationId === course.faculty.school.institutionId
-            );
-
-            if (!userMember) return false;
-
-            // Faculty admin can review level 1 approvals in their faculty
-            if (approval.level === 1 && (userMember.role === "admin" || userMember.role === "owner")) {
-                return userMember.facultyId === course.facultyId;
-            }
-
-            // School admin can review level 2 approvals in their school
-            if (approval.level === 2 && (userMember.role === "admin" || userMember.role === "owner")) {
-                return userMember.faculty?.schoolId === course.faculty.schoolId;
-            }
-
-            // Institution admin can review level 3 approvals in their organization
-            if (approval.level === 3 && currentUser.role === "INSTITUTION") {
-                return course.faculty.school.institutionId === currentUser.id;
-            }
-
-            return false;
-        });
-
         return NextResponse.json({
-            approvals: accessibleApprovals,
+            approvals,
             pagination: {
                 page: validatedQuery.page,
                 limit: validatedQuery.limit,
@@ -229,8 +226,6 @@ export async function POST(req: NextRequest) {
         const course = await prisma.course.findFirst({
             where: excludeDeleted({
                 id: courseId,
-                instructorId: currentUser.id,
-                status: "DRAFT",
             }),
             include: {
                 faculty: {
@@ -247,8 +242,35 @@ export async function POST(req: NextRequest) {
 
         if (!course) {
             return NextResponse.json(
-                { error: "Course not found or you don't have permission to submit it" },
+                { error: "Course not found" },
                 { status: 404 }
+            );
+        }
+
+        // Check if user is the instructor or has admin permissions
+        const isCourseInstructor = course.instructorId === currentUser.id;
+
+        // Check if user is admin in the organization
+        const isAdmin = await prisma.member.findFirst({
+            where: {
+                userId: currentUser.id,
+                organizationId: course.faculty.school.institutionId,
+                role: { in: ["admin", "owner"] },
+            },
+        });
+
+        if (!isCourseInstructor && !isAdmin) {
+            return NextResponse.json(
+                { error: "You don't have permission to submit this course for approval" },
+                { status: 403 }
+            );
+        }
+
+        // Check if course is in draft status
+        if (course.status !== "DRAFT") {
+            return NextResponse.json(
+                { error: "Only draft courses can be submitted for approval" },
+                { status: 400 }
             );
         }
 
@@ -256,8 +278,7 @@ export async function POST(req: NextRequest) {
         const existingApproval = await prisma.courseApproval.findFirst({
             where: {
                 courseId,
-                isActive: true,
-                status: "PENDING",
+                status: "UNDER_REVIEW",
             },
         });
 
@@ -268,57 +289,50 @@ export async function POST(req: NextRequest) {
             );
         }
 
-        // Find a faculty admin to assign the review to (member with role admin or owner)
-        const facultyAdmin = await prisma.member.findFirst({
+        // Find institution admin to assign the review to
+        const institutionAdmin = await prisma.member.findFirst({
             where: {
                 organizationId: course.faculty.school.institutionId,
-                facultyId: course.facultyId,
                 role: { in: ["admin", "owner"] },
+                user: {
+                    status: "ACTIVE",
+                },
+            },
+            include: {
+                user: true,
             },
         });
 
-        if (!facultyAdmin) {
+        // If no institution admin found, throw error
+        if (!institutionAdmin) {
             return NextResponse.json(
-                { error: "No faculty administrator available to review this course" },
+                { error: "No institution administrator available to review this course. Please contact your institution administrator." },
                 { status: 500 }
             );
         }
 
         const result = await prisma.$transaction(async (tx) => {
-            // Update course status and approval level
+            // Update course status
             const updatedCourse = await tx.course.update({
                 where: { id: courseId },
                 data: {
                     status: "UNDER_REVIEW",
-                    submittedForApproval: new Date(),
-                    currentApprovalLevel: 1,
-                    approvalHistory: {
-                        push: JSON.stringify({
-                            action: "SUBMITTED",
-                            timestamp: new Date(),
-                            userId: currentUser.id,
-                            level: 1,
-                        })
-                    }
                 },
             });
 
-            // Create first level approval request
-            const approval = await tx.courseApproval.create({
-                data: {
-                    courseId,
-                    reviewerId: facultyAdmin.userId,
-                    level: 1,
-                    isActive: true,
-                    status: "PENDING",
-                    priority: "NORMAL",
-                },
-            });
+            // Create approval request for institution admin
+                const approval = await tx.courseApproval.create({
+                    data: {
+                        courseId,
+                        reviewerId: institutionAdmin.userId,
+                        status: "UNDER_REVIEW",
+                    },
+                });
 
-            // Notify the faculty admin
+            // Notify the reviewer
             await tx.notification.create({
                 data: {
-                    recipientId: facultyAdmin.userId,
+                    recipientId: institutionAdmin.userId,
                     issuerId: currentUser.id,
                     type: "COURSE_APPROVAL_REQUEST",
                     title: "New Course Approval Request",
@@ -329,16 +343,6 @@ export async function POST(req: NextRequest) {
 
             return { updatedCourse, approval };
         });
-
-        // Create audit log
-        await auditCourseAction(
-            "SUBMIT_APPROVAL",
-            courseId,
-            { status: "DRAFT" },
-            { status: "UNDER_REVIEW", currentApprovalLevel: 1 },
-            "Course submitted for approval",
-            { reviewerId: facultyAdmin.userId }
-        );
 
         return NextResponse.json(
             { message: "Course submitted for approval successfully", approval: result.approval },
