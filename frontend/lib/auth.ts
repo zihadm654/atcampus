@@ -25,19 +25,8 @@ import { normalizeName, VALID_DOMAINS } from "@/lib/utils";
 import transporter from "./nodemailer";
 import { getActiveOrganization } from "@/actions/organizations";
 import VerifyEmail from "@/emails/verify-email";
+import { ExtendedUser } from "@/types/auth-types";
 
-// Define our custom user properties with proper TypeScript types
-interface CustomUserProperties {
-  role: "STUDENT" | "PROFESSOR" | "INSTITUTION" | "ORGANIZATION" | "ADMIN";
-  status: "PENDING" | "ACTIVE" | "REJECTED" | "SUSPENDED";
-  username?: string;
-  institution?: string;
-  instituteId?: string;
-  phone?: string;
-}
-
-// Extended user type that combines better-auth User with our custom properties
-export type ExtendedUser = User & CustomUserProperties;
 
 const options = {
   database: prismaAdapter(prisma, {
@@ -101,31 +90,12 @@ const options = {
         // Normalize user name
         const name = normalizeName(ctx.body.name);
 
-        // Validate and normalize the role
-        const validRoles = ["STUDENT", "PROFESSOR", "INSTITUTION", "ORGANIZATION", "ADMIN"];
-        let role = "STUDENT"; // Default fallback
-
-        if (ctx.body.role && validRoles.includes(String(ctx.body.role).toUpperCase())) {
-          role = String(ctx.body.role).toUpperCase() as CustomUserProperties["role"];
-        }
-
-        // Determine status based on role
-        let status: CustomUserProperties["status"] = "PENDING";
-        if (role === "ADMIN") {
-          status = "ACTIVE"; // Admins are automatically active
-        } else if (role === "STUDENT" || role === "PROFESSOR") {
-          status = "ACTIVE"; // Students and professors are automatically active
-        }
-        // INSTITUTION and ORGANIZATION remain PENDING for approval
-
         return {
           context: {
             ...ctx,
             body: {
               ...ctx.body,
-              name,
-              role,
-              status
+              name
             }
           },
         };
@@ -151,61 +121,49 @@ const options = {
   databaseHooks: {
     user: {
       create: {
-        before: async (user: any) => {
-          // Log the incoming user data for debugging
-          console.log("Database hook received user:", {
-            email: user.email,
-            role: user.role,
-            status: user.status
-          });
+        before: async (user: ExtendedUser, context) => {
+          try {
+            const userData = { ...user };
 
-          // The role and status should already be properly set by the auth middleware
-          // We only need to handle admin override here
+            // Admin override - only if email matches admin list
+            const ADMIN_EMAILS = process.env.ADMIN_EMAILS?.split(";") ?? [];
+            if (ADMIN_EMAILS.includes(user.email)) {
+              return {
+                data: {
+                  ...userData,
+                  role: "ADMIN" as const,
+                  status: "ACTIVE" as const
+                }
+              };
+            }
 
-          let finalRole = user.role || "STUDENT";
-          let finalStatus = user.status || "PENDING";
+            // Get the role and other fields from the context
+            const { role, institution, instituteId, phone } = context?.body || {};
 
-          // Ensure role is a valid enum value
-          const validRoles: string[] = ["STUDENT", "PROFESSOR", "INSTITUTION", "ORGANIZATION", "ADMIN"];
-          if (!validRoles.includes(finalRole)) {
-            console.log("Invalid role detected, defaulting to STUDENT:", finalRole);
-            finalRole = "STUDENT";
-          }
+            // Validate role
+            if (!role || !["STUDENT", "PROFESSOR", "ORGANIZATION", "INSTITUTION", "ADMIN"].includes(role)) {
+              throw new APIError("BAD_REQUEST", {
+                message: "Invalid or missing role"
+              });
+            }
 
-          // Ensure status is a valid enum value
-          const validStatuses: string[] = ["PENDING", "ACTIVE", "REJECTED", "SUSPENDED"];
-          if (!validStatuses.includes(finalStatus)) {
-            finalStatus = "PENDING";
-          }
-
-          // Admin override - only if email matches admin list
-          const ADMIN_EMAILS = process.env.ADMIN_EMAILS?.split(";") ?? [];
-          if (ADMIN_EMAILS.includes(user.email)) {
-            console.log("Admin override triggered for email:", user.email);
-            finalRole = "ADMIN";
-            finalStatus = "ACTIVE"; // Admin always active
-          }
-
-          // Only update if values have changed
-          if (finalRole !== user.role || finalStatus !== user.status) {
-            console.log("Updating user role/status:", {
-              original: { role: user.role, status: user.status },
-              updated: { role: finalRole, status: finalStatus }
-            });
+            // Determine status based on role
+            const status = ["ORGANIZATION", "INSTITUTION"].includes(role) ? "PENDING" : "ACTIVE";
 
             return {
               data: {
-                ...user,
-                role: finalRole,
-                status: finalStatus
+                ...userData,
+                role,
+                status,
+                institution: institution || null,
+                instituteId: instituteId || null,
+                phone: phone || null
               }
             };
+          } catch (error) {
+            console.error("User creation error:", error);
+            throw error;
           }
-
-          // Return unchanged user data
-          return {
-            data: user
-          };
         },
       },
     },
@@ -225,6 +183,16 @@ const options = {
   },
   user: {
     additionalFields: {
+      role: {
+        type: ["STUDENT", "PROFESSOR", "INSTITUTION", "ORGANIZATION", "ADMIN"],
+        input: true,
+        required: true
+      },
+      status: {
+        type: ["PENDING", "ACTIVE", "REJECTED", "SUSPENDED"],
+        input: false, // Status is managed by the system, not user input
+        required: false // We'll set this in the databaseHooks
+      },
       institution: {
         type: "string",
         input: true,
@@ -234,16 +202,6 @@ const options = {
         type: "string",
         input: true,
         required: false
-      },
-      role: {
-        type: ["STUDENT", "PROFESSOR", "INSTITUTION", "ORGANIZATION", "ADMIN"],
-        input: true,
-        required: true
-      },
-      status: {
-        type: ["PENDING", "ACTIVE", "REJECTED", "SUSPENDED"],
-        input: false, // Status is managed by the system, not user input
-        required: true
       },
       phone: {
         type: "string",
@@ -285,6 +243,7 @@ const options = {
       roles,
     }),
     organization({
+      requireEmailVerificationOnInvitation: true,
       allowUserToCreateOrganization: async (user: ExtendedUser) => {
         // Only institutions and organizations can create organizations
         return user.role === "INSTITUTION" || user.role === "ORGANIZATION";

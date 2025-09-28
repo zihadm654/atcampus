@@ -51,7 +51,7 @@ export default async function SettingsPage() {
       />
       <h2 className="text-2xl font-bold">Permissions</h2>
 
-      <div className="flex items-center space-x-4">
+      <div className="flex items-center space-x-4 flex-wrap max-md:space-y-2">
         <Button size="sm">MANAGE OWN POSTS</Button>
         <Button disabled={!FULL_POST_ACCESS.success} size="sm">
           MANAGE ALL POSTS

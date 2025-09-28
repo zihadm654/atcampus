@@ -2,7 +2,7 @@
 
 import { APIError } from "better-auth/api";
 
-import { auth, type ErrorCode, type ExtendedUser } from "@/lib/auth";
+import { auth, type ErrorCode } from "@/lib/auth";
 import streamServerClient from "@/lib/stream";
 import { generateUsername } from "@/lib/utils";
 import { registerSchema, type TRegister } from "@/lib/validations/auth";
@@ -19,15 +19,6 @@ export async function signUpEmailAction(data: TRegister) {
     result.data;
   const generatedUsername = generateUsername(name);
 
-  // Add logging for debugging purposes
-  console.log("Registration data being sent:", {
-    name,
-    email,
-    role,
-    institution,
-    instituteId,
-    phone
-  });
 
   try {
     // Register the user with Better Auth and get the response
@@ -37,7 +28,7 @@ export async function signUpEmailAction(data: TRegister) {
         username: generatedUsername,
         email,
         password,
-        role: role as ExtendedUser["role"], // Ensure role is explicitly passed with correct type
+        role, // Ensure role is explicitly passed with correct type
         phone: phone ?? undefined,
         institution: institution ?? undefined,
         instituteId: instituteId ?? undefined,
