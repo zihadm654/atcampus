@@ -107,3 +107,7 @@ export * from "./auth-types";
 // Export other existing types
 export * from "./profile-types";
 export * from "./types";
+
+// Export event and club types
+export * from "./event-types";
+export * from "./club-types";

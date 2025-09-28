@@ -185,7 +185,7 @@ export default function Job({ job }: JobProps) {
           <Button
             onClick={handleApply}
             variant={isApplied ? "outline" : "default"}
-            disabled={isApplied || isPending}
+            disabled={isApplied || user.role !== "STUDENT" || isPending}
             className="min-w-[120px]"
             size="sm"
           >

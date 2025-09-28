@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useTransition, useOptimistic, useMemo } from "react";
+import { useState, useTransition, useOptimistic, useMemo, useEffect } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { Loader2, Briefcase } from "lucide-react";
+import { Loader2, Briefcase, Search, X } from "lucide-react";
 
 import { JobsPage, JobData } from "@/types/types";
 import kyInstance from "@/lib/ky";
@@ -23,8 +23,9 @@ interface Props {
 
 export default function JobFeed({ user, initialData }: Props) {
   const [searchQuery, setSearchQuery] = useState("");
+  const [isSearching, setIsSearching] = useState(false);
   const [jobTypes, setJobTypes] = useState<JobType[]>([]);
-  const debouncedSearchQuery = useDebounce(searchQuery);
+  const debouncedSearchQuery = useDebounce(searchQuery, 300);
 
   const {
     data,
@@ -52,6 +53,15 @@ export default function JobFeed({ user, initialData }: Props) {
     //   ? { pages: [initialData], pageParams: [null] }
     //   : undefined,
   });
+
+  // Update searching state when debounced query changes
+  useEffect(() => {
+    if (searchQuery !== debouncedSearchQuery) {
+      setIsSearching(true);
+    } else {
+      setIsSearching(false);
+    }
+  }, [searchQuery, debouncedSearchQuery]);
 
   const jobs = useMemo(
     () => data?.pages.flatMap((page) => page.jobs) || [],
@@ -96,6 +106,38 @@ export default function JobFeed({ user, initialData }: Props) {
             Discover exciting opportunities to gain practical experience and
             advance your career
           </p>
+          
+          {/* Search Bar */}
+          <div className="relative max-w-2xl">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <input
+                type="text"
+                placeholder="Search jobs by title, company, or location..."
+                className="w-full rounded-lg border border-input bg-background pl-10 pr-10 py-3 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery("")}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1 hover:bg-muted"
+                >
+                  <X className="h-4 w-4 text-muted-foreground" />
+                </button>
+              )}
+            </div>
+            {isSearching && (
+              <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+              </div>
+            )}
+            {debouncedSearchQuery && (
+              <p className="mt-2 text-sm text-muted-foreground">
+                Showing results for "{debouncedSearchQuery}"
+              </p>
+            )}
+          </div>
         </div>
         <div>
           {/* Results Section */}

@@ -106,6 +106,51 @@ enum ExperienceLevel {
   EXECUTIVE
 }
 
+enum EventStatus {
+  DRAFT
+  PUBLISHED
+  CANCELLED
+  COMPLETED
+}
+
+enum EventType {
+  WORKSHOP
+  SEMINAR
+  CONFERENCE
+  NETWORKING
+  SOCIAL
+  COMPETITION
+  WEBINAR
+  OTHER
+}
+
+enum ClubType {
+  ACADEMIC
+  SPORTS
+  CULTURAL
+  TECHNICAL
+  SOCIAL
+  HOBBY
+  PROFESSIONAL
+  OTHER
+}
+
+enum ClubMemberRole {
+  PRESIDENT
+  VICE_PRESIDENT
+  SECRETARY
+  TREASURER
+  MEMBER
+  ADVISOR
+}
+
+enum AttendanceStatus {
+  REGISTERED
+  ATTENDED
+  CANCELLED
+  NO_SHOW
+}
+
 // ============================================================================
 // AUTHENTICATION & SESSION MODELS
 // ============================================================================
@@ -264,9 +309,13 @@ model User {
   courseReviews     CourseApproval[]   @relation("CourseReviewer")
 
   // Events & clubs
-  events       Event[]
-  clubs        Club[]
-  notification Notification[]
+  events         Event[]
+  clubs          Club[]
+  eventAttendees EventAttendee[]
+  eventLikes     EventLike[]
+  clubMembers    ClubMember[]
+  clubLikes      ClubLike[]
+  notification   Notification[]
 
   // Audit trail
   auditActions AuditLog[] @relation("AuditActor")
@@ -293,6 +342,8 @@ model Organization {
 
   members     Member[]
   invitations Invitation[]
+  clubs       Club[]
+  events      Event[]
 
   @@index([name])
   @@map(name: "organizations")
@@ -393,6 +444,7 @@ model Faculty {
 
   courses Course[]
   members Member[]
+  clubs   Club[]
 
   @@unique([slug, schoolId])
   @@unique([name, schoolId])
@@ -1039,14 +1091,93 @@ model Event {
   coverPhoto   String?
   maxAttendees Int?
 
+  // Enhanced fields
+  shortDescription String? // For cards and previews
+  eventType        EventType   @default(OTHER)
+  status           EventStatus @default(DRAFT)
+  isPublic         Boolean     @default(true)
+  isFree           Boolean     @default(true)
+  price            Float?
+  currency         String?     @default("USD")
+
+  // Location details
+  venue      String?
+  address    String?
+  city       String?
+  country    String?
+  onlineLink String?
+  isOnline   Boolean @default(false)
+
+  // Contact and organization
+  contactEmail   String?
+  contactPhone   String?
+  website        String?
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
+
+  // Timestamps
+  registrationDeadline DateTime?
+  cancellationDeadline DateTime?
+
+  // Engagement
+  views  Int @default(0)
+  likes  Int @default(0)
+  shares Int @default(0)
+
+  // Notification tracking
+  reminderSent Boolean @default(false)
+
   isActive Boolean @default(true)
 
   createdAt DateTime @default(now()) @map(name: "created_at")
   updatedAt DateTime @updatedAt @map(name: "updated_at")
 
+  // Relations
+  attendees  EventAttendee[]
+  likesUsers EventLike[]
+  clubEvents ClubEvent[]
+
   @@index([creatorId, isActive])
   @@index([startDate, isActive])
+  @@index([status, isPublic, startDate])
+  @@index([organizationId, status])
   @@map(name: "events")
+}
+
+model EventAttendee {
+  id      String @id @default(cuid()) @map("_id")
+  userId  String
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  eventId String
+  event   Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  status       AttendanceStatus @default(REGISTERED)
+  registeredAt DateTime         @default(now())
+  attendedAt   DateTime?
+
+  // Additional fields
+  ticketNumber String?
+  notes        String?
+
+  @@unique([userId, eventId])
+  @@index([eventId, status])
+  @@index([userId, registeredAt])
+  @@map(name: "event_attendees")
+}
+
+model EventLike {
+  id      String @id @default(cuid()) @map("_id")
+  userId  String
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  eventId String
+  event   Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, eventId])
+  @@index([eventId])
+  @@index([userId, createdAt])
+  @@map(name: "event_likes")
 }
 
 model Club {
@@ -1058,12 +1189,111 @@ model Club {
   description String
   coverPhoto  String?
 
+  // Enhanced fields
+  shortDescription String? // For cards and previews
+  clubType         ClubType   @default(ACADEMIC)
+  status           ClubStatus @default(ACTIVE)
+  isPublic         Boolean    @default(true)
+
+  // Contact and organization
+  contactEmail String?
+  contactPhone String?
+  website      String?
+  socialLinks  Json? // Store social media links as JSON
+
+  // Organization details
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
+  facultyId      String?
+  faculty        Faculty?      @relation(fields: [facultyId], references: [id], onDelete: SetNull)
+
+  // Meeting details
+  meetingFrequency String? // Weekly, Monthly, etc.
+  meetingDay       String? // Monday, Tuesday, etc.
+  meetingTime      String? // 14:00, etc.
+  meetingLocation  String?
+
+  // Membership limits
+  maxMembers    Int?
+  membershipFee Float?
+  currency      String? @default("USD")
+
+  // Engagement
+  views  Int @default(0)
+  likes  Int @default(0)
+  shares Int @default(0)
+
   isActive Boolean @default(true)
 
   createdAt DateTime @default(now()) @map(name: "created_at")
   updatedAt DateTime @updatedAt @map(name: "updated_at")
 
+  // Relations
+  members    ClubMember[]
+  events     ClubEvent[]
+  likesUsers ClubLike[]
+
   @@index([creatorId, isActive])
   @@index([name])
+  @@index([organizationId, status])
+  @@index([facultyId, status])
   @@map(name: "clubs")
+}
+
+enum ClubStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
+model ClubMember {
+  id     String @id @default(cuid()) @map("_id")
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  clubId String
+  club   Club   @relation(fields: [clubId], references: [id], onDelete: Cascade)
+
+  role     ClubMemberRole @default(MEMBER)
+  joinedAt DateTime       @default(now())
+  isActive Boolean        @default(true)
+
+  // Additional fields
+  position String? // Custom position title
+  bio      String? // Member bio within club context
+
+  @@unique([userId, clubId])
+  @@index([clubId, role])
+  @@index([userId, joinedAt])
+  @@map(name: "club_members")
+}
+
+model ClubEvent {
+  id      String @id @default(cuid()) @map("_id")
+  clubId  String
+  club    Club   @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  eventId String
+  event   Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  isFeatured Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  @@unique([clubId, eventId])
+  @@index([clubId, isFeatured])
+  @@index([eventId])
+  @@map(name: "club_events")
+}
+
+model ClubLike {
+  id     String @id @default(cuid()) @map("_id")
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  clubId String
+  club   Club   @relation(fields: [clubId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, clubId])
+  @@index([clubId])
+  @@index([userId, createdAt])
+  @@map(name: "club_likes")
 }

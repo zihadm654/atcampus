@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { Loader2 } from "lucide-react";
+import { Loader2, Search, X } from "lucide-react";
 
 import { CoursesPage } from "@/types/types";
 import kyInstance from "@/lib/ky";
@@ -19,9 +19,10 @@ interface Props {
 
 export default function CourseFeed({ user }: Props) {
   const [searchQuery, setSearchQuery] = useState("");
+  const [isSearching, setIsSearching] = useState(false);
   // const [jobTypes, setJobTypes] = useState<JobType[]>([]);
 
-  const debouncedSearchQuery = useDebounce(searchQuery);
+  const debouncedSearchQuery = useDebounce(searchQuery, 300);
 
   const {
     data,
@@ -45,6 +46,15 @@ export default function CourseFeed({ user }: Props) {
     initialPageParam: null as string | null,
     getNextPageParam: (lastPage) => lastPage.nextCursor,
   });
+
+  // Update searching state when debounced query changes
+  useEffect(() => {
+    if (searchQuery !== debouncedSearchQuery) {
+      setIsSearching(true);
+    } else {
+      setIsSearching(false);
+    }
+  }, [searchQuery, debouncedSearchQuery]);
 
   const courses = data?.pages.flatMap((page) => page.courses) || [];
 
@@ -73,14 +83,49 @@ export default function CourseFeed({ user }: Props) {
     );
   }
   return (
-    <InfiniteScrollContainer
-      className="grid grid-cols-3 gap-4 space-y-5 max-md:grid-cols-1"
-      onBottomReached={() => hasNextPage && !isFetching && fetchNextPage()}
-    >
-      {courses.map((course) => (
-        <Course key={course.id} course={course} />
-      ))}
-      {isFetchingNextPage && <Loader2 className="mx-auto my-3 animate-spin" />}
-    </InfiniteScrollContainer>
+    <div className="space-y-6">
+      {/* Search Bar */}
+      <div className="relative max-w-2xl">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <input
+            type="text"
+            placeholder="Search courses by title, code, or description..."
+            className="w-full rounded-lg border border-input bg-background pl-10 pr-10 py-3 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery("")}
+              className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1 hover:bg-muted"
+            >
+              <X className="h-4 w-4 text-muted-foreground" />
+            </button>
+          )}
+        </div>
+        {isSearching && (
+          <div className="absolute right-3 top-1/2 -translate-y-1/2">
+            <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+          </div>
+        )}
+        {debouncedSearchQuery && (
+          <p className="mt-2 text-sm text-muted-foreground">
+            Showing results for "{debouncedSearchQuery}"
+          </p>
+        )}
+      </div>
+
+      {/* Course Grid */}
+      <InfiniteScrollContainer
+        className="grid grid-cols-3 gap-4 space-y-5 max-md:grid-cols-1"
+        onBottomReached={() => hasNextPage && !isFetching && fetchNextPage()}
+      >
+        {courses.map((course) => (
+          <Course key={course.id} course={course} />
+        ))}
+        {isFetchingNextPage && <Loader2 className="mx-auto my-3 animate-spin" />}
+      </InfiniteScrollContainer>
+    </div>
   );
 }

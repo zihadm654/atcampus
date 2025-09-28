@@ -1,9 +1,9 @@
 "use client";
 
-import { Fragment, useState } from "react";
+import { Fragment, useState, useEffect } from "react";
 import Link from "next/link";
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { Briefcase, Loader2, Search } from "lucide-react";
+import { Briefcase, Loader2, Search, X } from "lucide-react";
 
 import { ResearchesPage } from "@/types/types";
 import kyInstance from "@/lib/ky";
@@ -16,7 +16,8 @@ import { Button } from "../ui/button";
 
 export default function ResearchFeed({ initialData }: any) {
   const [searchQuery, setSearchQuery] = useState("");
-  const debouncedSearchQuery = useDebounce(searchQuery);
+  const [isSearching, setIsSearching] = useState(false);
+  const debouncedSearchQuery = useDebounce(searchQuery, 300);
   const {
     data,
     fetchNextPage,
@@ -38,6 +39,15 @@ export default function ResearchFeed({ initialData }: any) {
     initialPageParam: null as string | null,
     getNextPageParam: (lastPage) => lastPage.nextCursor,
   });
+
+  // Update searching state when debounced query changes
+  useEffect(() => {
+    if (searchQuery !== debouncedSearchQuery) {
+      setIsSearching(true);
+    } else {
+      setIsSearching(false);
+    }
+  }, [searchQuery, debouncedSearchQuery]);
 
   const researches = data?.pages.flatMap((page) => page.researches) || [];
   if (status === "pending") {
@@ -94,30 +104,46 @@ export default function ResearchFeed({ initialData }: any) {
           </div>
         </div>
       </div> */}
-      {/* Filters */}
-      <div className="flex items-center justify-between gap-2">
-        {/* 
-        <div className="flex flex-wrap items-center gap-2">
-          <Button className="rounded-full" size="sm" variant="outline">
-            All Jobs
+      {/* Search and Header */}
+      <div className="mb-6 space-y-4">
+        <div className="flex items-center justify-between gap-2">
+          <h1 className="font-bold text-2xl">Research</h1>
+          <Button className="rounded-xl" size="sm" variant="outline">
+            <Link href="/researches/createResearch">Create Research</Link>
           </Button>
-          <Button className="rounded-full" size="sm" variant="outline">
-            On Campus
-          </Button>
-          <Button className="rounded-full" size="sm" variant="outline">
-            Remote
-          </Button>
-          <Button className="rounded-full" size="sm" variant="outline">
-            Part-time
-          </Button>
-          <Button className="rounded-full" size="sm" variant="outline">
-            Full-time
-          </Button>
-          </div> */}
-        <h1 className="font-bold text-2xl">Research</h1>
-        <Button className="rounded-xl" size="sm" variant="outline">
-          <Link href="/researches/createResearch">Create Research</Link>
-        </Button>
+        </div>
+        
+        {/* Search Bar */}
+        <div className="relative max-w-2xl">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <input
+              type="text"
+              placeholder="Search research projects, titles, or descriptions..."
+              className="w-full rounded-lg border border-input bg-background pl-10 pr-10 py-3 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery("")}
+                className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1 hover:bg-muted"
+              >
+                <X className="h-4 w-4 text-muted-foreground" />
+              </button>
+            )}
+          </div>
+          {isSearching && (
+            <div className="absolute right-3 top-1/2 -translate-y-1/2">
+              <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+            </div>
+          )}
+          {debouncedSearchQuery && (
+            <p className="mt-2 text-sm text-muted-foreground">
+              Showing results for "{debouncedSearchQuery}"
+            </p>
+          )}
+        </div>
       </div>
       <InfiniteScrollContainer
         className="space-y-5 grid grid-cols-3 gap-4 max-md:grid-cols-1"
