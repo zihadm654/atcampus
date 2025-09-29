@@ -46,33 +46,33 @@ export function CreateCourseForm({ user, course }: CreateCourseFormProps) {
     resolver: zodResolver(courseSchema),
     defaultValues: course
       ? {
-          title: course.title || "",
-          description: course.description || "",
-          code: course.code || "",
-          department: course.department || "",
-          credits: course.credits || 0,
-          difficulty: course.difficulty || "",
-          estimatedHours: course.estimatedHours || 0,
-          facultyId: course.facultyId || "",
-          objectives: course.objectives || [""],
-          outcomes: course.outcomes || [""],
-          year: course.year || 1,
-          status: course.status || CourseStatus.DRAFT, // Default to DRAFT
-        }
+        title: course.title || "",
+        description: course.description || "",
+        code: course.code || "",
+        department: course.department || "",
+        credits: course.credits || 0,
+        difficulty: course.difficulty || "",
+        estimatedHours: course.estimatedHours || 0,
+        facultyId: course.facultyId || "",
+        objectives: course.objectives || [""],
+        outcomes: course.outcomes || [""],
+        year: course.year || 1,
+        status: course.status || CourseStatus.DRAFT, // Default to DRAFT
+      }
       : {
-          title: "",
-          description: "",
-          code: "",
-          department: "",
-          estimatedHours: 10,
-          credits: 3,
-          difficulty: "BEGINNER",
-          facultyId: "",
-          objectives: [],
-          outcomes: [],
-          year: 1,
-          status: CourseStatus.DRAFT, // Default to DRAFT
-        },
+        title: "",
+        description: "",
+        code: "",
+        department: "",
+        estimatedHours: 10,
+        credits: 3,
+        difficulty: "BEGINNER",
+        facultyId: "",
+        objectives: [],
+        outcomes: [],
+        year: 1,
+        status: CourseStatus.DRAFT, // Default to DRAFT
+      },
   });
   const queryClient = useQueryClient();
 
@@ -398,8 +398,7 @@ export function CreateCourseForm({ user, course }: CreateCourseFormProps) {
                         <SelectGroup>
                           {[
                             CourseStatus.DRAFT,
-                            CourseStatus.UNDER_REVIEW,
-                            CourseStatus.PUBLISHED,
+                            CourseStatus.UNDER_REVIEW
                           ].map((status) => (
                             <SelectItem key={status} value={status}>
                               {status.charAt(0).toUpperCase() +

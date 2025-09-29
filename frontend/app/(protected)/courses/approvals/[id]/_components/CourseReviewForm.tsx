@@ -30,14 +30,15 @@ import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { formatDistanceToNow } from "date-fns";
 import { CourseStatus } from "@prisma/client";
+import { JsonToHtml } from "@/components/editor/JsonToHtml";
 
 const reviewSchema = z.object({
-    decision: z.enum(["PUBLISHED", "REJECTED", "NEEDS_REVISION"]),
-    comments: z.string().optional(),
-    qualityScore: z.number().min(0).max(100).optional(),
-    contentQualityScore: z.number().min(0).max(100).optional(),
-    pedagogyQualityScore: z.number().min(0).max(100).optional(),
-  });
+  decision: z.enum(["PUBLISHED", "REJECTED", "NEEDS_REVISION"]),
+  comments: z.string().optional(),
+  qualityScore: z.number().min(0).max(100).optional(),
+  contentQualityScore: z.number().min(0).max(100).optional(),
+  pedagogyQualityScore: z.number().min(0).max(100).optional(),
+});
 
 type ReviewFormData = z.infer<typeof reviewSchema>;
 
@@ -58,7 +59,7 @@ interface CourseApproval {
     difficulty?: string;
     credits?: number;
     estimatedHours?: number;
-     
+
     objectives?: string[];
     outcomes?: string[];
     year?: number;
@@ -205,10 +206,10 @@ export function CourseReviewForm({
               </div>
             </div>
             <div>
-              <p className="text-sm font-medium">Description</p>
-              <div className="text-sm text-muted-foreground">
-                {approval.course.description}
-              </div>
+              <h4 className="text-sm font-medium">Description</h4>
+              <p className="text-sm text-muted-foreground">
+                <JsonToHtml json={JSON.parse(approval.course.description)} />
+              </p>
             </div>
             <div>
               <p className="text-sm font-medium">Objectives</p>
@@ -228,7 +229,7 @@ export function CourseReviewForm({
                   ))}
               </ul>
             </div>
-            
+
           </CardContent>
         </Card>
 
@@ -309,19 +310,28 @@ export function CourseReviewForm({
                       name="qualityScore"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Overall Quality Score</FormLabel>
-                          <FormControl>
-                            <Slider
-                              defaultValue={[field.value || 75]}
-                              max={100}
-                              step={1}
-                              onValueChange={(val) => field.onChange(val[0])}
-                              className="[&>*]:w-full"
-                            />
-                          </FormControl>
-                          <div className="text-sm text-muted-foreground">
-                            Score: {field.value || 75}
+                          <div className="flex justify-between items-center">
+                            <FormLabel>Overall Quality Score</FormLabel>
+                            <span className="text-sm px-2 py-1 bg-muted rounded-md font-medium">
+                              {field.value || 75}%
+                            </span>
                           </div>
+                          <FormControl>
+                            <div className="pt-2">
+                              <div className="flex justify-between mb-1 text-xs text-muted-foreground">
+                                <span>0%</span>
+                                <span>100%</span>
+                              </div>
+                              <Slider
+                                defaultValue={[field.value || 75]}
+                                max={100}
+                                min={0}
+                                step={1}
+                                onValueChange={(val) => field.onChange(val[0])}
+                                className="w-full"
+                              />
+                            </div>
+                          </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -331,19 +341,28 @@ export function CourseReviewForm({
                       name="contentQualityScore"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Content Quality Score</FormLabel>
-                          <FormControl>
-                            <Slider
-                              defaultValue={[field.value || 75]}
-                              max={100}
-                              step={1}
-                              onValueChange={(val) => field.onChange(val[0])}
-                              className="[&>*]:w-full"
-                            />
-                          </FormControl>
-                          <div className="text-sm text-muted-foreground">
-                            Score: {field.value || 75}
+                          <div className="flex justify-between items-center">
+                            <FormLabel>Content Quality Score</FormLabel>
+                            <span className="text-sm px-2 py-1 bg-muted rounded-md font-medium">
+                              {field.value || 75}%
+                            </span>
                           </div>
+                          <FormControl>
+                            <div className="pt-2">
+                              <div className="flex justify-between mb-1 text-xs text-muted-foreground">
+                                <span>0%</span>
+                                <span>100%</span>
+                              </div>
+                              <Slider
+                                defaultValue={[field.value || 75]}
+                                max={100}
+                                min={0}
+                                step={1}
+                                onValueChange={(val) => field.onChange(val[0])}
+                                className="w-full"
+                              />
+                            </div>
+                          </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -353,19 +372,28 @@ export function CourseReviewForm({
                       name="pedagogyQualityScore"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Pedagogy Quality Score</FormLabel>
-                          <FormControl>
-                            <Slider
-                              defaultValue={[field.value || 75]}
-                              max={100}
-                              step={1}
-                              onValueChange={(val) => field.onChange(val[0])}
-                              className="[&>*]:w-full"
-                            />
-                          </FormControl>
-                          <div className="text-sm text-muted-foreground">
-                            Score: {field.value || 75}
+                          <div className="flex justify-between items-center">
+                            <FormLabel>Pedagogy Quality Score</FormLabel>
+                            <span className="text-sm px-2 py-1 bg-muted rounded-md font-medium">
+                              {field.value || 75}%
+                            </span>
                           </div>
+                          <FormControl>
+                            <div className="pt-2">
+                              <div className="flex justify-between mb-1 text-xs text-muted-foreground">
+                                <span>0%</span>
+                                <span>100%</span>
+                              </div>
+                              <Slider
+                                defaultValue={[field.value || 75]}
+                                max={100}
+                                min={0}
+                                step={1}
+                                onValueChange={(val) => field.onChange(val[0])}
+                                className="w-full"
+                              />
+                            </div>
+                          </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}

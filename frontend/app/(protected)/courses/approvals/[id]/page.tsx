@@ -3,7 +3,6 @@ import { getCurrentUser } from "@/lib/session";
 import { prisma } from "@/lib/db";
 import { CourseReviewForm } from "./_components/CourseReviewForm";
 import { Metadata } from "next";
-import { CourseStatus } from "@prisma/client";
 
 export const metadata: Metadata = {
   title: "Course Approval Review",
@@ -94,10 +93,10 @@ export default async function CourseApprovalPage({ params }: PageProps) {
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">
+        <h1 className="text-2xl font-bold mb-2">
           Course Approval
         </h1>
-        <p className="text-gray-600">Review course submission for approval</p>
+        <p className="text-sm">Review course submission for approval</p>
       </div>
 
       <CourseReviewForm approval={{
@@ -115,10 +114,10 @@ export default async function CourseApprovalPage({ params }: PageProps) {
           credits: approval.course.credits || undefined,
           estimatedHours: approval.course.estimatedHours || undefined,
           year: approval.course.year || undefined,
-           
+
           objectives: approval.course.objectives || [],
           outcomes: approval.course.outcomes || [],
-           
+
           instructor: {
             id: approval.course.instructor.id,
             name: approval.course.instructor.name,

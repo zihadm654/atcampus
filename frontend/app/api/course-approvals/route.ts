@@ -40,91 +40,12 @@ export async function GET(req: NextRequest) {
             );
         }
 
-        // Check if user has permission to view course approvals
-        const hasReviewPermission = currentUser.role === "INSTITUTION"
-                                  
-
-        if (!hasReviewPermission) {
-            return NextResponse.json(
-                { error: "Only authenticated users can view course approvals" },
-                { status: 403 }
-            );
-        }
-
         // Debug logging
-        console.log(`User ${currentUser.id} (${currentUser.role}) requesting course approvals with status: ${validatedQuery.status}`);
+        console.log(`User ${currentUser.id} requesting course approvals with status: ${validatedQuery.status}`);
 
-        // Get institution memberships for the user based on their role
-        let institutionIds: string[] = [];
-        
-        if (currentUser.role === "ADMIN") {
-            // Admins can see all approvals
-            const allInstitutions = await prisma.organization.findMany({
-                select: { id: true }
-            });
-            institutionIds = allInstitutions.map(org => org.id);
-        } else if (currentUser.role === "INSTITUTION") {
-            // Institution users need admin/owner memberships
-            const institutionMemberships = await prisma.member.findMany({
-                where: {
-                    userId: currentUser.id,
-                    role: { in: ["admin", "owner"] },
-                },
-                select: {
-                    organizationId: true,
-                },
-            });
-            institutionIds = institutionMemberships.map(m => m.organizationId);
-        } else if (currentUser.role === "PROFESSOR") {
-            // Professors can see approvals for their institution
-            const professorMemberships = await prisma.member.findMany({
-                where: {
-                    userId: currentUser.id,
-                    role: { in: ["admin", "owner", "professor"] },
-                },
-                select: {
-                    organizationId: true,
-                },
-            });
-            institutionIds = professorMemberships.map(m => m.organizationId);
-        } else if (currentUser.role === "STUDENT") {
-            // Students can see approvals for their institution (read-only)
-            const studentMemberships = await prisma.member.findMany({
-                where: {
-                    userId: currentUser.id,
-                    role: { in: ["student"] },
-                },
-                select: {
-                    organizationId: true,
-                },
-            });
-            institutionIds = studentMemberships.map(m => m.organizationId);
-        }
-
-        if (institutionIds.length === 0) {
-            console.log(`No institution memberships found for user ${currentUser.id}`);
-            return NextResponse.json({
-                approvals: [],
-                pagination: {
-                    page: validatedQuery.page,
-                    limit: validatedQuery.limit,
-                    total: 0,
-                    totalPages: 0,
-                },
-            });
-        }
-
-        console.log(`Found ${institutionIds.length} institution IDs for user ${currentUser.id}:`, institutionIds);
-
-        // Build where clause for institution courses
+        // Build where clause for courses where user is reviewer
         const whereClause: any = {
-            course: {
-                faculty: {
-                    school: {
-                        institutionId: { in: institutionIds },
-                    },
-                },
-            },
+            reviewerId: currentUser.id,
         };
 
         // Only add status filter if provided and not 'all'
@@ -321,13 +242,13 @@ export async function POST(req: NextRequest) {
             });
 
             // Create approval request for institution admin
-                const approval = await tx.courseApproval.create({
-                    data: {
-                        courseId,
-                        reviewerId: institutionAdmin.userId,
-                        status: "UNDER_REVIEW",
-                    },
-                });
+            const approval = await tx.courseApproval.create({
+                data: {
+                    courseId,
+                    reviewerId: institutionAdmin.userId,
+                    status: "UNDER_REVIEW",
+                },
+            });
 
             // Notify the reviewer
             await tx.notification.create({

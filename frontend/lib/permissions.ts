@@ -25,7 +25,10 @@ export const roles = {
     posts: ["create", "read", "update:own", "delete:own"],
     research: ["create", "read", "update:own", "delete:own"],
     courses: ["read"],
+    schools: ["read"],
+    faculties: ["read"],
     jobs: ["read"],
+    members: ["read"],
   }),
   PROFESSOR: ac.newRole({
     posts: ["create", "read", "update:own", "delete:own"],

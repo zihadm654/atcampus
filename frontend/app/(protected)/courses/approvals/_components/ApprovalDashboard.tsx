@@ -17,27 +17,12 @@ import {
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { formatDistanceToNow } from "date-fns";
+import { JsonToHtml } from "@/components/editor/JsonToHtml";
 
 interface User {
   id: string;
   name: string;
   role: string;
-}
-
-interface MemberRole {
-  id: string;
-  role: string;
-  organizationId: string;
-  facultyId?: string;
-  organization: {
-    name: string;
-  };
-  faculty?: {
-    name: string;
-    school: {
-      name: string;
-    };
-  };
 }
 
 interface CourseApproval {
@@ -71,12 +56,10 @@ interface CourseApproval {
 
 interface ApprovalDashboardProps {
   user: User;
-  memberRoles: MemberRole[];
 }
 
 export function ApprovalDashboard({
   user,
-  memberRoles,
 }: ApprovalDashboardProps) {
   const [activeTab, setActiveTab] = useState("pending");
   const [page, setPage] = useState(1);
@@ -220,12 +203,12 @@ export function ApprovalDashboard({
 
                     <CardContent className="flex-1 pb-3">
                       <p className="text-sm text-muted-foreground line-clamp-3 mb-3">
-                        {approval.course.description}
+                        <JsonToHtml json={JSON.parse(approval.course.description)} />
                       </p>
 
                       <div className="space-y-2 text-xs text-muted-foreground">
                         <div>
-                          <strong>Creator:</strong> {approval.course.createdBy.name}
+                          <strong>Creator:</strong> {approval.course.createdBy?.name}
                         </div>
                         <div>
                           <strong>Institution:</strong>{" "}
