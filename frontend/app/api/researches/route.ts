@@ -3,10 +3,12 @@ import { NextRequest } from "next/server";
 import { getResearchDataInclude, ResearchesPage } from "@/types/types";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/session";
+import { Prisma } from "@prisma/client";
 
 export async function GET(req: NextRequest) {
   try {
     const cursor = req.nextUrl.searchParams.get("cursor") || undefined;
+    const searchQuery = req.nextUrl.searchParams.get("q") || undefined;
 
     const pageSize = 10;
 
@@ -15,8 +17,16 @@ export async function GET(req: NextRequest) {
     if (!user) {
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
-
+    const whereClause: Prisma.ResearchWhereInput = {
+      ...(searchQuery && {
+        title: {
+          contains: searchQuery,
+          mode: "insensitive",
+        },
+      }),
+    };
     const researches = await prisma.research.findMany({
+      where: whereClause,
       include: getResearchDataInclude(user.id),
       orderBy: { createdAt: "desc" },
       take: pageSize + 1,

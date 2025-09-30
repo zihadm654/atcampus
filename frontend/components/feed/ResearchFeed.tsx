@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useState, useEffect } from "react";
+import { Fragment, useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { Briefcase, Loader2, Search, X } from "lucide-react";
@@ -49,18 +49,15 @@ export default function ResearchFeed({ initialData }: any) {
     }
   }, [searchQuery, debouncedSearchQuery]);
 
-  const researches = data?.pages.flatMap((page) => page.researches) || [];
+  const researches = useMemo(() => data?.pages.flatMap((page) => page.researches) || [], [data]);
   if (status === "pending") {
     return <ResearchesLoadingSkeleton />;
   }
 
-  if (status === "success" && !researches.length && !hasNextPage) {
-    return (
-      <p className="text-muted-foreground text-center">
-        No one has posted anything yet.
-      </p>
-    );
-  }
+  // Show "no courses found" message only when search has been performed and no results
+  const showNoResults = debouncedSearchQuery && status === "success" && !researches.length && !hasNextPage;
+  // Show "no courses posted" message only when no search and no courses
+  const showNoJobs = !debouncedSearchQuery && status === "success" && !researches.length && !hasNextPage;
 
   if (status === "error") {
     return (
@@ -71,39 +68,6 @@ export default function ResearchFeed({ initialData }: any) {
   }
   return (
     <Fragment>
-      {/* Header with gradient background */}
-      {/* <div className="rounded-xl bg-gradient-to-r from-blue-500/80 to-indigo-600/80 p-6 text-white shadow-md">
-        <div className="flex flex-col gap-3">
-          <div className="flex items-center gap-2">
-            <Briefcase className="h-6 w-6" />
-            <h1 className="font-bold text-3xl">Supplement Research</h1>
-          </div>
-          <p className="max-w-2xl text-white/90">
-            Find and apply for supplement research to gain practical experience
-            and enhance your skills while studying
-          </p>
-
-          <div className="mt-4 flex w-full max-w-md items-center gap-2 rounded-lg bg-white/10 p-1 backdrop-blur-sm">
-            <div className="flex h-10 w-full items-center gap-2 rounded-md bg-white px-3 text-gray-800">
-              <Search className="h-4 w-4 text-gray-500" />
-              <input
-                className="h-full w-full border-0 bg-transparent outline-none placeholder:text-gray-400"
-                placeholder="Search for research..."
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </div>
-            <Button
-              onClick={() => { }}
-              className="h-10 rounded-md hover:bg-blue-800"
-              size="sm"
-            >
-              Search
-            </Button>
-          </div>
-        </div>
-      </div> */}
       {/* Search and Header */}
       <div className="mb-6 space-y-4">
         <div className="flex items-center justify-between gap-2">
@@ -112,7 +76,7 @@ export default function ResearchFeed({ initialData }: any) {
             <Link href="/researches/createResearch">Create Research</Link>
           </Button>
         </div>
-        
+
         {/* Search Bar */}
         <div className="relative max-w-2xl">
           <div className="relative">
@@ -145,17 +109,36 @@ export default function ResearchFeed({ initialData }: any) {
           )}
         </div>
       </div>
-      <InfiniteScrollContainer
-        className="space-y-5 grid grid-cols-3 gap-4 max-md:grid-cols-1"
-        onBottomReached={() => hasNextPage && !isFetching && fetchNextPage()}
-      >
-        {researches.map((research) => (
-          <Research key={research.id} research={research} />
-        ))}
-        {isFetchingNextPage && (
-          <Loader2 className="mx-auto my-3 animate-spin" />
-        )}
-      </InfiniteScrollContainer>
+      {/* No results message when search returns nothing */}
+      {showNoResults && (
+        <div className="text-center py-8">
+          <p className="text-muted-foreground">
+            No courses found matching "{debouncedSearchQuery}". Try a different search term.
+          </p>
+        </div>
+      )}
+
+      {/* No courses message when no jobs exist at all */}
+      {showNoJobs && (
+        <div className="text-center py-8">
+          <p className="text-muted-foreground">
+            No courses have been posted yet.
+          </p>
+        </div>
+      )}
+      {(researches.length > 0 || isFetchingNextPage) && (
+        <InfiniteScrollContainer
+          className="space-y-5 grid grid-cols-3 gap-4 max-md:grid-cols-1"
+          onBottomReached={() => hasNextPage && !isFetching && fetchNextPage()}
+        >
+          {researches.map((research) => (
+            <Research key={research.id} research={research} />
+          ))}
+          {isFetchingNextPage && (
+            <Loader2 className="mx-auto my-3 animate-spin" />
+          )}
+        </InfiniteScrollContainer>
+      )}
     </Fragment>
   );
 }

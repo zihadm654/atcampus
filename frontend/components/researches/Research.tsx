@@ -173,7 +173,7 @@ export default function Research({ research }: ResearchProps) {
                     ? "outline"
                     : "default"
               }
-              disabled={isCollaborator || optimisticRequested || isPending}
+              disabled={isCollaborator || optimisticRequested || isPending || user?.role !== "STUDENT"}
               className="flex-1"
             >
               {isCollaborator

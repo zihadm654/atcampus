@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { Loader2, Search, X } from "lucide-react";
 
@@ -56,23 +56,12 @@ export default function CourseFeed({ user }: Props) {
     }
   }, [searchQuery, debouncedSearchQuery]);
 
-  const courses = data?.pages.flatMap((page) => page.courses) || [];
+  const courses = useMemo(() => {
+    return data?.pages.flatMap((page) => page.courses) || [];
+  }, [data]);
 
-  // const handleJobTypeFilter = (type: JobType) => {
-  //   setJobTypes((prev) =>
-  //     prev.includes(type) ? prev.filter((t) => t !== type) : [...prev, type]
-  //   );
-  // };
   if (status === "pending") {
     return <CourseLoadingSkeleton />;
-  }
-
-  if (status === "success" && !courses.length && !hasNextPage) {
-    return (
-      <p className="text-muted-foreground text-center">
-        No one has posted anything yet.
-      </p>
-    );
   }
 
   if (status === "error") {
@@ -82,6 +71,13 @@ export default function CourseFeed({ user }: Props) {
       </p>
     );
   }
+
+
+  // Show "no courses found" message only when search has been performed and no results
+  const showNoResults = debouncedSearchQuery && status === "success" && !courses.length && !hasNextPage;
+  // Show "no courses posted" message only when no search and no courses
+  const showNoJobs = !debouncedSearchQuery && status === "success" && !courses.length && !hasNextPage;
+
   return (
     <div className="space-y-6">
       {/* Search Bar */}
@@ -115,17 +111,36 @@ export default function CourseFeed({ user }: Props) {
           </p>
         )}
       </div>
+      {/* No results message when search returns nothing */}
+      {showNoResults && (
+        <div className="text-center py-8">
+          <p className="text-muted-foreground">
+            No courses found matching "{debouncedSearchQuery}". Try a different search term.
+          </p>
+        </div>
+      )}
 
-      {/* Course Grid */}
-      <InfiniteScrollContainer
-        className="grid grid-cols-3 gap-4 space-y-5 max-md:grid-cols-1"
-        onBottomReached={() => hasNextPage && !isFetching && fetchNextPage()}
-      >
-        {courses.map((course) => (
-          <Course key={course.id} course={course} />
-        ))}
-        {isFetchingNextPage && <Loader2 className="mx-auto my-3 animate-spin" />}
-      </InfiniteScrollContainer>
+      {/* No courses message when no jobs exist at all */}
+      {showNoJobs && (
+        <div className="text-center py-8">
+          <p className="text-muted-foreground">
+            No courses have been posted yet.
+          </p>
+        </div>
+      )}
+
+      {/* Only show course grid when we have courses or are loading more */}
+      {(courses.length > 0 || isFetchingNextPage) && (
+        <InfiniteScrollContainer
+          className="grid grid-cols-3 gap-4 space-y-5 max-md:grid-cols-1"
+          onBottomReached={() => hasNextPage && !isFetching && fetchNextPage()}
+        >
+          {courses.map((course) => (
+            <Course key={course.id} course={course} />
+          ))}
+          {isFetchingNextPage && <Loader2 className="mx-auto my-3 animate-spin" />}
+        </InfiniteScrollContainer>
+      )}
     </div>
   );
 }

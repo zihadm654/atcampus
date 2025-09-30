@@ -262,7 +262,6 @@ export function OrganizationCard(props: {
                             <SelectValue placeholder="Assign Faculty" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="none">None</SelectItem>
                             {faculties.map((faculty) => (
                               <SelectItem key={faculty.id} value={faculty.id}>
                                 {faculty.name}

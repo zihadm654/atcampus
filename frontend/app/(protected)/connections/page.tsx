@@ -45,7 +45,7 @@ async function Connections() {
                 width={50}
                 height={50}
                 alt={connectionUser.name}
-                className="h-36 w-full object-cover"
+                className="h-40 w-full object-contain"
               />
               <CardContent className="max-md:px-3">
                 <UserTooltip user={connectionUser}>

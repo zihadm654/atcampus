@@ -35,12 +35,11 @@ export default function JobFeed({ user, initialData }: Props) {
     isFetchingNextPage,
     status,
   } = useInfiniteQuery({
-    queryKey: ["job-feed", "for-you", debouncedSearchQuery],
+    queryKey: ["job-feed", "for-you", debouncedSearchQuery, jobTypes],
     queryFn: ({ pageParam }) =>
       kyInstance
         .get("/api/jobs", {
           searchParams: {
-            q: debouncedSearchQuery,
             ...(pageParam ? { cursor: pageParam } : {}),
             ...(debouncedSearchQuery ? { q: debouncedSearchQuery } : {}),
             ...(jobTypes.length ? { type: jobTypes.join(",") } : {}),
@@ -67,23 +66,15 @@ export default function JobFeed({ user, initialData }: Props) {
     () => data?.pages.flatMap((page) => page.jobs) || [],
     [data]
   );
+
   const handleJobTypeFilter = (type: JobType) => {
     setJobTypes((prev) =>
       prev.includes(type) ? prev.filter((t) => t !== type) : [...prev, type]
     );
   };
+
   if (status === "pending") {
     return <JobsLoadingSkeleton />;
-  }
-  if (status === "success" && !jobs.length && !hasNextPage) {
-    return (
-      <>
-        <h2 className="text-2xl">Jobs</h2>
-        <p className="text-muted-foreground text-center">
-          No one has posted anything yet.
-        </p>
-      </>
-    );
   }
 
   if (status === "error") {
@@ -93,6 +84,12 @@ export default function JobFeed({ user, initialData }: Props) {
       </p>
     );
   }
+
+  // Show "no jobs found" message only when search has been performed and no results
+  const showNoResults = debouncedSearchQuery && status === "success" && !jobs.length && !hasNextPage;
+  // Show "no jobs posted" message only when no search and no jobs
+  const showNoJobs = !debouncedSearchQuery && status === "success" && !jobs.length && !hasNextPage;
+
   return (
     <div className="space-y-3">
       {/* Header Section */}
@@ -106,7 +103,7 @@ export default function JobFeed({ user, initialData }: Props) {
             Discover exciting opportunities to gain practical experience and
             advance your career
           </p>
-          
+
           {/* Search Bar */}
           <div className="relative max-w-2xl">
             <div className="relative">
@@ -152,21 +149,42 @@ export default function JobFeed({ user, initialData }: Props) {
             )}
           </div>
 
-          <InfiniteScrollContainer
-            className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3"
-            onBottomReached={() =>
-              hasNextPage && !isFetching && fetchNextPage()
-            }
-          >
-            {jobs.map((job) => (
-              <Job key={job.id} job={job} />
-            ))}
-            {isFetchingNextPage && (
-              <div className="col-span-full flex justify-center py-8">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
-              </div>
-            )}
-          </InfiniteScrollContainer>
+          {/* No results message when search returns nothing */}
+          {showNoResults && (
+            <div className="text-center py-8">
+              <p className="text-muted-foreground">
+                No jobs found matching "{debouncedSearchQuery}". Try a different search term.
+              </p>
+            </div>
+          )}
+
+          {/* No jobs message when no jobs exist at all */}
+          {showNoJobs && (
+            <div className="text-center py-8">
+              <p className="text-muted-foreground">
+                No jobs have been posted yet.
+              </p>
+            </div>
+          )}
+
+          {/* Only show job grid when we have jobs or are loading more */}
+          {(jobs.length > 0 || isFetchingNextPage) && (
+            <InfiniteScrollContainer
+              className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3"
+              onBottomReached={() =>
+                hasNextPage && !isFetching && fetchNextPage()
+              }
+            >
+              {jobs.map((job) => (
+                <Job key={job.id} job={job} />
+              ))}
+              {isFetchingNextPage && (
+                <div className="col-span-full flex justify-center py-8">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+              )}
+            </InfiniteScrollContainer>
+          )}
         </div>
       </div>
     </div>
