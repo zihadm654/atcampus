@@ -154,7 +154,7 @@ function AcademicInformation({ user }: AcademicInformationProps) {
               <Icons.card className="size-5 text-green-600" />
               <div>
                 <span className="font-medium">{user.instituteId}</span>
-                <p className="text-sm text-gray-500">
+                <p className="text-sm">
                   {user.role === "STUDENT" ? "Student Id" : "Professor Id"}
                 </p>
               </div>
@@ -183,18 +183,9 @@ function AcademicInformation({ user }: AcademicInformationProps) {
   // Show basic institution info for other roles
   if (user.institution) {
     return (
-      <div className="flex flex-col gap-2 py-2">
-        <div className="mb-3 flex items-center">
-          <Icons.edu className="mr-2 size-6 text-green-600" />
-          <h3 className="font-medium text-muted-foreground">
-            Institution Info
-          </h3>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <Icons.edu className="size-6 text-green-600" />
-          <span className="font-medium">{user.institution}</span>
-        </div>
+      <div className="mb-3 flex items-center ">
+        <Icons.edu className="size-6 text-green-600" />
+        <span className="font-medium pl-2">{user.institution}</span>
       </div>
     );
   }

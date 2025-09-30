@@ -17,11 +17,11 @@ const Client = ({ job, user }: any) => {
     <Button
       onClick={handleApply}
       variant="default"
-      disabled={job.application.some(
+      disabled={job.application?.some(
         (application) => application.applicantId === user.id
-      )}
+      ) || user.role !== "STUDENT"}
     >
-      {job.application.some(
+      {job.application?.some(
         (application) => application.applicantId === user.id
       )
         ? "Already Applied"

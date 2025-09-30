@@ -43,8 +43,8 @@ export default function UserSkillCard({
 
   return (
     <>
-      <Card className="overflow-hidden transition-all hover:shadow-md">
-        <CardContent className="p-4">
+      <Card className=" transition-all hover:shadow-md">
+        <CardContent className="p-2">
           <div className="flex items-start justify-between">
             <div className="space-y-2 flex-1">
               <div className="flex items-center gap-1">

@@ -93,7 +93,7 @@ export default function CoursesSection({
           <div className="max-h-40 overflow-y-auto">
             <div className="space-y-2">
               {displayCourses.map((enrollment) => (
-                <div key={enrollment.id} className="border p-2 rounded-md bg-gray-50 hover:bg-gray-100 transition-colors">
+                <div key={enrollment.id} className="border p-2 rounded-md hover:border-gray-100 transition-colors">
                   <div className="font-medium text-sm">
                     {enrollment.course.title} ({enrollment.course.code})
                   </div>

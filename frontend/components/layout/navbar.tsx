@@ -39,13 +39,12 @@ export function NavBar({
 
   return (
     <header
-      className={`bg-background/60 sticky top-0 z-40 flex w-full justify-center backdrop-blur-xl transition-all ${
-        scroll ? (scrolled ? "border-b" : "bg-transparent") : "border-b"
-      }`}
+      className={`bg-background/60 sticky top-0 z-40 flex w-full justify-center backdrop-blur-xl transition-all ${scroll ? (scrolled ? "border-b" : "bg-transparent") : "border-b"
+        }`}
     >
       <MaxWidthWrapper
-        className="grid grid-cols-3 gap-4 space-x-4 gap-y-0 pt-2 max-md:grid-cols-2 max-md:gap-2"
-        // large={documentation}
+        className="grid grid-cols-2 gap-4 space-x-4 pt-2 md:grid-cols-4 max-md:gap-2"
+      // large={documentation}
       >
         <div className="flex items-center gap-2 md:gap-4">
           <Link href="/" className="text-primary flex items-center space-x-2">
@@ -61,7 +60,7 @@ export function NavBar({
           <SearchField />
         </div>
         {links && links.length > 0 ? (
-          <nav className="flex items-center justify-start gap-2 space-x-6 max-md:order-3 max-md:col-span-2 max-md:justify-around">
+          <nav className="flex items-center justify-center gap-2 space-x-6 max-md:order-3 col-span-2 max-md:justify-around">
             {links?.map((item) => {
               const Icon = Icons[item.icon || "arrowRight"];
               return (
@@ -76,7 +75,7 @@ export function NavBar({
                         ? "bg-muted border border-b-blue-700 text-blue-700"
                         : "text-muted-foreground hover:text-accent-foreground",
                       item.disabled &&
-                        "hover:text-muted-foreground cursor-not-allowed opacity-80 hover:bg-transparent",
+                      "hover:text-muted-foreground cursor-not-allowed opacity-80 hover:bg-transparent",
                     )}
                   >
                     <Icon className="size-6.5" />

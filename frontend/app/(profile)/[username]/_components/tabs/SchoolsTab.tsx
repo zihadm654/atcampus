@@ -78,29 +78,26 @@ const SchoolManagement = ({ school, user }: { school: School; user: any }) => {
       </CardHeader>
       <CardContent>
         {school.faculties.map((faculty) => (
-          <div>
-            <div className="flex items-center justify-between" key={faculty.id}>
-              <h4>{faculty.name}</h4>
-              <DropdownMenu>
-                <DropdownMenuTrigger>
-                  <Ellipsis className="size-4" />
-                </DropdownMenuTrigger>
-                <DropdownMenuContent>
-                  <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem>
-                    <EditFacultyDialog faculty={faculty} />
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <DeleteFacultyDialog facultyId={faculty.id} />
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <AddFacultyDialog schoolId={school.id} />
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-            <div>{/* {faculty.} */}</div>
+          <div className="flex items-center justify-between" key={faculty.id}>
+            <h4>{faculty.name}</h4>
+            <DropdownMenu>
+              <DropdownMenuTrigger>
+                <Ellipsis className="size-4" />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem>
+                  <EditFacultyDialog faculty={faculty} />
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                  <DeleteFacultyDialog facultyId={faculty.id} />
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                  <AddFacultyDialog schoolId={school.id} />
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         ))}
       </CardContent>

@@ -255,19 +255,19 @@ export default function SkillsSection({
   return (
     <Card
       className={cn(
-        "overflow-hidden rounded-xl border border-gray-100 shadow-sm transition-all hover:border-gray-200 hover:shadow",
+        "rounded-xl border border-gray-100 shadow-sm transition-all hover:border-gray-200 hover:shadow",
         className
       )}
     >
       {showHeader && (
         <CardHeader className="flex items-center justify-between pb-2">
           <CardTitle className="flex items-center text-lg font-medium">
-              <Icons.skill className="size-7 pr-2" />
-              Skills
-              <Badge variant="secondary" className="ml-2">
-                {totalSkills}
-              </Badge>
-            </CardTitle>
+            <Icons.skill className="size-7 pr-2" />
+            Skills
+            <Badge variant="secondary" className="ml-2">
+              {totalSkills}
+            </Badge>
+          </CardTitle>
           {canEdit && (
             <CardAction>
               <SkillButton

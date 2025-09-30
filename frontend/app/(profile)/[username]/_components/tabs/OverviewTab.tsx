@@ -152,46 +152,6 @@ function StudentOverview({
           canEdit={permissions.canEdit}
           showHeader={false}
         />
-
-        {/* Achievements Section */}
-        <Card className="overflow-hidden rounded-xl border border-gray-100 shadow-sm transition-all hover:border-gray-200 hover:shadow">
-          <CardHeader className="flex items-center justify-between pb-4">
-            <CardTitle className="flex items-center text-lg font-medium">
-              <Star className="size-7 pr-2" />
-              Achievements
-            </CardTitle>
-            <CardAction>
-              {permissions.canEdit && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="rounded-full text-amber-600 hover:bg-amber-50 hover:text-amber-800"
-                >
-                  <span>See More</span>
-                  <Icons.chevronRight className="size-5" />
-                </Button>
-              )}
-            </CardAction>
-          </CardHeader>
-          <CardContent className="pt-4">
-            <div className="flex h-28 items-center justify-center rounded-lg text-gray-500">
-              <div className="flex flex-col items-center">
-                <Star className="size-10" />
-                <p className="text-sm mt-2">No achievements yet</p>
-                {permissions.canEdit && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="mt-4 rounded-full"
-                  >
-                    <Icons.add className="size-4 mr-2" />
-                    Add Achievement
-                  </Button>
-                )}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
       </div>
     </Fragment>
   );

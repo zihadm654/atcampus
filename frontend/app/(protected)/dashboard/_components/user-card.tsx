@@ -158,7 +158,7 @@ export default function UserCard(props: {
                 <div key={session.id}>
                   <div className="flex items-center gap-2 font-medium text-black text-md dark:text-white">
                     {new UAParser(session.userAgent || "").getDevice().type ===
-                    "mobile" ? (
+                      "mobile" ? (
                       <LucidePhone />
                     ) : (
                       <Laptop size={16} />
@@ -567,7 +567,7 @@ function ChangePassword() {
               if (res.error) {
                 toast.error(
                   res.error.message ||
-                    "Couldn't change your password! Make sure it's correct",
+                  "Couldn't change your password! Make sure it's correct",
                 );
               } else {
                 setOpen(false);
@@ -614,7 +614,7 @@ function EditUserDialog() {
       <DialogTrigger asChild>
         <Button className="gap-2" size="sm" variant="secondary">
           <Edit size={13} />
-          Edit User
+          Edit
         </Button>
       </DialogTrigger>
       <DialogContent className="w-11/12 sm:max-w-[425px]">
