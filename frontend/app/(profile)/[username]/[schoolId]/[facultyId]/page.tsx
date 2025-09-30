@@ -29,6 +29,7 @@ import {
 import { Metadata } from "next";
 import { cache } from "react";
 import { Button } from "@/components/ui/button";
+import Course from "@/components/courses/Course";
 
 interface PageProps {
   params: Promise<{ username: string; schoolId: string; facultyId: string }>;
@@ -132,8 +133,45 @@ const getFaculty = cache(async (facultyId: string) => {
       },
       courses: {
         include: {
-          instructor: true,
+          instructor: {
+            select: {
+              id: true,
+              username: true,
+              name: true,
+              bio: true,
+              role: true,
+              institution: true,
+              instituteId: true,
+              status: true,
+              currentSemester: true,
+              image: true,
+              coverImage: true,
+              email: true,
+              emailVerified: true,
+              displayUsername: true,
+              createdAt: true,
+            },
+          },
           instructorCourses: true,
+          faculty: {
+            include: {
+              school: {
+                include: {
+                  institution: true,
+                },
+              },
+            },
+          },
+          enrollments: {
+            include: {
+              course: true,
+            },
+          },
+          _count: {
+            select: {
+              enrollments: true,
+            },
+          },
         },
       },
       _count: {
@@ -181,9 +219,6 @@ export default async function Page({ params }: PageProps) {
   // Group members by role
   const professors = faculty?.members.filter(
     (member) => member.role === "member"
-  );
-  const students = faculty.members.filter(
-    (member) => member.role === "STUDENT"
   );
   const admins = faculty.members.filter((member) =>
     ["owner", "admin"].includes(member.role)
@@ -362,12 +397,12 @@ export default async function Page({ params }: PageProps) {
 
       {/* Faculty Details */}
       <Card className="border-none shadow-sm">
-        <CardContent className="p-4">
-          <div className="grid grid-cols-4 max-md:grid-cols-2 gap-4">
+        <CardContent className="p-1">
+          <div className="grid grid-cols-3 max-md:grid-cols-2 gap-4">
             <div className="text-center">
               <div className="flex items-center justify-center gap-2 mb-2">
                 <Users className="h-5 w-5 text-blue-600" />
-                <span className="text-3xl font-bold">
+                <span className="text-2xl font-bold">
                   {faculty._count?.members || 0}
                 </span>
               </div>
@@ -377,7 +412,7 @@ export default async function Page({ params }: PageProps) {
             <div className="text-center">
               <div className="flex items-center justify-center gap-2 mb-2">
                 <GraduationCap className="h-5 w-5 text-green-600" />
-                <span className="text-3xl font-bold">{professors.length}</span>
+                <span className="text-2xl font-bold">{professors.length}</span>
               </div>
               <p className="text-sm text-muted-foreground">Professors</p>
             </div>
@@ -385,19 +420,11 @@ export default async function Page({ params }: PageProps) {
             <div className="text-center">
               <div className="flex items-center justify-center gap-2 mb-2">
                 <BookOpen className="h-5 w-5 text-purple-600" />
-                <span className="text-3xl font-bold">
+                <span className="text-2xl font-bold">
                   {faculty._count?.courses || 0}
                 </span>
               </div>
               <p className="text-sm text-muted-foreground">Courses</p>
-            </div>
-
-            <div className="text-center">
-              <div className="flex items-center justify-center gap-2 mb-2">
-                <Users className="h-5 w-5 text-orange-600" />
-                <span className="text-3xl font-bold">{students.length}</span>
-              </div>
-              <p className="text-sm text-muted-foreground">Students</p>
             </div>
           </div>
 
@@ -418,12 +445,12 @@ export default async function Page({ params }: PageProps) {
 
         <Tabs defaultValue="all" className="w-full">
           <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="all">All Members</TabsTrigger>
+            <TabsTrigger value="all">All Members ({professors?.length || 0})</TabsTrigger>
             <TabsTrigger value="professors">
               Professors ({professors.length})
             </TabsTrigger>
-            <TabsTrigger value="students">
-              Students ({students.length})
+            <TabsTrigger value="courses">
+              Courses ({faculty?.courses?.length || 0})
             </TabsTrigger>
             <TabsTrigger value="admins">Admins ({admins.length})</TabsTrigger>
           </TabsList>
@@ -471,21 +498,21 @@ export default async function Page({ params }: PageProps) {
             )}
           </TabsContent>
 
-          <TabsContent value="students" className="mt-6">
+          <TabsContent value="courses" className="mt-6">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {students.map((member) => (
-                <MemberCard key={member.id} member={member} />
+              {faculty?.courses?.map((course: any) => (
+                <Course key={course.id} course={course} />
               ))}
             </div>
-            {students.length === 0 && (
+            {(!faculty?.courses || faculty?.courses?.length === 0) && (
               <Card className="border-dashed">
                 <CardContent className="flex flex-col items-center justify-center py-12 text-center">
-                  <Users className="h-12 w-12 text-muted-foreground mb-4" />
+                  <BookOpen className="h-12 w-12 text-muted-foreground mb-4" />
                   <h3 className="text-lg font-semibold mb-2">
-                    No Students Found
+                    No Courses Found
                   </h3>
                   <p className="text-sm text-muted-foreground max-w-md">
-                    This faculty doesn't have any students yet.
+                    This faculty doesn't have any courses yet.
                   </p>
                 </CardContent>
               </Card>

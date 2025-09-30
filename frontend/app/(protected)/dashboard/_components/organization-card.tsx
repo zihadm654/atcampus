@@ -55,6 +55,7 @@ import {
 } from "@/components/ui/form";
 import { AvatarInput } from "@/app/(profile)/[username]/_components/EditProfileDialog";
 import { motion, AnimatePresence } from "framer-motion";
+import { useAssignFacultyToMemberMutation } from "./facultyMutations";
 
 // Add this interface for Faculty
 interface Faculty {
@@ -96,6 +97,7 @@ export function OrganizationCard(props: {
   const [isRevoking, setIsRevoking] = useState<string[]>([]);
   const [faculties, setFaculties] = useState<Faculty[]>([]);
   const [loadingFaculties, setLoadingFaculties] = useState(false);
+  const assignFacultyMutation = useAssignFacultyToMemberMutation();
   const inviteVariants = {
     hidden: { opacity: 0, height: 0 },
     visible: { opacity: 1, height: "auto" },
@@ -129,38 +131,6 @@ export function OrganizationCard(props: {
       toast.error("Failed to load faculties");
     } finally {
       setLoadingFaculties(false);
-    }
-  };
-
-  // Function to assign faculty to member
-  const assignFacultyToMember = async (memberId: string, facultyId: string | null) => {
-    try {
-      const response = await fetch(`/api/members/${memberId}/faculty`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ facultyId }),
-      });
-
-      if (response.ok) {
-        const updatedMember: ExtendedMember = await response.json();
-        // Update the optimistic org with the new member data
-        if (optimisticOrg) {
-          setOptimisticOrg({
-            ...optimisticOrg,
-            members: optimisticOrg.members.map((member) =>
-              member.id === memberId ? updatedMember : member
-            ),
-          });
-        }
-        toast.success("Faculty assigned successfully");
-      } else {
-        toast.error("Failed to assign faculty");
-      }
-    } catch (error) {
-      console.error("Error assigning faculty:", error);
-      toast.error("Failed to assign faculty");
     }
   };
 
@@ -280,11 +250,13 @@ export function OrganizationCard(props: {
                         <Select
                           value={member.facultyId || ""}
                           onValueChange={(value) =>
-                            assignFacultyToMember(
-                              member.id,
-                              value === "none" ? null : value
-                            )
+                            assignFacultyMutation.mutate({
+                              memberId: member.id,
+                              facultyId: value === "none" ? null : value,
+                              organizationId: optimisticOrg.id
+                            })
                           }
+                          disabled={assignFacultyMutation.isPending}
                         >
                           <SelectTrigger className="w-[120px]">
                             <SelectValue placeholder="Assign Faculty" />

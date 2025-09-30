@@ -25,8 +25,8 @@ export default function UserTooltip({ children, user }: UserTooltipProps) {
   const { data: session } = useSession();
   const loggedInUser = session?.user;
   const followerState: FollowerInfo = {
-    followers: user?._count.followers,
-    isFollowedByUser: !!user.followers.some(
+    followers: user?._count?.followers || 0,
+    isFollowedByUser: !!user.followers?.some(
       ({ followerId }) => followerId === loggedInUser?.id
     ),
   };
@@ -60,7 +60,9 @@ export default function UserTooltip({ children, user }: UserTooltipProps) {
                 </div>
               </Linkify>
             )}
-            <FollowerCount userId={user.id} initialState={followerState} />
+            {user._count && (
+              <FollowerCount userId={user.id} initialState={followerState} />
+            )}
           </div>
         </TooltipContent>
       </Tooltip>
