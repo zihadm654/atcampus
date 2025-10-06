@@ -2,75 +2,6 @@ import { prisma } from "@/lib/db";
 import { getUserDataSelect } from "@/types/types";
 import { Prisma, EnrollmentStatus } from "@prisma/client";
 
-// Optimized queries for the new profile architecture
-
-// Base user selection for profile header
-// export const getProfileUserSelect = (loggedInUserId: string) => ({
-//   id: true,
-//   name: true,
-//   username: true,
-//   email: true,
-//   bio: true,
-//   image: true,
-//   coverImage: true,
-//   institution: true,
-//   instituteId: true,
-//   currentSemester: true,
-//   role: true,
-//   createdAt: true,
-//   _count: {
-//     select: {
-//       posts: true,
-//       followers: true,
-//       following: true,
-//     },
-//   },
-//   followers: {
-//     where: {
-//       followerId: loggedInUserId,
-//     },
-//     select: {
-//       followerId: true,
-//     },
-//   },
-//   userSkills: {
-//     include: {
-//       skill: {
-//         select: {
-//           name: true,
-//           category: true,
-//         },
-//       },
-//       _count: {
-//         select: {
-//           endorsements: true,
-//         },
-//       },
-//     },
-//     orderBy: {
-//       yearsOfExperience: Prisma.SortOrder.desc,
-//     },
-//     take: 10, // Limit for performance
-//   },
-//   schools: {
-//     include: {
-//       faculties: true,
-//     },
-//   },
-//   members: {
-//     include: {
-//       // organization: {
-//       //   include: {
-//       //     members: true,
-//       //   },
-//       // },
-//       faculty: true,
-//     },
-//   },
-//   clubs: true,
-//   events: true,
-// });
-
 // Optimized academic structure query
 export const getAcademicStructureInclude = () => ({
   schools: {
@@ -195,6 +126,22 @@ export const getResearchInclude = (loggedInUserId: string) => ({
       userId: true,
     },
   },
+  collaborators: {
+    select: {
+      id: true,
+      name: true,
+      username: true,
+      image: true,
+    },
+  },
+  collaborationRequests: {
+    where: {
+      requesterId: loggedInUserId,
+    },
+    select: {
+      id: true,
+    },
+  },
   _count: {
     select: {
       collaborators: true,
@@ -304,6 +251,43 @@ export async function getProfessorCourses(userId: string, limit = 10) {
   });
 }
 
+// Function to get courses created by an institution
+export async function getInstitutionCourses(institutionId: string, limit = 10) {
+  return prisma.course.findMany({
+    where: {
+      faculty: {
+        school: {
+          institutionId: institutionId,
+        },
+      },
+    },
+    include: {
+      faculty: {
+        include: {
+          school: true,
+        },
+      },
+      instructor: {
+        select: {
+          id: true,
+          name: true,
+          username: true,
+          image: true,
+        },
+      },
+      _count: {
+        select: {
+          enrollments: true,
+        },
+      },
+    },
+    take: limit,
+    orderBy: {
+      createdAt: Prisma.SortOrder.desc,
+    },
+  });
+}
+
 // Optimized job applications query
 export async function getJobApplications(userId: string, limit = 10) {
   const applications = await prisma.application.findMany({
@@ -318,6 +302,49 @@ export async function getJobApplications(userId: string, limit = 10) {
   });
 
   return applications;
+}
+
+// Function to get jobs created by a user/organization
+export async function getCreatedJobs(userId: string, limit = 10) {
+  const jobs = await prisma.job.findMany({
+    where: {
+      userId: userId,
+    },
+    include: {
+      user: {
+        select: {
+          id: true,
+          name: true,
+          image: true,
+          username: true,
+        },
+      },
+      savedJobs: {
+        where: {
+          userId: userId,
+        },
+        select: {
+          userId: true,
+        },
+      },
+      applications: {
+        select: {
+          applicantId: true,
+        },
+      },
+      _count: {
+        select: {
+          applications: true,
+        },
+      },
+    },
+    orderBy: {
+      createdAt: Prisma.SortOrder.desc,
+    },
+    take: limit,
+  });
+
+  return jobs;
 }
 
 export async function getResearchProjects(userId: string, limit = 10) {
@@ -422,30 +449,4 @@ export async function getFacultyDetails(facultyId: string) {
   });
 
   return faculty;
-}
-
-// Database optimization utilities
-export function buildOptimizedProfileQuery(username: string, loggedInUserId: string) {
-  return {
-    where: {
-      username: {
-        equals: username,
-        mode: "insensitive",
-      },
-    },
-    select: getUserDataSelect(loggedInUserId),
-  };
-}
-
-// Query performance monitoring
-export function logQueryPerformance(queryName: string, startTime: number) {
-  const endTime = Date.now();
-  const duration = endTime - startTime;
-
-  if (process.env.NODE_ENV === 'development') {
-    console.log(`Query ${queryName} took ${duration}ms`);
-  }
-
-  // In production, you could send this to a monitoring service
-  return duration;
 }

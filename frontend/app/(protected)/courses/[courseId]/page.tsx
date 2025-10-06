@@ -208,20 +208,6 @@ export default async function CoursePage({ params }: CoursePageProps) {
                 <Icons.post className="size-5" />
                 <span className="hidden lg:block">Skill Overview</span>
               </TabsTrigger>
-              <TabsTrigger
-                className="flex-1 rounded-xl py-4 transition-all data-[state=active]:border-blue-600 data-[state=active]:text-blue-600"
-                value="projects"
-              >
-                <Icons.post className="size-5" />
-                <span className="hidden lg:block">Project & Research</span>
-              </TabsTrigger>
-              <TabsTrigger
-                className="flex-1 rounded-xl py-4 transition-all data-[state=active]:border-blue-600 data-[state=active]:text-blue-600"
-                value="members"
-              >
-                <Icons.post className="size-5" />
-                <span className="hidden lg:block">People</span>
-              </TabsTrigger>
             </TabsList>
           </div>
           <TabsContent className="p-3 space-y-3" value="outline">
@@ -244,11 +230,11 @@ export default async function CoursePage({ params }: CoursePageProps) {
                 Topics Covered
               </h2>
               <ul className="mb-6 list-inside list-disc space-y-1">
-                {/* {course.topics.map((item, index) => (
+                {course.objectives.map((item, index) => (
                   <li key={index} className="text-muted-foreground">
                     {item}
                   </li>
-                ))} */}
+                ))}
               </ul>
             </div>
             <div className="bg-card rounded-xl border p-6 shadow-sm">
@@ -259,69 +245,12 @@ export default async function CoursePage({ params }: CoursePageProps) {
                 Learning Outcomes
               </h2>
               <ul className="mb-6 list-inside list-disc space-y-1">
-                {/* {course.learningOutcomes.map((item, index) => (
-                   <li key={index} className="text-muted-foreground">
-                     {item}
-                   </li>
-                 ))} */}
-              </ul>
-            </div>
-          </TabsContent>
-          <TabsContent className="p-3" value="skill">
-            <div className="bg-card rounded-xl border p-6 shadow-sm">
-              {/* 
-            <h2 className="mb-4 flex items-center gap-2 text-xl font-semibold">
-              <span className="rounded-full bg-purple-100 p-1.5 text-purple-700">
-                <GraduationCap className="h-5 w-5" />
-              </span>
-              Qualifications
-            </h2>
-            <ul className="text-muted-foreground space-y-3">
-              {job.qualifications.map((item, index) => (
-                <li key={index} className="flex items-start gap-2">
-                  <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-purple-500"></span>
-                  <span>{item}</span>
-                </li>
-              ))}
-            </ul>
-            */}
-            </div>
-          </TabsContent>
-          <TabsContent className="p-3" value="projects">
-            <div className="bg-card rounded-xl border p-6 shadow-sm">
-              {/* 
-            <h2 className="mb-4 flex items-center gap-2 text-xl font-semibold">
-              <span className="rounded-full bg-purple-100 p-1.5 text-purple-700">
-                <GraduationCap className="h-5 w-5" />
-              </span>
-              Qualifications
-            </h2>
-            <ul className="text-muted-foreground space-y-3">
-              {job.qualifications.map((item, index) => (
-                <li key={index} className="flex items-start gap-2">
-                  <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-purple-500"></span>
-                  <span>{item}</span>
-                </li>
-              ))}
-            </ul>
-            */}
-            </div>
-          </TabsContent>
-          <TabsContent className="p-3" value="members">
-            <div className="bg-card rounded-xl border p-6 shadow-sm">
-              <h2 className="mb-4 flex items-center gap-2 text-xl font-semibold">
-                <span className="rounded-full bg-purple-100 p-1.5 text-purple-700">
-                  <GraduationCap className="h-5 w-5" />
-                </span>
-                Members
-              </h2>
-              {/* <ul className="mb-6 list-inside list-disc space-y-1">
-                {course.topics.map((item, index) => (
+                {course.outcomes.map((item, index) => (
                   <li key={index} className="text-muted-foreground">
                     {item}
                   </li>
                 ))}
-              </ul> */}
+              </ul>
             </div>
           </TabsContent>
         </Tabs>

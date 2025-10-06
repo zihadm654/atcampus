@@ -31,14 +31,13 @@ interface CourseApproval {
   reviewerId: string;
   status: string;
   comments?: string;
-  approvalLevel: number;
   submittedAt: Date;
   course: {
     id: string;
     title: string;
     code: string;
     description: string;
-    createdBy: {
+    instructor: {
       name: string;
       email: string;
     };
@@ -46,7 +45,7 @@ interface CourseApproval {
       name: string;
       school: {
         name: string;
-        organization: {
+        institution: {
           name: string;
         };
       };
@@ -194,9 +193,7 @@ export function ApprovalDashboard({
                           >
                             {approval.status.replace("_", " ")}
                           </Badge>
-                          <Badge variant="outline" className="text-xs">
-                            {getLevelName(approval.approvalLevel)}
-                          </Badge>
+                          {/* Removed approval level badge as it's not in the data model */}
                         </div>
                       </div>
                     </CardHeader>
@@ -208,11 +205,11 @@ export function ApprovalDashboard({
 
                       <div className="space-y-2 text-xs text-muted-foreground">
                         <div>
-                          <strong>Creator:</strong> {approval.course.createdBy?.name}
+                          <strong>Creator:</strong> {approval.course.instructor?.name}
                         </div>
                         <div>
                           <strong>Institution:</strong>{" "}
-                          {approval.course.faculty.school.name}
+                          {approval.course.faculty.school.institution.name}
                         </div>
                         <div>
                           <strong>Faculty:</strong> {approval.course.faculty.name}

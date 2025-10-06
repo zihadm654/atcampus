@@ -61,19 +61,35 @@ export async function submitCourseForApproval(courseId: string) {
     if (course.status !== CourseStatus.DRAFT &&
       course.status !== CourseStatus.REJECTED &&
       course.status !== CourseStatus.NEEDS_REVISION) {
-      throw new Error("Only draft, rejected, or courses needing revision can be submitted for approval");
-    }
+      // If the course is already UNDER_REVIEW, we still need to check if there's an approval record
+      if (course.status === CourseStatus.UNDER_REVIEW) {
+        // Check for existing pending approval
+        const existingApproval = await prisma.courseApproval.findFirst({
+          where: {
+            courseId,
+            status: CourseStatus.UNDER_REVIEW,
+          },
+        });
 
-    // Check for existing pending approval
-    const existingApproval = await prisma.courseApproval.findFirst({
-      where: {
-        courseId,
-        status: CourseStatus.UNDER_REVIEW,
-      },
-    });
+        if (existingApproval) {
+          throw new Error("Course is already under review");
+        }
+        // If there's no existing approval record, we can proceed to create one
+      } else {
+        throw new Error("Only draft, rejected, or courses needing revision can be submitted for approval");
+      }
+    } else {
+      // Check for existing pending approval (for DRAFT, REJECTED, NEEDS_REVISION courses)
+      const existingApproval = await prisma.courseApproval.findFirst({
+        where: {
+          courseId,
+          status: CourseStatus.UNDER_REVIEW,
+        },
+      });
 
-    if (existingApproval) {
-      throw new Error("Course is already under review");
+      if (existingApproval) {
+        throw new Error("Course is already under review");
+      }
     }
 
     // Find institution admin for review
@@ -89,6 +105,7 @@ export async function submitCourseForApproval(courseId: string) {
         role: { in: ["owner", "admin"] },
         user: {
           status: "ACTIVE",
+          role: "INSTITUTION"
         },
       },
       include: {
@@ -237,7 +254,7 @@ export async function createCourse(values: TCourse) {
         );
       }
 
-      // Professors create courses as DRAFT first.
+      // Professors create courses with the selected status
       const course = await prisma.course.create({
         data: {
           ...validatedFields.data,
@@ -261,12 +278,11 @@ export async function createCourse(values: TCourse) {
       if (status === CourseStatus.UNDER_REVIEW) {
         const submissionResult = await submitCourseForApproval(course.id);
         if (!submissionResult.success) {
-          // Even if submission fails, the course is already created as a draft.
-          // We pass a specific message to the client.
+          // Even if submission fails, the course is already created.
           return {
             success: true,
             data: course,
-            message: `Course created as a draft, but failed to submit for approval: ${submissionResult.error}`,
+            message: `Course created, but failed to submit for approval: ${submissionResult.error}`,
           };
         }
         revalidatePath("/courses/my-courses");
@@ -304,7 +320,7 @@ export async function createCourse(values: TCourse) {
         data: {
           ...validatedFields.data,
           instructorId: user.id,
-          status: CourseStatus.PUBLISHED,
+          status: validatedFields.data.status as CourseStatus || CourseStatus.DRAFT,
         },
         include: getCourseDataInclude(user.id),
       });
@@ -313,7 +329,7 @@ export async function createCourse(values: TCourse) {
         "CREATE",
         course.id,
         {},
-        { status: CourseStatus.PUBLISHED },
+        { status: validatedFields.data.status },
         "Course created and published by institution admin",
       );
 

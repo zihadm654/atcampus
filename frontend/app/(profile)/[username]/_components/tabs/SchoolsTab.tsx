@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { UserRole } from "@/lib/validations/auth";
 
 export interface Faculty {
   id: string;
@@ -107,30 +108,74 @@ const SchoolManagement = ({ school, user }: { school: School; user: any }) => {
 
 export default function SchoolsTab({ user, isCurrentUser }: SchoolsTabProps) {
   const canManage = useMemo(() => {
-    return isCurrentUser && user.role === "INSTITUTION";
+    return isCurrentUser && user.role === UserRole.INSTITUTION;
   }, [isCurrentUser, user.role]);
 
-  if (!canManage) {
+  // For institutions, show created schools
+  if (user.role === UserRole.INSTITUTION) {
+    // if (!canManage) {
+    //   return (
+    //     <div className="p-4 text-center text-gray-500">
+    //       This section is only available to the institution administration.
+    //     </div>
+    //   );
+    // }
+
     return (
-      <div className="p-4 text-center text-gray-500">
-        This section is only available to the institution administration.
-      </div>
+      <Card>
+        <CardHeader>
+          <div className="flex justify-between items-center">
+            <CardTitle>Academic Structure</CardTitle>
+            <AddSchoolDialog />
+          </div>
+        </CardHeader>
+        <CardContent className="grid lg:grid-cols-2 gap-2">
+          {user.schools && user.schools.length > 0 ? (
+            user.schools.map((school) => (
+              <SchoolManagement key={school.id} school={school} user={user} />
+            ))
+          ) : (
+            <div className="col-span-full text-center py-8">
+              <p className="text-gray-500">No schools created yet.</p>
+              <p className="text-sm text-gray-400 mt-2">Create your first school to get started.</p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
     );
   }
 
+  // For other roles (ADMIN), show a different view
+  if (user.role === UserRole.ADMIN) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Institution Schools</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {user.schools && user.schools.length > 0 ? (
+            <div className="grid lg:grid-cols-2 gap-2">
+              {user.schools.map((school) => (
+                <div key={school.id} className="border p-4 rounded-lg">
+                  <h3 className="font-semibold">{school.name}</h3>
+                  <p className="text-sm text-gray-500">
+                    {school.faculties.length} faculties
+                  </p>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-gray-500">No schools available.</p>
+          )}
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // For other roles, show a generic message
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex justify-between items-center">
-          <CardTitle>Academic Structure</CardTitle>
-          <AddSchoolDialog />
-        </div>
-      </CardHeader>
-      <CardContent className="grid lg:grid-cols-2 gap-2">
-        {user.schools.map((school) => (
-          <SchoolManagement key={school.id} school={school} user={user} />
-        ))}
-      </CardContent>
-    </Card>
+    <div className="p-4 text-center text-gray-500">
+      School information is not applicable for this user role.
+    </div>
   );
 }

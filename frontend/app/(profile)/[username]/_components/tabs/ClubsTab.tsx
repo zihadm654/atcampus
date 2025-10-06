@@ -32,7 +32,7 @@ interface ClubsTabProps {
 export function ClubsTab({ username, isOwnProfile, userRole }: ClubsTabProps) {
   const router = useRouter();
   const { toast } = useToast();
-  
+
   const [clubs, setClubs] = useState<ExtendedClub[]>([]);
   const [userClubs, setUserClubs] = useState<ExtendedClub[]>([]);
   const [loading, setLoading] = useState(true);
@@ -43,7 +43,7 @@ export function ClubsTab({ username, isOwnProfile, userRole }: ClubsTabProps) {
 
     // category: undefined,
   });
-  
+
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [editingClub, setEditingClub] = useState<ExtendedClub | null>(null);
@@ -187,7 +187,7 @@ export function ClubsTab({ username, isOwnProfile, userRole }: ClubsTabProps) {
 
   const handleEditClub = async () => {
     if (!editingClub) return;
-    
+
     try {
       // Implementation for updating club would go here
       // This would call the updateClubAction server action
@@ -209,7 +209,7 @@ export function ClubsTab({ username, isOwnProfile, userRole }: ClubsTabProps) {
 
   const handleDeleteClub = async (clubId: string) => {
     if (!confirm("Are you sure you want to delete this club?")) return;
-    
+
     try {
       // Implementation for deleting club would go here
       // This would call the deleteClubAction server action
@@ -246,7 +246,7 @@ export function ClubsTab({ username, isOwnProfile, userRole }: ClubsTabProps) {
 
   const ClubCard = ({ club }: { club: ExtendedClub }) => {
     const userRole = getUserClubRole(club);
-    
+
     return (
       <Card className="hover:shadow-lg transition-shadow duration-200">
         <CardHeader className="pb-3">
@@ -298,12 +298,12 @@ export function ClubsTab({ username, isOwnProfile, userRole }: ClubsTabProps) {
             </div>
           </div>
         </CardHeader>
-        
+
         <CardContent className="pb-3">
           <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
             {club.description}
           </p>
-          
+
           <div className="space-y-2">
             <div className="flex items-center gap-2 text-sm">
               <Users className="h-4 w-4 text-muted-foreground" />
@@ -312,28 +312,28 @@ export function ClubsTab({ username, isOwnProfile, userRole }: ClubsTabProps) {
                 {club.maxMembers && ` / ${club.maxMembers} max`}
               </span>
             </div>
-            
+
             {club.location && (
               <div className="flex items-center gap-2 text-sm">
                 <MapPin className="h-4 w-4 text-muted-foreground" />
                 <span>{club.location}</span>
               </div>
             )}
-            
+
             {club.meetingSchedule && (
               <div className="flex items-center gap-2 text-sm">
                 <Calendar className="h-4 w-4 text-muted-foreground" />
                 <span>{club.meetingSchedule}</span>
               </div>
             )}
-            
+
             {!club.isOpenMembership && (
               <div className="flex items-center gap-2 text-sm">
                 <span className="font-semibold">Membership required</span>
               </div>
             )}
           </div>
-          
+
           <div className="flex flex-wrap gap-2 mt-3">
             <Badge variant="outline">{club.type}</Badge>
             {club.categories.map((category, index) => (
@@ -343,7 +343,7 @@ export function ClubsTab({ username, isOwnProfile, userRole }: ClubsTabProps) {
             {club.approvalRequired && <Badge variant="outline">Approval Required</Badge>}
           </div>
         </CardContent>
-        
+
         <CardFooter className="flex justify-between items-center pt-3">
           <div className="flex items-center gap-2">
             <Button
@@ -355,12 +355,12 @@ export function ClubsTab({ username, isOwnProfile, userRole }: ClubsTabProps) {
               <Heart className={`h-4 w-4 ${hasUserLikedClub(club) ? "fill-current" : ""}`} />
               <span className="ml-1">{club._count?.likes || 0}</span>
             </Button>
-            
+
             <Button variant="ghost" size="sm">
               <Share2 className="h-4 w-4" />
             </Button>
           </div>
-          
+
           <div className="flex gap-2">
             {isClubMember(club) ? (
               <Button
@@ -382,7 +382,7 @@ export function ClubsTab({ username, isOwnProfile, userRole }: ClubsTabProps) {
                 {club.approvalRequired ? "Apply" : "Join"}
               </Button>
             )}
-            
+
             <Button
               variant="outline"
               size="sm"
@@ -390,7 +390,7 @@ export function ClubsTab({ username, isOwnProfile, userRole }: ClubsTabProps) {
             >
               View Details
             </Button>
-            
+
             {userRole && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -430,12 +430,12 @@ export function ClubsTab({ username, isOwnProfile, userRole }: ClubsTabProps) {
           className="pl-10"
         />
       </div>
-      
+
       <Select
         value={filterOptions.type || "all"}
-        onValueChange={(value) => setFilterOptions(prev => ({ 
-          ...prev, 
-          type: value === "all" ? undefined : value as ClubType 
+        onValueChange={(value) => setFilterOptions(prev => ({
+          ...prev,
+          type: value === "all" ? undefined : value as ClubType
         }))}
       >
         <SelectTrigger className="w-[180px]">
@@ -453,11 +453,11 @@ export function ClubsTab({ username, isOwnProfile, userRole }: ClubsTabProps) {
           <SelectItem value="OTHER">Other</SelectItem>
         </SelectContent>
       </Select>
-      
+
       <Select
         value={filterOptions.categories?.[0] || "all"}
-        onValueChange={(value) => setFilterOptions(prev => ({ 
-          ...prev, 
+        onValueChange={(value) => setFilterOptions(prev => ({
+          ...prev,
           categories: value === "all" ? undefined : [value]
         }))}
       >
@@ -475,7 +475,7 @@ export function ClubsTab({ username, isOwnProfile, userRole }: ClubsTabProps) {
           <SelectItem value="ALUMNI">Alumni</SelectItem>
         </SelectContent>
       </Select>
-      
+
       {userRole === "INSTITUTION" && (
         <Button onClick={() => setShowCreateDialog(true)}>
           <Plus className="h-4 w-4 mr-2" />
@@ -484,6 +484,168 @@ export function ClubsTab({ username, isOwnProfile, userRole }: ClubsTabProps) {
       )}
     </div>
   );
+
+  // Render content based on user role
+  const renderClubsContent = () => {
+    // For students, show joined clubs
+    if (userRole === "STUDENT") {
+      return (
+        <div className="space-y-6">
+          <FilterBar />
+
+          {isOwnProfile ? (
+            <Tabs value={activeTab} onValueChange={setActiveTab}>
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="all">All Clubs</TabsTrigger>
+                <TabsTrigger value="member">Joined Clubs</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="all" className="space-y-4 mt-6">
+                {clubs.length === 0 ? (
+                  <Card>
+                    <CardContent className="text-center py-12">
+                      <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                      <h3 className="text-lg font-semibold mb-2">No clubs found</h3>
+                      <p className="text-muted-foreground">
+                        {filterOptions.search ? "Try adjusting your search criteria" : "No clubs available at the moment"}
+                      </p>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  clubs.map((club) => <ClubCard key={club.id} club={club} />)
+                )}
+              </TabsContent>
+
+              <TabsContent value="member" className="space-y-4 mt-6">
+                {userClubs.filter(club => club.isMember).length === 0 ? (
+                  <Card>
+                    <CardContent className="text-center py-12">
+                      <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                      <h3 className="text-lg font-semibold mb-2">Not a member of any clubs</h3>
+                      <p className="text-muted-foreground">
+                        Join some clubs to see them here
+                      </p>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  userClubs.filter(club => club.isMember).map((club) => (
+                    <ClubCard key={club.id} club={club} />
+                  ))
+                )}
+              </TabsContent>
+            </Tabs>
+          ) : (
+            <div className="space-y-4">
+              {clubs.length === 0 ? (
+                <Card>
+                  <CardContent className="text-center py-12">
+                    <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                    <h3 className="text-lg font-semibold mb-2">No clubs found</h3>
+                    <p className="text-muted-foreground">
+                      {filterOptions.search ? "Try adjusting your search criteria" : "No clubs available at the moment"}
+                    </p>
+                  </CardContent>
+                </Card>
+              ) : (
+                clubs.map((club) => <ClubCard key={club.id} club={club} />)
+              )}
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    // For institutions, show created clubs
+    if (userRole === "INSTITUTION") {
+      return (
+        <div className="space-y-6">
+          <FilterBar />
+
+          {isOwnProfile ? (
+            <Tabs value={activeTab} onValueChange={setActiveTab}>
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="all">All Clubs</TabsTrigger>
+                <TabsTrigger value="created">Created Clubs</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="all" className="space-y-4 mt-6">
+                {clubs.length === 0 ? (
+                  <Card>
+                    <CardContent className="text-center py-12">
+                      <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                      <h3 className="text-lg font-semibold mb-2">No clubs found</h3>
+                      <p className="text-muted-foreground">
+                        {filterOptions.search ? "Try adjusting your search criteria" : "No clubs available at the moment"}
+                      </p>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  clubs.map((club) => <ClubCard key={club.id} club={club} />)
+                )}
+              </TabsContent>
+
+              <TabsContent value="created" className="space-y-4 mt-6">
+                {userClubs.filter(club => club.creatorId === username).length === 0 ? (
+                  <Card>
+                    <CardContent className="text-center py-12">
+                      <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                      <h3 className="text-lg font-semibold mb-2">No created clubs</h3>
+                      <p className="text-muted-foreground">
+                        Create your first club to get started
+                      </p>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  userClubs.filter(club => club.creatorId === username).map((club) => (
+                    <ClubCard key={club.id} club={club} />
+                  ))
+                )}
+              </TabsContent>
+            </Tabs>
+          ) : (
+            <div className="space-y-4">
+              {clubs.length === 0 ? (
+                <Card>
+                  <CardContent className="text-center py-12">
+                    <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                    <h3 className="text-lg font-semibold mb-2">No clubs found</h3>
+                    <p className="text-muted-foreground">
+                      {filterOptions.search ? "Try adjusting your search criteria" : "No clubs available at the moment"}
+                    </p>
+                  </CardContent>
+                </Card>
+              ) : (
+                clubs.map((club) => <ClubCard key={club.id} club={club} />)
+              )}
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    // For other roles, show a generic view
+    return (
+      <div className="space-y-6">
+        <FilterBar />
+
+        <div className="space-y-4">
+          {clubs.length === 0 ? (
+            <Card>
+              <CardContent className="text-center py-12">
+                <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                <h3 className="text-lg font-semibold mb-2">No clubs found</h3>
+                <p className="text-muted-foreground">
+                  {filterOptions.search ? "Try adjusting your search criteria" : "No clubs available at the moment"}
+                </p>
+              </CardContent>
+            </Card>
+          ) : (
+            clubs.map((club) => <ClubCard key={club.id} club={club} />)
+          )}
+        </div>
+      </div>
+    );
+  };
 
   if (loading) {
     return (
@@ -506,87 +668,7 @@ export function ClubsTab({ username, isOwnProfile, userRole }: ClubsTabProps) {
 
   return (
     <div className="space-y-6">
-      <FilterBar />
-      
-      {isOwnProfile && (
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="all">All Clubs</TabsTrigger>
-            <TabsTrigger value="created">Created</TabsTrigger>
-            <TabsTrigger value="member">Member</TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="all" className="space-y-4 mt-6">
-            {clubs.length === 0 ? (
-              <Card>
-                <CardContent className="text-center py-12">
-                  <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">No clubs found</h3>
-                  <p className="text-muted-foreground">
-                    {filterOptions.search ? "Try adjusting your search criteria" : "No clubs available at the moment"}
-                  </p>
-                </CardContent>
-              </Card>
-            ) : (
-              clubs.map((club) => <ClubCard key={club.id} club={club} />)
-            )}
-          </TabsContent>
-          
-          <TabsContent value="created" className="space-y-4 mt-6">
-            {userClubs.filter(club => club.creatorId === username).length === 0 ? (
-              <Card>
-                <CardContent className="text-center py-12">
-                  <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">No created clubs</h3>
-                  <p className="text-muted-foreground">
-                    {userRole === "INSTITUTION" ? "Create your first club to get started" : "You haven't created any clubs yet"}
-                  </p>
-                </CardContent>
-              </Card>
-            ) : (
-              userClubs.filter(club => club.creatorId === username).map((club) => (
-                <ClubCard key={club.id} club={club} />
-              ))
-            )}
-          </TabsContent>
-          
-          <TabsContent value="member" className="space-y-4 mt-6">
-            {userClubs.filter(club => club.isMember).length === 0 ? (
-              <Card>
-                <CardContent className="text-center py-12">
-                  <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">Not a member of any clubs</h3>
-                  <p className="text-muted-foreground">
-                    Join some clubs to see them here
-                  </p>
-                </CardContent>
-              </Card>
-            ) : (
-              userClubs.filter(club => club.isMember).map((club) => (
-                <ClubCard key={club.id} club={club} />
-              ))
-            )}
-          </TabsContent>
-        </Tabs>
-      )}
-      
-      {!isOwnProfile && (
-        <div className="space-y-4">
-          {clubs.length === 0 ? (
-            <Card>
-              <CardContent className="text-center py-12">
-                <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-lg font-semibold mb-2">No clubs found</h3>
-                <p className="text-muted-foreground">
-                  {filterOptions.search ? "Try adjusting your search criteria" : "No clubs available at the moment"}
-                </p>
-              </CardContent>
-            </Card>
-          ) : (
-            clubs.map((club) => <ClubCard key={club.id} club={club} />)
-          )}
-        </div>
-      )}
+      {renderClubsContent()}
 
       {/* Create Club Dialog */}
       <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
@@ -597,7 +679,7 @@ export function ClubsTab({ username, isOwnProfile, userRole }: ClubsTabProps) {
               Fill in the details for your new club. Students will be able to join and participate.
             </DialogDescription>
           </DialogHeader>
-          
+
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="name" className="text-right">Club Name</Label>
@@ -608,7 +690,7 @@ export function ClubsTab({ username, isOwnProfile, userRole }: ClubsTabProps) {
                 className="col-span-3"
               />
             </div>
-            
+
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="description" className="text-right">Description</Label>
               <Textarea
@@ -619,7 +701,7 @@ export function ClubsTab({ username, isOwnProfile, userRole }: ClubsTabProps) {
                 rows={3}
               />
             </div>
-            
+
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="type" className="text-right">Type</Label>
               <Select
@@ -641,7 +723,7 @@ export function ClubsTab({ username, isOwnProfile, userRole }: ClubsTabProps) {
                 </SelectContent>
               </Select>
             </div>
-            
+
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="category" className="text-right">Category</Label>
               <Select
@@ -662,7 +744,7 @@ export function ClubsTab({ username, isOwnProfile, userRole }: ClubsTabProps) {
                 </SelectContent>
               </Select>
             </div>
-            
+
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="location" className="text-right">Location</Label>
               <Input
@@ -672,7 +754,7 @@ export function ClubsTab({ username, isOwnProfile, userRole }: ClubsTabProps) {
                 className="col-span-3"
               />
             </div>
-            
+
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="capacity" className="text-right">Capacity</Label>
               <Input
@@ -683,7 +765,7 @@ export function ClubsTab({ username, isOwnProfile, userRole }: ClubsTabProps) {
                 className="col-span-3"
               />
             </div>
-            
+
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="membershipFee" className="text-right">Membership Fee ($)</Label>
               <Input
@@ -694,7 +776,7 @@ export function ClubsTab({ username, isOwnProfile, userRole }: ClubsTabProps) {
                 className="col-span-3"
               />
             </div>
-            
+
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="meetingSchedule" className="text-right">Meeting Schedule</Label>
               <Input
@@ -704,7 +786,7 @@ export function ClubsTab({ username, isOwnProfile, userRole }: ClubsTabProps) {
                 className="col-span-3"
               />
             </div>
-            
+
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="contactEmail" className="text-right">Contact Email</Label>
               <Input
@@ -715,7 +797,7 @@ export function ClubsTab({ username, isOwnProfile, userRole }: ClubsTabProps) {
                 className="col-span-3"
               />
             </div>
-            
+
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="website" className="text-right">Website</Label>
               <Input
@@ -726,7 +808,7 @@ export function ClubsTab({ username, isOwnProfile, userRole }: ClubsTabProps) {
                 className="col-span-3"
               />
             </div>
-            
+
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="socialMedia" className="text-right">Social Media</Label>
               <Input
@@ -737,7 +819,7 @@ export function ClubsTab({ username, isOwnProfile, userRole }: ClubsTabProps) {
               />
             </div>
           </div>
-          
+
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowCreateDialog(false)}>
               Cancel
@@ -756,7 +838,7 @@ export function ClubsTab({ username, isOwnProfile, userRole }: ClubsTabProps) {
               Update the details for your club.
             </DialogDescription>
           </DialogHeader>
-          
+
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="edit-name" className="text-right">Club Name</Label>
@@ -767,7 +849,7 @@ export function ClubsTab({ username, isOwnProfile, userRole }: ClubsTabProps) {
                 className="col-span-3"
               />
             </div>
-            
+
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="edit-description" className="text-right">Description</Label>
               <Textarea
@@ -779,7 +861,7 @@ export function ClubsTab({ username, isOwnProfile, userRole }: ClubsTabProps) {
               />
             </div>
           </div>
-          
+
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowEditDialog(false)}>
               Cancel

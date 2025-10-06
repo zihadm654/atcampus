@@ -219,10 +219,10 @@ export function OrganizationCard(props: {
             <div className="flex flex-col gap-2">
               {optimisticOrg?.members.map((member) => (
                 <div
-                  className="flex items-center justify-between"
+                  className="flex items-center justify-between flex-wrap"
                   key={member.id}
                 >
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center flex-wrap gap-2">
                     <Avatar className="h-9 w-9 sm:flex">
                       <AvatarImage
                         className="object-cover"
@@ -244,7 +244,7 @@ export function OrganizationCard(props: {
                       )}
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center flex-wrap gap-2">
                     {(currentMember?.role === "owner" ||
                       currentMember?.role === "admin") && member.role === "member" && (
                         <Select

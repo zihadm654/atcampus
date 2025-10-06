@@ -37,7 +37,6 @@ export function getUserDataSelect(loggedInUserId: string) {
       },
       take: 10, // Limit for performance
     },
-    // members: true,
     applications: true,
     schools: {
       include: {
@@ -73,6 +72,8 @@ export function getUserDataSelect(loggedInUserId: string) {
     members: true,
     posts: true,
     research: true,
+    events: true,
+    clubs: true,
     followers: {
       where: {
         followerId: loggedInUserId,

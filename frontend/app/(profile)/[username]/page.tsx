@@ -1,11 +1,15 @@
 import { cache } from "react";
 import { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
+import { Prisma } from "@prisma/client";
 
 import {
   getCourseEnrollments,
   getProfessorCourses,
-  logQueryPerformance,
+  getResearchProjects,
+  getJobApplications,
+  getCreatedJobs,
+  getInstitutionCourses,
 } from "./_components/lib/queries";
 import {
   FollowerInfo,
@@ -36,50 +40,6 @@ const getUser = cache(async (username: string, loggedInUserId: string) => {
     },
     select: {
       ...getUserDataSelect(loggedInUserId),
-      members: true,
-      userSkills: {
-        include: {
-          skill: {
-            select: {
-              name: true,
-              category: true,
-            },
-          },
-          _count: {
-            select: {
-              endorsements: true,
-            },
-          },
-        },
-        take: 10, // Limit for performance
-      },
-      schools: {
-        include: {
-          faculties: {
-            include: {
-              courses: {
-                include: {
-                  instructor: true,
-                  _count: {
-                    select: {
-                      enrollments: true,
-                    },
-                  },
-                },
-                take: 5, // Limit courses per faculty for initial load
-              },
-              _count: {
-                select: {
-                  courses: true,
-                  members: true,
-                },
-              },
-            },
-          },
-        },
-      },
-      events: true,
-      clubs: true,
     },
   });
 
@@ -87,31 +47,69 @@ const getUser = cache(async (username: string, loggedInUserId: string) => {
   return user;
 });
 
-const getAppliedJobs = cache(async (userId: string) => {
-  const startTime = Date.now();
-  const applications = await getJobDataInclude(userId);
-  logQueryPerformance("getJobApplications", startTime);
-  return applications;
+const getJobs = cache(async (user: UserData) => {
+  if (user.role === "ORGANIZATION") {
+    // For organizations, fetch created jobs
+    const createdJobs = await getCreatedJobs(user.id, 10);
+    return createdJobs;
+  } else {
+    // For students, fetch applied jobs
+    const applications = await getJobApplications(user.id, 10);
+    // Extract jobs from applications for student view
+    return applications.map((app: any) => app.job);
+  }
 });
 
 const getCourses = cache(async (user: UserData) => {
-  const startTime = Date.now();
-  if (user.role === "PROFESSOR") {
-    const courses = await getProfessorCourses(user.id, 10);
-    logQueryPerformance("getProfessorCourses", startTime);
-    return courses;
+  switch (user.role) {
+    case "PROFESSOR":
+      const professorCourses = await getProfessorCourses(user.id, 10);
+      return professorCourses;
+    case "INSTITUTION":
+      const institutionCourses = await getInstitutionCourses(user.id, 10);
+      return institutionCourses;
+    case "ADMIN":
+      // For admin, we might want to show all courses or filter by some criteria
+      // For now, let's get all courses with limit
+      const adminCourses = await prisma.course.findMany({
+        include: {
+          faculty: {
+            include: {
+              school: true,
+            },
+          },
+          instructor: {
+            select: {
+              id: true,
+              name: true,
+              username: true,
+              image: true,
+            },
+          },
+          _count: {
+            select: {
+              enrollments: true,
+            },
+          },
+        },
+        take: 10,
+        orderBy: {
+          createdAt: Prisma.SortOrder.desc,
+        },
+      });
+      return adminCourses;
+    default:
+      // For STUDENT and other roles, get enrolled courses
+      const enrolled = await getCourseEnrollments(user.id, 10);
+      return enrolled;
   }
-  const enrolled = await getCourseEnrollments(user.id, 10);
-  logQueryPerformance("getCourseEnrollments", startTime);
-  return enrolled;
 });
 
 const getResearches = cache(async (userId: string) => {
-  const startTime = Date.now();
-  const researches = await getResearchDataInclude(userId);
-  logQueryPerformance("getResearchProjects", startTime);
+  const researches = await getResearchProjects(userId, 10);
   return researches;
 });
+
 export async function generateMetadata({
   params,
 }: PageProps): Promise<Metadata> {
@@ -140,7 +138,7 @@ export default async function Page({ params }: PageProps) {
   }
 
   const user = await getUser(username, loggedInUser.id);
-  const jobs = await getAppliedJobs(user.id);
+  const jobs = await getJobs(user);
   const researches = await getResearches(user.id);
   const courses = await getCourses(user);
   const followerInfo: FollowerInfo = {

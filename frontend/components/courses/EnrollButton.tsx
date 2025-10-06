@@ -28,7 +28,7 @@ export default function EnrollButton({ courseId, initialEnrolled = false }) {
     <Button
       onClick={handleEnroll}
       variant="default"
-      disabled={initialEnrolled || isPending}
+      disabled={initialEnrolled || isPending || user.role !== "STUDENT"}
     >
       {isPending ? "Enrolling..." : initialEnrolled ? "Already Enrolled" : "Enroll Now"}
     </Button>

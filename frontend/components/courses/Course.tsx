@@ -18,7 +18,7 @@ import UserTooltip from "../UserTooltip";
 import { UserAvatar } from "../shared/user-avatar";
 import { toast } from "sonner";
 import { enrollCourse } from "@/actions/enrollment";
-import { useTransition, useOptimistic } from "react";
+import { useTransition, useOptimistic, useState } from "react";
 import { Button } from "../ui/button";
 import {
   Card,
@@ -33,16 +33,19 @@ import { JsonToHtml } from "../editor/JsonToHtml";
 import { CourseData } from "@/types";
 import { Enrollment } from "@prisma/client";
 
-
 export default function Course({ course }: { course: CourseData }) {
   const { data: session } = useSession();
   const user = session?.user;
   const [isPending, startTransition] = useTransition();
 
-  const isEnrolled = course.enrollments.some(
-    (enroll: Enrollment) => enroll.studentId === user?.id
+  // Use a local state to track enrollment status
+  const [isEnrolled, setIsEnrolled] = useState<boolean>(
+    course.enrollments.some(
+      (enroll: Enrollment) => enroll.studentId === user?.id
+    )
   );
-  const [optimisticEnrolled, setOptimisticEnrolled] = useOptimistic(
+
+  const [optimisticEnrolled, setOptimisticEnrolled] = useOptimistic<boolean, boolean>(
     isEnrolled,
     (_, newState: boolean) => newState
   );
@@ -54,12 +57,19 @@ export default function Course({ course }: { course: CourseData }) {
   const handleEnroll = () => {
     startTransition(async () => {
       setOptimisticEnrolled(true);
-      const res = await enrollCourse(course.id);
-      if (res.success) {
-        toast.success(res.message);
-      } else {
+      try {
+        const res = await enrollCourse(course.id);
+        if (res.success) {
+          toast.success(res.message);
+          // Update the local state to persist the enrollment
+          setIsEnrolled(true);
+        } else {
+          setOptimisticEnrolled(false);
+          toast.error(res.message);
+        }
+      } catch (error) {
         setOptimisticEnrolled(false);
-        toast.error(res.message);
+        toast.error("Failed to enroll in course");
       }
     });
   };
@@ -159,11 +169,11 @@ export default function Course({ course }: { course: CourseData }) {
         {user.role === "STUDENT" && (
           <Button
             onClick={handleEnroll}
-            variant={optimisticEnrolled ? "secondary" : "default"}
-            disabled={optimisticEnrolled || isPending}
+            variant={(optimisticEnrolled || isEnrolled) ? "secondary" : "default"}
+            disabled={optimisticEnrolled || isEnrolled || isPending}
             className="w-full"
           >
-            {optimisticEnrolled ? "Already Enrolled" : "Enroll Now"}
+            {(optimisticEnrolled || isEnrolled) ? "Already Enrolled" : "Enroll Now"}
           </Button>
         )}
       </CardFooter>

@@ -21,7 +21,7 @@ import UserTooltip from "../UserTooltip";
 import { sendCollaborationRequest } from "./collaboration-actions";
 import ResearchMoreButton from "./ResearchMoreButton";
 import SaveResearchButton from "./SaveResearchButton";
-import { useTransition, useOptimistic } from "react";
+import { useTransition, useOptimistic, useState } from "react";
 import {
   Card,
   CardContent,
@@ -45,14 +45,19 @@ export default function Research({ research }: ResearchProps) {
   }
   const [isPending, startTransition] = useTransition();
 
-  const isCollaborator = research.collaborators.some(
-    (c: any) => c.id === user.id
-  );
-  const hasRequested = research.collaborationRequests.some(
-    (c: any) => c.id === user.id
+  // Safely check if user is a collaborator
+  const isCollaborator = research.collaborators && research.collaborators.some
+    ? research.collaborators.some((c: any) => c.id === user.id)
+    : false;
+
+  // Use a local state to track collaboration request status
+  const [hasRequested, setHasRequested] = useState<boolean>(
+    research.collaborationRequests && research.collaborationRequests.some
+      ? research.collaborationRequests.some((c: any) => c.requesterId === user.id)
+      : false
   );
 
-  const [optimisticRequested, setOptimisticRequested] = useOptimistic(
+  const [optimisticRequested, setOptimisticRequested] = useOptimistic<boolean, boolean>(
     hasRequested,
     (_, newState: boolean) => newState
   );
@@ -60,12 +65,19 @@ export default function Research({ research }: ResearchProps) {
   const handleCollaborationRequest = () => {
     startTransition(async () => {
       setOptimisticRequested(true);
-      const res = await sendCollaborationRequest(research.id);
-      if (!res.success) {
+      try {
+        const res = await sendCollaborationRequest(research.id);
+        if (!res.success) {
+          setOptimisticRequested(false);
+          toast.error(res.message);
+        } else {
+          toast.success(res.message);
+          // Update the local state to persist the request
+          setHasRequested(true);
+        }
+      } catch (error) {
         setOptimisticRequested(false);
-        toast.error(res.message);
-      } else {
-        toast.success(res.message);
+        toast.error("Failed to send collaboration request");
       }
     });
   };
@@ -136,7 +148,7 @@ export default function Research({ research }: ResearchProps) {
             </div>
             <div className="flex items-center gap-2 text-muted-foreground">
               <Users className="size-4" />
-              <span>{research.collaborators?.length || 0} collaborators</span>
+              <span>{research.collaborators ? research.collaborators.length : 0} collaborators</span>
             </div>
             <div className="flex items-center gap-2 text-muted-foreground">
               <BookOpen className="size-4" />
@@ -169,16 +181,16 @@ export default function Research({ research }: ResearchProps) {
               variant={
                 isCollaborator
                   ? "secondary"
-                  : optimisticRequested
+                  : (optimisticRequested || hasRequested)
                     ? "outline"
                     : "default"
               }
-              disabled={isCollaborator || optimisticRequested || isPending || user?.role !== "STUDENT"}
+              disabled={isCollaborator || optimisticRequested || hasRequested || isPending || user?.role !== "STUDENT"}
               className="flex-1"
             >
               {isCollaborator
                 ? "Already Collaborating"
-                : optimisticRequested
+                : (optimisticRequested || hasRequested)
                   ? "Request Sent"
                   : "Request to Collaborate"}
             </Button>
@@ -186,9 +198,9 @@ export default function Research({ research }: ResearchProps) {
           <SaveResearchButton
             researchId={research.id}
             initialState={{
-              isSaveResearchByUser: research.savedResearch.some(
-                (bookmark: any) => bookmark.userId === user.id
-              ),
+              isSaveResearchByUser: research.savedResearch && research.savedResearch.some
+                ? research.savedResearch.some((bookmark: any) => bookmark.userId === user.id)
+                : false,
             }}
           />
         </div>

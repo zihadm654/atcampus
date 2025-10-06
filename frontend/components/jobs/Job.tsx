@@ -35,7 +35,7 @@ import {
   CardTitle,
 } from "../ui/card";
 import UserTooltip from "../UserTooltip";
-import { useTransition, useOptimistic } from "react";
+import { useTransition, useOptimistic, useState } from "react";
 
 interface JobProps {
   job: JobData;
@@ -48,16 +48,21 @@ export default function Job({ job }: JobProps) {
     return null;
   }
 
+  const [isPending, startTransition] = useTransition();
+
   const { data: isEnrolled } = useQuery({
     queryKey: ["enrolled", job.courseId],
     queryFn: () => isEnrolledInCourse(job.courseId || ""),
     enabled: !!job.courseId && user.role === "STUDENT",
   });
 
-  const [isPending, startTransition] = useTransition();
+  // Use a local state to track application status
+  const [isApplied, setIsApplied] = useState<boolean>(
+    job.applications.some((application) => application.applicantId === user.id)
+  );
 
-  const [optimisticApplied, setOptimisticApplied] = useOptimistic(
-    job.applications.some((application) => application.applicantId === user.id),
+  const [optimisticApplied, setOptimisticApplied] = useOptimistic<boolean, boolean>(
+    isApplied,
     (state, newState: boolean) => newState
   );
 
@@ -65,29 +70,32 @@ export default function Job({ job }: JobProps) {
     startTransition(async () => {
       setOptimisticApplied(true);
 
-      const res = await applyJob(job.id);
-      if (!res.success) {
-        toast.error(res.message);
+      try {
+        const res = await applyJob(job.id);
+        if (!res.success) {
+          toast.error(res.message);
+          setOptimisticApplied(false);
+        } else {
+          toast.success(res.message);
+          // Update the local state to persist the application
+          setIsApplied(true);
+        }
+      } catch (error) {
         setOptimisticApplied(false);
-      } else {
-        toast.success(res.message);
+        toast.error("Failed to apply for job");
       }
     });
   };
 
-  const isApplied =
-    optimisticApplied ||
-    job.applications.some((application) => application.applicantId === user.id);
   return (
     <Card className="group relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
       {/* Match Badge */}
       {job.courseId && (
         <Badge
-          className={`absolute top-3 right-3 z-10 ${
-            isEnrolled
+          className={`absolute top-3 right-3 z-10 ${isEnrolled
               ? "bg-green-500/90 text-white"
               : "bg-orange-500/90 text-white"
-          }`}
+            }`}
         >
           {isEnrolled ? "Profile Match" : "Course Required"}
         </Badge>
@@ -184,8 +192,8 @@ export default function Job({ job }: JobProps) {
           />
           <Button
             onClick={handleApply}
-            variant={isApplied ? "outline" : "default"}
-            disabled={isApplied || user.role !== "STUDENT" || isPending}
+            variant={(optimisticApplied || isApplied) ? "outline" : "default"}
+            disabled={optimisticApplied || isApplied || user.role !== "STUDENT" || isPending}
             className="min-w-[120px]"
             size="sm"
           >
@@ -194,7 +202,7 @@ export default function Job({ job }: JobProps) {
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Applying...
               </>
-            ) : isApplied ? (
+            ) : (optimisticApplied || isApplied) ? (
               "Applied ✓"
             ) : (
               "Apply Now"

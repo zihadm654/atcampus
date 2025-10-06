@@ -93,16 +93,16 @@ export default async function CoursesPage() {
         <div className="flex gap-2">
           {canCreateCourses && (
             <>
-              <Button className="rounded-xl" size="sm" variant="outline">
+              <Button className="rounded-xl max-sm:text-sm" size="sm" variant="outline">
                 <Link href="/courses/my-courses">My Courses</Link>
               </Button>
-              <Button className="rounded-xl" size="sm" variant="outline">
+              <Button className="rounded-xl max-sm:text-sm" size="sm" variant="outline">
                 <Link href="/courses/createCourse">Create Course</Link>
               </Button>
             </>
           )}
           {hasApprovalPermissions && (
-            <Button className="rounded-xl" size="sm" variant="secondary">
+            <Button className="rounded-xl max-sm:text-sm" size="sm" variant="secondary">
               <Link href="/courses/approvals">Course Approvals</Link>
             </Button>
           )}

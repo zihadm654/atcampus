@@ -74,7 +74,8 @@ const TAB_CONFIGURATIONS: Record<UserRole, TabConfig[]> = {
       value: "courses",
       label: "Courses",
       icon: BookOpen,
-      permission: "canCreateCourses",
+      // Remove permission requirement so professors can always see the courses tab
+      // Permission checking will be handled within the CoursesTab component
       roles: [UserRole.PROFESSOR],
     },
     {
@@ -95,6 +96,13 @@ const TAB_CONFIGURATIONS: Record<UserRole, TabConfig[]> = {
       value: "posts",
       label: "Posts",
       icon: Icons.post,
+      roles: [UserRole.INSTITUTION],
+    },
+    {
+      value: "courses",
+      label: "Courses",
+      icon: BookOpen,
+      permission: "canManageAcademic",
       roles: [UserRole.INSTITUTION],
     },
     {
@@ -242,11 +250,11 @@ export default function ProfileTabs({
   const permissions = calculateProfilePermissions(
     user.id,
     loggedInUserId,
-    user.role as unknown as UserRole,
-    loggedInUserRole as unknown as UserRole
+    user.role as UserRole,
+    loggedInUserRole as UserRole
   );
 
-  const roleTabs = getRoleBasedTabs(user.role as unknown as UserRole, permissions);
+  const roleTabs = getRoleBasedTabs(user.role as UserRole, permissions);
 
   const handleTabChange = (tab: string) => {
     setCurrentTab(tab);
@@ -301,7 +309,7 @@ export default function ProfileTabs({
         <TabsContent value="jobs" className="p-4">
           <JobsTab
             jobs={jobs}
-            userRole={user.role as unknown as UserRole}
+            userRole={user.role as UserRole}
             loggedInUserId={loggedInUserId}
             permissions={permissions}
             loading={loading?.jobs}
@@ -311,10 +319,11 @@ export default function ProfileTabs({
         <TabsContent value="research" className="p-3">
           <ResearchTab
             researches={researches}
-            userRole={user.role as unknown as UserRole}
+            userRole={user.role as UserRole}
             loggedInUserId={loggedInUserId}
             permissions={permissions}
             loading={loading?.researches}
+            user={user} // Pass the user prop
           />
         </TabsContent>
 

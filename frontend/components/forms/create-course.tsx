@@ -564,9 +564,11 @@ export function CreateCourseForm({ user, course }: CreateCourseFormProps) {
               ? "Saving..."
               : course
                 ? "Update Course"
-                : user?.role === "PROFESSOR"
+                : user?.role === "PROFESSOR" && form.watch("status") === CourseStatus.UNDER_REVIEW
                   ? "Submit for Approval"
-                  : "Save Course"}
+                  : user?.role === "PROFESSOR"
+                    ? "Save as Draft"
+                    : "Save Course"}
           </Button>
         </div>
       </form>

@@ -1,3 +1,4 @@
+"use client";
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -5,10 +6,13 @@ import { Icons } from "@/components/shared/icons";
 import ResearchComponent from "@/components/researches/Research";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useRouter } from "next/navigation";
+import { UserData } from "@/types";
+import { UserRole } from "@/lib/validations/auth";
 
 interface ResearchItem {
   id: string;
   userId: string;
+  collaborators?: any[]; // Make collaborators optional
   [key: string]: any; // Allow other properties
 }
 
@@ -18,6 +22,7 @@ interface ResearchTabProps {
   loggedInUserId: string;
   permissions: any;
   loading?: boolean;
+  user?: UserData; // Make user prop optional
 }
 
 export default function ResearchTab({
@@ -26,11 +31,37 @@ export default function ResearchTab({
   loggedInUserId,
   permissions,
   loading = false,
+  user, // Destructure user prop
 }: ResearchTabProps) {
   const canEdit = loggedInUserId && permissions.canEdit;
-  const isOwnProfile =
-    researches.length > 0 ? loggedInUserId === researches[0]?.userId : false;
+  const isOwnProfile = user ? loggedInUserId === user.id : false;
   const router = useRouter();
+
+  // Filter researches based on user role and ownership
+  const getFilteredResearches = () => {
+    switch (userRole) {
+      case UserRole.STUDENT:
+        // Students see their own researches
+        return researches;
+      case UserRole.PROFESSOR:
+        // Professors see their own researches
+        return researches;
+      case UserRole.INSTITUTION:
+        // Institutions see researches created by them
+        return researches;
+      case UserRole.ORGANIZATION:
+        // Organizations see their own researches
+        return researches;
+      case UserRole.ADMIN:
+        // Admins see all researches
+        return researches;
+      default:
+        return researches;
+    }
+  };
+
+  const filteredResearches = getFilteredResearches();
+
   // Show loading skeleton if data is loading
   if (loading) {
     return (
@@ -81,8 +112,8 @@ export default function ResearchTab({
           </Button>
         </CardHeader>
         <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
-          {researches.length > 0 && isOwnProfile ? (
-            researches.map((item: ResearchItem) => (
+          {filteredResearches && filteredResearches.length > 0 ? (
+            filteredResearches.map((item: ResearchItem) => (
               <ResearchComponent key={item.id} research={item} />
             ))
           ) : (
@@ -92,7 +123,7 @@ export default function ResearchTab({
                 No research added yet
               </h3>
               <p className="text-gray-500 text-center max-w-md mb-4">
-                This user hasn't added any research projects yet.
+                No research projects are available at the moment.
               </p>
               {canEdit && (
                 <Button

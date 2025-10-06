@@ -7,7 +7,7 @@ import { format } from "date-fns";
 
 import { ExtendedEvent, EventFilterOptions } from "@/types/event-types";
 import { getEventsAction, joinEventAction, leaveEventAction, toggleEventLikeAction, getUserEventsAction } from "@/actions/event-actions";
-import { EventStatus,EventType } from "@prisma/client";
+import { EventStatus, EventType } from "@prisma/client";
 // import { EventType } from "@/lib/validations/event";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -32,7 +32,7 @@ interface EventsTabProps {
 export function EventsTab({ username, isOwnProfile, userRole }: EventsTabProps) {
   const router = useRouter();
   const { toast } = useToast();
-  
+
   const [events, setEvents] = useState<ExtendedEvent[]>([]);
   const [userEvents, setUserEvents] = useState<ExtendedEvent[]>([]);
   const [loading, setLoading] = useState(true);
@@ -43,7 +43,7 @@ export function EventsTab({ username, isOwnProfile, userRole }: EventsTabProps) 
     startDateFrom: undefined,
     startDateTo: undefined,
   });
-  
+
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [editingEvent, setEditingEvent] = useState<ExtendedEvent | null>(null);
@@ -186,7 +186,7 @@ export function EventsTab({ username, isOwnProfile, userRole }: EventsTabProps) 
 
   const handleEditEvent = async () => {
     if (!editingEvent) return;
-    
+
     try {
       // Implementation for updating event would go here
       // This would call the updateEventAction server action
@@ -208,7 +208,7 @@ export function EventsTab({ username, isOwnProfile, userRole }: EventsTabProps) 
 
   const handleDeleteEvent = async (eventId: string) => {
     if (!confirm("Are you sure you want to delete this event?")) return;
-    
+
     try {
       // Implementation for deleting event would go here
       // This would call the deleteEventAction server action
@@ -283,40 +283,40 @@ export function EventsTab({ username, isOwnProfile, userRole }: EventsTabProps) 
           </div>
         </div>
       </CardHeader>
-      
+
       <CardContent className="pb-3">
         <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
           {event.description}
         </p>
-        
+
         <div className="space-y-2">
           <div className="flex items-center gap-2 text-sm">
             <CalendarClock className="h-4 w-4 text-muted-foreground" />
             <span>
-              {format(new Date(event.startDate), "MMM d, yyyy h:mm a")} - 
+              {format(new Date(event.startDate), "MMM d, yyyy h:mm a")} -
               {format(new Date(event.endDate), "MMM d, yyyy h:mm a")}
             </span>
           </div>
-          
+
           <div className="flex items-center gap-2 text-sm">
             <MapPin className="h-4 w-4 text-muted-foreground" />
             <span>{event.isOnline ? "Online" : event.location}</span>
           </div>
-          
+
           <div className="flex items-center gap-2 text-sm">
             <Users className="h-4 w-4 text-muted-foreground" />
             <span>
               {event._count?.attendees || 0} / {event.capacity} attendees
             </span>
           </div>
-          
+
           {Number(event.price) > 0 && (
             <div className="flex items-center gap-2 text-sm">
               <span className="font-semibold">${Number(event.price)}</span>
             </div>
           )}
         </div>
-        
+
         <div className="flex flex-wrap gap-2 mt-3">
           <Badge variant="outline">{event.type}</Badge>
           {event.isPublic && <Badge variant="outline">Public</Badge>}
@@ -325,7 +325,7 @@ export function EventsTab({ username, isOwnProfile, userRole }: EventsTabProps) 
           )}
         </div>
       </CardContent>
-      
+
       <CardFooter className="flex justify-between items-center pt-3">
         <div className="flex items-center gap-2">
           <Button
@@ -337,12 +337,12 @@ export function EventsTab({ username, isOwnProfile, userRole }: EventsTabProps) 
             <Heart className={`h-4 w-4 ${hasUserLikedEvent(event) ? "fill-current" : ""}`} />
             <span className="ml-1">{event._count?.likesUsers || 0}</span>
           </Button>
-          
+
           <Button variant="ghost" size="sm">
             <Share2 className="h-4 w-4" />
           </Button>
         </div>
-        
+
         <div className="flex gap-2">
           {isEventAttendee(event) ? (
             <Button
@@ -358,14 +358,14 @@ export function EventsTab({ username, isOwnProfile, userRole }: EventsTabProps) 
             <Button
               size="sm"
               onClick={() => handleJoinEvent(event.id)}
-              disabled={Boolean((event.registrationDeadline ? new Date(event.registrationDeadline) < new Date() : new Date(event.startDate) < new Date()) || 
-                       (event.capacity && (event._count?.attendees || 0) >= Number(event.capacity)))}
+              disabled={Boolean((event.registrationDeadline ? new Date(event.registrationDeadline) < new Date() : new Date(event.startDate) < new Date()) ||
+                (event.capacity && (event._count?.attendees || 0) >= Number(event.capacity)))}
             >
               <UserPlus className="h-4 w-4 mr-1" />
               Join
             </Button>
           )}
-          
+
           <Button
             variant="outline"
             size="sm"
@@ -389,12 +389,12 @@ export function EventsTab({ username, isOwnProfile, userRole }: EventsTabProps) 
           className="pl-10"
         />
       </div>
-      
+
       <Select
         value={filterOptions.type || "all"}
-        onValueChange={(value) => setFilterOptions(prev => ({ 
-          ...prev, 
-          type: value === "all" ? undefined : value as EventType 
+        onValueChange={(value) => setFilterOptions(prev => ({
+          ...prev,
+          type: value === "all" ? undefined : value as EventType
         }))}
       >
         <SelectTrigger className="w-[180px]">
@@ -412,7 +412,7 @@ export function EventsTab({ username, isOwnProfile, userRole }: EventsTabProps) 
           <SelectItem value="SPORTS">Sports</SelectItem>
         </SelectContent>
       </Select>
-      
+
       {userRole === "INSTITUTION" && (
         <Button onClick={() => setShowCreateDialog(true)}>
           <Plus className="h-4 w-4 mr-2" />
@@ -421,6 +421,168 @@ export function EventsTab({ username, isOwnProfile, userRole }: EventsTabProps) 
       )}
     </div>
   );
+
+  // Render content based on user role
+  const renderEventsContent = () => {
+    // For students, show attended events
+    if (userRole === "STUDENT") {
+      return (
+        <div className="space-y-6">
+          <FilterBar />
+
+          {isOwnProfile ? (
+            <Tabs value={activeTab} onValueChange={setActiveTab}>
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="all">All Events</TabsTrigger>
+                <TabsTrigger value="attending">Attending Events</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="all" className="space-y-4 mt-6">
+                {events.length === 0 ? (
+                  <Card>
+                    <CardContent className="text-center py-12">
+                      <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                      <h3 className="text-lg font-semibold mb-2">No events found</h3>
+                      <p className="text-muted-foreground">
+                        {filterOptions.search ? "Try adjusting your search criteria" : "No events available at the moment"}
+                      </p>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  events.map((event) => <EventCard key={event.id} event={event} />)
+                )}
+              </TabsContent>
+
+              <TabsContent value="attending" className="space-y-4 mt-6">
+                {userEvents.filter(event => event.attendees?.some(attendee => attendee.userId === username)).length === 0 ? (
+                  <Card>
+                    <CardContent className="text-center py-12">
+                      <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                      <h3 className="text-lg font-semibold mb-2">Not attending any events</h3>
+                      <p className="text-muted-foreground">
+                        Join some events to see them here
+                      </p>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  userEvents.filter(event => event.attendees?.some(attendee => attendee.userId === username)).map((event) => (
+                    <EventCard key={event.id} event={event} />
+                  ))
+                )}
+              </TabsContent>
+            </Tabs>
+          ) : (
+            <div className="space-y-4">
+              {events.length === 0 ? (
+                <Card>
+                  <CardContent className="text-center py-12">
+                    <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                    <h3 className="text-lg font-semibold mb-2">No events found</h3>
+                    <p className="text-muted-foreground">
+                      {filterOptions.search ? "Try adjusting your search criteria" : "No events available at the moment"}
+                    </p>
+                  </CardContent>
+                </Card>
+              ) : (
+                events.map((event) => <EventCard key={event.id} event={event} />)
+              )}
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    // For institutions, show created events
+    if (userRole === "INSTITUTION") {
+      return (
+        <div className="space-y-6">
+          <FilterBar />
+
+          {isOwnProfile ? (
+            <Tabs value={activeTab} onValueChange={setActiveTab}>
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="all">All Events</TabsTrigger>
+                <TabsTrigger value="created">Created Events</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="all" className="space-y-4 mt-6">
+                {events.length === 0 ? (
+                  <Card>
+                    <CardContent className="text-center py-12">
+                      <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                      <h3 className="text-lg font-semibold mb-2">No events found</h3>
+                      <p className="text-muted-foreground">
+                        {filterOptions.search ? "Try adjusting your search criteria" : "No events available at the moment"}
+                      </p>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  events.map((event) => <EventCard key={event.id} event={event} />)
+                )}
+              </TabsContent>
+
+              <TabsContent value="created" className="space-y-4 mt-6">
+                {userEvents.filter(event => event.creatorId === username).length === 0 ? (
+                  <Card>
+                    <CardContent className="text-center py-12">
+                      <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                      <h3 className="text-lg font-semibold mb-2">No created events</h3>
+                      <p className="text-muted-foreground">
+                        Create your first event to get started
+                      </p>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  userEvents.filter(event => event.creatorId === username).map((event) => (
+                    <EventCard key={event.id} event={event} />
+                  ))
+                )}
+              </TabsContent>
+            </Tabs>
+          ) : (
+            <div className="space-y-4">
+              {events.length === 0 ? (
+                <Card>
+                  <CardContent className="text-center py-12">
+                    <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                    <h3 className="text-lg font-semibold mb-2">No events found</h3>
+                    <p className="text-muted-foreground">
+                      {filterOptions.search ? "Try adjusting your search criteria" : "No events available at the moment"}
+                    </p>
+                  </CardContent>
+                </Card>
+              ) : (
+                events.map((event) => <EventCard key={event.id} event={event} />)
+              )}
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    // For other roles, show a generic view
+    return (
+      <div className="space-y-6">
+        <FilterBar />
+
+        <div className="space-y-4">
+          {events.length === 0 ? (
+            <Card>
+              <CardContent className="text-center py-12">
+                <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                <h3 className="text-lg font-semibold mb-2">No events found</h3>
+                <p className="text-muted-foreground">
+                  {filterOptions.search ? "Try adjusting your search criteria" : "No events available at the moment"}
+                </p>
+              </CardContent>
+            </Card>
+          ) : (
+            events.map((event) => <EventCard key={event.id} event={event} />)
+          )}
+        </div>
+      </div>
+    );
+  };
 
   if (loading) {
     return (
@@ -443,87 +605,7 @@ export function EventsTab({ username, isOwnProfile, userRole }: EventsTabProps) 
 
   return (
     <div className="space-y-6">
-      <FilterBar />
-      
-      {isOwnProfile && (
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="all">All Events</TabsTrigger>
-            <TabsTrigger value="created">Created</TabsTrigger>
-            <TabsTrigger value="attending">Attending</TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="all" className="space-y-4 mt-6">
-            {events.length === 0 ? (
-              <Card>
-                <CardContent className="text-center py-12">
-                  <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">No events found</h3>
-                  <p className="text-muted-foreground">
-                    {filterOptions.search ? "Try adjusting your search criteria" : "No events available at the moment"}
-                  </p>
-                </CardContent>
-              </Card>
-            ) : (
-              events.map((event) => <EventCard key={event.id} event={event} />)
-            )}
-          </TabsContent>
-          
-          <TabsContent value="created" className="space-y-4 mt-6">
-            {userEvents.filter(event => event.creatorId === username).length === 0 ? (
-              <Card>
-                <CardContent className="text-center py-12">
-                  <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">No created events</h3>
-                  <p className="text-muted-foreground">
-                    {userRole === "INSTITUTION" ? "Create your first event to get started" : "You haven't created any events yet"}
-                  </p>
-                </CardContent>
-              </Card>
-            ) : (
-              userEvents.filter(event => event.creatorId === username).map((event) => (
-                <EventCard key={event.id} event={event} />
-              ))
-            )}
-          </TabsContent>
-          
-          <TabsContent value="attending" className="space-y-4 mt-6">
-            {userEvents.filter(event => event.attendees?.some(attendee => attendee.userId === username)).length === 0 ? (
-              <Card>
-                <CardContent className="text-center py-12">
-                  <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">Not attending any events</h3>
-                  <p className="text-muted-foreground">
-                    Join some events to see them here
-                  </p>
-                </CardContent>
-              </Card>
-            ) : (
-              userEvents.filter(event => event.attendees?.some(attendee => attendee.userId === username)).map((event) => (
-                <EventCard key={event.id} event={event} />
-              ))
-            )}
-          </TabsContent>
-        </Tabs>
-      )}
-      
-      {!isOwnProfile && (
-        <div className="space-y-4">
-          {events.length === 0 ? (
-            <Card>
-              <CardContent className="text-center py-12">
-                <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-lg font-semibold mb-2">No events found</h3>
-                <p className="text-muted-foreground">
-                  {filterOptions.search ? "Try adjusting your search criteria" : "No events available at the moment"}
-                </p>
-              </CardContent>
-            </Card>
-          ) : (
-            events.map((event) => <EventCard key={event.id} event={event} />)
-          )}
-        </div>
-      )}
+      {renderEventsContent()}
 
       {/* Create Event Dialog */}
       <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
@@ -534,7 +616,7 @@ export function EventsTab({ username, isOwnProfile, userRole }: EventsTabProps) 
               Fill in the details for your new event. Students will be able to join and participate.
             </DialogDescription>
           </DialogHeader>
-          
+
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="name" className="text-right">Event Name</Label>
@@ -545,7 +627,7 @@ export function EventsTab({ username, isOwnProfile, userRole }: EventsTabProps) 
                 className="col-span-3"
               />
             </div>
-            
+
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="description" className="text-right">Description</Label>
               <Textarea
@@ -556,7 +638,7 @@ export function EventsTab({ username, isOwnProfile, userRole }: EventsTabProps) 
                 rows={3}
               />
             </div>
-            
+
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="type" className="text-right">Type</Label>
               <Select
@@ -578,7 +660,7 @@ export function EventsTab({ username, isOwnProfile, userRole }: EventsTabProps) 
                 </SelectContent>
               </Select>
             </div>
-            
+
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="location" className="text-right">Location</Label>
               <Input
@@ -588,7 +670,7 @@ export function EventsTab({ username, isOwnProfile, userRole }: EventsTabProps) 
                 className="col-span-3"
               />
             </div>
-            
+
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="capacity" className="text-right">Capacity</Label>
               <Input
@@ -599,7 +681,7 @@ export function EventsTab({ username, isOwnProfile, userRole }: EventsTabProps) 
                 className="col-span-3"
               />
             </div>
-            
+
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="price" className="text-right">Price ($)</Label>
               <Input
@@ -610,7 +692,7 @@ export function EventsTab({ username, isOwnProfile, userRole }: EventsTabProps) 
                 className="col-span-3"
               />
             </div>
-            
+
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="startDate" className="text-right">Start Date</Label>
               <Input
@@ -621,7 +703,7 @@ export function EventsTab({ username, isOwnProfile, userRole }: EventsTabProps) 
                 className="col-span-3"
               />
             </div>
-            
+
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="endDate" className="text-right">End Date</Label>
               <Input
@@ -632,7 +714,7 @@ export function EventsTab({ username, isOwnProfile, userRole }: EventsTabProps) 
                 className="col-span-3"
               />
             </div>
-            
+
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="registrationDeadline" className="text-right">Registration Deadline</Label>
               <Input
@@ -643,7 +725,7 @@ export function EventsTab({ username, isOwnProfile, userRole }: EventsTabProps) 
                 className="col-span-3"
               />
             </div>
-            
+
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="contactEmail" className="text-right">Contact Email</Label>
               <Input
@@ -654,7 +736,7 @@ export function EventsTab({ username, isOwnProfile, userRole }: EventsTabProps) 
                 className="col-span-3"
               />
             </div>
-            
+
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="website" className="text-right">Website</Label>
               <Input
@@ -666,7 +748,7 @@ export function EventsTab({ username, isOwnProfile, userRole }: EventsTabProps) 
               />
             </div>
           </div>
-          
+
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowCreateDialog(false)}>
               Cancel
@@ -685,7 +767,7 @@ export function EventsTab({ username, isOwnProfile, userRole }: EventsTabProps) 
               Update the details for your event.
             </DialogDescription>
           </DialogHeader>
-          
+
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="edit-name" className="text-right">Event Name</Label>
@@ -696,7 +778,7 @@ export function EventsTab({ username, isOwnProfile, userRole }: EventsTabProps) 
                 className="col-span-3"
               />
             </div>
-            
+
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="edit-description" className="text-right">Description</Label>
               <Textarea
@@ -708,7 +790,7 @@ export function EventsTab({ username, isOwnProfile, userRole }: EventsTabProps) 
               />
             </div>
           </div>
-          
+
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowEditDialog(false)}>
               Cancel

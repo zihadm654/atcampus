@@ -44,8 +44,9 @@ export async function GET(req: NextRequest) {
         console.log(`User ${currentUser.id} requesting course approvals with status: ${validatedQuery.status}`);
 
         // Build where clause for courses where user is reviewer
-        const whereClause: any = {
+        const whereClause = {
             reviewerId: currentUser.id,
+            status: { in: [CourseStatus.UNDER_REVIEW, CourseStatus.PUBLISHED, CourseStatus.REJECTED, CourseStatus.NEEDS_REVISION] },
         };
 
         // Only add status filter if provided and not 'all'
@@ -188,9 +189,11 @@ export async function POST(req: NextRequest) {
         }
 
         // Check if course is in draft status
-        if (course.status !== "DRAFT") {
+        if (course.status !== CourseStatus.DRAFT &&
+            course.status !== CourseStatus.REJECTED &&
+            course.status !== CourseStatus.NEEDS_REVISION) {
             return NextResponse.json(
-                { error: "Only draft courses can be submitted for approval" },
+                { error: "Only draft, rejected, or courses needing revision can be submitted for approval" },
                 { status: 400 }
             );
         }
@@ -199,7 +202,7 @@ export async function POST(req: NextRequest) {
         const existingApproval = await prisma.courseApproval.findFirst({
             where: {
                 courseId,
-                status: "UNDER_REVIEW",
+                status: CourseStatus.UNDER_REVIEW,
             },
         });
 
@@ -237,7 +240,7 @@ export async function POST(req: NextRequest) {
             const updatedCourse = await tx.course.update({
                 where: { id: courseId },
                 data: {
-                    status: "UNDER_REVIEW",
+                    status: CourseStatus.UNDER_REVIEW,
                 },
             });
 
@@ -246,7 +249,7 @@ export async function POST(req: NextRequest) {
                 data: {
                     courseId,
                     reviewerId: institutionAdmin.userId,
-                    status: "UNDER_REVIEW",
+                    status: CourseStatus.UNDER_REVIEW,
                 },
             });
 
