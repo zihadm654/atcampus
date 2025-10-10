@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -15,7 +15,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { deleteFaculty } from "@/actions/faculty";
+import { useDeleteFacultyMutation } from "@/app/(profile)/[username]/_components/schoolMutations";
 import { Trash2 } from "lucide-react";
 
 interface DeleteFacultyDialogProps {
@@ -23,28 +23,30 @@ interface DeleteFacultyDialogProps {
 }
 
 export default function DeleteFacultyDialog({ facultyId }: DeleteFacultyDialogProps) {
-  const [isPending, startTransition] = useTransition();
+  const [open, setOpen] = useState(false);
+  const deleteFacultyMutation = useDeleteFacultyMutation();
 
-  const onClick = () => {
-    startTransition(async () => {
-      const formData = new FormData();
-      formData.append("id", facultyId);
-
-      const result = await deleteFaculty(formData);
-
-      if (result?.error) {
-        toast.error(result.error);
-      } else {
-        toast.success("Faculty deleted successfully");
+  const handleDelete = () => {
+    toast.promise(
+      deleteFacultyMutation.mutateAsync(facultyId),
+      {
+        loading: "Deleting faculty...",
+        success: "Faculty deleted successfully",
+        error: "Failed to delete faculty"
       }
-    });
+    );
+
+    // Close dialog on success
+    if (!deleteFacultyMutation.isError) {
+      setOpen(false);
+    }
   };
 
   return (
-    <AlertDialog>
+    <AlertDialog open={open} onOpenChange={setOpen}>
       <AlertDialogTrigger asChild>
-        <Button variant="ghost" size="sm" className="text-red-500">
-            <Trash2 className="mr-2 h-4 w-4" /> Delete
+        <Button variant="ghost" size="sm" className="text-red-500 hover:text-red-600 w-full justify-start">
+          <Trash2 className="mr-2 h-4 w-4" /> Delete
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
@@ -57,8 +59,8 @@ export default function DeleteFacultyDialog({ facultyId }: DeleteFacultyDialogPr
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction onClick={onClick} disabled={isPending}>
-            {isPending ? "Deleting..." : "Delete"}
+          <AlertDialogAction onClick={handleDelete} disabled={deleteFacultyMutation.isPending}>
+            {deleteFacultyMutation.isPending ? "Deleting..." : "Delete"}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

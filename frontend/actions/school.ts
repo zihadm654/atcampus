@@ -111,6 +111,20 @@ export async function deleteSchool(schoolId: string) {
   }
 
   try {
+    // Verify that the school belongs to this institution
+    const school = await prisma.school.findUnique({
+      where: {
+        id: schoolId,
+        institutionId: user.id,
+      },
+    });
+
+    if (!school) {
+      return {
+        error: "School not found or unauthorized",
+      };
+    }
+
     await prisma.school.delete({
       where: {
         id: schoolId,

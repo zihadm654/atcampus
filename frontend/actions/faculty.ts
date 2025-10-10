@@ -35,7 +35,7 @@ export async function addFaculty(formData: FormData) {
       error: "Invalid fields",
     };
   }
-  
+
   const slug = validatedFields.data.name.toLowerCase().replace(/\s/g, "-");
 
   try {
@@ -56,71 +56,87 @@ export async function addFaculty(formData: FormData) {
 }
 
 export async function editFaculty(formData: FormData) {
-    const user = await getCurrentUser();
+  const user = await getCurrentUser();
 
-    if (!user || user.role !== "INSTITUTION") {
-        return {
-            error: "Not authorized",
-        };
-    }
+  if (!user || user.role !== "INSTITUTION") {
+    return {
+      error: "Not authorized",
+    };
+  }
 
-    const validatedFields = editFacultySchema.safeParse({
-        id: formData.get("id"),
-        name: formData.get("name"),
+  const validatedFields = editFacultySchema.safeParse({
+    id: formData.get("id"),
+    name: formData.get("name"),
+  });
+
+  if (!validatedFields.success) {
+    return {
+      error: "Invalid fields",
+    };
+  }
+
+  try {
+    await prisma.faculty.update({
+      where: {
+        id: validatedFields.data.id,
+      },
+      data: {
+        name: validatedFields.data.name,
+      },
     });
+  } catch (error) {
+    return {
+      error: "Failed to update faculty",
+    };
+  }
 
-    if (!validatedFields.success) {
-        return {
-            error: "Invalid fields",
-        };
-    }
-
-    try {
-        await prisma.faculty.update({
-            where: {
-                id: validatedFields.data.id,
-            },
-            data: {
-                name: validatedFields.data.name,
-            },
-        });
-    } catch (error) {
-        return {
-            error: "Failed to update faculty",
-        };
-    }
-
-    revalidatePath(`/(profile)/[username]`);
+  revalidatePath(`/(profile)/[username]`);
 }
 
 export async function deleteFaculty(formData: FormData) {
-    const user = await getCurrentUser();
+  const user = await getCurrentUser();
 
-    if (!user || user.role !== "INSTITUTION") {
-        return {
-            error: "Not authorized",
-        };
+  if (!user || user.role !== "INSTITUTION") {
+    return {
+      error: "Not authorized",
+    };
+  }
+
+  const id = formData.get("id") as string;
+
+  if (!id) {
+    return {
+      error: "ID is required",
+    };
+  }
+
+  try {
+    // First, verify that the faculty belongs to a school owned by this institution
+    const faculty = await prisma.faculty.findUnique({
+      where: {
+        id: id,
+      },
+      include: {
+        school: true
+      }
+    });
+
+    if (!faculty || faculty.school.institutionId !== user.id) {
+      return {
+        error: "Faculty not found or unauthorized",
+      };
     }
 
-    const id = formData.get("id") as string;
+    await prisma.faculty.delete({
+      where: {
+        id: id,
+      },
+    });
+  } catch (error) {
+    return {
+      error: "Failed to delete faculty",
+    };
+  }
 
-    if (!id) {
-        return {
-            error: "ID is required",
-        };
-    }
-
-    try {
-        await prisma.faculty.delete({
-            where: {
-                id: id,
-            },
-        });
-    } catch (error) {
-        return {
-            error: "Failed to delete faculty",
-        };
-    }
-
-    revalidatePath(`/(profile)/[username]`);
+  revalidatePath(`/(profile)/[username]`);
 }

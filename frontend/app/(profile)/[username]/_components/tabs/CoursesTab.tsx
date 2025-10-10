@@ -3,6 +3,7 @@
 import React from "react";
 import { UserData, CourseData } from "@/types/types";
 import { UserRole } from "@/lib/validations/auth";
+import type { ProfilePermissions } from "@/types/profile-types";
 import StudentCourses from "./StudentCourses";
 import ProfessorCourses from "./ProfessorCourses";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,9 +12,10 @@ interface CoursesTabProps {
   user: UserData;
   courses: CourseData[];
   isCurrentUser: boolean;
+  permissions?: ProfilePermissions;
 }
 
-export default function CoursesTab({ user, courses, isCurrentUser }: CoursesTabProps) {
+export default function CoursesTab({ user, courses, isCurrentUser, permissions }: CoursesTabProps) {
   const renderContent = () => {
     switch (user.role) {
       case UserRole.STUDENT:
@@ -22,7 +24,7 @@ export default function CoursesTab({ user, courses, isCurrentUser }: CoursesTabP
 
       case UserRole.PROFESSOR:
         // For professors, show created courses
-        return <ProfessorCourses courses={courses} isCurrentUser={isCurrentUser} />;
+        return <ProfessorCourses courses={courses} isCurrentUser={isCurrentUser} permissions={permissions} />;
 
       case UserRole.INSTITUTION:
         // For institutions, show created courses with more detailed information

@@ -26,7 +26,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Plus } from "lucide-react";
-import { addFaculty } from "@/actions/faculty";
+import { useCreateFacultyMutation } from "@/app/(profile)/[username]/_components/schoolMutations";
 
 const addFacultySchema = z.object({
   name: z.string().min(3, "Faculty name must be at least 3 characters long"),
@@ -39,7 +39,7 @@ interface AddFacultyDialogProps {
 
 export default function AddFacultyDialog({ schoolId }: AddFacultyDialogProps) {
   const [open, setOpen] = useState(false);
-  const [isPending, startTransition] = useTransition();
+  const createFacultyMutation = useCreateFacultyMutation();
 
   const form = useForm<z.infer<typeof addFacultySchema>>({
     resolver: zodResolver(addFacultySchema),
@@ -50,21 +50,23 @@ export default function AddFacultyDialog({ schoolId }: AddFacultyDialogProps) {
   });
 
   function onSubmit(values: z.infer<typeof addFacultySchema>) {
-    const formData = new FormData();
-    formData.append("name", values.name);
-    formData.append("slug", values.slug);
-    formData.append("schoolId", schoolId);
-
-    startTransition(async () => {
-      const result = await addFaculty(formData);
-      if (result?.error) {
-        toast.error(result.error);
-      } else {
-        toast.success("Faculty created successfully");
-        form.reset();
-        setOpen(false);
+    toast.promise(
+      createFacultyMutation.mutateAsync({
+        ...values,
+        schoolId
+      }),
+      {
+        loading: "Creating faculty...",
+        success: "Faculty created successfully",
+        error: "Failed to create faculty"
       }
-    });
+    );
+
+    // Close dialog on success
+    if (!createFacultyMutation.isError) {
+      form.reset();
+      setOpen(false);
+    }
   }
 
   return (
@@ -113,8 +115,8 @@ export default function AddFacultyDialog({ schoolId }: AddFacultyDialogProps) {
               )}
             />
             <DialogFooter>
-              <Button type="submit" disabled={isPending}>
-                {isPending ? "Saving..." : "Save changes"}
+              <Button type="submit" disabled={createFacultyMutation.isPending}>
+                {createFacultyMutation.isPending ? "Saving..." : "Save changes"}
               </Button>
             </DialogFooter>
           </form>

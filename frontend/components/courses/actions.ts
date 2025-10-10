@@ -220,7 +220,7 @@ export async function createCourse(values: TCourse) {
       throw new Error(validatedFields.error.message);
     }
 
-    const { facultyId, status } = validatedFields.data;
+    const { facultyId, schoolId, status } = validatedFields.data;
 
     // Verify faculty exists and get institution info
     const faculty = await prisma.faculty.findUnique({
@@ -236,6 +236,20 @@ export async function createCourse(values: TCourse) {
 
     if (!faculty) {
       throw new Error("Faculty not found");
+    }
+
+    // Verify school exists
+    const school = await prisma.school.findUnique({
+      where: { id: schoolId },
+    });
+
+    if (!school) {
+      throw new Error("School not found");
+    }
+
+    // Verify faculty belongs to the school
+    if (faculty.schoolId !== schoolId) {
+      throw new Error("Faculty does not belong to the selected school");
     }
 
     if (user.role === "PROFESSOR") {
@@ -260,7 +274,6 @@ export async function createCourse(values: TCourse) {
           ...validatedFields.data,
           status: validatedFields.data.status as CourseStatus,
           difficulty: validatedFields.data.difficulty || undefined,
-          facultyId,
           instructorId: user.id,
         },
         include: getCourseDataInclude(user.id),
@@ -320,7 +333,7 @@ export async function createCourse(values: TCourse) {
         data: {
           ...validatedFields.data,
           instructorId: user.id,
-          status: validatedFields.data.status as CourseStatus || CourseStatus.DRAFT,
+          status: validatedFields.data.status as CourseStatus || CourseStatus.DRAFT
         },
         include: getCourseDataInclude(user.id),
       });
@@ -422,7 +435,7 @@ export async function reviewCourse(courseId: string, decision: CourseStatus, com
     const isInstitutionAdmin = await prisma.member.findFirst({
       where: {
         userId: institutionId,
-        role: { in: ["ORGANIZATION_ADMIN", "SUPER_ADMIN", "admin", "owner"] },
+        role: { in: ["admin", "owner"] },
       },
     });
 
@@ -520,11 +533,46 @@ export async function updateCourse(values: TCourse, courseId: string) {
       throw new Error(validatedFields.error.message);
     }
 
-    // Verify user owns the course
+    const { facultyId, schoolId } = validatedFields.data;
+
+    // Verify faculty exists and get institution info
+    const faculty = await prisma.faculty.findUnique({
+      where: { id: facultyId },
+      include: {
+        school: {
+          include: {
+            institution: true,
+          },
+        },
+      },
+    });
+
+    if (!faculty) {
+      throw new Error("Faculty not found");
+    }
+
+    // Verify school exists
+    const school = await prisma.school.findUnique({
+      where: { id: schoolId },
+    });
+
+    if (!school) {
+      throw new Error("School not found");
+    }
+
+    // Verify faculty belongs to the school
+    if (faculty.schoolId !== schoolId) {
+      throw new Error("Faculty does not belong to the selected school");
+    }
+
+    // Verify user owns the course or is an admin
     const existingCourse = await prisma.course.findFirst({
       where: {
         id: courseId,
-        instructorId: user.id,
+        OR: [
+          { instructorId: user.id },
+          { faculty: { school: { institution: { members: { some: { userId: user.id, role: "member" } } } } } }
+        ]
       },
     });
 
@@ -533,11 +581,11 @@ export async function updateCourse(values: TCourse, courseId: string) {
     }
 
     // For professors, ensure they can't change the status to published or approved directly
-    const updateData = {
+    const updateData: any = {
       ...validatedFields.data,
       status: user.role === "PROFESSOR" &&
         (existingCourse.status === CourseStatus.PUBLISHED)
-        ? existingCourse.status : existingCourse.status,
+        ? existingCourse.status : validatedFields.data.status,
     };
 
     const course = await prisma.course.update({

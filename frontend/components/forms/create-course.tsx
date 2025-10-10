@@ -3,14 +3,19 @@
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { User, Course, Faculty, CourseStatus } from "@prisma/client";
+import {
+  User,
+  Course,
+  Faculty,
+  CourseStatus,
+  SkillLevel,
+} from "@prisma/client";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
 import { courseSchema, TCourse } from "@/lib/validations/course";
 import { createCourse, updateCourse } from "@/components/courses/actions";
-import { coursesData } from "@/config/course";
 
 import { Button } from "../ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
@@ -32,11 +37,35 @@ import {
   SelectValue,
 } from "../ui/select";
 import { Textarea } from "../ui/textarea";
-import JobDescriptionEditor from "@/components/editor/richEditor"; // Adapt or rename if needed
+import JobDescriptionEditor from "@/components/editor/richEditor";
 
 interface CreateCourseFormProps {
   user?: User;
   course?: Course;
+}
+
+// Define new type for schools with faculties
+interface SchoolWithFaculties {
+  id: string;
+  name: string;
+  shortName?: string;
+  slug: string;
+  description?: string;
+  logo?: string;
+  coverPhoto?: string;
+  website?: string;
+  isActive: boolean;
+  faculties: Array<{
+    id: string;
+    name: string;
+    shortName?: string;
+    slug: string;
+    description?: string;
+    logo?: string;
+    coverPhoto?: string;
+    website?: string;
+    isActive: boolean;
+  }>;
 }
 
 export function CreateCourseForm({ user, course }: CreateCourseFormProps) {
@@ -46,84 +75,106 @@ export function CreateCourseForm({ user, course }: CreateCourseFormProps) {
     resolver: zodResolver(courseSchema),
     defaultValues: course
       ? {
-        title: course.title || "",
-        description: course.description || "",
-        code: course.code || "",
-        department: course.department || "",
-        credits: course.credits || 0,
-        difficulty: course.difficulty || "",
-        estimatedHours: course.estimatedHours || 0,
-        facultyId: course.facultyId || "",
-        objectives: course.objectives || [""],
-        outcomes: course.outcomes || [""],
-        year: course.year || 1,
-        status: course.status || CourseStatus.DRAFT, // Default to DRAFT
-      }
+          title: course.title || "",
+          description: course.description || "",
+          code: course.code || "",
+          credits: course.credits || 3,
+          difficulty: course.difficulty || SkillLevel.BEGINNER,
+          estimatedHours: course.estimatedHours || 10,
+          facultyId: course.facultyId || "",
+          schoolId: course.schoolId || "",
+          objectives: course.objectives || [],
+          outcomes: course.outcomes || [],
+          status: course.status || CourseStatus.DRAFT,
+        }
       : {
-        title: "",
-        description: "",
-        code: "",
-        department: "",
-        estimatedHours: 10,
-        credits: 3,
-        difficulty: "BEGINNER",
-        facultyId: "",
-        objectives: [],
-        outcomes: [],
-        year: 1,
-        status: CourseStatus.DRAFT, // Default to DRAFT
-      },
+          title: "",
+          description: "",
+          code: "",
+          credits: 3,
+          difficulty: "BEGINNER",
+          estimatedHours: 10,
+          facultyId: "",
+          schoolId: "",
+          objectives: [],
+          outcomes: [],
+          status: CourseStatus.DRAFT,
+        },
   });
   const queryClient = useQueryClient();
 
+  // State for selected school and faculty
+  const [selectedSchoolId, setSelectedSchoolId] = useState<string>(
+    course?.schoolId || ""
+  );
+  const [selectedFacultyId, setSelectedFacultyId] = useState<string>(
+    course?.facultyId || ""
+  );
+
+  // Fetch schools with faculties using the unified API
   const {
-    data: faculties,
-    isLoading: isLoadingFaculties,
-    error: facultiesError,
-  } = useQuery<Faculty[]>({
-    queryKey: ["faculties"],
+    data: schools,
+    isLoading: isLoadingSchools,
+    error: schoolsError,
+  } = useQuery<SchoolWithFaculties[]>({
+    queryKey: ["user-schools-faculties"],
     queryFn: async () => {
-      const res = await fetch("/api/faculties");
+      if (user?.role !== "PROFESSOR" && user?.role !== "INSTITUTION") {
+        return [];
+      }
+
+      const res = await fetch("/api/user-schools-faculties");
       if (!res.ok) {
         const errorData = await res.json();
-        throw new Error(errorData.error || "Failed to fetch faculties");
+        throw new Error(
+          errorData.error || "Failed to fetch schools and faculties"
+        );
       }
       return res.json();
     },
+    enabled: user?.role === "PROFESSOR" || user?.role === "INSTITUTION",
     staleTime: 5 * 60 * 1000, // 5 minutes
     retry: 2,
   });
+  console.log(schools, "schools");
+  // Derive faculties from selected school
+  const schoolFaculties = React.useMemo(() => {
+    if (!selectedSchoolId || !schools) return [];
+    const selectedSchool = schools.find((s) => s.id === selectedSchoolId);
+    return selectedSchool ? selectedSchool.faculties : [];
+  }, [schools, selectedSchoolId]);
 
-  const schools = coursesData.schools;
-  const [selectedSchool, setSelectedSchool] = useState<string>("");
-  const [selectedDepartment, setSelectedDepartment] = useState<string>("");
-  const [selectedCourse, setSelectedCourse] = useState<string>("");
-
-  const departments = selectedSchool
-    ? schools.find((s) => s.name === selectedSchool)?.departments || []
-    : [];
-  const coursesList = selectedDepartment
-    ? departments.find((d) => d.name === selectedDepartment)?.courses || []
-    : [];
-
+  // Remove the old faculties query as it's no longer needed
+  // Effect to reset faculty when school changes
   useEffect(() => {
-    if (course && course.code) {
-      for (const school of schools) {
-        for (const dept of school.departments) {
-          for (const c of dept.courses) {
-            if (c.code === course.code) {
-              setSelectedSchool(school.name);
-              setSelectedDepartment(dept.name);
-              setSelectedCourse(c.code);
-              return;
-            }
-          }
-        }
-      }
+    if (selectedSchoolId) {
+      setSelectedFacultyId("");
+      form.setValue("facultyId", "");
     }
-  }, [course, schools]);
+  }, [selectedSchoolId, form]);
+
+  // Effect to set default values when editing a course
+  useEffect(() => {
+    if (course) {
+      // Set the selected faculty and school
+      setSelectedFacultyId(course.facultyId || "");
+      setSelectedSchoolId(course.schoolId || "");
+      form.setValue("facultyId", course.facultyId || "");
+      form.setValue("schoolId", course.schoolId || "");
+    }
+  }, [course, form]);
 
   async function onSubmit(values: TCourse) {
+    // For professors and institutions, use the selected faculty and school IDs from the state
+    if (user?.role === "PROFESSOR" || user?.role === "INSTITUTION") {
+      if (selectedFacultyId) {
+        values.facultyId = selectedFacultyId;
+      }
+      if (selectedSchoolId) {
+        values.schoolId = selectedSchoolId;
+      }
+    }
+
     if (course) {
       try {
         setPending(true);
@@ -167,6 +218,7 @@ export function CreateCourseForm({ user, course }: CreateCourseFormProps) {
     );
     return () => subscription.unsubscribe();
   }, [form]);
+
   return (
     <Form {...form}>
       <form
@@ -178,94 +230,173 @@ export function CreateCourseForm({ user, course }: CreateCourseFormProps) {
             <CardTitle>Course Information</CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
-            <div className="grid gap-6 md:grid-cols-2">
-              <FormItem>
-                <FormLabel>Select School</FormLabel>
-                <Select
-                  value={selectedSchool}
-                  onValueChange={(value) => {
-                    setSelectedSchool(value);
-                    setSelectedDepartment("");
-                    setSelectedCourse("");
-                    form.setValue("title", "");
-                    form.setValue("department", "");
-                    form.setValue("code", "");
-                  }}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a school" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {schools.map((school) => (
-                      <SelectItem
-                        className="overflow-x-hidden max-w-[40vw] max-h-[300px]"
-                        key={school.name}
-                        value={school.name}
+            {user?.role === "PROFESSOR" || user?.role === "INSTITUTION" ? (
+              // Dynamic selection for professors and institutions based on their institution
+              <>
+                <div className="grid gap-6 md:grid-cols-2">
+                  <FormItem>
+                    <FormLabel>Select School</FormLabel>
+                    <Select
+                      value={selectedSchoolId}
+                      onValueChange={(value) => {
+                        setSelectedSchoolId(value);
+                        setSelectedFacultyId("");
+                        form.setValue("facultyId", "");
+                        form.setValue("schoolId", value);
+                      }}
+                      disabled={isLoadingSchools || !!schoolsError}
+                    >
+                      <SelectTrigger>
+                        <SelectValue
+                          placeholder={
+                            isLoadingSchools
+                              ? "Loading schools..."
+                              : schoolsError
+                                ? "Error loading schools"
+                                : "Select a school"
+                          }
+                        />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {schoolsError && (
+                          <SelectItem value="error" disabled>
+                            Failed to load schools. Please refresh.
+                          </SelectItem>
+                        )}
+                        {schools?.map((school) => (
+                          <SelectItem key={school.id} value={school.id}>
+                            {school.name}
+                          </SelectItem>
+                        ))}
+                        {!isLoadingSchools && !schools?.length && (
+                          <SelectItem value="empty" disabled>
+                            No schools available
+                          </SelectItem>
+                        )}
+                      </SelectContent>
+                    </Select>
+                    {schoolsError && (
+                      <p className="text-sm text-destructive">
+                        {schoolsError instanceof Error
+                          ? schoolsError.message
+                          : "Failed to load schools"}
+                      </p>
+                    )}
+                  </FormItem>
+
+                  <FormItem>
+                    <FormLabel>Select Faculty</FormLabel>
+                    <Select
+                      value={selectedFacultyId}
+                      onValueChange={(value) => {
+                        setSelectedFacultyId(value);
+                        form.setValue("facultyId", value);
+                      }}
+                      disabled={
+                        !selectedSchoolId || isLoadingSchools || !!schoolsError
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue
+                          placeholder={
+                            !selectedSchoolId
+                              ? "Select a school first"
+                              : isLoadingSchools
+                                ? "Loading faculties..."
+                                : schoolsError
+                                  ? "Error loading faculties"
+                                  : "Select a faculty"
+                          }
+                        />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {schoolsError && (
+                          <SelectItem value="error" disabled>
+                            Failed to load faculties. Please refresh.
+                          </SelectItem>
+                        )}
+                        {schoolFaculties?.map((faculty) => (
+                          <SelectItem key={faculty.id} value={faculty.id}>
+                            {faculty.name}
+                          </SelectItem>
+                        ))}
+                        {!isLoadingSchools &&
+                          selectedSchoolId &&
+                          !schoolFaculties?.length && (
+                            <SelectItem value="empty" disabled>
+                              No faculties available in this school
+                            </SelectItem>
+                          )}
+                      </SelectContent>
+                    </Select>
+                    {schoolsError && (
+                      <p className="text-sm text-destructive">
+                        {schoolsError instanceof Error
+                          ? schoolsError.message
+                          : "Failed to load faculties"}
+                      </p>
+                    )}
+                  </FormItem>
+                </div>
+              </>
+            ) : (
+              // Static selection for other roles (admins, etc.)
+              <div className="grid gap-6 md:grid-cols-2">
+                <FormField
+                  control={form.control}
+                  name="schoolId"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>School</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
                       >
-                        {school.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </FormItem>
-              <FormItem>
-                <FormLabel>Select Department</FormLabel>
-                <Select
-                  value={selectedDepartment}
-                  onValueChange={(value) => {
-                    setSelectedDepartment(value);
-                    setSelectedCourse("");
-                    form.setValue("title", "");
-                    form.setValue("department", value);
-                    form.setValue("code", "");
-                  }}
-                  disabled={!selectedSchool}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a department" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {departments.map((dept) => (
-                      <SelectItem
-                        className="overflow-x-hidden"
-                        key={dept.name}
-                        value={dept.name}
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select a school" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="empty" disabled>
+                            Contact admin to set up schools
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="facultyId"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Faculty</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
                       >
-                        {dept.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </FormItem>
-              <FormItem>
-                <FormLabel>Select Course</FormLabel>
-                <Select
-                  value={selectedCourse}
-                  onValueChange={(value) => {
-                    setSelectedCourse(value);
-                    const courseSelected = coursesList.find(
-                      (c) => c.code === value
-                    );
-                    if (courseSelected) {
-                      form.setValue("title", courseSelected.name);
-                      form.setValue("code", courseSelected.code);
-                    }
-                  }}
-                  disabled={!selectedDepartment}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a course" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {coursesList.map((c) => (
-                      <SelectItem key={c.code} value={c.code}>
-                        {c.code} - {c.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </FormItem>
-            </div>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select a faculty" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="empty" disabled>
+                            Contact admin to set up faculties
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            )}
+
+            {/* Course Information Fields */}
             <div className="grid gap-6 md:grid-cols-2">
               <FormField
                 control={form.control}
@@ -274,20 +405,7 @@ export function CreateCourseForm({ user, course }: CreateCourseFormProps) {
                   <FormItem>
                     <FormLabel>Course Title</FormLabel>
                     <FormControl>
-                      <Input placeholder="Course Title" {...field} disabled />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="department"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Department</FormLabel>
-                    <FormControl>
-                      <Input placeholder="department" {...field} />
+                      <Input placeholder="Course Title" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -300,13 +418,14 @@ export function CreateCourseForm({ user, course }: CreateCourseFormProps) {
                   <FormItem>
                     <FormLabel>Course Code</FormLabel>
                     <FormControl>
-                      <Input placeholder="Course Code" {...field} disabled />
+                      <Input placeholder="Course Code" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
             </div>
+
             <div className="grid gap-6 md:grid-cols-2">
               <FormField
                 control={form.control}
@@ -315,7 +434,13 @@ export function CreateCourseForm({ user, course }: CreateCourseFormProps) {
                   <FormItem>
                     <FormLabel>Credits</FormLabel>
                     <FormControl>
-                      <Input type="number" placeholder="Credits" {...field} />
+                      <Input
+                        type="number"
+                        placeholder="Credits"
+                        {...field}
+                        onChange={(e) => field.onChange(e.target.valueAsNumber)}
+                        value={field.value || ""}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -332,6 +457,8 @@ export function CreateCourseForm({ user, course }: CreateCourseFormProps) {
                         type="number"
                         placeholder="Estimated Hours"
                         {...field}
+                        onChange={(e) => field.onChange(e.target.valueAsNumber)}
+                        value={field.value || ""}
                       />
                     </FormControl>
                     <FormMessage />
@@ -339,6 +466,7 @@ export function CreateCourseForm({ user, course }: CreateCourseFormProps) {
                 )}
               />
             </div>
+
             <div className="grid gap-6 md:grid-cols-2">
               <FormField
                 control={form.control}
@@ -346,31 +474,22 @@ export function CreateCourseForm({ user, course }: CreateCourseFormProps) {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Difficulty Level</FormLabel>
-                    <FormControl>
-                      <Select
-                        defaultValue={field.value}
-                        onValueChange={field.onChange}
-                      >
+                    <Select value={field.value} onValueChange={field.onChange}>
+                      <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select course difficulty" />
                         </SelectTrigger>
-                        <SelectContent>
-                          <SelectGroup>
-                            {["BEGINNER", "INTERMEDIATE", "ADVANCED"].map(
-                              (level) => (
-                                <SelectItem
-                                  key={level}
-                                  value={level.toLowerCase()}
-                                >
-                                  {level.charAt(0).toUpperCase() +
-                                    level.slice(1).toLowerCase()}
-                                </SelectItem>
-                              )
-                            )}
-                          </SelectGroup>
-                        </SelectContent>
-                      </Select>
-                    </FormControl>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectGroup>
+                          {Object.values(SkillLevel).map((level) => (
+                            <SelectItem key={level} value={level}>
+                              {level}
+                            </SelectItem>
+                          ))}
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -382,7 +501,7 @@ export function CreateCourseForm({ user, course }: CreateCourseFormProps) {
                   <FormItem>
                     <FormLabel>Status</FormLabel>
                     <Select
-                      defaultValue={field.value}
+                      value={field.value}
                       onValueChange={field.onChange}
                       disabled={
                         user?.role === "PROFESSOR" &&
@@ -396,21 +515,23 @@ export function CreateCourseForm({ user, course }: CreateCourseFormProps) {
                       </FormControl>
                       <SelectContent>
                         <SelectGroup>
-                          {[
-                            CourseStatus.DRAFT,
-                            CourseStatus.UNDER_REVIEW
-                          ].map((status) => (
-                            <SelectItem key={status} value={status}>
-                              {status.charAt(0).toUpperCase() +
-                                status.slice(1).toLowerCase().replace("_", " ")}
-                              {user?.role === "PROFESSOR" &&
-                                status === CourseStatus.UNDER_REVIEW && (
-                                  <span className="ml-2 text-xs text-muted-foreground">
-                                    (Submit for institution approval)
-                                  </span>
-                                )}
-                            </SelectItem>
-                          ))}
+                          {[CourseStatus.DRAFT, CourseStatus.UNDER_REVIEW].map(
+                            (status) => (
+                              <SelectItem key={status} value={status}>
+                                {status.charAt(0).toUpperCase() +
+                                  status
+                                    .slice(1)
+                                    .toLowerCase()
+                                    .replace("_", " ")}
+                                {user?.role === "PROFESSOR" &&
+                                  status === CourseStatus.UNDER_REVIEW && (
+                                    <span className="ml-2 text-xs text-muted-foreground">
+                                      (Submit for institution approval)
+                                    </span>
+                                  )}
+                              </SelectItem>
+                            )
+                          )}
                         </SelectGroup>
                       </SelectContent>
                     </Select>
@@ -425,75 +546,8 @@ export function CreateCourseForm({ user, course }: CreateCourseFormProps) {
                   </FormItem>
                 )}
               />
-              <FormField
-                control={form.control}
-                name="facultyId"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Faculty</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                      disabled={isLoadingFaculties || !!facultiesError}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue
-                            placeholder={
-                              isLoadingFaculties
-                                ? "Loading faculties..."
-                                : facultiesError
-                                  ? "Error loading faculties"
-                                  : "Select a faculty"
-                            }
-                          />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {facultiesError && (
-                          <SelectItem value="error" disabled>
-                            Failed to load faculties. Please refresh.
-                          </SelectItem>
-                        )}
-                        {faculties?.map((faculty) => (
-                          <SelectItem key={faculty.id} value={faculty.id}>
-                            {faculty.name}
-                          </SelectItem>
-                        ))}
-                        {!isLoadingFaculties && !faculties?.length && (
-                          <SelectItem value="empty" disabled>
-                            No faculties available
-                          </SelectItem>
-                        )}
-                      </SelectContent>
-                    </Select>
-                    {facultiesError && (
-                      <p className="text-sm text-destructive">
-                        {facultiesError instanceof Error
-                          ? facultiesError.message
-                          : "Failed to load faculties"}
-                      </p>
-                    )}
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
             </div>
-            <div className="grid gap-6 md:grid-cols-2">
-              <FormField
-                control={form.control}
-                name="year"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Academic Year</FormLabel>
-                    <FormControl>
-                      <Input type="number" placeholder="2024" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+
             <FormField
               control={form.control}
               name="objectives"
@@ -511,13 +565,14 @@ export function CreateCourseForm({ user, course }: CreateCourseFormProps) {
                             .filter((o) => o.length > 0)
                         )
                       }
-                      value={field.value?.join(", ") || [""]}
+                      value={field.value?.join(", ") || ""}
                     />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
+
             <FormField
               control={form.control}
               name="outcomes"
@@ -535,13 +590,14 @@ export function CreateCourseForm({ user, course }: CreateCourseFormProps) {
                             .filter((o) => o.length > 0)
                         )
                       }
-                      value={field.value?.join(", ") || [""]}
+                      value={field.value?.join(", ") || ""}
                     />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
+
             <FormField
               control={form.control}
               name="description"
@@ -564,7 +620,8 @@ export function CreateCourseForm({ user, course }: CreateCourseFormProps) {
               ? "Saving..."
               : course
                 ? "Update Course"
-                : user?.role === "PROFESSOR" && form.watch("status") === CourseStatus.UNDER_REVIEW
+                : user?.role === "PROFESSOR" &&
+                    form.watch("status") === CourseStatus.UNDER_REVIEW
                   ? "Submit for Approval"
                   : user?.role === "PROFESSOR"
                     ? "Save as Draft"

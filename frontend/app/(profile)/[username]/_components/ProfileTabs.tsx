@@ -21,7 +21,7 @@ import SettingsTab from "./tabs/SettingsTab";
 import MembersTab from "./tabs/MembersTab";
 import { ClubsTab } from "./tabs/ClubsTab";
 import { EventsTab } from "./tabs/EventsTab";
-import { CourseData, JobData, ResearchData, UserData } from "@/types/types";
+import { UserData } from "@/types/types";
 
 // Enhanced role-based tab configuration with permissions
 const TAB_CONFIGURATIONS: Record<UserRole, TabConfig[]> = {
@@ -74,8 +74,6 @@ const TAB_CONFIGURATIONS: Record<UserRole, TabConfig[]> = {
       value: "courses",
       label: "Courses",
       icon: BookOpen,
-      // Remove permission requirement so professors can always see the courses tab
-      // Permission checking will be handled within the CoursesTab component
       roles: [UserRole.PROFESSOR],
     },
     {
@@ -102,28 +100,24 @@ const TAB_CONFIGURATIONS: Record<UserRole, TabConfig[]> = {
       value: "courses",
       label: "Courses",
       icon: BookOpen,
-      permission: "canManageAcademic",
       roles: [UserRole.INSTITUTION],
     },
     {
       value: "schools",
       label: "Schools",
       icon: Building2,
-      permission: "canManageAcademic",
       roles: [UserRole.INSTITUTION],
     },
     {
       value: "clubs",
       label: "Clubs",
       icon: Icons.chart,
-      permission: "canViewPrivate",
       roles: [UserRole.INSTITUTION],
     },
     {
       value: "events",
       label: "Events",
       icon: Icons.settings,
-      permission: "canEdit",
       roles: [UserRole.INSTITUTION],
     },
   ],
@@ -144,7 +138,6 @@ const TAB_CONFIGURATIONS: Record<UserRole, TabConfig[]> = {
       value: "members",
       label: "Members",
       icon: Users2,
-      permission: "canEdit",
       roles: [UserRole.ORGANIZATION],
     },
     {
@@ -191,7 +184,12 @@ const TAB_CONFIGURATIONS: Record<UserRole, TabConfig[]> = {
       icon: Users2,
       roles: [UserRole.ADMIN],
     },
-    { value: "jobs", label: "Jobs", icon: Icons.job, roles: [UserRole.ADMIN] },
+    {
+      value: "jobs",
+      label: "Jobs",
+      icon: Icons.job,
+      roles: [UserRole.ADMIN]
+    },
     {
       value: "settings",
       label: "Settings",
@@ -217,20 +215,9 @@ interface ProfileTabsProps {
   };
 }
 
-// Helper function to get role-based tabs with permission filtering
-const getRoleBasedTabs = (
-  role: UserRole,
-  permissions: ProfilePermissions
-): TabConfig[] => {
-  const tabsForRole = TAB_CONFIGURATIONS[role] || TAB_CONFIGURATIONS.STUDENT;
-
-  return tabsForRole.filter((tab) => {
-    // If tab has a permission requirement, check if user has that permission
-    if (tab.permission) {
-      return permissions[tab.permission];
-    }
-    return true;
-  });
+// Helper function to get role-based tabs without permission filtering for profile viewing
+const getProfileTabs = (role: UserRole): TabConfig[] => {
+  return TAB_CONFIGURATIONS[role] || TAB_CONFIGURATIONS.STUDENT;
 };
 
 export default function ProfileTabs({
@@ -254,7 +241,8 @@ export default function ProfileTabs({
     loggedInUserRole as UserRole
   );
 
-  const roleTabs = getRoleBasedTabs(user.role as UserRole, permissions);
+  // Get tabs based on the profile owner's role without permission filtering
+  const roleTabs = getProfileTabs(user.role as UserRole);
 
   const handleTabChange = (tab: string) => {
     setCurrentTab(tab);
@@ -303,6 +291,7 @@ export default function ProfileTabs({
             user={user}
             courses={courses}
             isCurrentUser={user.id === loggedInUserId}
+            permissions={permissions}
           />
         </TabsContent>
 
@@ -329,17 +318,9 @@ export default function ProfileTabs({
 
         {/* Institution-specific tabs */}
         <TabsContent value="schools" className="p-4">
-          <SchoolsTab user={user} isCurrentUser={user.id === loggedInUserId} />
-        </TabsContent>
-
-        <TabsContent value="analytics" className="p-4">
-          <AnalyticsTab user={user} permissions={permissions} />
-        </TabsContent>
-
-        <TabsContent value="settings" className="p-4">
-          <SettingsTab
+          <SchoolsTab
             user={user}
-            loggedInUserId={loggedInUserId}
+            isCurrentUser={user.id === loggedInUserId}
             permissions={permissions}
           />
         </TabsContent>

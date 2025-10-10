@@ -69,8 +69,24 @@ export async function deleteSchool(schoolId: string) {
   if (!user || user.role !== 'INSTITUTION') {
     throw new Error('Unauthorized');
   }
+
+  // Verify that the school belongs to this institution
+  const school = await prisma.school.findUnique({
+    where: {
+      id: schoolId,
+      institutionId: user.id
+    }
+  });
+
+  if (!school) {
+    throw new Error('School not found or unauthorized');
+  }
+
   await prisma.school.delete({
-    where: { id: schoolId, institutionId: user.id },
+    where: {
+      id: schoolId,
+      institutionId: user.id
+    },
   });
 }
 
@@ -166,6 +182,19 @@ export async function updateFaculty(
   if (!user || user.role !== 'INSTITUTION') {
     throw new Error('Unauthorized');
   }
+
+  // Verify that the faculty belongs to a school owned by this institution
+  const faculty = await prisma.faculty.findUnique({
+    where: { id: validatedValues.id },
+    include: {
+      school: true
+    }
+  });
+
+  if (!faculty || faculty.school.institutionId !== user.id) {
+    throw new Error('Unauthorized');
+  }
+
   const data: any = {
     name: validatedValues.name,
     description: validatedValues.description,
@@ -173,18 +202,21 @@ export async function updateFaculty(
     coverPhoto: validatedValues.coverPhoto,
     logo: validatedValues.logo,
   };
-  if (validatedValues.schoolId) {
+
+  // Only update school if provided and different
+  if (validatedValues.schoolId && validatedValues.schoolId !== faculty.schoolId) {
     data.school = {
       connect: {
         id: validatedValues.schoolId,
       },
     };
   }
-  const faculty = await prisma.faculty.update({
+
+  const facultyResult = await prisma.faculty.update({
     where: { id: validatedValues.id },
     data,
   });
-  return faculty;
+  return facultyResult;
 }
 
 export async function deleteFaculty(facultyId: string) {
@@ -192,7 +224,24 @@ export async function deleteFaculty(facultyId: string) {
   if (!user || user.role !== 'INSTITUTION') {
     throw new Error('Unauthorized');
   }
-  await prisma.faculty.delete({ where: { id: facultyId } });
+
+  // First, verify that the faculty belongs to a school owned by this institution
+  const faculty = await prisma.faculty.findUnique({
+    where: { id: facultyId },
+    include: {
+      school: true
+    }
+  });
+
+  if (!faculty || faculty.school.institutionId !== user.id) {
+    throw new Error('Unauthorized');
+  }
+
+  await prisma.faculty.delete({
+    where: {
+      id: facultyId
+    }
+  });
 }
 
 export async function getProfessorsForFaculty(facultyId: string) {

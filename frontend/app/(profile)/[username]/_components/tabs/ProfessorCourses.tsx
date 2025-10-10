@@ -2,6 +2,7 @@
 
 import React from "react";
 import { CourseData } from "@/types/types";
+import type { ProfilePermissions } from "@/types/profile-types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Icons } from "@/components/shared/icons";
@@ -11,18 +12,22 @@ import { formatDate } from "@/lib/utils";
 interface ProfessorCoursesProps {
   courses: CourseData[];
   isCurrentUser: boolean;
+  permissions?: ProfilePermissions;
 }
 
 export default function ProfessorCourses({
   courses,
   isCurrentUser,
+  permissions,
 }: ProfessorCoursesProps) {
   const router = useRouter();
+  const canCreateCourses = permissions?.canCreateCourses || isCurrentUser;
+
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle>My Courses</CardTitle>
-        {isCurrentUser && (
+        {canCreateCourses && (
           <Button
             onClick={() => router.push("/courses/createCourse")}
             className="cursor-pointer"

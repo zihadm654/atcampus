@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useTransition } from "react";
+import React, { useState } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -16,7 +16,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Trash2 } from "lucide-react";
-import { deleteSchool } from "@/actions/school";
+import { useDeleteSchoolMutation } from "@/app/(profile)/[username]/_components/schoolMutations";
 
 interface DeleteSchoolDialogProps {
   schoolId: string;
@@ -26,18 +26,22 @@ export default function DeleteSchoolDialog({
   schoolId,
 }: DeleteSchoolDialogProps) {
   const [open, setOpen] = useState(false);
-  const [isPending, startTransition] = useTransition();
+  const deleteSchoolMutation = useDeleteSchoolMutation();
 
   const handleDelete = () => {
-    startTransition(async () => {
-      const result = await deleteSchool(schoolId);
-      if (result?.error) {
-        toast.error(result.error);
-      } else {
-        toast.success("School deleted successfully");
-        setOpen(false);
+    toast.promise(
+      deleteSchoolMutation.mutateAsync(schoolId),
+      {
+        loading: "Deleting school...",
+        success: "School deleted successfully",
+        error: "Failed to delete school"
       }
-    });
+    );
+
+    // Close dialog on success
+    if (!deleteSchoolMutation.isError) {
+      setOpen(false);
+    }
   };
 
   return (
@@ -57,8 +61,8 @@ export default function DeleteSchoolDialog({
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction onClick={handleDelete} disabled={isPending}>
-            {isPending ? "Deleting..." : "Delete"}
+          <AlertDialogAction onClick={handleDelete} disabled={deleteSchoolMutation.isPending}>
+            {deleteSchoolMutation.isPending ? "Deleting..." : "Delete"}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

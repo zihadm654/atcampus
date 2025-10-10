@@ -5,8 +5,8 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useTransition } from "react";
+import { toast } from "sonner";
 
-import { addSchool } from "@/actions/school";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -26,7 +26,7 @@ import {
   FormControl,
   FormMessage,
 } from "@/components/ui/form";
-import { toast } from "sonner";
+import { useCreateSchoolMutation } from "@/app/(profile)/[username]/_components/schoolMutations";
 
 export const addSchoolSchema = z.object({
   name: z.string().min(3, "School name must be at least 3 characters long"),
@@ -39,6 +39,7 @@ export default function AddSchoolDialog() {
   const [isSlugEdited, setIsSlugEdited] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [open, setOpen] = React.useState(false);
+  const createSchoolMutation = useCreateSchoolMutation();
 
   const form = useForm<z.infer<typeof addSchoolSchema>>({
     resolver: zodResolver(addSchoolSchema),
@@ -58,15 +59,19 @@ export default function AddSchoolDialog() {
   }, [name, isSlugEdited, form]);
 
   function onSubmit(values: z.infer<typeof addSchoolSchema>) {
-    startTransition(async () => {
-      const result = await addSchool(values);
-      if (result?.error) {
-        toast.error(result.error);
-      } else {
-        toast.success("School added successfully");
-        setOpen(false);
+    toast.promise(
+      createSchoolMutation.mutateAsync(values),
+      {
+        loading: "Creating school...",
+        success: "School created successfully",
+        error: "Failed to create school"
       }
-    });
+    );
+
+    // Close dialog on success
+    if (!createSchoolMutation.isError) {
+      setOpen(false);
+    }
   }
 
   useEffect(() => {
@@ -85,7 +90,7 @@ export default function AddSchoolDialog() {
         <DialogHeader>
           <DialogTitle>Add School</DialogTitle>
           <DialogDescription>
-            Add a new school to your institution. Click save when you\'re done.
+            Add a new school to your institution. Click save when you're done.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -153,8 +158,8 @@ export default function AddSchoolDialog() {
               )}
             />
             <DialogFooter>
-              <Button type="submit" disabled={isPending}>
-                {isPending ? "Saving..." : "Save changes"}
+              <Button type="submit" disabled={createSchoolMutation.isPending}>
+                {createSchoolMutation.isPending ? "Saving..." : "Save changes"}
               </Button>
             </DialogFooter>
           </form>

@@ -27,7 +27,7 @@ import {
 } from "@/components/ui/form";
 import { School } from "./SchoolsTab";
 import { Edit } from "lucide-react";
-import { editSchool } from "@/actions/school";
+import { useUpdateSchoolMutation } from "@/app/(profile)/[username]/_components/schoolMutations";
 
 const editSchoolSchema = z.object({
   name: z.string().min(3, "School name must be at least 3 characters long"),
@@ -39,7 +39,7 @@ interface EditSchoolDialogProps {
 
 export default function EditSchoolDialog({ school }: EditSchoolDialogProps) {
   const [open, setOpen] = useState(false);
-  const [isPending, startTransition] = useTransition();
+  const updateSchoolMutation = useUpdateSchoolMutation();
 
   const form = useForm<z.infer<typeof editSchoolSchema>>({
     resolver: zodResolver(editSchoolSchema),
@@ -49,19 +49,22 @@ export default function EditSchoolDialog({ school }: EditSchoolDialogProps) {
   });
 
   function onSubmit(values: z.infer<typeof editSchoolSchema>) {
-    const formData = new FormData();
-    formData.append("name", values.name);
-    formData.append("schoolId", school.id);
-
-    startTransition(async () => {
-      const result = await editSchool(formData);
-      if (result?.error) {
-        toast.error(result.error);
-      } else {
-        toast.success("School updated successfully");
-        setOpen(false);
+    toast.promise(
+      updateSchoolMutation.mutateAsync({
+        id: school.id,
+        ...values
+      }),
+      {
+        loading: "Updating school...",
+        success: "School updated successfully",
+        error: "Failed to update school"
       }
-    });
+    );
+
+    // Close dialog on success
+    if (!updateSchoolMutation.isError) {
+      setOpen(false);
+    }
   }
 
   return (
@@ -97,8 +100,8 @@ export default function EditSchoolDialog({ school }: EditSchoolDialogProps) {
               )}
             />
             <DialogFooter>
-              <Button type="submit" disabled={isPending}>
-                {isPending ? "Saving..." : "Save changes"}
+              <Button type="submit" disabled={updateSchoolMutation.isPending}>
+                {updateSchoolMutation.isPending ? "Saving..." : "Save changes"}
               </Button>
             </DialogFooter>
           </form>

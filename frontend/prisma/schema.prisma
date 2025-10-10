@@ -418,6 +418,7 @@ model School {
   updatedAt DateTime @updatedAt @map(name: "updated_at")
 
   faculties Faculty[]
+  courses   Course[]
 
   @@unique([slug, institutionId])
   @@unique([name, institutionId])
@@ -488,6 +489,10 @@ model Course {
   facultyId String
   faculty   Faculty @relation(fields: [facultyId], references: [id], onDelete: Cascade)
 
+  // Adding school relationship for better navigation
+  schoolId String
+  school   School @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+
   // Primary instructor (course owner)
   instructorId String
   instructor   User   @relation("PrimaryCourseInstructor", fields: [instructorId], references: [id], onDelete: Cascade)
@@ -519,6 +524,7 @@ model Course {
   @@index([status, isDeleted, startDate])
   @@index([keywords]) // For search functionality
   @@index([semester, year, facultyId]) // Academic calendar queries
+  @@index([schoolId, status]) // For school-based queries
   @@map(name: "courses")
 }
 

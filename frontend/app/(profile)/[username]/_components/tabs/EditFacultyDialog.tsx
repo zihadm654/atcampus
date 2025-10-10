@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -23,21 +23,21 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { editFaculty } from "@/actions/faculty";
 import { Faculty } from "./SchoolsTab";
 import { Edit } from 'lucide-react';
+import { useUpdateFacultyMutation } from "@/app/(profile)/[username]/_components/schoolMutations";
 
 const formSchema = z.object({
   name: z.string().min(3, "Faculty name must be at least 3 characters long"),
 });
 
 interface EditFacultyDialogProps {
-  faculty: Faculty;
+  faculty: Faculty & { schoolId: string }; // Include schoolId in the faculty type
 }
 
 export default function EditFacultyDialog({ faculty }: EditFacultyDialogProps) {
   const [open, setOpen] = useState(false);
-  const [isPending, startTransition] = useTransition();
+  const updateFacultyMutation = useUpdateFacultyMutation();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -47,20 +47,23 @@ export default function EditFacultyDialog({ faculty }: EditFacultyDialogProps) {
   });
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
-    startTransition(async () => {
-      const formData = new FormData();
-      formData.append("id", faculty.id);
-      formData.append("name", values.name);
-
-      const result = await editFaculty(formData);
-
-      if (result?.error) {
-        toast.error(result.error);
-      } else {
-        toast.success("Faculty updated successfully");
-        setOpen(false);
+    toast.promise(
+      updateFacultyMutation.mutateAsync({
+        id: faculty.id,
+        ...values,
+        schoolId: faculty.schoolId // Include schoolId in the mutation
+      }),
+      {
+        loading: "Updating faculty...",
+        success: "Faculty updated successfully",
+        error: "Failed to update faculty"
       }
-    });
+    );
+
+    // Close dialog on success
+    if (!updateFacultyMutation.isError) {
+      setOpen(false);
+    }
   };
 
   return (
@@ -89,8 +92,8 @@ export default function EditFacultyDialog({ faculty }: EditFacultyDialogProps) {
                 </FormItem>
               )}
             />
-            <Button type="submit" disabled={isPending}>
-              {isPending ? "Updating..." : "Update Faculty"}
+            <Button type="submit" disabled={updateFacultyMutation.isPending}>
+              {updateFacultyMutation.isPending ? "Updating..." : "Update Faculty"}
             </Button>
           </form>
         </Form>
