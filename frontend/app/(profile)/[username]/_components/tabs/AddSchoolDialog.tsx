@@ -4,7 +4,6 @@ import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { useTransition } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -27,6 +26,8 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { useCreateSchoolMutation } from "@/app/(profile)/[username]/_components/schoolMutations";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { coursesData } from "@/config/course";
 
 export const addSchoolSchema = z.object({
   name: z.string().min(3, "School name must be at least 3 characters long"),
@@ -37,8 +38,7 @@ export const addSchoolSchema = z.object({
 
 export default function AddSchoolDialog() {
   const [isSlugEdited, setIsSlugEdited] = useState(false);
-  const [isPending, startTransition] = useTransition();
-  const [open, setOpen] = React.useState(false);
+  const [open, setOpen] = useState(false);
   const createSchoolMutation = useCreateSchoolMutation();
 
   const form = useForm<z.infer<typeof addSchoolSchema>>({
@@ -46,32 +46,38 @@ export default function AddSchoolDialog() {
     defaultValues: {
       name: "",
       slug: "",
+      description: "",
+      website: "",
     },
   });
 
   const name = form.watch("name");
 
   useEffect(() => {
-    if (!isSlugEdited) {
-      const generatedSlug = name.trim().toLowerCase().replace(/\s+/g, "-");
+    if (!isSlugEdited && name) {
+      const generatedSlug = name
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9-]+/g, "-")
+        .replace(/^-+|-+$/g, "");
       form.setValue("slug", generatedSlug);
+    } else if (!name) {
+      form.setValue("slug", "");
     }
   }, [name, isSlugEdited, form]);
 
   function onSubmit(values: z.infer<typeof addSchoolSchema>) {
-    toast.promise(
-      createSchoolMutation.mutateAsync(values),
-      {
-        loading: "Creating school...",
-        success: "School created successfully",
-        error: "Failed to create school"
-      }
-    );
-
-    // Close dialog on success
-    if (!createSchoolMutation.isError) {
-      setOpen(false);
-    }
+    createSchoolMutation.mutate(values, {
+      onSuccess: () => {
+        toast.success("School created successfully");
+        form.reset();
+        setIsSlugEdited(false);
+        setOpen(false);
+      },
+      onError: (error) => {
+        toast.error(error.message || "Failed to create school");
+      },
+    });
   }
 
   useEffect(() => {
@@ -94,7 +100,7 @@ export default function AddSchoolDialog() {
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
               control={form.control}
               name="name"
@@ -102,10 +108,24 @@ export default function AddSchoolDialog() {
                 <FormItem>
                   <FormLabel>School Name</FormLabel>
                   <FormControl>
-                    <Input
-                      placeholder="e.g. School of Engineering"
-                      {...field}
-                    />
+                    <Select
+                      value={field.value}
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a school" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectGroup>
+                          {coursesData.schools.map((school) => (
+                            <SelectItem key={school.name} value={school.name}>
+                              {school.name}
+                            </SelectItem>
+                          ))}
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -116,7 +136,7 @@ export default function AddSchoolDialog() {
               name="slug"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>School slug</FormLabel>
+                  <FormLabel>School Slug</FormLabel>
                   <FormControl>
                     <Input
                       {...field}
@@ -138,7 +158,10 @@ export default function AddSchoolDialog() {
                 <FormItem>
                   <FormLabel>School Description</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g. School description" {...field} />
+                    <Input
+                      placeholder="e.g. School description"
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -151,14 +174,27 @@ export default function AddSchoolDialog() {
                 <FormItem>
                   <FormLabel>School Website</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g. School website" {...field} />
+                    <Input
+                      placeholder="e.g. https://school.example.com"
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
             <DialogFooter>
-              <Button type="submit" disabled={createSchoolMutation.isPending}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={createSchoolMutation.isPending}
+              >
                 {createSchoolMutation.isPending ? "Saving..." : "Save changes"}
               </Button>
             </DialogFooter>

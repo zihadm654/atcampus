@@ -44,15 +44,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
 import { AvatarInput } from "@/app/(profile)/[username]/_components/EditProfileDialog";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAssignFacultyToMemberMutation } from "./facultyMutations";

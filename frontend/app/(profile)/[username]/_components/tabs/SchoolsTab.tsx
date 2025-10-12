@@ -43,7 +43,8 @@ export interface School {
   id: string;
   name: string;
   slug: string;
-  // description: string| undefined;
+  description?: string | null;
+  website?: string | null;
   faculties: Faculty[];
 }
 
@@ -116,8 +117,14 @@ const SchoolManagement = ({ school, user, permissions }: { school: School; user:
                     {deleteSchoolMutation.isPending ? "Deleting..." : "Delete"}
                   </Button>
                 </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <AddFacultyDialog schoolId={school.id} />
+                <DropdownMenuItem
+                  onSelect={(event) => {
+                    event.stopPropagation();
+                  }}
+                >
+                  <div onClick={(e) => e.stopPropagation()}>
+                    <AddFacultyDialog schoolId={school.id} />
+                  </div>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -151,8 +158,14 @@ const SchoolManagement = ({ school, user, permissions }: { school: School; user:
                       {deleteFacultyMutation.isPending ? "Deleting..." : "Delete"}
                     </Button>
                   </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <AddFacultyDialog schoolId={school.id} />
+                  <DropdownMenuItem
+                    onSelect={(event) => {
+                      event.stopPropagation();
+                    }}
+                  >
+                    <div onClick={(e) => e.stopPropagation()}>
+                      <AddFacultyDialog schoolId={school.id} />
+                    </div>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -186,7 +199,16 @@ export default function SchoolsTab({ user, isCurrentUser, permissions }: Schools
         <CardContent className="grid lg:grid-cols-2 gap-2">
           {user.schools && user.schools.length > 0 ? (
             user.schools.map((school) => (
-              <SchoolManagement key={school.id} school={school} user={user} permissions={permissions} />
+              <SchoolManagement
+                key={school.id}
+                school={{
+                  ...school,
+                  description: school.description ?? undefined,
+                  website: school.website ?? undefined
+                }}
+                user={user}
+                permissions={permissions}
+              />
             ))
           ) : (
             <div className="col-span-full text-center py-8">

@@ -25,14 +25,34 @@ export async function createSchool(values: z.infer<typeof createSchoolSchema>) {
     throw new Error('Unauthorized');
   }
   try {
+    // Generate a unique slug if not provided
+    let slug = validatedValues.slug;
+    if (!slug) {
+      slug = validatedValues.name
+        .toLowerCase()
+        .replace(/[^a-z0-9-]+/g, '-')
+        .replace(/^-*|-*$/g, '');
+
+      // Check if slug already exists and generate a unique one
+      let existingSchool = await prisma.school.findUnique({
+        where: { slug_institutionId: { slug, institutionId: user.id } }
+      });
+
+      let counter = 1;
+      while (existingSchool) {
+        slug = `${validatedValues.name.toLowerCase().replace(/[^a-z0-9-]+/g, '-')}-${counter}`;
+        counter++;
+        existingSchool = await prisma.school.findUnique({
+          where: { slug_institutionId: { slug, institutionId: user.id } }
+        });
+      }
+    }
+
     const school = await prisma.school.create({
       data: {
         ...validatedValues,
         institutionId: user.id,
-        slug: validatedValues.slug || validatedValues.name
-          .toLowerCase()
-          .replace(/[^a-z0-9-]+/g, '-')
-          .replace(/^-*|-*$/g, ''),
+        slug,
       },
     });
     return school;
@@ -52,13 +72,31 @@ const updateSchoolSchema = createSchoolSchema.extend({ id: z.string() });
 export async function updateSchool(values: z.infer<typeof updateSchoolSchema>) {
   const user = await getCurrentUser();
   const validatedValues = updateSchoolSchema.parse(values);
-  const { id, ...dataToUpdate } = updateSchoolSchema.parse(values);
+  const { id, ...dataToUpdate } = validatedValues;
 
   if (!user || user.role !== 'INSTITUTION') {
     throw new Error('Unauthorized');
   }
+
+  // Verify that the school belongs to this institution
+  const existingSchool = await prisma.school.findUnique({
+    where: { id, institutionId: user.id }
+  });
+
+  if (!existingSchool) {
+    throw new Error('School not found or unauthorized');
+  }
+
+  // Handle slug generation if not provided
+  if (!dataToUpdate.slug && dataToUpdate.name) {
+    dataToUpdate.slug = dataToUpdate.name
+      .toLowerCase()
+      .replace(/[^a-z0-9-]+/g, '-')
+      .replace(/^-*|-*$/g, '');
+  }
+
   const school = await prisma.school.update({
-    where: { id: id, institutionId: user.id },
+    where: { id, institutionId: user.id },
     data: dataToUpdate,
   });
   return school;
@@ -116,28 +154,37 @@ export async function createFaculty(
   if (!school) throw new Error('School not found');
 
   try {
-    // Create a default member for the faculty with faculty assignment
-    const defaultMember = await prisma.member.create({
-      data: {
-        userId: user.id,
-        role: "member",
-        organizationId: school.institutionId,
-        facultyId: null, // Will be set after faculty creation
-      },
-    });
+    // Generate a unique slug using the compound unique constraint
+    let slug = validatedValues.slug;
+    if (!slug) {
+      slug = validatedValues.name
+        .toLowerCase()
+        .replace(/[^a-z0-9-]+/g, '-')
+        .replace(/^-*|-*$/g, '');
 
+      // Check if slug already exists for this school and generate a unique one
+      let existingFaculty = await prisma.faculty.findUnique({
+        where: { slug_schoolId: { slug, schoolId: validatedValues.schoolId } }
+      });
+
+      let counter = 1;
+      while (existingFaculty) {
+        slug = `${validatedValues.name.toLowerCase().replace(/[^a-z0-9-]+/g, '-')}-${counter}`;
+        counter++;
+        existingFaculty = await prisma.faculty.findUnique({
+          where: { slug_schoolId: { slug, schoolId: validatedValues.schoolId } }
+        });
+      }
+    }
+
+    // Create the faculty directly
     const faculty = await prisma.faculty.create({
       data: {
         name: validatedValues.name,
         description: validatedValues.description,
         logo: validatedValues.logo,
         coverPhoto: validatedValues.coverPhoto,
-        slug:
-          validatedValues.slug ||
-          validatedValues.name
-            .toLowerCase()
-            .replace(/[^a-z0-9-]+/g, '-')
-            .replace(/^-*|-*$/g, ''),
+        slug: slug,
         school: {
           connect: { id: validatedValues.schoolId },
         },
@@ -152,23 +199,22 @@ export async function createFaculty(
       },
     });
 
-    // Update the member to associate with the new faculty
-    await prisma.member.update({
-      where: { id: defaultMember.id },
-      data: {
-        facultyId: faculty.id,
-      },
-    });
-
-    return faculty;
+    return { success: true, faculty };
   } catch (error) {
+    console.error('Error creating faculty:', error);
+
     if (
       error instanceof Prisma.PrismaClientKnownRequestError &&
       error.code === 'P2002'
     ) {
       throw new Error('A faculty with this slug already exists.');
     }
-    throw error;
+
+    if (error instanceof Error) {
+      throw error;
+    }
+
+    throw new Error('Failed to create faculty. Please try again.');
   }
 }
 
@@ -195,13 +241,22 @@ export async function updateFaculty(
     throw new Error('Unauthorized');
   }
 
+  // Handle slug generation if not provided
   const data: any = {
     name: validatedValues.name,
     description: validatedValues.description,
-    slug: validatedValues.slug,
     coverPhoto: validatedValues.coverPhoto,
     logo: validatedValues.logo,
   };
+
+  if (!validatedValues.slug && validatedValues.name) {
+    data.slug = validatedValues.name
+      .toLowerCase()
+      .replace(/[^a-z0-9-]+/g, '-')
+      .replace(/^-*|-*$/g, '');
+  } else if (validatedValues.slug) {
+    data.slug = validatedValues.slug;
+  }
 
   // Only update school if provided and different
   if (validatedValues.schoolId && validatedValues.schoolId !== faculty.schoolId) {
@@ -300,24 +355,6 @@ export async function assignMemberToFaculty(
       throw new Error('Faculty not found');
     }
 
-    // Create professor profile if it doesn't exist
-    // const professorProfile = await prisma.members.upsert({
-    //   where: {
-    //     professorId: member.userId,
-    //   },
-    //   update: {
-    //     faculties: {
-    //       connect: { id: facultyId },
-    //     },
-    //   },
-    //   create: {
-    //     professorId: member.userId,
-    //     faculties: {
-    //       connect: { id: facultyId },
-    //     },
-    //   },
-    // });
-
     // Update member
     const updatedMember = await prisma.member.update({
       where: { id: memberId },
@@ -337,20 +374,9 @@ export async function assignMemberToFaculty(
       },
     });
 
-    // Update faculty with the new professor
-    // await prisma.faculty.update({
-    //   where: { id: facultyId },
-    //   data: {
-    //     members: {
-    //       connect: { id: professorProfile.id },
-    //     },
-    //   },
-    // });
-
     return {
       success: true,
       member: updatedMember,
-      // professorProfile,
       faculty,
     };
   } catch (error) {
@@ -399,18 +425,6 @@ export async function removeProfessorFromFaculty(
     if (!user || user.role !== 'INSTITUTION') {
       throw new Error('Unauthorized');
     }
-
-    // Remove faculty connection from professor profile
-    // await prisma.member.update({
-    //   where: {
-    //     userId_organizationId: { userId: memberId, organizationId: facultyId },
-    //   },
-    //   data: {
-    //     faculty: {
-    //       disconnect: { id: facultyId },
-    //     },
-    //   },
-    // });
 
     // Update member role
     const updatedMember = await prisma.member.update({

@@ -13,6 +13,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogFooter,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import {
@@ -29,10 +30,11 @@ import { useUpdateFacultyMutation } from "@/app/(profile)/[username]/_components
 
 const formSchema = z.object({
   name: z.string().min(3, "Faculty name must be at least 3 characters long"),
+  description: z.string().optional(),
 });
 
 interface EditFacultyDialogProps {
-  faculty: Faculty & { schoolId: string }; // Include schoolId in the faculty type
+  faculty: Faculty & { schoolId: string; description?: string }; // Include schoolId in the faculty type
 }
 
 export default function EditFacultyDialog({ faculty }: EditFacultyDialogProps) {
@@ -43,27 +45,27 @@ export default function EditFacultyDialog({ faculty }: EditFacultyDialogProps) {
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: faculty.name,
+      description: faculty.description || "",
     },
   });
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
-    toast.promise(
-      updateFacultyMutation.mutateAsync({
+    updateFacultyMutation.mutate(
+      {
         id: faculty.id,
         ...values,
         schoolId: faculty.schoolId // Include schoolId in the mutation
-      }),
+      },
       {
-        loading: "Updating faculty...",
-        success: "Faculty updated successfully",
-        error: "Failed to update faculty"
+        onSuccess: () => {
+          toast.success("Faculty updated successfully");
+          setOpen(false);
+        },
+        onError: (error) => {
+          toast.error(error.message || "Failed to update faculty");
+        },
       }
     );
-
-    // Close dialog on success
-    if (!updateFacultyMutation.isError) {
-      setOpen(false);
-    }
   };
 
   return (
@@ -92,9 +94,34 @@ export default function EditFacultyDialog({ faculty }: EditFacultyDialogProps) {
                 </FormItem>
               )}
             />
-            <Button type="submit" disabled={updateFacultyMutation.isPending}>
-              {updateFacultyMutation.isPending ? "Updating..." : "Update Faculty"}
-            </Button>
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Faculty Description</FormLabel>
+                  <FormControl>
+                    <Input placeholder="e.g. Faculty description" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={updateFacultyMutation.isPending}
+              >
+                {updateFacultyMutation.isPending ? "Updating..." : "Update Faculty"}
+              </Button>
+            </DialogFooter>
           </form>
         </Form>
       </DialogContent>

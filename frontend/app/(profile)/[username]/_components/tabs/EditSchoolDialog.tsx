@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useTransition } from "react";
+import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -31,6 +31,8 @@ import { useUpdateSchoolMutation } from "@/app/(profile)/[username]/_components/
 
 const editSchoolSchema = z.object({
   name: z.string().min(3, "School name must be at least 3 characters long"),
+  description: z.string().optional(),
+  website: z.string().optional(),
 });
 
 interface EditSchoolDialogProps {
@@ -45,26 +47,27 @@ export default function EditSchoolDialog({ school }: EditSchoolDialogProps) {
     resolver: zodResolver(editSchoolSchema),
     defaultValues: {
       name: school.name,
+      description: school.description || "",
+      website: school.website || "",
     },
   });
 
   function onSubmit(values: z.infer<typeof editSchoolSchema>) {
-    toast.promise(
-      updateSchoolMutation.mutateAsync({
+    updateSchoolMutation.mutate(
+      {
         id: school.id,
         ...values
-      }),
+      },
       {
-        loading: "Updating school...",
-        success: "School updated successfully",
-        error: "Failed to update school"
+        onSuccess: () => {
+          toast.success("School updated successfully");
+          setOpen(false);
+        },
+        onError: (error) => {
+          toast.error(error.message || "Failed to update school");
+        },
       }
     );
-
-    // Close dialog on success
-    if (!updateSchoolMutation.isError) {
-      setOpen(false);
-    }
   }
 
   return (
@@ -76,13 +79,13 @@ export default function EditSchoolDialog({ school }: EditSchoolDialogProps) {
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Edit</DialogTitle>
+          <DialogTitle>Edit School</DialogTitle>
           <DialogDescription>
             Make changes to your school here. Click save when you're done.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
               control={form.control}
               name="name"
@@ -99,8 +102,50 @@ export default function EditSchoolDialog({ school }: EditSchoolDialogProps) {
                 </FormItem>
               )}
             />
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>School Description</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="e.g. School description"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="website"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>School Website</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="e.g. https://school.example.com"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             <DialogFooter>
-              <Button type="submit" disabled={updateSchoolMutation.isPending}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={updateSchoolMutation.isPending}
+              >
                 {updateSchoolMutation.isPending ? "Saving..." : "Save changes"}
               </Button>
             </DialogFooter>

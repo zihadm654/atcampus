@@ -12,54 +12,52 @@ export async function GET(req: NextRequest) {
         let institutionId: string;
 
         if (user.role === "PROFESSOR") {
-            const professor = await prisma.member.findFirst({
+            // For professors, get the organization they belong to via Member relationship
+            const member = await prisma.member.findFirst({
                 where: {
                     userId: user.id,
-                    role: "member", // Assuming this is the role for professors in faculty
+                    role: "member",
                 },
                 include: {
-                    organization: {
-                        include: {
-                            members: {
-                                where: {
-                                    role: "owner",
-                                },
-                                select: {
-                                    userId: true,
-                                },
-                            },
-                        },
-                    },
-                    faculty: {
-                        include: {
-                            school: {
-                                include: {
-                                    institution: true,
-                                }
-                            },
-                        },
-                    },
+                    organization: true,
                 },
             });
 
-            if (!professor || !professor.faculty?.school?.institution.id) {
-                return NextResponse.json({ error: "Professor is not assigned to any institution" }, { status: 404 });
+            if (!member || !member.organizationId) {
+                return NextResponse.json({ error: "Professor is not assigned to any organization" }, { status: 404 });
             }
-            console.log(professor, "professor")
-            institutionId = professor.organization.members[0].userId;
-        } else if (user.role === "INSTITUTION" || user.role === "ORGANIZATION") { // Handling both as per potential typo
+
+            // Get the owner of the organization - this will be the institution user
+            const organizationOwner = await prisma.member.findFirst({
+                where: {
+                    organizationId: member.organizationId,
+                    role: "owner",
+                },
+            });
+
+            if (!organizationOwner || !organizationOwner.userId) {
+                return NextResponse.json({ error: "Organization has no owner" }, { status: 404 });
+            }
+
+            institutionId = organizationOwner.userId;
+        } else if (user.role === "INSTITUTION") {
+            // For institutions, use their userId directly
             institutionId = user.id;
         } else {
             return NextResponse.json({ error: "User role not supported" }, { status: 403 });
         }
-        console.log(institutionId, "id");
+
         // Fetch schools with their faculties
         const schools = await prisma.school.findMany({
             where: {
                 institutionId: institutionId,
+                isActive: true,
             },
             include: {
                 faculties: {
+                    where: {
+                        isActive: true,
+                    },
                     select: {
                         id: true,
                         name: true,
