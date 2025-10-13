@@ -38,9 +38,10 @@ const addFacultySchema = z.object({
 
 interface AddFacultyDialogProps {
   schoolId: string;
+  schoolName: string;
 }
 
-export default function AddFacultyDialog({ schoolId }: AddFacultyDialogProps) {
+export default function AddFacultyDialog({ schoolId, schoolName }: AddFacultyDialogProps) {
   const [open, setOpen] = useState(false);
   const createFacultyMutation = useCreateFacultyMutation();
   const [isSlugEdited, setIsSlugEdited] = useState(false);
@@ -48,8 +49,8 @@ export default function AddFacultyDialog({ schoolId }: AddFacultyDialogProps) {
   // Since we're working with static data and schoolId is a database ID,
   // we'll try to find a matching school by checking if any school name contains the schoolId
   // This is a workaround for the static data implementation
-  const selectedSchool = coursesData.schools.find(school => school.name.includes(schoolId)) ||
-    coursesData.schools.find(school => schoolId.includes(school.name)) ||
+  const selectedSchool = coursesData.schools.find(school => school.name.includes(schoolName)) ||
+    coursesData.schools.find(school => schoolName.includes(school.name)) ||
     coursesData.schools[0];
 
   const form = useForm<z.infer<typeof addFacultySchema>>({

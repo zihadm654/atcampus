@@ -93,7 +93,7 @@ export default function JobFeed({ user, initialData }: Props) {
   return (
     <div className="space-y-3">
       {/* Header Section */}
-      <div className="rounded-xl bg-gradient-to-r  p-3 shadow-lg">
+      <div className="rounded-xl bg-gradient-to-r max-md:p-2 p-3 shadow-lg">
         <div className="flex flex-col gap-4">
           <div className="flex items-center gap-3">
             <Briefcase className="h-8 w-8" />

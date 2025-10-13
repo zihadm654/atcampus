@@ -123,7 +123,7 @@ const SchoolManagement = ({ school, user, permissions }: { school: School; user:
                   }}
                 >
                   <div onClick={(e) => e.stopPropagation()}>
-                    <AddFacultyDialog schoolId={school.id} />
+                    <AddFacultyDialog schoolId={school.id} schoolName={school.name} />
                   </div>
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -131,9 +131,9 @@ const SchoolManagement = ({ school, user, permissions }: { school: School; user:
           </CardAction>
         )}
       </CardHeader>
-      <CardContent>
+      <CardContent className="max-md:px-3">
         {school.faculties.map((faculty) => (
-          <div className="flex items-center justify-between" key={faculty.id}>
+          <div className="flex items-center justify-between gap-3" key={faculty.id}>
             <h4>{faculty.name}</h4>
             {canManageAcademic && (
               <DropdownMenu>
@@ -164,7 +164,7 @@ const SchoolManagement = ({ school, user, permissions }: { school: School; user:
                     }}
                   >
                     <div onClick={(e) => e.stopPropagation()}>
-                      <AddFacultyDialog schoolId={school.id} />
+                      <AddFacultyDialog schoolId={school.id} schoolName={school.name} />
                     </div>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
@@ -196,7 +196,7 @@ export default function SchoolsTab({ user, isCurrentUser, permissions }: Schools
             {canManageAcademic && <AddSchoolDialog />}
           </div>
         </CardHeader>
-        <CardContent className="grid lg:grid-cols-2 gap-2">
+        <CardContent className="grid lg:grid-cols-2 gap-2 max-md:px-3">
           {user.schools && user.schools.length > 0 ? (
             user.schools.map((school) => (
               <SchoolManagement

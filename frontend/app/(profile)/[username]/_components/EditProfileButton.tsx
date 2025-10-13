@@ -6,6 +6,7 @@ import { UserData } from "@/types/types";
 import { Button } from "@/components/ui/button";
 
 import EditProfileDialog from "./EditProfileDialog";
+import { Icons } from "@/components/shared/icons";
 
 interface EditProfileButtonProps {
   user: UserData;
@@ -17,7 +18,10 @@ export default function EditProfileButton({ user }: EditProfileButtonProps) {
   return (
     <>
       <Button variant="outline" onClick={() => setShowDialog(true)}>
-        Edit profile
+        <span className="hidden lg:block">
+          Edit profile
+        </span>
+        <Icons.pencil className="size-4" />
       </Button>
       <EditProfileDialog
         user={user}

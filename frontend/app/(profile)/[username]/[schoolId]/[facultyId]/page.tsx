@@ -395,56 +395,12 @@ export default async function Page({ params }: PageProps) {
         </div>
       </div>
 
-      {/* Faculty Details */}
-      <Card className="border-none shadow-sm">
-        <CardContent className="p-1">
-          <div className="grid grid-cols-3 max-md:grid-cols-2 gap-4">
-            <div className="text-center">
-              <div className="flex items-center justify-center gap-2 mb-2">
-                <Users className="h-5 w-5 text-blue-600" />
-                <span className="text-2xl font-bold">
-                  {faculty._count?.members || 0}
-                </span>
-              </div>
-              <p className="text-sm text-muted-foreground">Total Members</p>
-            </div>
-
-            <div className="text-center">
-              <div className="flex items-center justify-center gap-2 mb-2">
-                <GraduationCap className="h-5 w-5 text-green-600" />
-                <span className="text-2xl font-bold">{professors.length}</span>
-              </div>
-              <p className="text-sm text-muted-foreground">Professors</p>
-            </div>
-
-            <div className="text-center">
-              <div className="flex items-center justify-center gap-2 mb-2">
-                <BookOpen className="h-5 w-5 text-purple-600" />
-                <span className="text-2xl font-bold">
-                  {faculty._count?.courses || 0}
-                </span>
-              </div>
-              <p className="text-sm text-muted-foreground">Courses</p>
-            </div>
-          </div>
-
-          {faculty.description && (
-            <div className="mt-6 pt-6 border-t">
-              <h3 className="text-lg font-semibold mb-3">About This Faculty</h3>
-              <p className="text-muted-foreground leading-relaxed">
-                {faculty.description}
-              </p>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
       {/* Members Section */}
       <div className="space-y-6">
         <h2 className="text-3xl font-bold">Faculty Members</h2>
 
         <Tabs defaultValue="all" className="w-full">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="all">All Members ({professors?.length || 0})</TabsTrigger>
             <TabsTrigger value="professors">
               Professors ({professors.length})
@@ -452,10 +408,10 @@ export default async function Page({ params }: PageProps) {
             <TabsTrigger value="courses">
               Courses ({faculty?.courses?.length || 0})
             </TabsTrigger>
-            <TabsTrigger value="admins">Admins ({admins.length})</TabsTrigger>
+            {/* <TabsTrigger value="admins">Admins ({admins.length})</TabsTrigger> */}
           </TabsList>
 
-          <TabsContent value="all" className="mt-6">
+          <TabsContent value="all" className="mt-3">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {faculty.members.map((member) => (
                 <MemberCard key={member.id} member={member} />
@@ -477,7 +433,7 @@ export default async function Page({ params }: PageProps) {
             )}
           </TabsContent>
 
-          <TabsContent value="professors" className="mt-6">
+          <TabsContent value="professors" className="mt-3">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {professors.map((member) => (
                 <MemberCard key={member.id} member={member} />
@@ -498,7 +454,7 @@ export default async function Page({ params }: PageProps) {
             )}
           </TabsContent>
 
-          <TabsContent value="courses" className="mt-6">
+          <TabsContent value="courses" className="mt-3">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {faculty?.courses?.map((course: any) => (
                 <Course key={course.id} course={course} />
@@ -519,7 +475,7 @@ export default async function Page({ params }: PageProps) {
             )}
           </TabsContent>
 
-          <TabsContent value="admins" className="mt-6">
+          <TabsContent value="admins" className="mt-3">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {admins.map((member) => (
                 <MemberCard key={member.id} member={member} />

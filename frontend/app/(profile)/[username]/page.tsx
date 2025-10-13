@@ -149,7 +149,7 @@ export default async function Page({ params }: PageProps) {
   };
   return (
     <ProfileProvider initialUser={user} loggedInUserId={loggedInUser.id}>
-      <div className="w-full min-w-0 space-y-5 container mx-auto">
+      <div className="w-full min-w-0 space-y-5 container mx-auto max-md:p-2">
         <ProfileHeader
           user={user}
           loggedInUserId={loggedInUser.id}

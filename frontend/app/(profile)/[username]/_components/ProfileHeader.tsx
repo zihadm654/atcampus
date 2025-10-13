@@ -43,7 +43,7 @@ export default function ProfileHeader({
         <div className="absolute inset-0 bg-black opacity-20 mix-blend-overlay" />
       </div>
 
-      <div className="relative px-6 pb-2">
+      <div className="relative max-md:px-2 px-6 pb-2">
         {/* Avatar - positioned to overlap the cover photo with enhanced styling */}
         <div className="absolute -top-16 left-6 rounded-full shadow-lg ring-4 ring-white max-sm:-top-30">
           <UserAvatar
@@ -68,13 +68,11 @@ export default function ProfileHeader({
               </h5>
             </div>
             {/* Profile actions positioned on top right */}
-            <div className="">
               {isOwnProfile ? (
                 <EditProfileButton user={user} />
               ) : (
                 <FollowButton userId={user.id} initialState={followerInfo} />
               )}
-            </div>
           </div>
 
           {/* Stats row with enhanced styling */}

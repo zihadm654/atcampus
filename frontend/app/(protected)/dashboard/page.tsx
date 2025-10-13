@@ -66,7 +66,7 @@ export default async function DashboardPage() {
         heading="Dashboard"
         text={"Current Role : — explore settings."}
       />
-      <div className="container mx-auto max-w-screen-lg space-y-4 p-3">
+      <div className="container mx-auto max-w-screen-lg space-y-4 p-3 max-md:p-2">
         <div className="flex items-center justify-between gap-2">
           <ReturnButton href="/" label="Home" />
           <div className="flex items-center gap-2">
@@ -82,7 +82,7 @@ export default async function DashboardPage() {
         {user?.role === "ORGANIZATION" && (
           <Fragment>
             <Label className="text-2xl">Job Applicants</Label>
-            <Table className="border p-2 my-3 rounded-lg">
+            <Table className="border p-2 max-md:p-1 my-3 rounded-lg">
               <TableHeader>
                 <TableRow>
                   <TableHead>Id</TableHead>

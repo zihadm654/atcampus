@@ -74,6 +74,7 @@ export default function Job({ job }: JobProps) {
         const res = await applyJob(job.id);
         if (!res.success) {
           toast.error(res.message);
+          // Revert the optimistic update on failure
           setOptimisticApplied(false);
         } else {
           toast.success(res.message);
@@ -81,6 +82,7 @@ export default function Job({ job }: JobProps) {
           setIsApplied(true);
         }
       } catch (error) {
+        // Revert the optimistic update on error
         setOptimisticApplied(false);
         toast.error("Failed to apply for job");
       }
@@ -93,8 +95,8 @@ export default function Job({ job }: JobProps) {
       {job.courseId && (
         <Badge
           className={`absolute top-3 right-3 z-10 ${isEnrolled
-              ? "bg-green-500/90 text-white"
-              : "bg-orange-500/90 text-white"
+            ? "bg-green-500/90 text-white"
+            : "bg-orange-500/90 text-white"
             }`}
         >
           {isEnrolled ? "Profile Match" : "Course Required"}
@@ -170,12 +172,10 @@ export default function Job({ job }: JobProps) {
             <Badge variant="secondary" className="text-sm font-medium">
               {job.type.replace("_", " ")}
             </Badge>
-            {job.applications.length > 0 && (
-              <Badge variant="outline" className="text-sm">
-                <Users className="mr-1 h-3 w-3" />
-                {job.applications.length} applied
-              </Badge>
-            )}
+            <Badge variant="outline" className="text-sm">
+              <Users className="mr-1 h-3 w-3" />
+              {(optimisticApplied || isApplied) ? job.applications.length + 1 : job.applications.length} applied
+            </Badge>
           </div>
         </Link>
       </CardContent>

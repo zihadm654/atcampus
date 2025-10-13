@@ -184,7 +184,7 @@ export default async function Page({ params }: PageProps) {
   }
 
   return (
-    <div className="w-full space-y-6 container mx-auto">
+    <div className="w-full space-y-6 container mx-auto max-md:p-3">
       {/* School Header Section */}
       <div className="relative">
         {/* Cover Photo */}
@@ -204,7 +204,7 @@ export default async function Page({ params }: PageProps) {
         </div>
 
         {/* School Info Overlay */}
-        <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
+        <div className="absolute bottom-0 left-0 right-0 p-6 max-md:p-3 text-white">
           <div className="flex items-end gap-4">
             {school.logo && (
               <div className="relative h-20 w-20 rounded-xl overflow-hidden bg-white/10 backdrop-blur-sm">
@@ -228,60 +228,6 @@ export default async function Page({ params }: PageProps) {
           </div>
         </div>
       </div>
-
-      {/* School Details Card */}
-      <Card className="border-none shadow-sm">
-        <CardContent className="px-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-primary/10 rounded-lg">
-                <Globe className="h-5 w-5 text-primary" />
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Website</p>
-                {school.website ? (
-                  <Link
-                    href={school.website}
-                    target="_blank"
-                    className="text-sm font-medium hover:text-primary transition-colors"
-                  >
-                    Visit Website
-                  </Link>
-                ) : (
-                  <p className="text-sm font-medium text-muted-foreground">
-                    Not available
-                  </p>
-                )}
-              </div>
-            </div>
-
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-blue-100 rounded-lg">
-                <BookOpen className="h-5 w-5 text-blue-600" />
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Total Faculties</p>
-                <p className="text-2xl font-bold">{school.faculties.length}</p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-green-100 rounded-lg">
-                <Users className="h-5 w-5 text-green-600" />
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Total Members</p>
-                <p className="text-2xl font-bold">
-                  {school.faculties.reduce(
-                    (sum, faculty) => sum + (faculty._count?.members || 0),
-                    0
-                  )}
-                </p>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
 
       {/* Faculties Section */}
       <div className="space-y-4">

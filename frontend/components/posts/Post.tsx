@@ -30,7 +30,7 @@ export default function Post({ post }: PostProps) {
   }
   const [showComments, setShowComments] = useState(false);
   return (
-    <article className="group/post bg-card space-y-3 rounded-2xl p-5 shadow-sm border">
+    <article className="group/post bg-card space-y-3 rounded-2xl p-5 max-md:p-3 shadow-sm border">
       <div className="flex justify-between gap-3">
         <div className="flex flex-wrap gap-3">
           <UserTooltip user={post.user}>
@@ -122,15 +122,14 @@ interface MediaPreviewProps {
 }
 
 function MediaPreview({ media }: MediaPreviewProps) {
-  console.log(media.url, "url");
   if (media.type === "IMAGE") {
     return (
       <BlurImage
         src={media.url}
         alt="Attachment"
-        width={500}
+        width={800}
         height={500}
-        className="mx-auto size-fit max-h-[30rem] rounded-2xl"
+        className="mx-auto size-fit max-h-[25rem] rounded-2xl"
       />
     );
   }
@@ -141,7 +140,7 @@ function MediaPreview({ media }: MediaPreviewProps) {
         <video
           src={media?.url}
           controls
-          className="mx-auto size-fit max-h-[30rem] rounded-2xl"
+          className="mx-auto size-fit max-h-[25rem] rounded-2xl"
         />
       </div>
     );

@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { prisma } from "@/lib/db";
 import Link from "next/link";
 import { cache } from "react";
+import { Icons } from "@/components/shared/icons";
 
 export const metadata: Metadata = constructMetadata({
   title: "Courses - AtCampus",
@@ -86,7 +87,7 @@ export default async function CoursesPage() {
       <div className="flex items-center justify-between gap-2 p-2">
         <div className="">
           <h1 className="text-3xl max-md:text-xl font-bold">Courses</h1>
-          <p className="text-muted-foreground max-md:text-sm">
+          <p className="text-muted-foreground max-md:text-sm hidden lg:block">
             Browse and enroll in courses to enhance your skills
           </p>
         </div>
@@ -94,16 +95,31 @@ export default async function CoursesPage() {
           {canCreateCourses && (
             <>
               <Button className="rounded-xl max-sm:text-sm" size="sm" variant="outline">
-                <Link href="/courses/my-courses">My Courses</Link>
+                <Link className="flex items-center justify-center gap-2" href="/courses/my-courses">
+                  <span className="hidden lg:block">
+                    My Courses
+                  </span>
+                  <Icons.home className="size-5" />
+                </Link>
               </Button>
               <Button className="rounded-xl max-sm:text-sm" size="sm" variant="outline">
-                <Link href="/courses/createCourse">Create Course</Link>
+                <Link href="/courses/createCourse">
+                  <span className="hidden lg:block">
+                    Create Course
+                  </span>
+                  <Icons.add className="size-5" />
+                </Link>
               </Button>
             </>
           )}
           {hasApprovalPermissions && (
             <Button className="rounded-xl max-sm:text-sm" size="sm" variant="secondary">
-              <Link href="/courses/approvals">Course Approvals</Link>
+              <Link href="/courses/approvals">
+                <span className="hidden lg:block">
+                  Course Approvals
+                </span>
+                <Icons.home className="size-5" />
+              </Link>
             </Button>
           )}
         </div>
