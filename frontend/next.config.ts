@@ -41,14 +41,12 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  rewrites: async () => {
-    return [
-      {
-        source: "/hashtag/:tag",
-        destination: "/search?q=%23:tag",
-      },
-    ];
-  },
+  rewrites: async () => [
+    {
+      source: "/hashtag/:tag",
+      destination: "/search?q=%23:tag",
+    },
+  ],
 };
 
 export default nextConfig;

@@ -1,12 +1,11 @@
 "use client";
 
-import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { Bell } from "lucide-react";
-
-import { NotificationCountInfo } from "@/types/types";
-import kyInstance from "@/lib/ky";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import kyInstance from "@/lib/ky";
+import type { NotificationCountInfo } from "@/types/types";
 
 interface NotificationsButtonProps {
   initialState: NotificationCountInfo;
@@ -28,23 +27,23 @@ export default function NotificationsButton({
       }
     },
     initialData: initialState,
-    refetchInterval: 30000, // Refetch every 30 seconds
+    refetchInterval: 30_000, // Refetch every 30 seconds
     refetchOnWindowFocus: true,
-    staleTime: 20000, // Consider data stale after 20 seconds
+    staleTime: 20_000, // Consider data stale after 20 seconds
   });
 
   return (
     <Button
-      variant="ghost"
+      asChild
       className="flex items-center justify-start gap-2 rounded-full"
       title="Notifications"
-      asChild
+      variant="ghost"
     >
       <Link href="/notifications" prefetch={true}>
         <div className="relative">
           <Bell className="size-5" />
           {!!data.unreadCount && (
-            <span className="bg-primary text-white absolute -top-1 -right-1 rounded-full px-1 text-xs font-medium tabular-nums dark:text-black">
+            <span className="-top-1 -right-1 absolute rounded-full bg-primary px-1 font-medium text-white text-xs tabular-nums dark:text-black">
               {data.unreadCount}
             </span>
           )}

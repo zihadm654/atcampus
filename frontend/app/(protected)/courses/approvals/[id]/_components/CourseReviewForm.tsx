@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { toast } from "sonner";
-import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { CourseStatus } from "@prisma/client";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 import * as z from "zod";
-
+import { JsonToHtml } from "@/components/editor/JsonToHtml";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -24,13 +25,9 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
-import { formatDistanceToNow } from "date-fns";
-import { CourseStatus } from "@prisma/client";
-import { JsonToHtml } from "@/components/editor/JsonToHtml";
+import { Textarea } from "@/components/ui/textarea";
 
 const reviewSchema = z.object({
   decision: z.enum(["PUBLISHED", "REJECTED", "NEEDS_REVISION"]),
@@ -168,7 +165,7 @@ export function CourseReviewForm({
   return (
     <div className="grid gap-6 lg:grid-cols-3">
       {/* Course Details */}
-      <div className="lg:col-span-2 space-y-6">
+      <div className="space-y-6 lg:col-span-2">
         <Card>
           <CardHeader>
             <div className="flex items-start justify-between">
@@ -176,14 +173,14 @@ export function CourseReviewForm({
                 <CardTitle className="text-2xl">
                   {approval.course.title}
                 </CardTitle>
-                <CardDescription className="text-base mt-2">
+                <CardDescription className="mt-2 text-base">
                   {approval.course.code} • {approval.course.faculty.name}
                 </CardDescription>
               </div>
               <div className="flex flex-col gap-2">
                 <Badge
-                  variant={getStatusColor(approval.status) as any}
                   className="text-sm"
+                  variant={getStatusColor(approval.status) as any}
                 >
                   {approval.status.replace("_", " ")}
                 </Badge>
@@ -191,45 +188,42 @@ export function CourseReviewForm({
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div>
-                <p className="text-sm font-medium">Instructor</p>
-                <p className="text-sm text-muted-foreground">
+                <p className="font-medium text-sm">Instructor</p>
+                <p className="text-muted-foreground text-sm">
                   {approval.course.instructor.name}
                 </p>
               </div>
               <div>
-                <p className="text-sm font-medium">Institution</p>
-                <p className="text-sm text-muted-foreground">
+                <p className="font-medium text-sm">Institution</p>
+                <p className="text-muted-foreground text-sm">
                   {approval.course.faculty.school.institution.name}
                 </p>
               </div>
             </div>
             <div>
-              <h4 className="text-sm font-medium">Description</h4>
-              <p className="text-sm text-muted-foreground">
+              <h4 className="font-medium text-sm">Description</h4>
+              <p className="text-muted-foreground text-sm">
                 <JsonToHtml json={JSON.parse(approval.course.description)} />
               </p>
             </div>
             <div>
-              <p className="text-sm font-medium">Objectives</p>
-              <ul className="list-disc list-inside text-sm text-muted-foreground">
-                {approval.course.objectives &&
-                  approval.course.objectives.map((obj, index) => (
-                    <li key={index}>{obj}</li>
-                  ))}
+              <p className="font-medium text-sm">Objectives</p>
+              <ul className="list-inside list-disc text-muted-foreground text-sm">
+                {approval.course.objectives?.map((obj, index) => (
+                  <li key={index}>{obj}</li>
+                ))}
               </ul>
             </div>
             <div>
-              <p className="text-sm font-medium">Outcomes</p>
-              <ul className="list-disc list-inside text-sm text-muted-foreground">
-                {approval.course.outcomes &&
-                  approval.course.outcomes.map((out, index) => (
-                    <li key={index}>{out}</li>
-                  ))}
+              <p className="font-medium text-sm">Outcomes</p>
+              <ul className="list-inside list-disc text-muted-foreground text-sm">
+                {approval.course.outcomes?.map((out, index) => (
+                  <li key={index}>{out}</li>
+                ))}
               </ul>
             </div>
-
           </CardContent>
         </Card>
 
@@ -239,7 +233,7 @@ export function CourseReviewForm({
               <CardTitle>Previous Reviewer Comments</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-muted-foreground text-sm">
                 {approval.comments}
               </p>
             </CardContent>
@@ -257,8 +251,8 @@ export function CourseReviewForm({
           <CardContent>
             <Form {...form}>
               <form
-                onSubmit={form.handleSubmit(onSubmit)}
                 className="space-y-6"
+                onSubmit={form.handleSubmit(onSubmit)}
               >
                 <FormField
                   control={form.control}
@@ -268,9 +262,9 @@ export function CourseReviewForm({
                       <FormLabel>Decision</FormLabel>
                       <FormControl>
                         <RadioGroup
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
                           className="flex flex-col space-y-1"
+                          defaultValue={field.value}
+                          onValueChange={field.onChange}
                         >
                           <FormItem className="flex items-center space-x-3 space-y-0">
                             <FormControl>
@@ -310,25 +304,25 @@ export function CourseReviewForm({
                       name="qualityScore"
                       render={({ field }) => (
                         <FormItem>
-                          <div className="flex justify-between items-center">
+                          <div className="flex items-center justify-between">
                             <FormLabel>Overall Quality Score</FormLabel>
-                            <span className="text-sm px-2 py-1 bg-muted rounded-md font-medium">
+                            <span className="rounded-md bg-muted px-2 py-1 font-medium text-sm">
                               {field.value || 75}%
                             </span>
                           </div>
                           <FormControl>
                             <div className="pt-2">
-                              <div className="flex justify-between mb-1 text-xs text-muted-foreground">
+                              <div className="mb-1 flex justify-between text-muted-foreground text-xs">
                                 <span>0%</span>
                                 <span>100%</span>
                               </div>
                               <Slider
+                                className="w-full"
                                 defaultValue={[field.value || 75]}
                                 max={100}
                                 min={0}
-                                step={1}
                                 onValueChange={(val) => field.onChange(val[0])}
-                                className="w-full"
+                                step={1}
                               />
                             </div>
                           </FormControl>
@@ -341,25 +335,25 @@ export function CourseReviewForm({
                       name="contentQualityScore"
                       render={({ field }) => (
                         <FormItem>
-                          <div className="flex justify-between items-center">
+                          <div className="flex items-center justify-between">
                             <FormLabel>Content Quality Score</FormLabel>
-                            <span className="text-sm px-2 py-1 bg-muted rounded-md font-medium">
+                            <span className="rounded-md bg-muted px-2 py-1 font-medium text-sm">
                               {field.value || 75}%
                             </span>
                           </div>
                           <FormControl>
                             <div className="pt-2">
-                              <div className="flex justify-between mb-1 text-xs text-muted-foreground">
+                              <div className="mb-1 flex justify-between text-muted-foreground text-xs">
                                 <span>0%</span>
                                 <span>100%</span>
                               </div>
                               <Slider
+                                className="w-full"
                                 defaultValue={[field.value || 75]}
                                 max={100}
                                 min={0}
-                                step={1}
                                 onValueChange={(val) => field.onChange(val[0])}
-                                className="w-full"
+                                step={1}
                               />
                             </div>
                           </FormControl>
@@ -372,25 +366,25 @@ export function CourseReviewForm({
                       name="pedagogyQualityScore"
                       render={({ field }) => (
                         <FormItem>
-                          <div className="flex justify-between items-center">
+                          <div className="flex items-center justify-between">
                             <FormLabel>Pedagogy Quality Score</FormLabel>
-                            <span className="text-sm px-2 py-1 bg-muted rounded-md font-medium">
+                            <span className="rounded-md bg-muted px-2 py-1 font-medium text-sm">
                               {field.value || 75}%
                             </span>
                           </div>
                           <FormControl>
                             <div className="pt-2">
-                              <div className="flex justify-between mb-1 text-xs text-muted-foreground">
+                              <div className="mb-1 flex justify-between text-muted-foreground text-xs">
                                 <span>0%</span>
                                 <span>100%</span>
                               </div>
                               <Slider
+                                className="w-full"
                                 defaultValue={[field.value || 75]}
                                 max={100}
                                 min={0}
-                                step={1}
                                 onValueChange={(val) => field.onChange(val[0])}
-                                className="w-full"
+                                step={1}
                               />
                             </div>
                           </FormControl>
@@ -409,8 +403,8 @@ export function CourseReviewForm({
                       <FormLabel>Comments</FormLabel>
                       <FormControl>
                         <Textarea
-                          placeholder="Add any comments or feedback here..."
                           className="resize-y"
+                          placeholder="Add any comments or feedback here..."
                           {...field}
                         />
                       </FormControl>
@@ -420,9 +414,9 @@ export function CourseReviewForm({
                 />
 
                 <Button
-                  type="submit"
                   className="w-full"
                   disabled={isSubmitting || !canReview}
+                  type="submit"
                 >
                   {isSubmitting ? "Processing..." : "Submit Review"}
                 </Button>

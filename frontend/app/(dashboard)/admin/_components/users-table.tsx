@@ -1,20 +1,18 @@
 "use client";
 
-import * as React from "react";
-import { updateStatusAction } from "@/actions/update-status.action";
-import { User, UserRole, UserStatus } from "@prisma/client";
+import { type User, type UserRole, UserStatus } from "@prisma/client";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@radix-ui/react-dropdown-menu";
-import { type ColumnDef } from "@tanstack/react-table";
+import type { ColumnDef } from "@tanstack/react-table";
 import { Menu } from "lucide-react";
 import { toast } from "sonner";
-
-import { Button } from "@/components/ui/button";
+import { updateStatusAction } from "@/actions/update-status.action";
 import { DataTable } from "@/components/dashboard/data-table/data-table";
+import { Button } from "@/components/ui/button";
 
 interface UserWithRoleAndStatus extends User {
   role: UserRole;
@@ -47,8 +45,8 @@ export const columns: ColumnDef<UserWithRoleAndStatus>[] = [
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
-              variant="ghost"
               className="flex h-8 w-8 p-0 data-[state=open]:bg-muted"
+              variant="ghost"
             >
               <Menu className="h-4 w-4" />
               <span className="sr-only">Open menu</span>
@@ -78,6 +76,6 @@ export const columns: ColumnDef<UserWithRoleAndStatus>[] = [
   },
 ];
 
-export async function UsersTable({ users }) {
+export function UsersTable({ users }) {
   return <DataTable columns={columns} data={users} />;
 }

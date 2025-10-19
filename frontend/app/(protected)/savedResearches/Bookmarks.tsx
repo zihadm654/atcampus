@@ -2,12 +2,11 @@
 
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
-
-import { ResearchesPage } from "@/types/types";
-import kyInstance from "@/lib/ky";
 import InfiniteScrollContainer from "@/components/feed/InfiniteScrollContainer";
 import Research from "@/components/researches/Research";
 import ResearchLoadingSkeleton from "@/components/researches/ResearchesLoadingSkeleton";
+import kyInstance from "@/lib/ky";
+import type { ResearchesPage } from "@/types/types";
 
 export default function Bookmarks() {
   const {
@@ -23,7 +22,7 @@ export default function Bookmarks() {
       kyInstance
         .get(
           "/api/researches/savedResearches",
-          pageParam ? { searchParams: { cursor: pageParam } } : {},
+          pageParam ? { searchParams: { cursor: pageParam } } : {}
         )
         .json<ResearchesPage>(),
     initialPageParam: null as string | null,
@@ -38,7 +37,7 @@ export default function Bookmarks() {
 
   if (status === "success" && !researches.length && !hasNextPage) {
     return (
-      <p className="text-muted-foreground text-center">
+      <p className="text-center text-muted-foreground">
         You don&apos;t have any bookmarks yet.
       </p>
     );
@@ -46,7 +45,7 @@ export default function Bookmarks() {
 
   if (status === "error") {
     return (
-      <p className="text-destructive text-center">
+      <p className="text-center text-destructive">
         An error occurred while loading bookmarks.
       </p>
     );

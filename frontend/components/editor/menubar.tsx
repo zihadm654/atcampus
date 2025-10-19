@@ -1,6 +1,6 @@
 "use client";
 
-import { Editor } from "@tiptap/react";
+import type { Editor } from "@tiptap/react";
 import {
   AlignCenter,
   AlignLeft,
@@ -18,8 +18,6 @@ import {
   Strikethrough,
   Undo,
 } from "lucide-react";
-
-import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Toggle } from "@/components/ui/toggle";
 import {
@@ -28,6 +26,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
 
 interface MenuBarProps {
   editor: Editor | null;
@@ -46,20 +45,20 @@ export function MenuBar({ editor }: MenuBarProps) {
   };
 
   return (
-    <div className="border-border bg-card flex flex-wrap items-center gap-1 rounded-t-lg border p-2">
+    <div className="flex flex-wrap items-center gap-1 rounded-t-lg border border-border bg-card p-2">
       <TooltipProvider>
         <div className="flex flex-wrap gap-1">
           <Tooltip>
             <TooltipTrigger asChild>
               <Toggle
-                size="sm"
-                pressed={editor.isActive("bold")}
+                className={cn(
+                  editor.isActive("bold") && "bg-muted text-muted-foreground"
+                )}
                 onPressedChange={() =>
                   editor.chain().focus().toggleBold().run()
                 }
-                className={cn(
-                  editor.isActive("bold") && "bg-muted text-muted-foreground",
-                )}
+                pressed={editor.isActive("bold")}
+                size="sm"
               >
                 <Bold className="h-4 w-4" />
               </Toggle>
@@ -70,14 +69,14 @@ export function MenuBar({ editor }: MenuBarProps) {
           <Tooltip>
             <TooltipTrigger asChild>
               <Toggle
-                size="sm"
-                pressed={editor.isActive("italic")}
+                className={cn(
+                  editor.isActive("italic") && "bg-muted text-muted-foreground"
+                )}
                 onPressedChange={() =>
                   editor.chain().focus().toggleItalic().run()
                 }
-                className={cn(
-                  editor.isActive("italic") && "bg-muted text-muted-foreground",
-                )}
+                pressed={editor.isActive("italic")}
+                size="sm"
               >
                 <Italic className="h-4 w-4" />
               </Toggle>
@@ -88,14 +87,14 @@ export function MenuBar({ editor }: MenuBarProps) {
           <Tooltip>
             <TooltipTrigger asChild>
               <Toggle
-                size="sm"
-                pressed={editor.isActive("strike")}
+                className={cn(
+                  editor.isActive("strike") && "bg-muted text-muted-foreground"
+                )}
                 onPressedChange={() =>
                   editor.chain().focus().toggleStrike().run()
                 }
-                className={cn(
-                  editor.isActive("strike") && "bg-muted text-muted-foreground",
-                )}
+                pressed={editor.isActive("strike")}
+                size="sm"
               >
                 <Strikethrough className="h-4 w-4" />
               </Toggle>
@@ -106,14 +105,14 @@ export function MenuBar({ editor }: MenuBarProps) {
           <Tooltip>
             <TooltipTrigger asChild>
               <Toggle
-                size="sm"
-                pressed={editor.isActive("code")}
+                className={cn(
+                  editor.isActive("code") && "bg-muted text-muted-foreground"
+                )}
                 onPressedChange={() =>
                   editor.chain().focus().toggleCode().run()
                 }
-                className={cn(
-                  editor.isActive("code") && "bg-muted text-muted-foreground",
-                )}
+                pressed={editor.isActive("code")}
+                size="sm"
               >
                 <Code className="h-4 w-4" />
               </Toggle>
@@ -122,21 +121,21 @@ export function MenuBar({ editor }: MenuBarProps) {
           </Tooltip>
         </div>
 
-        <div className="bg-border mx-2 h-6 w-px" />
+        <div className="mx-2 h-6 w-px bg-border" />
 
         <div className="flex flex-wrap gap-1">
           <Tooltip>
             <TooltipTrigger asChild>
               <Toggle
-                size="sm"
-                pressed={editor.isActive("heading", { level: 1 })}
+                className={cn(
+                  editor.isActive("heading", { level: 1 }) &&
+                    "bg-muted text-muted-foreground"
+                )}
                 onPressedChange={() =>
                   editor.chain().focus().toggleHeading({ level: 1 }).run()
                 }
-                className={cn(
-                  editor.isActive("heading", { level: 1 }) &&
-                    "bg-muted text-muted-foreground",
-                )}
+                pressed={editor.isActive("heading", { level: 1 })}
+                size="sm"
               >
                 <Heading1 className="h-4 w-4" />
               </Toggle>
@@ -147,15 +146,15 @@ export function MenuBar({ editor }: MenuBarProps) {
           <Tooltip>
             <TooltipTrigger asChild>
               <Toggle
-                size="sm"
-                pressed={editor.isActive("heading", { level: 2 })}
+                className={cn(
+                  editor.isActive("heading", { level: 2 }) &&
+                    "bg-muted text-muted-foreground"
+                )}
                 onPressedChange={() =>
                   editor.chain().focus().toggleHeading({ level: 2 }).run()
                 }
-                className={cn(
-                  editor.isActive("heading", { level: 2 }) &&
-                    "bg-muted text-muted-foreground",
-                )}
+                pressed={editor.isActive("heading", { level: 2 })}
+                size="sm"
               >
                 <Heading2 className="h-4 w-4" />
               </Toggle>
@@ -166,15 +165,15 @@ export function MenuBar({ editor }: MenuBarProps) {
           <Tooltip>
             <TooltipTrigger asChild>
               <Toggle
-                size="sm"
-                pressed={editor.isActive("heading", { level: 3 })}
+                className={cn(
+                  editor.isActive("heading", { level: 3 }) &&
+                    "bg-muted text-muted-foreground"
+                )}
                 onPressedChange={() =>
                   editor.chain().focus().toggleHeading({ level: 3 }).run()
                 }
-                className={cn(
-                  editor.isActive("heading", { level: 3 }) &&
-                    "bg-muted text-muted-foreground",
-                )}
+                pressed={editor.isActive("heading", { level: 3 })}
+                size="sm"
               >
                 <Heading3 className="h-4 w-4" />
               </Toggle>
@@ -183,21 +182,21 @@ export function MenuBar({ editor }: MenuBarProps) {
           </Tooltip>
         </div>
 
-        <div className="bg-border mx-2 h-6 w-px" />
+        <div className="mx-2 h-6 w-px bg-border" />
 
         <div className="flex flex-wrap gap-1">
           <Tooltip>
             <TooltipTrigger asChild>
               <Toggle
-                size="sm"
-                pressed={editor.isActive("bulletList")}
+                className={cn(
+                  editor.isActive("bulletList") &&
+                    "bg-muted text-muted-foreground"
+                )}
                 onPressedChange={() =>
                   editor.chain().focus().toggleBulletList().run()
                 }
-                className={cn(
-                  editor.isActive("bulletList") &&
-                    "bg-muted text-muted-foreground",
-                )}
+                pressed={editor.isActive("bulletList")}
+                size="sm"
               >
                 <List className="h-4 w-4" />
               </Toggle>
@@ -208,15 +207,15 @@ export function MenuBar({ editor }: MenuBarProps) {
           <Tooltip>
             <TooltipTrigger asChild>
               <Toggle
-                size="sm"
-                pressed={editor.isActive("orderedList")}
+                className={cn(
+                  editor.isActive("orderedList") &&
+                    "bg-muted text-muted-foreground"
+                )}
                 onPressedChange={() =>
                   editor.chain().focus().toggleOrderedList().run()
                 }
-                className={cn(
-                  editor.isActive("orderedList") &&
-                    "bg-muted text-muted-foreground",
-                )}
+                pressed={editor.isActive("orderedList")}
+                size="sm"
               >
                 <ListOrdered className="h-4 w-4" />
               </Toggle>
@@ -225,21 +224,21 @@ export function MenuBar({ editor }: MenuBarProps) {
           </Tooltip>
         </div>
 
-        <div className="bg-border mx-2 h-6 w-px" />
+        <div className="mx-2 h-6 w-px bg-border" />
 
         <div className="flex flex-wrap gap-1">
           <Tooltip>
             <TooltipTrigger asChild>
               <Toggle
-                size="sm"
-                pressed={editor.isActive({ textAlign: "left" })}
+                className={cn(
+                  editor.isActive({ textAlign: "left" }) &&
+                    "bg-muted text-muted-foreground"
+                )}
                 onPressedChange={() =>
                   editor.chain().focus().setTextAlign("left").run()
                 }
-                className={cn(
-                  editor.isActive({ textAlign: "left" }) &&
-                    "bg-muted text-muted-foreground",
-                )}
+                pressed={editor.isActive({ textAlign: "left" })}
+                size="sm"
               >
                 <AlignLeft className="h-4 w-4" />
               </Toggle>
@@ -250,15 +249,15 @@ export function MenuBar({ editor }: MenuBarProps) {
           <Tooltip>
             <TooltipTrigger asChild>
               <Toggle
-                size="sm"
-                pressed={editor.isActive({ textAlign: "center" })}
+                className={cn(
+                  editor.isActive({ textAlign: "center" }) &&
+                    "bg-muted text-muted-foreground"
+                )}
                 onPressedChange={() =>
                   editor.chain().focus().setTextAlign("center").run()
                 }
-                className={cn(
-                  editor.isActive({ textAlign: "center" }) &&
-                    "bg-muted text-muted-foreground",
-                )}
+                pressed={editor.isActive({ textAlign: "center" })}
+                size="sm"
               >
                 <AlignCenter className="h-4 w-4" />
               </Toggle>
@@ -269,15 +268,15 @@ export function MenuBar({ editor }: MenuBarProps) {
           <Tooltip>
             <TooltipTrigger asChild>
               <Toggle
-                size="sm"
-                pressed={editor.isActive({ textAlign: "right" })}
+                className={cn(
+                  editor.isActive({ textAlign: "right" }) &&
+                    "bg-muted text-muted-foreground"
+                )}
                 onPressedChange={() =>
                   editor.chain().focus().setTextAlign("right").run()
                 }
-                className={cn(
-                  editor.isActive({ textAlign: "right" }) &&
-                    "bg-muted text-muted-foreground",
-                )}
+                pressed={editor.isActive({ textAlign: "right" })}
+                size="sm"
               >
                 <AlignRight className="h-4 w-4" />
               </Toggle>
@@ -286,19 +285,19 @@ export function MenuBar({ editor }: MenuBarProps) {
           </Tooltip>
         </div>
 
-        <div className="bg-border mx-2 h-6 w-px" />
+        <div className="mx-2 h-6 w-px bg-border" />
 
         <div className="flex flex-wrap gap-1">
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
+                className={cn(
+                  editor.isActive("link") && "bg-muted text-muted-foreground"
+                )}
+                onClick={setLink}
                 size="sm"
                 type="button"
                 variant={editor.isActive("link") ? "secondary" : "ghost"}
-                onClick={setLink}
-                className={cn(
-                  editor.isActive("link") && "bg-muted text-muted-foreground",
-                )}
               >
                 <Link className="h-4 w-4" />
               </Button>
@@ -307,17 +306,17 @@ export function MenuBar({ editor }: MenuBarProps) {
           </Tooltip>
         </div>
 
-        <div className="bg-border mx-2 h-6 w-px" />
+        <div className="mx-2 h-6 w-px bg-border" />
 
         <div className="flex flex-wrap gap-1">
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
-                size="sm"
-                variant="ghost"
-                type="button"
-                onClick={() => editor.chain().focus().undo().run()}
                 disabled={!editor.can().undo()}
+                onClick={() => editor.chain().focus().undo().run()}
+                size="sm"
+                type="button"
+                variant="ghost"
               >
                 <Undo className="h-4 w-4" />
               </Button>
@@ -328,11 +327,11 @@ export function MenuBar({ editor }: MenuBarProps) {
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
+                disabled={!editor.can().redo()}
+                onClick={() => editor.chain().focus().redo().run()}
                 size="sm"
                 type="button"
                 variant="ghost"
-                onClick={() => editor.chain().focus().redo().run()}
-                disabled={!editor.can().redo()}
               >
                 <Redo className="h-4 w-4" />
               </Button>

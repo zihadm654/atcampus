@@ -1,11 +1,10 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-
-import { getResearchDataInclude } from "@/types/types";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/session";
-import { researchSchema, TResearch } from "@/lib/validations/research";
+import { researchSchema, type TResearch } from "@/lib/validations/research";
+import { getResearchDataInclude } from "@/types/types";
 
 export async function deleteResearch(id: string) {
   const user = await getCurrentUser();

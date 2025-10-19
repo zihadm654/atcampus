@@ -1,9 +1,8 @@
 import Image from "next/image";
-import { InfoLdg } from "@/types";
-
-import { cn } from "@/lib/utils";
 import { Icons } from "@/components/shared/icons";
 import MaxWidthWrapper from "@/components/shared/max-width-wrapper";
+import { cn } from "@/lib/utils";
+import type { InfoLdg } from "@/types";
 
 interface InfoLandingProps {
   data: InfoLdg;
@@ -30,10 +29,10 @@ export default function InfoLanding({
               return (
                 <div className="relative pl-8" key={index}>
                   <dt className="font-semibold">
-                    <Icon className="absolute left-0 top-1 size-5 stroke-purple-700" />
+                    <Icon className="absolute top-1 left-0 size-5 stroke-purple-700" />
                     <span>{item.title}</span>
                   </dt>
-                  <dd className="text-sm text-muted-foreground">
+                  <dd className="text-muted-foreground text-sm">
                     {item.description}
                   </dd>
                 </div>
@@ -43,18 +42,18 @@ export default function InfoLanding({
         </div>
         <div
           className={cn(
-            "overflow-hidden rounded-xl border lg:-m-4",
-            reverse ? "order-1" : "order-2",
+            "lg:-m-4 overflow-hidden rounded-xl border",
+            reverse ? "order-1" : "order-2"
           )}
         >
           <div className="aspect-video">
             <Image
-              className="size-full object-cover object-center"
-              src={data.image}
               alt={data.title}
-              width={1000}
+              className="size-full object-cover object-center"
               height={500}
               priority={true}
+              src={data.image}
+              width={1000}
             />
           </div>
         </div>

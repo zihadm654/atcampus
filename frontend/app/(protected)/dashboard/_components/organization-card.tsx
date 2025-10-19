@@ -1,19 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import { ChevronDownIcon, Loader2, MailPlus, PlusIcon } from "lucide-react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { useQuery } from "@tanstack/react-query";
-import { z } from "zod";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-
-import type { ActiveOrganization, Session } from "@/types/auth-types";
-import {
-  organization,
-  useListOrganizations,
-  useSession,
-} from "@/lib/auth-client";
+import { AvatarInput } from "@/app/(profile)/[username]/_components/EditProfileDialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -36,7 +27,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -44,8 +34,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { AvatarInput } from "@/app/(profile)/[username]/_components/EditProfileDialog";
-import { motion, AnimatePresence } from "framer-motion";
+import {
+  organization,
+  useListOrganizations,
+  useSession,
+} from "@/lib/auth-client";
+import type { ActiveOrganization, Session } from "@/types/auth-types";
 import { useAssignFacultyToMemberMutation } from "./facultyMutations";
 
 // Add this interface for Faculty
@@ -73,7 +67,8 @@ interface ExtendedMember {
 }
 
 // Extended ActiveOrganization type with proper member typing
-interface ExtendedActiveOrganization extends Omit<ActiveOrganization, 'members'> {
+interface ExtendedActiveOrganization
+  extends Omit<ActiveOrganization, "members"> {
   members: ExtendedMember[];
 }
 
@@ -82,9 +77,15 @@ export function OrganizationCard(props: {
   activeOrganization: ActiveOrganization | null;
 }) {
   const organizations = useListOrganizations();
-  const [optimisticOrg, setOptimisticOrg] = useState<ExtendedActiveOrganization | null>(
-    props.activeOrganization ? { ...props.activeOrganization, members: props.activeOrganization.members as ExtendedMember[] } : null
-  );
+  const [optimisticOrg, setOptimisticOrg] =
+    useState<ExtendedActiveOrganization | null>(
+      props.activeOrganization
+        ? {
+            ...props.activeOrganization,
+            members: props.activeOrganization.members as ExtendedMember[],
+          }
+        : null
+    );
   const [isRevoking, setIsRevoking] = useState<string[]>([]);
   const [faculties, setFaculties] = useState<Faculty[]>([]);
   const [loadingFaculties, setLoadingFaculties] = useState(false);
@@ -112,7 +113,9 @@ export function OrganizationCard(props: {
   const fetchFaculties = async (organizationId: string) => {
     setLoadingFaculties(true);
     try {
-      const response = await fetch(`/api/faculties?organizationId=${organizationId}`);
+      const response = await fetch(
+        `/api/faculties?organizationId=${organizationId}`
+      );
       if (response.ok) {
         const data = await response.json();
         setFaculties(data);
@@ -170,7 +173,11 @@ export function OrganizationCard(props: {
                       organizationId: org.id,
                     });
                     if (data) {
-                      setOptimisticOrg({ ...data, members: data.members as ExtendedMember[], id: data.id || '' });
+                      setOptimisticOrg({
+                        ...data,
+                        members: data.members as ExtendedMember[],
+                        id: data.id || "",
+                      });
                     }
                   }}
                 >
@@ -210,10 +217,10 @@ export function OrganizationCard(props: {
             <div className="flex flex-col gap-2">
               {optimisticOrg?.members.map((member) => (
                 <div
-                  className="flex items-center justify-between flex-wrap"
+                  className="flex flex-wrap items-center justify-between"
                   key={member.id}
                 >
-                  <div className="flex items-center flex-wrap gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
                     <Avatar className="h-9 w-9 sm:flex">
                       <AvatarImage
                         className="object-cover"
@@ -235,19 +242,20 @@ export function OrganizationCard(props: {
                       )}
                     </div>
                   </div>
-                  <div className="flex items-center flex-wrap gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
                     {(currentMember?.role === "owner" ||
-                      currentMember?.role === "admin") && member.role === "member" && (
+                      currentMember?.role === "admin") &&
+                      member.role === "member" && (
                         <Select
-                          value={member.facultyId || ""}
+                          disabled={assignFacultyMutation.isPending}
                           onValueChange={(value) =>
                             assignFacultyMutation.mutate({
                               memberId: member.id,
                               facultyId: value === "none" ? null : value,
-                              organizationId: optimisticOrg.id
+                              organizationId: optimisticOrg.id,
                             })
                           }
-                          disabled={assignFacultyMutation.isPending}
+                          value={member.facultyId || ""}
                         >
                           <SelectTrigger className="w-[120px]">
                             <SelectValue placeholder="Assign Faculty" />
@@ -307,13 +315,13 @@ export function OrganizationCard(props: {
                   .filter((invitation) => invitation.status === "pending")
                   .map((invitation) => (
                     <motion.div
-                      className="flex items-center justify-between"
-                      key={invitation.id}
-                      variants={inviteVariants}
-                      initial="hidden"
                       animate="visible"
+                      className="flex items-center justify-between"
                       exit="exit"
+                      initial="hidden"
+                      key={invitation.id}
                       layout
+                      variants={inviteVariants}
                     >
                       <div>
                         <p className="text-sm">{invitation.email}</p>
@@ -383,10 +391,10 @@ export function OrganizationCard(props: {
               </AnimatePresence>
               {optimisticOrg?.invitations.length === 0 && (
                 <motion.p
-                  className="text-muted-foreground text-sm"
-                  initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
+                  className="text-muted-foreground text-sm"
                   exit={{ opacity: 0 }}
+                  initial={{ opacity: 0 }}
                 >
                   No Active Invitations
                 </motion.p>
@@ -402,17 +410,18 @@ export function OrganizationCard(props: {
         <div className="mt-4 flex w-full justify-end gap-2">
           <div>
             <div>
-              {optimisticOrg?.id && (
-                <>
-                  {(currentMember?.role === "owner" ||
-                    currentMember?.role === "admin") && (
-                      <InviteMemberDialog
-                        optimisticOrg={optimisticOrg as unknown as ActiveOrganization}
-                        setOptimisticOrg={(org) => setOptimisticOrg(org as ExtendedActiveOrganization)}
-                      />
-                    )}
-                </>
-              )}
+              {optimisticOrg?.id &&
+                (currentMember?.role === "owner" ||
+                  currentMember?.role === "admin") && (
+                  <InviteMemberDialog
+                    optimisticOrg={
+                      optimisticOrg as unknown as ActiveOrganization
+                    }
+                    setOptimisticOrg={(org) =>
+                      setOptimisticOrg(org as ExtendedActiveOrganization)
+                    }
+                  />
+                )}
             </div>
           </div>
         </div>
@@ -432,8 +441,7 @@ function CreateOrganizationDialog({ currentMember }) {
   const [avatarPreviewUrl, setAvatarPreviewUrl] = useState<string>("");
 
   // Defensive: handle undefined currentMember and currentMember.user
-  const userImage =
-    currentMember && currentMember.user ? currentMember.user.image : undefined;
+  const userImage = currentMember.user ? currentMember.user.image : undefined;
 
   useEffect(() => {
     if (!isSlugEdited) {
@@ -447,7 +455,8 @@ function CreateOrganizationDialog({ currentMember }) {
       const url = URL.createObjectURL(croppedAvatar);
       setAvatarPreviewUrl(url);
       return () => URL.revokeObjectURL(url);
-    } else if (userImage) {
+    }
+    if (userImage) {
       setAvatarPreviewUrl(userImage);
     } else {
       setAvatarPreviewUrl("");
@@ -501,8 +510,8 @@ function CreateOrganizationDialog({ currentMember }) {
           <div className="space-y-1.5">
             <Label>Avatar</Label>
             <AvatarInput
-              src={avatarPreviewUrl}
               onImageCropped={setCroppedAvatar}
+              src={avatarPreviewUrl}
             />
           </div>
         </div>
@@ -513,8 +522,8 @@ function CreateOrganizationDialog({ currentMember }) {
               setLoading(true);
               await organization.create(
                 {
-                  name: name,
-                  slug: slug,
+                  name,
+                  slug,
                   logo: logo || undefined,
                   keepCurrentActiveOrganization: false,
                 },
@@ -557,14 +566,14 @@ function InviteMemberDialog({
   const [role, setRole] = useState("member");
   const [loading, setLoading] = useState(false);
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog onOpenChange={setOpen} open={open}>
       <DialogTrigger asChild>
-        <Button size="sm" className="w-full gap-2" variant="secondary">
+        <Button className="w-full gap-2" size="sm" variant="secondary">
           <MailPlus size={16} />
           <p>Invite Member</p>
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px] w-11/12">
+      <DialogContent className="w-11/12 sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Invite Member</DialogTitle>
           <DialogDescription>
@@ -574,12 +583,12 @@ function InviteMemberDialog({
         <div className="flex flex-col gap-2">
           <Label>Email</Label>
           <Input
+            onChange={(e) => setEmail(e.target.value)}
             placeholder="Email"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
           />
           <Label>Role</Label>
-          <Select value={role} onValueChange={setRole}>
+          <Select onValueChange={setRole} value={role}>
             <SelectTrigger>
               <SelectValue placeholder="Select a role" />
             </SelectTrigger>
@@ -595,7 +604,7 @@ function InviteMemberDialog({
               disabled={loading}
               onClick={async () => {
                 const invite = organization.inviteMember({
-                  email: email,
+                  email,
                   role: role as "member",
                   fetchOptions: {
                     throw: true,

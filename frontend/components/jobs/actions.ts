@@ -1,12 +1,11 @@
 "use server";
 
+import type { ExperienceLevel, JobType } from "@prisma/client";
 import { revalidatePath } from "next/cache";
-
-import { getJobDataInclude } from "@/types/types";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/session";
-import { jobSchema, TJob } from "@/lib/validations/job";
-import { ExperienceLevel, JobType } from "@prisma/client";
+import { jobSchema, type TJob } from "@/lib/validations/job";
+import { getJobDataInclude } from "@/types/types";
 
 export async function deleteJob(id: string) {
   const user = await getCurrentUser();

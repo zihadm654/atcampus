@@ -1,13 +1,12 @@
 "use client";
+import { toast } from "sonner";
 import { applyJob } from "@/actions/appllication";
 import { Button } from "@/components/ui/button";
-import React from "react";
-import { toast } from "sonner";
 
 const Client = ({ job, user }: any) => {
   const handleApply = async () => {
     const res = await applyJob(job.id);
-    if (!res.success) {
+    if (res.success) {
       toast(res.message);
     } else {
       toast(res.message);
@@ -15,11 +14,13 @@ const Client = ({ job, user }: any) => {
   };
   return (
     <Button
+      disabled={
+        job.application?.some(
+          (application) => application.applicantId === user.id
+        ) || user.role !== "STUDENT"
+      }
       onClick={handleApply}
       variant="default"
-      disabled={job.application?.some(
-        (application) => application.applicantId === user.id
-      ) || user.role !== "STUDENT"}
     >
       {job.application?.some(
         (application) => application.applicantId === user.id

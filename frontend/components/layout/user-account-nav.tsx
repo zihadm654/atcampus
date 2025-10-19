@@ -1,8 +1,5 @@
 "use client";
 
-import { useState } from "react";
-import Link from "next/link";
-import { redirect } from "next/navigation";
 import {
   Check,
   LayoutDashboard,
@@ -13,12 +10,13 @@ import {
   Settings,
   Sun,
 } from "lucide-react";
+import Link from "next/link";
+import { redirect } from "next/navigation";
 import { useTheme } from "next-themes";
+import { useState } from "react";
 import { toast } from "sonner";
 import { Drawer } from "vaul";
-
-import { signOut, useSession } from "@/lib/auth-client";
-import { useMediaQuery } from "@/hooks/use-media-query";
+import { UserAvatar } from "@/components/shared/user-avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -30,7 +28,8 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { UserAvatar } from "@/components/shared/user-avatar";
+import { useMediaQuery } from "@/hooks/use-media-query";
+import { signOut, useSession } from "@/lib/auth-client";
 
 export function UserAccountNav() {
   const { data: session } = useSession();
@@ -69,83 +68,83 @@ export function UserAccountNav() {
 
   if (!user)
     return (
-      <div className="bg-muted size-8 animate-pulse rounded-full border" />
+      <div className="size-8 animate-pulse rounded-full border bg-muted" />
     );
 
   if (isMobile) {
     return (
-      <Drawer.Root open={open} onClose={closeDrawer}>
+      <Drawer.Root onClose={closeDrawer} open={open}>
         <Drawer.Trigger onClick={() => setOpen(true)}>
           <UserAvatar
+            className="size-9 border"
             user={{
               name: user.name as string,
               username: user.username || null,
               image: user.image || null,
             }}
-            className="size-9 border"
           />
         </Drawer.Trigger>
         <Drawer.Portal>
           <Drawer.Overlay
-            className="bg-background/80 fixed inset-0 z-40 h-full backdrop-blur-xs"
+            className="fixed inset-0 z-40 h-full bg-background/80 backdrop-blur-xs"
             onClick={closeDrawer}
           />
-          <Drawer.Content className="bg-background fixed inset-x-0 bottom-0 z-50 mt-24 overflow-hidden rounded-t-[10px] border px-3 text-sm">
+          <Drawer.Content className="fixed inset-x-0 bottom-0 z-50 mt-24 overflow-hidden rounded-t-[10px] border bg-background px-3 text-sm">
             <div className="sticky top-0 z-20 flex w-full items-center justify-center bg-inherit">
-              <div className="bg-muted-foreground/20 my-3 h-1.5 w-16 rounded-full" />
+              <div className="my-3 h-1.5 w-16 rounded-full bg-muted-foreground/20" />
             </div>
 
             <div className="flex items-center justify-start gap-2 p-2">
               <div className="flex flex-col">
                 {user.name && <p className="font-medium">{user.name}</p>}
                 {user.email && (
-                  <p className="text-muted-foreground w-[200px] truncate">
+                  <p className="w-[200px] truncate text-muted-foreground">
                     {user?.email}
                   </p>
                 )}
               </div>
             </div>
 
-            <ul role="list" className="text-muted-foreground mt-1 mb-14 w-full">
+            <ul className="mt-1 mb-14 w-full text-muted-foreground">
               {user.role === "ADMIN" ? (
-                <li className="text-foreground hover:bg-muted rounded-lg">
+                <li className="rounded-lg text-foreground hover:bg-muted">
                   <Link
+                    className="flex w-full items-center gap-3 px-2.5 py-2"
                     href="/admin"
                     onClick={closeDrawer}
-                    className="flex w-full items-center gap-3 px-2.5 py-2"
                   >
                     <Lock className="size-4" />
                     <p className="text-sm">Admin</p>
                   </Link>
                 </li>
               ) : (
-                <li className="text-foreground hover:bg-muted rounded-lg">
+                <li className="rounded-lg text-foreground hover:bg-muted">
                   <Link
+                    className="flex w-full items-center gap-3 px-2.5 py-2"
                     href="/dashboard"
                     onClick={closeDrawer}
-                    className="flex w-full items-center gap-3 px-2.5 py-2"
                   >
                     <Lock className="size-4" />
                     <p className="text-sm">Dashboard</p>
                   </Link>
                 </li>
               )}
-              <li className="text-foreground hover:bg-muted rounded-lg">
+              <li className="rounded-lg text-foreground hover:bg-muted">
                 <Link
+                  className="flex w-full items-center gap-3 px-2.5 py-2"
                   href={`/${user.username}`}
                   onClick={closeDrawer}
-                  className="flex w-full items-center gap-3 px-2.5 py-2"
                 >
                   <LayoutDashboard className="size-4" />
                   <p className="text-sm">Profile</p>
                 </Link>
               </li>
 
-              <li className="text-foreground hover:bg-muted rounded-lg">
+              <li className="rounded-lg text-foreground hover:bg-muted">
                 <Link
+                  className="flex w-full items-center gap-3 px-2.5 py-2"
                   href="/dashboard/settings"
                   onClick={closeDrawer}
-                  className="flex w-full items-center gap-3 px-2.5 py-2"
                 >
                   <Settings className="size-4" />
                   <p className="text-sm">Settings</p>
@@ -153,7 +152,7 @@ export function UserAccountNav() {
               </li>
 
               <li
-                className="text-foreground hover:bg-muted rounded-lg"
+                className="rounded-lg text-foreground hover:bg-muted"
                 onClick={() => {
                   handleClick();
                 }}
@@ -172,15 +171,15 @@ export function UserAccountNav() {
   }
 
   return (
-    <DropdownMenu open={open} onOpenChange={setOpen}>
+    <DropdownMenu onOpenChange={setOpen} open={open}>
       <DropdownMenuTrigger>
         <UserAvatar
+          className="size-8 border"
           user={{
             name: user.name as string,
             username: user.displayUsername || null,
             image: user.image ?? null,
           }}
-          className="size-8 border"
         />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
@@ -188,7 +187,7 @@ export function UserAccountNav() {
           <div className="flex flex-col space-y-1 leading-none">
             {user.name && <p className="font-medium">{user.name}</p>}
             {user.email && (
-              <p className="text-muted-foreground w-[200px] truncate text-sm">
+              <p className="w-[200px] truncate text-muted-foreground text-sm">
                 {user?.email}
               </p>
             )}
@@ -198,14 +197,14 @@ export function UserAccountNav() {
 
         {user.role === "ADMIN" ? (
           <DropdownMenuItem asChild>
-            <Link href="/admin" className="flex items-center space-x-2.5">
+            <Link className="flex items-center space-x-2.5" href="/admin">
               <Lock className="size-4" />
               <p className="text-sm">Admin</p>
             </Link>
           </DropdownMenuItem>
         ) : (
           <DropdownMenuItem asChild>
-            <Link href="/dashboard" className="flex items-center space-x-2.5">
+            <Link className="flex items-center space-x-2.5" href="/dashboard">
               <Lock className="size-4" />
               <p className="text-sm">Dashboard</p>
             </Link>
@@ -213,8 +212,8 @@ export function UserAccountNav() {
         )}
         <DropdownMenuItem asChild>
           <Link
-            href={`/${user.username}`}
             className="flex items-center space-x-2.5"
+            href={`/${user.username}`}
           >
             <LayoutDashboard className="size-4" />
             <p className="text-sm">Profile</p>
@@ -223,8 +222,8 @@ export function UserAccountNav() {
 
         <DropdownMenuItem asChild>
           <Link
-            href="/dashboard/settings"
             className="flex items-center space-x-2.5"
+            href="/dashboard/settings"
           >
             <Settings className="size-4" />
             <p className="text-sm">Settings</p>

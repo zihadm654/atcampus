@@ -1,13 +1,12 @@
 "use server";
 
+import { CourseStatus } from "@prisma/client";
 import { revalidatePath } from "next/cache";
-
-import { getCourseDataInclude } from "@/types/types";
+import { auditCourseAction } from "@/lib/audit";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/session";
-import { courseSchema, TCourse } from "@/lib/validations/course";
-import { CourseStatus } from "@prisma/client";
-import { auditCourseAction } from "@/lib/audit";
+import { courseSchema, type TCourse } from "@/lib/validations/course";
+import { getCourseDataInclude } from "@/types/types";
 
 export async function submitCourseForApproval(courseId: string) {
   try {
@@ -54,13 +53,17 @@ export async function submitCourseForApproval(courseId: string) {
     });
 
     if (!professorMember) {
-      throw new Error("You must be a professor in this faculty to submit courses for approval");
+      throw new Error(
+        "You must be a professor in this faculty to submit courses for approval"
+      );
     }
 
     // Check course status
-    if (course.status !== CourseStatus.DRAFT &&
+    if (
+      course.status !== CourseStatus.DRAFT &&
       course.status !== CourseStatus.REJECTED &&
-      course.status !== CourseStatus.NEEDS_REVISION) {
+      course.status !== CourseStatus.NEEDS_REVISION
+    ) {
       // If the course is already UNDER_REVIEW, we still need to check if there's an approval record
       if (course.status === CourseStatus.UNDER_REVIEW) {
         // Check for existing pending approval
@@ -76,7 +79,9 @@ export async function submitCourseForApproval(courseId: string) {
         }
         // If there's no existing approval record, we can proceed to create one
       } else {
-        throw new Error("Only draft, rejected, or courses needing revision can be submitted for approval");
+        throw new Error(
+          "Only draft, rejected, or courses needing revision can be submitted for approval"
+        );
       }
     } else {
       // Check for existing pending approval (for DRAFT, REJECTED, NEEDS_REVISION courses)
@@ -96,7 +101,9 @@ export async function submitCourseForApproval(courseId: string) {
     const institutionUserId = course.faculty.school.institutionId;
 
     if (!institutionUserId) {
-      throw new Error("The course's school is not associated with an institution user.");
+      throw new Error(
+        "The course's school is not associated with an institution user."
+      );
     }
 
     const institutionReviewer = await prisma.member.findFirst({
@@ -105,7 +112,7 @@ export async function submitCourseForApproval(courseId: string) {
         role: { in: ["owner", "admin"] },
         user: {
           status: "ACTIVE",
-          role: "INSTITUTION"
+          role: "INSTITUTION",
         },
       },
       include: {
@@ -114,7 +121,9 @@ export async function submitCourseForApproval(courseId: string) {
     });
 
     if (!institutionReviewer) {
-      throw new Error("No institution administrator available. Please contact your institution.");
+      throw new Error(
+        "No institution administrator available. Please contact your institution."
+      );
     }
 
     const result = await prisma.$transaction(async (tx) => {
@@ -179,7 +188,7 @@ export async function deleteCourse(id: string) {
     where: { id },
     include: {
       instructor: true,
-    }
+    },
   });
 
   if (!course) throw new Error("Course not found");
@@ -257,14 +266,14 @@ export async function createCourse(values: TCourse) {
       const professorMember = await prisma.member.findFirst({
         where: {
           userId: user.id,
-          facultyId: facultyId,
+          facultyId,
           role: "member",
         },
       });
 
       if (!professorMember) {
         throw new Error(
-          "You must be a professor in the selected faculty to create courses",
+          "You must be a professor in the selected faculty to create courses"
         );
       }
 
@@ -284,7 +293,7 @@ export async function createCourse(values: TCourse) {
         course.id,
         {},
         { status: validatedFields.data.status },
-        "Course created",
+        "Course created"
       );
 
       // If the intention is to submit for approval immediately
@@ -307,8 +316,13 @@ export async function createCourse(values: TCourse) {
       }
 
       revalidatePath("/courses/my-courses");
-      return { success: true, data: course, message: "Course saved as a draft." };
-    } else if (user.role === "INSTITUTION") {
+      return {
+        success: true,
+        data: course,
+        message: "Course saved as a draft.",
+      };
+    }
+    if (user.role === "INSTITUTION") {
       const institutionId = faculty.school.institutionId;
 
       if (!institutionId) {
@@ -324,7 +338,7 @@ export async function createCourse(values: TCourse) {
 
       if (!isInstitutionAdmin) {
         throw new Error(
-          "You must be an administrator of this institution to create courses",
+          "You must be an administrator of this institution to create courses"
         );
       }
 
@@ -333,7 +347,8 @@ export async function createCourse(values: TCourse) {
         data: {
           ...validatedFields.data,
           instructorId: user.id,
-          status: validatedFields.data.status as CourseStatus || CourseStatus.DRAFT
+          status:
+            (validatedFields.data.status as CourseStatus) || CourseStatus.DRAFT,
         },
         include: getCourseDataInclude(user.id),
       });
@@ -343,16 +358,19 @@ export async function createCourse(values: TCourse) {
         course.id,
         {},
         { status: validatedFields.data.status },
-        "Course created and published by institution admin",
+        "Course created and published by institution admin"
       );
 
       revalidatePath("/courses");
-      return { success: true, data: course, message: "Course created and published." };
-    } else {
-      throw new Error(
-        "Only professors and institution administrators can create courses",
-      );
+      return {
+        success: true,
+        data: course,
+        message: "Course created and published.",
+      };
     }
+    throw new Error(
+      "Only professors and institution administrators can create courses"
+    );
   } catch (error) {
     console.error(error);
     return { success: false, error: (error as Error).message };
@@ -366,9 +384,7 @@ export async function getInstructorCourses() {
 
   const courses = await prisma.course.findMany({
     where: {
-      OR: [
-        { instructorId: user.id },
-      ]
+      OR: [{ instructorId: user.id }],
     },
     include: {
       faculty: {
@@ -388,7 +404,11 @@ export async function getInstructorCourses() {
   return courses;
 }
 
-export async function reviewCourse(courseId: string, decision: CourseStatus, comments?: string) {
+export async function reviewCourse(
+  courseId: string,
+  decision: CourseStatus,
+  comments?: string
+) {
   try {
     const user = await getCurrentUser();
 
@@ -428,7 +448,9 @@ export async function reviewCourse(courseId: string, decision: CourseStatus, com
     const institutionId = course.faculty.school.institutionId;
 
     if (!institutionId) {
-      throw new Error("The course's school is not associated with an organization.");
+      throw new Error(
+        "The course's school is not associated with an organization."
+      );
     }
 
     // Verify reviewer is from the same institution
@@ -440,7 +462,9 @@ export async function reviewCourse(courseId: string, decision: CourseStatus, com
     });
 
     if (!isInstitutionAdmin) {
-      throw new Error("You must be an administrator of this institution to review courses");
+      throw new Error(
+        "You must be an administrator of this institution to review courses"
+      );
     }
 
     if (course.status !== CourseStatus.UNDER_REVIEW) {
@@ -503,12 +527,15 @@ export async function reviewCourse(courseId: string, decision: CourseStatus, com
 
     // Create audit log
     await auditCourseAction(
-      decision === CourseStatus.PUBLISHED ? "APPROVE" :
-        decision === CourseStatus.REJECTED ? "REJECT" : "REQUEST_REVISION",
+      decision === CourseStatus.PUBLISHED
+        ? "APPROVE"
+        : decision === CourseStatus.REJECTED
+          ? "REJECT"
+          : "REQUEST_REVISION",
       courseId,
       { status: CourseStatus.UNDER_REVIEW },
       { status: newStatus },
-      `Course ${decision.toLowerCase()}${comments ? ": " + comments : ""}`,
+      `Course ${decision.toLowerCase()}${comments ? ": " + comments : ""}`
     );
 
     revalidatePath("/courses");
@@ -571,26 +598,38 @@ export async function updateCourse(values: TCourse, courseId: string) {
         id: courseId,
         OR: [
           { instructorId: user.id },
-          { faculty: { school: { institution: { members: { some: { userId: user.id, role: "member" } } } } } }
-        ]
+          {
+            faculty: {
+              school: {
+                institution: {
+                  members: { some: { userId: user.id, role: "member" } },
+                },
+              },
+            },
+          },
+        ],
       },
     });
 
     if (!existingCourse) {
-      throw new Error("Course not found or you don't have permission to edit it");
+      throw new Error(
+        "Course not found or you don't have permission to edit it"
+      );
     }
 
     // For professors, ensure they can't change the status to published or approved directly
     const updateData: any = {
       ...validatedFields.data,
-      status: user.role === "PROFESSOR" &&
-        (existingCourse.status === CourseStatus.PUBLISHED)
-        ? existingCourse.status : validatedFields.data.status,
+      status:
+        user.role === "PROFESSOR" &&
+        existingCourse.status === CourseStatus.PUBLISHED
+          ? existingCourse.status
+          : validatedFields.data.status,
     };
 
     const course = await prisma.course.update({
       where: {
-        id: courseId
+        id: courseId,
       },
       data: updateData,
     });

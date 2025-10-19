@@ -1,15 +1,25 @@
-import { ExtendedEvent } from "@/types/event-types";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Separator } from "@/components/ui/separator";
-import { Users, Calendar, MapPin, Clock, Globe, Mail, Heart, Share2, MessageCircle, User } from "lucide-react";
 import { format, formatDistanceToNow } from "date-fns";
+import { Heart, MapPin, MessageCircle, Share2 } from "lucide-react";
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import type { ExtendedEvent } from "@/types/event-types";
 
 interface EventDetailModalProps {
   event: ExtendedEvent;
@@ -20,13 +30,22 @@ interface EventDetailModalProps {
   onMessage?: () => void;
 }
 
-export function EventDetailModal({ event, open, onClose, onLike, onJoin, onMessage }: EventDetailModalProps) {
+export function EventDetailModal({
+  event,
+  open,
+  onClose,
+  onLike,
+  onJoin,
+  onMessage,
+}: EventDetailModalProps) {
   const [activeTab, setActiveTab] = useState("about");
-  
-  const attendeeCount = event.attendees?.filter(attendee => attendee.status === "ATTENDING").length || 0;
-  const isLiked = event.isLiked || false;
-  const isAttending = event.attendees && event.attendees.some(attendee => 
-    attendee.status === "ATTENDING"
+
+  const attendeeCount =
+    event.attendees?.filter((attendee) => attendee.status === "ATTENDING")
+      .length || 0;
+  const isLiked = event.isLiked;
+  const isAttending = event.attendees?.some(
+    (attendee) => attendee.status === "ATTENDING"
   );
   const isEventPast = new Date(event.endDate) < new Date();
 
@@ -43,8 +62,8 @@ export function EventDetailModal({ event, open, onClose, onLike, onJoin, onMessa
   };
 
   return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col">
+    <Dialog onOpenChange={onClose} open={open}>
+      <DialogContent className="flex max-h-[90vh] max-w-4xl flex-col">
         <DialogHeader>
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-4">
@@ -62,18 +81,14 @@ export function EventDetailModal({ event, open, onClose, onLike, onJoin, onMessa
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleShare}
-              >
+              <Button onClick={handleShare} size="sm" variant="outline">
                 <Share2 className="h-4 w-4" />
               </Button>
               <Button
-                variant="outline"
-                size="sm"
-                onClick={onLike}
                 className={isLiked ? "text-red-500" : ""}
+                onClick={onLike}
+                size="sm"
+                variant="outline"
               >
                 <Heart className={`h-4 w-4 ${isLiked ? "fill-current" : ""}`} />
               </Button>
@@ -81,28 +96,30 @@ export function EventDetailModal({ event, open, onClose, onLike, onJoin, onMessa
           </div>
         </DialogHeader>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
           <div className="md:col-span-2">
-            <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <Tabs onValueChange={setActiveTab} value={activeTab}>
               <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="about">About</TabsTrigger>
-                <TabsTrigger value="attendees">Attendees ({attendeeCount})</TabsTrigger>
+                <TabsTrigger value="attendees">
+                  Attendees ({attendeeCount})
+                </TabsTrigger>
                 <TabsTrigger value="details">Details</TabsTrigger>
               </TabsList>
-              
-              <TabsContent value="about" className="mt-6">
+
+              <TabsContent className="mt-6" value="about">
                 <ScrollArea className="h-96">
                   <div className="space-y-6">
                     <div>
-                      <h3 className="font-semibold mb-2">Description</h3>
-                      <p className="text-muted-foreground whitespace-pre-wrap">
+                      <h3 className="mb-2 font-semibold">Description</h3>
+                      <p className="whitespace-pre-wrap text-muted-foreground">
                         {event.description}
                       </p>
                     </div>
-                    
+
                     {event.tags && event.tags.length > 0 && (
                       <div>
-                        <h3 className="font-semibold mb-2">Tags</h3>
+                        <h3 className="mb-2 font-semibold">Tags</h3>
                         <div className="flex flex-wrap gap-2">
                           {event.tags.map((tag, index) => (
                             <Badge key={index} variant="secondary">
@@ -112,10 +129,10 @@ export function EventDetailModal({ event, open, onClose, onLike, onJoin, onMessa
                         </div>
                       </div>
                     )}
-                    
+
                     {event.requirements && (
                       <div>
-                        <h3 className="font-semibold mb-2">Requirements</h3>
+                        <h3 className="mb-2 font-semibold">Requirements</h3>
                         <p className="text-muted-foreground">
                           {event.requirements}
                         </p>
@@ -124,93 +141,133 @@ export function EventDetailModal({ event, open, onClose, onLike, onJoin, onMessa
                   </div>
                 </ScrollArea>
               </TabsContent>
-              
-              <TabsContent value="attendees" className="mt-6">
+
+              <TabsContent className="mt-6" value="attendees">
                 <ScrollArea className="h-96">
                   <div className="space-y-4">
-                    {event.attendees?.filter(attendee => attendee.status === "ATTENDING").map((attendee) => (
-                      <Card key={attendee.id}>
-                        <CardContent className="p-4">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                              <Avatar className="h-10 w-10">
-                                <AvatarImage src={attendee.user.avatar || undefined} />
-                                <AvatarFallback>
-                                  {attendee.user.firstName?.charAt(0)}{attendee.user.lastName?.charAt(0)}
-                                </AvatarFallback>
-                              </Avatar>
-                              <div>
-                                <p className="font-medium">
-                                  {attendee.user.firstName} {attendee.user.lastName}
-                                </p>
-                                <p className="text-sm text-muted-foreground">
-                                  Registered {formatDistanceToNow(new Date(attendee.registeredAt), { addSuffix: true })}
-                                </p>
+                    {event.attendees
+                      ?.filter((attendee) => attendee.status === "ATTENDING")
+                      .map((attendee) => (
+                        <Card key={attendee.id}>
+                          <CardContent className="p-4">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-3">
+                                <Avatar className="h-10 w-10">
+                                  <AvatarImage
+                                    src={attendee.user.avatar || undefined}
+                                  />
+                                  <AvatarFallback>
+                                    {attendee.user.firstName?.charAt(0)}
+                                    {attendee.user.lastName?.charAt(0)}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <div>
+                                  <p className="font-medium">
+                                    {attendee.user.firstName}{" "}
+                                    {attendee.user.lastName}
+                                  </p>
+                                  <p className="text-muted-foreground text-sm">
+                                    Registered{" "}
+                                    {formatDistanceToNow(
+                                      new Date(attendee.registeredAt),
+                                      { addSuffix: true }
+                                    )}
+                                  </p>
+                                </div>
                               </div>
+                              <Badge variant="outline">Attending</Badge>
                             </div>
-                            <Badge variant="outline">Attending</Badge>
-                          </div>
-                          {attendee.notes && (
-                            <p className="text-sm text-muted-foreground mt-2">
-                              Note: {attendee.notes}
-                            </p>
-                          )}
-                        </CardContent>
-                      </Card>
-                    ))}
+                            {attendee.notes && (
+                              <p className="mt-2 text-muted-foreground text-sm">
+                                Note: {attendee.notes}
+                              </p>
+                            )}
+                          </CardContent>
+                        </Card>
+                      ))}
                   </div>
                 </ScrollArea>
               </TabsContent>
-              
-              <TabsContent value="details" className="mt-6">
+
+              <TabsContent className="mt-6" value="details">
                 <ScrollArea className="h-96">
                   <div className="space-y-6">
                     <div>
-                      <h3 className="font-semibold mb-2">Event Information</h3>
+                      <h3 className="mb-2 font-semibold">Event Information</h3>
                       <div className="space-y-3">
                         <div>
-                          <p className="text-sm text-muted-foreground">Event Type</p>
+                          <p className="text-muted-foreground text-sm">
+                            Event Type
+                          </p>
                           <Badge variant="secondary">{event.type}</Badge>
                         </div>
-                        
+
                         <div>
-                          <p className="text-sm text-muted-foreground">Status</p>
-                          <Badge variant={event.status === "PUBLISHED" ? "default" : event.status === "DRAFT" ? "secondary" : "destructive"}>
+                          <p className="text-muted-foreground text-sm">
+                            Status
+                          </p>
+                          <Badge
+                            variant={
+                              event.status === "PUBLISHED"
+                                ? "default"
+                                : event.status === "DRAFT"
+                                  ? "secondary"
+                                  : "destructive"
+                            }
+                          >
                             {event.status}
                           </Badge>
                         </div>
-                        
+
                         {event.maxAttendees && (
                           <div>
-                            <p className="text-sm text-muted-foreground">Capacity</p>
-                            <p className="font-medium">{event.maxAttendees} attendees max</p>
+                            <p className="text-muted-foreground text-sm">
+                              Capacity
+                            </p>
+                            <p className="font-medium">
+                              {event.maxAttendees} attendees max
+                            </p>
                           </div>
                         )}
-                        
+
                         <div>
-                          <p className="text-sm text-muted-foreground">Privacy</p>
-                          <Badge variant="outline">{event.isPublic ? "Public" : "Private"}</Badge>
+                          <p className="text-muted-foreground text-sm">
+                            Privacy
+                          </p>
+                          <Badge variant="outline">
+                            {event.isPublic ? "Public" : "Private"}
+                          </Badge>
                         </div>
                       </div>
                     </div>
-                    
+
                     <div>
-                      <h3 className="font-semibold mb-2">Schedule</h3>
+                      <h3 className="mb-2 font-semibold">Schedule</h3>
                       <div className="space-y-2">
                         <div>
-                          <p className="text-sm text-muted-foreground">Start Date & Time</p>
+                          <p className="text-muted-foreground text-sm">
+                            Start Date & Time
+                          </p>
                           <p className="font-medium">
-                            {format(new Date(event.startDate), "EEEE, MMMM d, yyyy")}
+                            {format(
+                              new Date(event.startDate),
+                              "EEEE, MMMM d, yyyy"
+                            )}
                           </p>
                           <p className="text-sm">
                             {format(new Date(event.startDate), "h:mm a")}
                           </p>
                         </div>
-                        
+
                         <div>
-                          <p className="text-sm text-muted-foreground">End Date & Time</p>
+                          <p className="text-muted-foreground text-sm">
+                            End Date & Time
+                          </p>
                           <p className="font-medium">
-                            {format(new Date(event.endDate), "EEEE, MMMM d, yyyy")}
+                            {format(
+                              new Date(event.endDate),
+                              "EEEE, MMMM d, yyyy"
+                            )}
                           </p>
                           <p className="text-sm">
                             {format(new Date(event.endDate), "h:mm a")}
@@ -218,10 +275,10 @@ export function EventDetailModal({ event, open, onClose, onLike, onJoin, onMessa
                         </div>
                       </div>
                     </div>
-                    
+
                     {event.location && (
                       <div>
-                        <h3 className="font-semibold mb-2">Location</h3>
+                        <h3 className="mb-2 font-semibold">Location</h3>
                         <div className="flex items-center gap-2">
                           <MapPin className="h-4 w-4 text-muted-foreground" />
                           <span>{event.location}</span>
@@ -233,7 +290,7 @@ export function EventDetailModal({ event, open, onClose, onLike, onJoin, onMessa
               </TabsContent>
             </Tabs>
           </div>
-          
+
           <div className="space-y-6">
             <Card>
               <CardHeader>
@@ -241,55 +298,57 @@ export function EventDetailModal({ event, open, onClose, onLike, onJoin, onMessa
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <p className="text-sm text-muted-foreground">Date</p>
+                  <p className="text-muted-foreground text-sm">Date</p>
                   <p className="font-medium">
                     {format(new Date(event.startDate), "MMM d, yyyy")}
                   </p>
                 </div>
-                
+
                 <div>
-                  <p className="text-sm text-muted-foreground">Time</p>
+                  <p className="text-muted-foreground text-sm">Time</p>
                   <p className="font-medium">
                     {format(new Date(event.startDate), "h:mm a")}
                   </p>
                 </div>
-                
+
                 {event.location && (
                   <div>
-                    <p className="text-sm text-muted-foreground">Location</p>
+                    <p className="text-muted-foreground text-sm">Location</p>
                     <p className="font-medium">{event.location}</p>
                   </div>
                 )}
-                
+
                 <div>
-                  <p className="text-sm text-muted-foreground">Attendees</p>
+                  <p className="text-muted-foreground text-sm">Attendees</p>
                   <p className="font-medium">{attendeeCount}</p>
                 </div>
-                
+
                 <div>
-                  <p className="text-sm text-muted-foreground">Created</p>
+                  <p className="text-muted-foreground text-sm">Created</p>
                   <p className="text-sm">
-                    {formatDistanceToNow(new Date(event.createdAt), { addSuffix: true })}
+                    {formatDistanceToNow(new Date(event.createdAt), {
+                      addSuffix: true,
+                    })}
                   </p>
                 </div>
               </CardContent>
             </Card>
-            
+
             <div className="space-y-2">
-              <Button 
-                className="w-full" 
-                variant={isAttending ? "outline" : "default"}
+              <Button
+                className="w-full"
                 disabled={isEventPast}
                 onClick={onJoin}
+                variant={isAttending ? "outline" : "default"}
               >
-                {isEventPast ? "Event Ended" : isAttending ? "Leave Event" : "Join Event"}
+                {isEventPast
+                  ? "Event Ended"
+                  : isAttending
+                    ? "Leave Event"
+                    : "Join Event"}
               </Button>
-              <Button 
-                className="w-full" 
-                variant="outline"
-                onClick={onMessage}
-              >
-                <MessageCircle className="h-4 w-4 mr-2" />
+              <Button className="w-full" onClick={onMessage} variant="outline">
+                <MessageCircle className="mr-2 h-4 w-4" />
                 Message Organizer
               </Button>
             </div>

@@ -1,7 +1,8 @@
-import React from 'react';
 import { DotsHorizontalIcon } from "@radix-ui/react-icons";
 import { BookOpen, Users2 } from "lucide-react";
-
+import type React from "react";
+import { Icons } from "@/components/shared/icons";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import {
@@ -15,8 +16,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Badge } from "@/components/ui/badge";
-import { Icons } from "@/components/shared/icons";
 
 import CourseItem from "./CourseItem";
 
@@ -84,31 +83,31 @@ export default function FacultyCard({
   };
 
   return (
-    <Card className="border border-gray-200 rounded-lg">
-      <Collapsible open={expanded} onOpenChange={onToggle}>
+    <Card className="rounded-lg border border-gray-200">
+      <Collapsible onOpenChange={onToggle} open={expanded}>
         <CollapsibleTrigger className="w-full">
-          <div className="flex items-center justify-between p-4 hover:bg-gray-50 transition-colors">
+          <div className="flex items-center justify-between p-4 transition-colors hover:bg-gray-50">
             <div className="flex items-center gap-3">
               {/* Faculty Avatar */}
-              <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-blue-500 rounded-md flex items-center justify-center text-white font-semibold text-sm">
+              <div className="flex h-8 w-8 items-center justify-center rounded-md bg-gradient-to-br from-green-500 to-blue-500 font-semibold text-sm text-white">
                 {faculty.name.charAt(0).toUpperCase()}
               </div>
 
               {/* Faculty Info */}
               <div className="text-left">
                 <h4 className="font-medium">{faculty.name}</h4>
-                <p className="text-sm text-gray-600">
-                  {faculty.description || 'No description available'}
+                <p className="text-gray-600 text-sm">
+                  {faculty.description || "No description available"}
                 </p>
 
                 {/* Stats Badges */}
-                <div className="flex items-center gap-3 mt-1">
-                  <Badge variant="secondary" className="text-xs">
-                    <BookOpen className="size-3 mr-1" />
+                <div className="mt-1 flex items-center gap-3">
+                  <Badge className="text-xs" variant="secondary">
+                    <BookOpen className="mr-1 size-3" />
                     {coursesCount} Courses
                   </Badge>
-                  <Badge variant="secondary" className="text-xs">
-                    <Users2 className="size-3 mr-1" />
+                  <Badge className="text-xs" variant="secondary">
+                    <Users2 className="mr-1 size-3" />
                     {membersCount} Members
                   </Badge>
                 </div>
@@ -119,21 +118,24 @@ export default function FacultyCard({
             <div className="flex items-center gap-2">
               {canEdit && (
                 <DropdownMenu>
-                  <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                  <DropdownMenuTrigger
+                    asChild
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <Button className="h-8 w-8 p-0" size="sm" variant="ghost">
                       <DotsHorizontalIcon className="h-4 w-4" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem onClick={handleEdit}>
-                      <Icons.pencil className="size-4 mr-2" />
+                      <Icons.pencil className="mr-2 size-4" />
                       Edit Faculty
                     </DropdownMenuItem>
                     <DropdownMenuItem
-                      onClick={handleDelete}
                       className="text-red-600"
+                      onClick={handleDelete}
                     >
-                      <Icons.trash className="size-4 mr-2" />
+                      <Icons.trash className="mr-2 size-4" />
                       Delete Faculty
                     </DropdownMenuItem>
                   </DropdownMenuContent>
@@ -142,8 +144,9 @@ export default function FacultyCard({
 
               {/* Expansion Indicator */}
               <Icons.chevronDown
-                className={`size-4 transition-transform ${expanded ? 'rotate-180' : ''
-                  }`}
+                className={`size-4 transition-transform ${
+                  expanded ? "rotate-180" : ""
+                }`}
               />
             </div>
           </div>
@@ -152,16 +155,16 @@ export default function FacultyCard({
         <CollapsibleContent>
           <div className="px-4 pb-4">
             {faculty?.courses && faculty.courses.length > 0 ? (
-              <div className="space-y-2 pl-4 border-l border-gray-200">
-                <div className="flex items-center justify-between mb-2">
-                  <h5 className="text-sm font-medium text-gray-700">Courses</h5>
+              <div className="space-y-2 border-gray-200 border-l pl-4">
+                <div className="mb-2 flex items-center justify-between">
+                  <h5 className="font-medium text-gray-700 text-sm">Courses</h5>
                   {canEdit && (
                     <Button
-                      variant="outline"
-                      size="sm"
                       onClick={() => onAddCourse?.(faculty.id)}
+                      size="sm"
+                      variant="outline"
                     >
-                      <Icons.add className="size-3 mr-1" />
+                      <Icons.add className="mr-1 size-3" />
                       Add Course
                     </Button>
                   )}
@@ -170,28 +173,28 @@ export default function FacultyCard({
                 <div className="space-y-2">
                   {faculty.courses.map((course) => (
                     <CourseItem
-                      key={course.id}
-                      course={course}
                       canEdit={canEdit}
-                      onEdit={onEditCourse}
+                      course={course}
+                      key={course.id}
                       onDelete={onDeleteCourse}
+                      onEdit={onEditCourse}
                       onViewDetails={onViewCourseDetails}
                     />
                   ))}
                 </div>
               </div>
             ) : (
-              <div className="text-center py-6 text-gray-500">
-                <BookOpen className="size-8 mx-auto mb-2 opacity-50" />
+              <div className="py-6 text-center text-gray-500">
+                <BookOpen className="mx-auto mb-2 size-8 opacity-50" />
                 <p className="text-sm">No courses in this faculty yet</p>
                 {canEdit && (
                   <Button
-                    variant="outline"
-                    size="sm"
                     className="mt-3"
                     onClick={() => onAddCourse?.(faculty.id)}
+                    size="sm"
+                    variant="outline"
                   >
-                    <Icons.add className="size-4 mr-2" />
+                    <Icons.add className="mr-2 size-4" />
                     Add Course
                   </Button>
                 )}

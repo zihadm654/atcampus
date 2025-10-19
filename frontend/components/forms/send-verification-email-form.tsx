@@ -1,13 +1,12 @@
 "use client";
 
-import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { toast } from "sonner";
-
-import { sendVerificationEmail } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { sendVerificationEmail } from "@/lib/auth-client";
 
 export const SendVerificationEmailForm = () => {
   const [isPending, setIsPending] = useState(false);
@@ -45,10 +44,10 @@ export const SendVerificationEmailForm = () => {
     <form className="w-full max-w-sm space-y-4" onSubmit={handleSubmit}>
       <div className="flex flex-col gap-2">
         <Label htmlFor="email">Email</Label>
-        <Input type="email" id="email" name="email" />
+        <Input id="email" name="email" type="email" />
       </div>
 
-      <Button type="submit" disabled={isPending}>
+      <Button disabled={isPending} type="submit">
         Resend Verification Email
       </Button>
     </form>

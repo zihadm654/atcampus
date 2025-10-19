@@ -1,9 +1,9 @@
 "use server";
 import { revalidatePath } from "next/cache";
+import { z } from "zod";
+import type { addSchoolSchema } from "@/app/(profile)/[username]/_components/AddSchoolDialog";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/session";
-import { z } from "zod";
-import { addSchoolSchema } from "@/app/(profile)/[username]/_components/tabs/AddSchoolDialog";
 
 const schoolSchema = z.object({
   name: z.string().min(3, "Name must be at least 3 characters long"),
@@ -19,10 +19,10 @@ export async function getSchools() {
   }
   const schools = await prisma.school.findMany({
     where: {
-      institutionId: user.id
-    }
-  })
-  return schools
+      institutionId: user.id,
+    },
+  });
+  return schools;
 }
 export async function addSchool(values: z.infer<typeof addSchoolSchema>) {
   const user = await getCurrentUser();
@@ -58,7 +58,7 @@ export async function addSchool(values: z.infer<typeof addSchoolSchema>) {
     };
   }
 
-  revalidatePath(`/(profile)/[username]`);
+  revalidatePath("/(profile)/[username]");
 }
 
 export async function editSchool(formData: FormData) {
@@ -98,7 +98,7 @@ export async function editSchool(formData: FormData) {
     };
   }
 
-  revalidatePath(`/(profile)/[username]`);
+  revalidatePath("/(profile)/[username]");
 }
 
 export async function deleteSchool(schoolId: string) {
@@ -137,5 +137,5 @@ export async function deleteSchool(schoolId: string) {
     };
   }
 
-  revalidatePath(`/(profile)/[username]`);
+  revalidatePath("/(profile)/[username]");
 }

@@ -1,13 +1,12 @@
 import {
-  InfiniteData,
-  QueryFilters,
+  type InfiniteData,
+  type QueryFilters,
   useMutation,
   useQueryClient,
 } from "@tanstack/react-query";
 import { toast } from "sonner";
-
-import { PostsPage } from "@/types/types";
 import { useSession } from "@/lib/auth-client";
+import type { PostsPage } from "@/types/types";
 
 import { submitPost } from "./actions";
 
@@ -49,7 +48,7 @@ export function useSubmitPostMutation() {
               ],
             };
           }
-        },
+        }
       );
 
       queryClient.invalidateQueries({

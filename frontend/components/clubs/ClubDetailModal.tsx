@@ -1,15 +1,33 @@
-import { ExtendedClub } from "@/types/club-types";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Separator } from "@/components/ui/separator";
-import { Users, Calendar, MapPin, Globe, Mail, Heart, Share2, MessageCircle } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import {
+  Calendar,
+  Globe,
+  Heart,
+  Mail,
+  MapPin,
+  MessageCircle,
+  Share2,
+} from "lucide-react";
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import type { ExtendedClub } from "@/types/club-types";
 
 interface ClubDetailModalProps {
   club: ExtendedClub;
@@ -20,12 +38,19 @@ interface ClubDetailModalProps {
   onMessage?: () => void;
 }
 
-export function ClubDetailModal({ club, open, onClose, onLike, onJoin, onMessage }: ClubDetailModalProps) {
+export function ClubDetailModal({
+  club,
+  open,
+  onClose,
+  onLike,
+  onJoin,
+  onMessage,
+}: ClubDetailModalProps) {
   const [activeTab, setActiveTab] = useState("about");
-  
+
   const memberCount = club._count.members;
-  const isLiked = club.isLiked || false;
-  const isMember = club.isMember || false;
+  const isLiked = club.isLiked;
+  const isMember = club.isMember;
 
   const handleShare = () => {
     if (navigator.share) {
@@ -40,8 +65,8 @@ export function ClubDetailModal({ club, open, onClose, onLike, onJoin, onMessage
   };
 
   return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col">
+    <Dialog onOpenChange={onClose} open={open}>
+      <DialogContent className="flex max-h-[90vh] max-w-4xl flex-col">
         <DialogHeader>
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-4">
@@ -59,18 +84,14 @@ export function ClubDetailModal({ club, open, onClose, onLike, onJoin, onMessage
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleShare}
-              >
+              <Button onClick={handleShare} size="sm" variant="outline">
                 <Share2 className="h-4 w-4" />
               </Button>
               <Button
-                variant="outline"
-                size="sm"
-                onClick={onLike}
                 className={isLiked ? "text-red-500" : ""}
+                onClick={onLike}
+                size="sm"
+                variant="outline"
               >
                 <Heart className={`h-4 w-4 ${isLiked ? "fill-current" : ""}`} />
               </Button>
@@ -78,27 +99,31 @@ export function ClubDetailModal({ club, open, onClose, onLike, onJoin, onMessage
           </div>
         </DialogHeader>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
           <div className="md:col-span-2">
-            <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <Tabs onValueChange={setActiveTab} value={activeTab}>
               <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="about">About</TabsTrigger>
-                <TabsTrigger value="members">Members ({memberCount})</TabsTrigger>
+                <TabsTrigger value="members">
+                  Members ({memberCount})
+                </TabsTrigger>
                 <TabsTrigger value="events">Events</TabsTrigger>
               </TabsList>
-              
-              <TabsContent value="about" className="mt-6">
+
+              <TabsContent className="mt-6" value="about">
                 <ScrollArea className="h-96">
                   <div className="space-y-6">
                     <div>
-                      <h3 className="font-semibold mb-2">Description</h3>
-                      <p className="text-muted-foreground whitespace-pre-wrap">
+                      <h3 className="mb-2 font-semibold">Description</h3>
+                      <p className="whitespace-pre-wrap text-muted-foreground">
                         {club.description}
                       </p>
                     </div>
-                    
+
                     <div>
-                      <h3 className="font-semibold mb-2">Meeting Information</h3>
+                      <h3 className="mb-2 font-semibold">
+                        Meeting Information
+                      </h3>
                       <div className="space-y-2">
                         {club.meetingSchedule && (
                           <div className="flex items-center gap-2">
@@ -114,10 +139,10 @@ export function ClubDetailModal({ club, open, onClose, onLike, onJoin, onMessage
                         )}
                       </div>
                     </div>
-                    
+
                     {club.tags && club.tags.length > 0 && (
                       <div>
-                        <h3 className="font-semibold mb-2">Tags</h3>
+                        <h3 className="mb-2 font-semibold">Tags</h3>
                         <div className="flex flex-wrap gap-2">
                           {club.tags.map((tag, index) => (
                             <Badge key={index} variant="secondary">
@@ -127,14 +152,17 @@ export function ClubDetailModal({ club, open, onClose, onLike, onJoin, onMessage
                         </div>
                       </div>
                     )}
-                    
+
                     <div>
-                      <h3 className="font-semibold mb-2">Contact & Social</h3>
+                      <h3 className="mb-2 font-semibold">Contact & Social</h3>
                       <div className="space-y-2">
                         {club.contactEmail && (
                           <div className="flex items-center gap-2">
                             <Mail className="h-4 w-4 text-muted-foreground" />
-                            <a href={`mailto:${club.contactEmail}`} className="text-primary hover:underline">
+                            <a
+                              className="text-primary hover:underline"
+                              href={`mailto:${club.contactEmail}`}
+                            >
                               {club.contactEmail}
                             </a>
                           </div>
@@ -142,11 +170,11 @@ export function ClubDetailModal({ club, open, onClose, onLike, onJoin, onMessage
                         {club.websiteUrl && (
                           <div className="flex items-center gap-2">
                             <Globe className="h-4 w-4 text-muted-foreground" />
-                            <a 
-                              href={club.websiteUrl} 
-                              target="_blank" 
-                              rel="noopener noreferrer"
+                            <a
                               className="text-primary hover:underline"
+                              href={club.websiteUrl}
+                              rel="noopener noreferrer"
+                              target="_blank"
                             >
                               {club.websiteUrl}
                             </a>
@@ -157,27 +185,27 @@ export function ClubDetailModal({ club, open, onClose, onLike, onJoin, onMessage
                   </div>
                 </ScrollArea>
               </TabsContent>
-              
-              <TabsContent value="members" className="mt-6">
+
+              <TabsContent className="mt-6" value="members">
                 <ScrollArea className="h-96">
                   <div className="space-y-4">
-                    <div className="text-center text-muted-foreground py-8">
+                    <div className="py-8 text-center text-muted-foreground">
                       Club members will appear here
                     </div>
                   </div>
                 </ScrollArea>
               </TabsContent>
-              
-              <TabsContent value="events" className="mt-6">
+
+              <TabsContent className="mt-6" value="events">
                 <ScrollArea className="h-96">
-                  <div className="text-center text-muted-foreground py-8">
+                  <div className="py-8 text-center text-muted-foreground">
                     Club events will appear here
                   </div>
                 </ScrollArea>
               </TabsContent>
             </Tabs>
           </div>
-          
+
           <div className="space-y-6">
             <Card>
               <CardHeader>
@@ -185,36 +213,34 @@ export function ClubDetailModal({ club, open, onClose, onLike, onJoin, onMessage
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <p className="text-sm text-muted-foreground">Club Type</p>
+                  <p className="text-muted-foreground text-sm">Club Type</p>
                   <Badge variant="secondary">{club.type}</Badge>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Members</p>
+                  <p className="text-muted-foreground text-sm">Members</p>
                   <p className="font-medium">{memberCount}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Created</p>
+                  <p className="text-muted-foreground text-sm">Created</p>
                   <p className="text-sm">
-                    {formatDistanceToNow(new Date(club.createdAt), { addSuffix: true })}
+                    {formatDistanceToNow(new Date(club.createdAt), {
+                      addSuffix: true,
+                    })}
                   </p>
                 </div>
               </CardContent>
             </Card>
-            
+
             <div className="space-y-2">
-              <Button 
-                className="w-full" 
-                variant={isMember ? "outline" : "default"}
+              <Button
+                className="w-full"
                 onClick={onJoin}
+                variant={isMember ? "outline" : "default"}
               >
                 {isMember ? "Leave Club" : "Join Club"}
               </Button>
-              <Button 
-                className="w-full" 
-                variant="outline"
-                onClick={onMessage}
-              >
-                <MessageCircle className="h-4 w-4 mr-2" />
+              <Button className="w-full" onClick={onMessage} variant="outline">
+                <MessageCircle className="mr-2 h-4 w-4" />
                 Message Club
               </Button>
             </div>

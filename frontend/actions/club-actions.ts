@@ -1,25 +1,24 @@
 "use server";
 
+import { ClubMemberRole, ClubStatus, type ClubType } from "@prisma/client";
 import { revalidatePath } from "next/cache";
-import { ClubStatus, ClubType, ClubMemberRole } from "@prisma/client";
 
 import { prisma } from "@/lib/db";
+import { notifyClubMemberJoined } from "@/lib/services/notification-service";
 import { getCurrentUser } from "@/lib/session";
 import {
-  createClubSchema,
-  updateClubSchema,
-  joinClubSchema,
-  updateClubMemberSchema,
   clubLikeSchema,
-  clubFilterSchema,
+  createClubSchema,
+  joinClubSchema,
+  type TClubLike,
   type TCreateClub,
-  type TUpdateClub,
   type TJoinClub,
+  type TUpdateClub,
   type TUpdateClubMember,
-  type TClubLike
+  updateClubMemberSchema,
+  updateClubSchema,
 } from "@/lib/validations/club";
-import { ExtendedClub, ClubWithDetails } from "@/types/club-types";
-import { notifyClubMemberJoined, notifyClubEventCreated } from "@/lib/services/notification-service";
+import type { ClubWithDetails, ExtendedClub } from "@/types/club-types";
 
 // Helper function to get club with details
 function getClubInclude(userId?: string) {
@@ -31,7 +30,7 @@ function getClubInclude(userId?: string) {
         username: true,
         image: true,
         email: true,
-      }
+      },
     },
     organization: {
       select: {
@@ -39,14 +38,14 @@ function getClubInclude(userId?: string) {
         name: true,
         slug: true,
         logo: true,
-      }
+      },
     },
     faculty: {
       select: {
         id: true,
         name: true,
         shortName: true,
-      }
+      },
     },
     members: {
       where: { isActive: true },
@@ -58,28 +57,32 @@ function getClubInclude(userId?: string) {
             username: true,
             image: true,
             email: true,
-          }
-        }
-      }
+          },
+        },
+      },
     },
-    likesUsers: userId ? {
-      where: { userId },
-      take: 1
-    } : false,
+    likesUsers: userId
+      ? {
+          where: { userId },
+          take: 1,
+        }
+      : false,
     _count: {
       select: {
         members: {
-          where: { isActive: true }
+          where: { isActive: true },
         },
         likesUsers: true,
-        events: true
-      }
-    }
+        events: true,
+      },
+    },
   };
 }
 
 // Create club - Institution users only
-export async function createClubAction(data: TCreateClub): Promise<{ success: boolean; data?: ExtendedClub; error?: string }> {
+export async function createClubAction(
+  data: TCreateClub
+): Promise<{ success: boolean; data?: ExtendedClub; error?: string }> {
   try {
     const user = await getCurrentUser();
     if (!user) {
@@ -101,7 +104,7 @@ export async function createClubAction(data: TCreateClub): Promise<{ success: bo
         creatorId: user.id,
         status: ClubStatus.ACTIVE,
       },
-      include: getClubInclude(user.id)
+      include: getClubInclude(user.id),
     });
 
     // Add creator as first member with admin role
@@ -111,7 +114,7 @@ export async function createClubAction(data: TCreateClub): Promise<{ success: bo
         userId: user.id,
         role: ClubMemberRole.PRESIDENT,
         isActive: true,
-      }
+      },
     });
 
     revalidatePath("/clubs");
@@ -125,16 +128,23 @@ export async function createClubAction(data: TCreateClub): Promise<{ success: bo
 }
 
 // Get clubs with filtering
-export async function getClubsAction(filters: {
-  organizationId?: string;
-  facultyId?: string;
-  status?: ClubStatus;
-  type?: ClubType;
-  isPublic?: boolean;
-  search?: string;
-  page?: number;
-  limit?: number;
-} = {}): Promise<{ success: boolean; data?: ExtendedClub[]; total?: number; error?: string }> {
+export async function getClubsAction(
+  filters: {
+    organizationId?: string;
+    facultyId?: string;
+    status?: ClubStatus;
+    type?: ClubType;
+    isPublic?: boolean;
+    search?: string;
+    page?: number;
+    limit?: number;
+  } = {}
+): Promise<{
+  success: boolean;
+  data?: ExtendedClub[];
+  total?: number;
+  error?: string;
+}> {
   try {
     const user = await getCurrentUser();
     if (!user) {
@@ -149,7 +159,7 @@ export async function getClubsAction(filters: {
       isPublic = true,
       search,
       page = 1,
-      limit = 20
+      limit = 20,
     } = filters;
 
     const where: any = {
@@ -161,21 +171,21 @@ export async function getClubsAction(filters: {
       ...(isPublic !== undefined && { isPublic }),
       ...(search && {
         OR: [
-          { name: { contains: search, mode: 'insensitive' } },
-          { description: { contains: search, mode: 'insensitive' } }
-        ]
-      })
+          { name: { contains: search, mode: "insensitive" } },
+          { description: { contains: search, mode: "insensitive" } },
+        ],
+      }),
     };
 
     const [clubs, total] = await Promise.all([
       prisma.club.findMany({
         where,
         include: getClubInclude(user.id),
-        orderBy: { createdAt: 'desc' },
+        orderBy: { createdAt: "desc" },
         skip: (page - 1) * limit,
-        take: limit
+        take: limit,
       }),
-      prisma.club.count({ where })
+      prisma.club.count({ where }),
     ]);
 
     return { success: true, data: clubs as unknown as ExtendedClub[], total };
@@ -186,7 +196,9 @@ export async function getClubsAction(filters: {
 }
 
 // Get single club with details
-export async function getClubByIdAction(clubId: string): Promise<{ success: boolean; data?: ClubWithDetails; error?: string }> {
+export async function getClubByIdAction(
+  clubId: string
+): Promise<{ success: boolean; data?: ClubWithDetails; error?: string }> {
   try {
     const user = await getCurrentUser();
     if (!user) {
@@ -209,12 +221,12 @@ export async function getClubByIdAction(clubId: string): Promise<{ success: bool
                 location: true,
                 isOnline: true,
                 status: true,
-              }
-            }
+              },
+            },
           },
-          orderBy: { createdAt: 'desc' }
-        }
-      }
+          orderBy: { createdAt: "desc" },
+        },
+      },
     });
 
     if (!club) {
@@ -229,7 +241,10 @@ export async function getClubByIdAction(clubId: string): Promise<{ success: bool
 }
 
 // Update club - Only creator or admin can update
-export async function updateClubAction(clubId: string, data: TUpdateClub): Promise<{ success: boolean; data?: ExtendedClub; error?: string }> {
+export async function updateClubAction(
+  clubId: string,
+  data: TUpdateClub
+): Promise<{ success: boolean; data?: ExtendedClub; error?: string }> {
   try {
     const user = await getCurrentUser();
     if (!user) {
@@ -244,9 +259,9 @@ export async function updateClubAction(clubId: string, data: TUpdateClub): Promi
       where: { id: clubId },
       include: {
         members: {
-          where: { userId: user.id, isActive: true }
-        }
-      }
+          where: { userId: user.id, isActive: true },
+        },
+      },
     });
 
     if (!existingClub) {
@@ -255,20 +270,26 @@ export async function updateClubAction(clubId: string, data: TUpdateClub): Promi
 
     // Check if user is creator or admin
     const isCreator = existingClub.creatorId === user.id;
-    const isAdmin = existingClub.members.some(member =>
-      member.userId === user.id && member.role === ClubMemberRole.PRESIDENT
+    const isAdmin = existingClub.members.some(
+      (member) =>
+        member.userId === user.id && member.role === ClubMemberRole.PRESIDENT
     );
 
-    if (!isCreator && !isAdmin) {
-      return { success: false, error: "Only club creators or admins can update this club" };
+    if (!(isCreator || isAdmin)) {
+      return {
+        success: false,
+        error: "Only club creators or admins can update this club",
+      };
     }
 
     // Transform data to match Prisma schema
     const updateData: any = {
       ...validatedData,
       clubType: validatedData.type,
-      socialLinks: validatedData.socialMedia ? JSON.stringify(validatedData.socialMedia) : undefined,
-      meetingFrequency: validatedData.meetingSchedule ? 'CUSTOM' : undefined,
+      socialLinks: validatedData.socialMedia
+        ? JSON.stringify(validatedData.socialMedia)
+        : undefined,
+      meetingFrequency: validatedData.meetingSchedule ? "CUSTOM" : undefined,
       meetingLocation: validatedData.meetingSchedule,
     };
 
@@ -281,7 +302,7 @@ export async function updateClubAction(clubId: string, data: TUpdateClub): Promi
     const club = await prisma.club.update({
       where: { id: clubId },
       data: updateData,
-      include: getClubInclude(user.id)
+      include: getClubInclude(user.id),
     });
 
     revalidatePath("/clubs");
@@ -295,7 +316,9 @@ export async function updateClubAction(clubId: string, data: TUpdateClub): Promi
 }
 
 // Delete club - Only creator can delete
-export async function deleteClubAction(clubId: string): Promise<{ success: boolean; error?: string }> {
+export async function deleteClubAction(
+  clubId: string
+): Promise<{ success: boolean; error?: string }> {
   try {
     const user = await getCurrentUser();
     if (!user) {
@@ -304,7 +327,7 @@ export async function deleteClubAction(clubId: string): Promise<{ success: boole
 
     // Check if club exists and user is the creator
     const existingClub = await prisma.club.findUnique({
-      where: { id: clubId }
+      where: { id: clubId },
     });
 
     if (!existingClub) {
@@ -312,13 +335,16 @@ export async function deleteClubAction(clubId: string): Promise<{ success: boole
     }
 
     if (existingClub.creatorId !== user.id) {
-      return { success: false, error: "Only the club creator can delete this club" };
+      return {
+        success: false,
+        error: "Only the club creator can delete this club",
+      };
     }
 
     // Soft delete the club
     await prisma.club.update({
       where: { id: clubId },
-      data: { isActive: false }
+      data: { isActive: false },
     });
 
     revalidatePath("/clubs");
@@ -332,7 +358,9 @@ export async function deleteClubAction(clubId: string): Promise<{ success: boole
 }
 
 // Join club - Students can join clubs
-export async function joinClubAction(data: TJoinClub): Promise<{ success: boolean; error?: string }> {
+export async function joinClubAction(
+  data: TJoinClub
+): Promise<{ success: boolean; error?: string }> {
   try {
     const user = await getCurrentUser();
     if (!user) {
@@ -344,7 +372,7 @@ export async function joinClubAction(data: TJoinClub): Promise<{ success: boolea
 
     // Check if club exists and is active
     const club = await prisma.club.findUnique({
-      where: { id: validatedData.clubId }
+      where: { id: validatedData.clubId },
     });
 
     if (!club) {
@@ -357,7 +385,10 @@ export async function joinClubAction(data: TJoinClub): Promise<{ success: boolea
 
     // Check if club is public or if user has invitation
     if (!club.isPublic) {
-      return { success: false, error: "This club is private and requires invitation to join" };
+      return {
+        success: false,
+        error: "This club is private and requires invitation to join",
+      };
     }
 
     // Check if user is already a member
@@ -365,12 +396,12 @@ export async function joinClubAction(data: TJoinClub): Promise<{ success: boolea
       where: {
         userId_clubId: {
           userId: user.id,
-          clubId: validatedData.clubId
-        }
-      }
+          clubId: validatedData.clubId,
+        },
+      },
     });
 
-    if (existingMembership && existingMembership.isActive) {
+    if (existingMembership?.isActive) {
       return { success: false, error: "You are already a member of this club" };
     }
 
@@ -378,12 +409,15 @@ export async function joinClubAction(data: TJoinClub): Promise<{ success: boolea
     const memberCount = await prisma.clubMember.count({
       where: {
         clubId: validatedData.clubId,
-        isActive: true
-      }
+        isActive: true,
+      },
     });
 
     if (club.maxMembers && memberCount >= club.maxMembers) {
-      return { success: false, error: "Club has reached maximum membership capacity" };
+      return {
+        success: false,
+        error: "Club has reached maximum membership capacity",
+      };
     }
 
     // Create or update membership
@@ -394,8 +428,8 @@ export async function joinClubAction(data: TJoinClub): Promise<{ success: boolea
         data: {
           isActive: true,
           role: ClubMemberRole.MEMBER,
-          joinedAt: new Date()
-        }
+          joinedAt: new Date(),
+        },
       });
     } else {
       membership = await prisma.clubMember.create({
@@ -404,7 +438,7 @@ export async function joinClubAction(data: TJoinClub): Promise<{ success: boolea
           clubId: validatedData.clubId,
           role: ClubMemberRole.MEMBER,
           isActive: true,
-        }
+        },
       });
     }
 
@@ -422,7 +456,9 @@ export async function joinClubAction(data: TJoinClub): Promise<{ success: boolea
 }
 
 // Leave club - Members can leave clubs
-export async function leaveClubAction(clubId: string): Promise<{ success: boolean; error?: string }> {
+export async function leaveClubAction(
+  clubId: string
+): Promise<{ success: boolean; error?: string }> {
   try {
     const user = await getCurrentUser();
     if (!user) {
@@ -434,9 +470,9 @@ export async function leaveClubAction(clubId: string): Promise<{ success: boolea
       where: {
         userId_clubId: {
           userId: user.id,
-          clubId
-        }
-      }
+          clubId,
+        },
+      },
     });
 
     if (!membership) {
@@ -446,7 +482,7 @@ export async function leaveClubAction(clubId: string): Promise<{ success: boolea
     // Update membership status to inactive
     await prisma.clubMember.update({
       where: { id: membership.id },
-      data: { isActive: false }
+      data: { isActive: false },
     });
 
     revalidatePath("/clubs");
@@ -460,7 +496,11 @@ export async function leaveClubAction(clubId: string): Promise<{ success: boolea
 }
 
 // Update club member - Admin only
-export async function updateClubMemberAction(clubId: string, memberId: string, data: TUpdateClubMember): Promise<{ success: boolean; error?: string }> {
+export async function updateClubMemberAction(
+  clubId: string,
+  memberId: string,
+  data: TUpdateClubMember
+): Promise<{ success: boolean; error?: string }> {
   try {
     const user = await getCurrentUser();
     if (!user) {
@@ -475,13 +515,16 @@ export async function updateClubMemberAction(clubId: string, memberId: string, d
       where: {
         userId_clubId: {
           userId: user.id,
-          clubId
-        }
-      }
+          clubId,
+        },
+      },
     });
 
     if (!adminMembership || adminMembership.role !== ClubMemberRole.ADVISOR) {
-      return { success: false, error: "Only club admins can update member roles" };
+      return {
+        success: false,
+        error: "Only club admins can update member roles",
+      };
     }
 
     // Update the member
@@ -491,8 +534,8 @@ export async function updateClubMemberAction(clubId: string, memberId: string, d
         role: validatedData.role,
         isActive: validatedData.isActive,
         position: validatedData.position,
-        bio: validatedData.bio
-      }
+        bio: validatedData.bio,
+      },
     });
 
     revalidatePath("/clubs");
@@ -506,7 +549,9 @@ export async function updateClubMemberAction(clubId: string, memberId: string, d
 }
 
 // Like/unlike club
-export async function toggleClubLikeAction(data: TClubLike): Promise<{ success: boolean; isLiked?: boolean; error?: string }> {
+export async function toggleClubLikeAction(
+  data: TClubLike
+): Promise<{ success: boolean; isLiked?: boolean; error?: string }> {
   try {
     const user = await getCurrentUser();
     if (!user) {
@@ -521,35 +566,34 @@ export async function toggleClubLikeAction(data: TClubLike): Promise<{ success: 
       where: {
         userId_clubId: {
           userId: user.id,
-          clubId: validatedData.clubId
-        }
-      }
+          clubId: validatedData.clubId,
+        },
+      },
     });
 
     if (existingLike) {
       // Unlike the club
       await prisma.clubLike.delete({
-        where: { id: existingLike.id }
+        where: { id: existingLike.id },
       });
 
       revalidatePath("/clubs");
       revalidatePath("/profile/[username]");
 
       return { success: true, isLiked: false };
-    } else {
-      // Like the club
-      await prisma.clubLike.create({
-        data: {
-          userId: user.id,
-          clubId: validatedData.clubId
-        }
-      });
-
-      revalidatePath("/clubs");
-      revalidatePath("/profile/[username]");
-
-      return { success: true, isLiked: true };
     }
+    // Like the club
+    await prisma.clubLike.create({
+      data: {
+        userId: user.id,
+        clubId: validatedData.clubId,
+      },
+    });
+
+    revalidatePath("/clubs");
+    revalidatePath("/profile/[username]");
+
+    return { success: true, isLiked: true };
   } catch (error) {
     console.error("Error toggling club like:", error);
     return { success: false, error: "Failed to toggle club like" };
@@ -557,7 +601,9 @@ export async function toggleClubLikeAction(data: TClubLike): Promise<{ success: 
 }
 
 // Get user's clubs
-export async function getUserClubsAction(userId: string): Promise<{ success: boolean; data?: ExtendedClub[]; error?: string }> {
+export async function getUserClubsAction(
+  userId: string
+): Promise<{ success: boolean; data?: ExtendedClub[]; error?: string }> {
   try {
     const currentUser = await getCurrentUser();
     if (!currentUser) {
@@ -568,10 +614,10 @@ export async function getUserClubsAction(userId: string): Promise<{ success: boo
     const createdClubs = await prisma.club.findMany({
       where: {
         creatorId: userId,
-        isActive: true
+        isActive: true,
       },
       include: getClubInclude(currentUser.id),
-      orderBy: { createdAt: 'desc' }
+      orderBy: { createdAt: "desc" },
     });
 
     // Get clubs the user is a member of
@@ -580,18 +626,18 @@ export async function getUserClubsAction(userId: string): Promise<{ success: boo
         members: {
           some: {
             userId,
-            isActive: true
-          }
+            isActive: true,
+          },
         },
-        isActive: true
+        isActive: true,
       },
       include: getClubInclude(currentUser.id),
-      orderBy: { createdAt: 'desc' }
+      orderBy: { createdAt: "desc" },
     });
 
     return {
       success: true,
-      data: [...createdClubs, ...memberClubs] as unknown as ExtendedClub[]
+      data: [...createdClubs, ...memberClubs] as unknown as ExtendedClub[],
     };
   } catch (error) {
     console.error("Error fetching user clubs:", error);

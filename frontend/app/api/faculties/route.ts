@@ -1,4 +1,4 @@
-import { NextRequest } from "next/server";
+import type { NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/session";
 
@@ -37,7 +37,7 @@ export async function GET(req: NextRequest) {
       if (schoolId) {
         // If schoolId is provided, filter faculties by that school
         query.where = {
-          schoolId: schoolId,
+          schoolId,
           school: {
             institution: {
               members: {
@@ -89,7 +89,7 @@ export async function GET(req: NextRequest) {
         // If schoolId is provided, filter faculties by that school
         // and ensure the school belongs to this institution
         query.where = {
-          schoolId: schoolId,
+          schoolId,
           school: {
             institutionId: user.id,
           },
@@ -125,7 +125,7 @@ export async function GET(req: NextRequest) {
 
       if (schoolId) {
         query.where = {
-          schoolId: schoolId,
+          schoolId,
         };
       }
 

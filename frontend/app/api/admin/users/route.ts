@@ -1,5 +1,5 @@
-import { NextResponse } from "next/server";
 import { UserRole } from "@prisma/client";
+import { NextResponse } from "next/server";
 
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/session";

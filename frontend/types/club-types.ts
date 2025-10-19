@@ -1,10 +1,18 @@
-import type { Prisma } from '@prisma/client';
-import type { ClubStatus, ClubType, ClubMemberRole } from '@prisma/client';
+import type { ClubMemberRole, ClubStatus, ClubType } from "@prisma/client";
 
 // Enhanced club data types for comprehensive club management
 
 export interface ExtendedClub {
-  clubType: { ACADEMIC: "ACADEMIC"; SPORTS: "SPORTS"; CULTURAL: "CULTURAL"; TECHNICAL: "TECHNICAL"; SOCIAL: "SOCIAL"; HOBBY: "HOBBY"; PROFESSIONAL: "PROFESSIONAL"; OTHER: "OTHER"; };
+  clubType: {
+    ACADEMIC: "ACADEMIC";
+    SPORTS: "SPORTS";
+    CULTURAL: "CULTURAL";
+    TECHNICAL: "TECHNICAL";
+    SOCIAL: "SOCIAL";
+    HOBBY: "HOBBY";
+    PROFESSIONAL: "PROFESSIONAL";
+    OTHER: "OTHER";
+  };
   id: string;
   name: string;
   description: string;
@@ -72,7 +80,7 @@ export interface ExtendedClub {
   isLiked?: boolean;
   isMember?: boolean;
   memberRole?: ClubMemberRole;
-  memberStatus?: 'ACTIVE' | 'INACTIVE' | 'PENDING' | 'REJECTED' | 'SUSPENDED';
+  memberStatus?: "ACTIVE" | "INACTIVE" | "PENDING" | "REJECTED" | "SUSPENDED";
   memberCount?: number;
   availableSpots?: number;
 }
@@ -82,7 +90,7 @@ export interface ClubMember {
   clubId: string;
   userId: string;
   role: ClubMemberRole;
-  status: 'ACTIVE' | 'INACTIVE' | 'PENDING' | 'REJECTED' | 'SUSPENDED';
+  status: "ACTIVE" | "INACTIVE" | "PENDING" | "REJECTED" | "SUSPENDED";
   applicationMessage?: string | null;
   joinedAt: Date;
   notes?: string | null;
@@ -191,7 +199,7 @@ export interface ClubMembershipData {
   clubId: string;
   userId: string;
   role: ClubMemberRole;
-  status: 'ACTIVE' | 'INACTIVE' | 'PENDING' | 'REJECTED' | 'SUSPENDED';
+  status: "ACTIVE" | "INACTIVE" | "PENDING" | "REJECTED" | "SUSPENDED";
   applicationMessage?: string;
   joinedAt: Date;
   notes?: string;
@@ -234,7 +242,14 @@ export interface ClubUpdateData extends Partial<ClubCreationData> {
 
 // Club notification types
 export interface ClubNotificationData {
-  type: 'CLUB_CREATED' | 'CLUB_UPDATED' | 'MEMBER_JOINED' | 'MEMBER_LEFT' | 'MEMBER_APPROVED' | 'MEMBER_REJECTED' | 'EVENT_LINKED';
+  type:
+    | "CLUB_CREATED"
+    | "CLUB_UPDATED"
+    | "MEMBER_JOINED"
+    | "MEMBER_LEFT"
+    | "MEMBER_APPROVED"
+    | "MEMBER_REJECTED"
+    | "EVENT_LINKED";
   clubId: string;
   clubName: string;
   recipientIds: string[];
@@ -308,7 +323,7 @@ export interface ClubMemberApplication {
   clubId: string;
   userId: string;
   role: ClubMemberRole;
-  status: 'PENDING';
+  status: "PENDING";
   applicationMessage?: string;
   appliedAt: Date;
   user: {
@@ -322,7 +337,7 @@ export interface ClubMemberApplication {
 
 export interface ClubMemberUpdateData {
   role?: ClubMemberRole;
-  status?: 'ACTIVE' | 'INACTIVE' | 'SUSPENDED';
+  status?: "ACTIVE" | "INACTIVE" | "SUSPENDED";
   notes?: string;
 }
 
@@ -336,7 +351,11 @@ export interface ClubEventLinkData {
 // Club activity and engagement
 export interface ClubActivityData {
   clubId: string;
-  type: 'MEMBER_JOINED' | 'EVENT_CREATED' | 'EVENT_COMPLETED' | 'DISCUSSION_STARTED';
+  type:
+    | "MEMBER_JOINED"
+    | "EVENT_CREATED"
+    | "EVENT_COMPLETED"
+    | "DISCUSSION_STARTED";
   timestamp: Date;
   actorId: string;
   actorName: string;

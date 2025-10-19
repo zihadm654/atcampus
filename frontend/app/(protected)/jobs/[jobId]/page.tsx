@@ -1,23 +1,26 @@
+import { JobType } from "@prisma/client";
 import {
+  BadgeCheckIcon,
   Briefcase,
   Calendar,
   Clock,
   DollarSign,
   MapPin,
-  ShieldCheck,
 } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { cache } from "react";
+import { isEnrolledInCourse } from "@/actions/enrollment";
 import { JsonToHtml } from "@/components/editor/JsonToHtml";
 import JobMoreButton from "@/components/jobs/JobMoreButton";
+import SaveJobButton from "@/components/jobs/SaveJobButton";
 import { Icons } from "@/components/shared/icons";
 import { UserAvatar } from "@/components/shared/user-avatar";
 import UserTooltip from "@/components/UserTooltip";
+import { Badge } from "@/components/ui/badge";
 import {
   Card,
-  CardAction,
   CardContent,
   CardFooter,
   CardHeader,
@@ -28,11 +31,7 @@ import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/session";
 import { constructMetadata, formatDate, formatRelativeDate } from "@/lib/utils";
 import { getJobDataInclude, getUserDataSelect } from "@/types/types";
-import SaveJobButton from "@/components/jobs/SaveJobButton";
 import Client from "./client";
-import { Badge } from "@/components/ui/badge";
-import { isEnrolledInCourse } from "@/actions/enrollment";
-import { JobType } from "@prisma/client";
 
 interface PageProps {
   params: Promise<{ jobId: string }>;
@@ -101,7 +100,7 @@ export default async function JobPage({ params }: PageProps) {
   return (
     <div className="w-full">
       {/* Header with gradient background */}
-      <div className="grid grid-cols-2 max-md:grid-cols-1 gap-2">
+      <div className="grid grid-cols-2 gap-2 max-md:grid-cols-1">
         <Card className="flex flex-col gap-3">
           <CardHeader className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -116,7 +115,15 @@ export default async function JobPage({ params }: PageProps) {
                   href={`/${job.user.username}`}
                 >
                   {job.user.name}
-                  <ShieldCheck className="size-5 text-blue-700" />
+                  {job.user.emailVerified ?? (
+                    <Badge
+                      className="bg-blue-500 text-white dark:bg-blue-600"
+                      variant="secondary"
+                    >
+                      <BadgeCheckIcon className="size-4" />
+                      Verified
+                    </Badge>
+                  )}
                 </Link>
               </UserTooltip>
               <Link
@@ -158,14 +165,14 @@ export default async function JobPage({ params }: PageProps) {
           </CardContent>
           <CardFooter className="flex justify-between gap-5">
             <SaveJobButton
-              jobId={job.id}
               initialState={{
                 isSaveJobByUser: job.savedJobs.some(
                   (saveJob) => saveJob.userId === user.id
                 ),
               }}
+              jobId={job.id}
             />
-            <Client user={user} job={job} />
+            <Client job={job} user={user} />
           </CardFooter>
         </Card>
         <Card>
@@ -182,7 +189,15 @@ export default async function JobPage({ params }: PageProps) {
                   href={`/${user.username}`}
                 >
                   {user.name}
-                  <ShieldCheck className="size-5 text-blue-700" />
+                  {user.emailVerified ?? (
+                    <Badge
+                      className="bg-blue-500 text-white dark:bg-blue-600"
+                      variant="secondary"
+                    >
+                      <BadgeCheckIcon className="size-4" />
+                      Verified
+                    </Badge>
+                  )}
                 </Link>
               </UserTooltip>
             </CardTitle>
@@ -196,9 +211,9 @@ export default async function JobPage({ params }: PageProps) {
           </CardContent>
         </Card>
       </div>
-      <div className="overflow-hidden mt-3 rounded-2xl bg-card shadow-sm">
+      <div className="mt-3 overflow-hidden rounded-2xl bg-card shadow-sm">
         <Tabs defaultValue="summary">
-          <div className=" border-b">
+          <div className="border-b">
             <TabsList className="flex w-full justify-between p-0">
               <TabsTrigger
                 className="flex-1 rounded-xl py-4 transition-all data-[state=active]:border-blue-600 data-[state=active]:text-blue-600"
@@ -214,13 +229,13 @@ export default async function JobPage({ params }: PageProps) {
                 <Icons.post className="size-5" />
                 <span className="hidden lg:block">Description</span>
               </TabsTrigger>
-              <TabsTrigger
+              {/* <TabsTrigger
                 className="flex-1 rounded-xl py-4 transition-all data-[state=active]:border-blue-600 data-[state=active]:text-blue-600"
                 value="qualifications"
               >
                 <Icons.post className="size-5" />
                 <span className="hidden lg:block">Qualifications</span>
-              </TabsTrigger>
+              </TabsTrigger> */}
             </TabsList>
           </div>
           <TabsContent className="p-2" value="summary">

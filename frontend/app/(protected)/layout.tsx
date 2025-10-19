@@ -1,9 +1,9 @@
-import { menubar } from "@/config/dashboard";
-import { getCurrentUser } from "@/lib/session";
+import { redirect } from "next/navigation";
 import { DashboardSidebar } from "@/components/layout/dashboard-sidebar";
 import { NavBarServer } from "@/components/layout/navbar-server";
 import { SiteFooter } from "@/components/layout/site-footer";
-import { redirect } from "next/navigation";
+import { menubar } from "@/config/dashboard";
+import { getCurrentUser } from "@/lib/session";
 
 interface ProtectedLayoutProps {
   children: React.ReactNode;
@@ -22,7 +22,10 @@ export default async function Dashboard({ children }: ProtectedLayoutProps) {
 
   // Server-side role and status validation
   // This is more reliable and performant than API calls
-  if ((user.role === "ORGANIZATION" || user.role === "INSTITUTION") && user.status !== "ACTIVE") {
+  if (
+    (user.role === "ORGANIZATION" || user.role === "INSTITUTION") &&
+    user.status !== "ACTIVE"
+  ) {
     if (user.status === "PENDING") {
       redirect("/pending-approval");
     } else if (user.status === "REJECTED") {

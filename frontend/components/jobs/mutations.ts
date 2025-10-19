@@ -1,13 +1,13 @@
-import { usePathname, useRouter } from "next/navigation";
 import {
-  InfiniteData,
-  QueryFilters,
+  type InfiniteData,
+  type QueryFilters,
   useMutation,
   useQueryClient,
 } from "@tanstack/react-query";
+import { usePathname, useRouter } from "next/navigation";
 import { toast } from "sonner";
 
-import { JobsPage } from "@/types/types";
+import type { JobsPage } from "@/types/types";
 
 import { deleteJob } from "./actions";
 
@@ -35,7 +35,7 @@ export function useDeleteJobMutation() {
               jobs: page.jobs.filter((j) => j.id !== deletedJob.id),
             })),
           };
-        },
+        }
       );
 
       toast.success("Job deleted");

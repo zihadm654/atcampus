@@ -1,34 +1,34 @@
-'use client';
+"use client";
 
-import { AlertCircle, CheckCircle2, Mail } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
+import { AlertCircle, CheckCircle2, Mail } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { authClient } from '@/lib/auth-client';
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { authClient } from "@/lib/auth-client";
 
 export default function Component() {
-  const [otp, setOtp] = useState('');
+  const [otp, setOtp] = useState("");
   const [isOtpSent, setIsOtpSent] = useState(false);
-  const [message, setMessage] = useState('');
+  const [message, setMessage] = useState("");
   const [isError, setIsError] = useState(false);
   const [isValidated, setIsValidated] = useState(false);
 
   // In a real app, this email would come from your authentication context
-  const userEmail = 'user@example.com';
+  const userEmail = "user@example.com";
 
   const requestOTP = async () => {
     await authClient.twoFactor.sendOtp();
     // In a real app, this would call your backend API to send the OTP
-    setMessage('OTP sent to your email');
+    setMessage("OTP sent to your email");
     setIsError(false);
     setIsOtpSent(true);
   };
@@ -39,13 +39,13 @@ export default function Component() {
       code: otp,
     });
     if (res.data) {
-      setMessage('OTP validated successfully');
+      setMessage("OTP validated successfully");
       setIsError(false);
       setIsValidated(true);
-      router.push('/');
+      router.push("/");
     } else {
       setIsError(true);
-      setMessage('Invalid OTP');
+      setMessage("Invalid OTP");
     }
   };
   return (
@@ -90,7 +90,7 @@ export default function Component() {
           {message && (
             <div
               className={`mt-4 flex items-center gap-2 ${
-                isError ? 'text-red-500' : 'text-primary'
+                isError ? "text-red-500" : "text-primary"
               }`}
             >
               {isError ? (

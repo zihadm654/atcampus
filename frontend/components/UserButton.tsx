@@ -1,11 +1,11 @@
 "use client";
 
-import { useState } from "react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import { Check, LogOutIcon, Monitor, Moon, Sun, UserIcon } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
+import { useState } from "react";
 import { toast } from "sonner";
 
 import { signOut, useSession } from "@/lib/auth-client";
@@ -61,7 +61,10 @@ export default function UserButton({ className }: UserButtonProps) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <button className={cn("flex-none rounded-full", className)}>
+        <button
+          className={cn("flex-none rounded-full", className)}
+          type="button"
+        >
           <UserAvatar
             user={{
               name: user.name,

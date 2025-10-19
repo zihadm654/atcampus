@@ -1,4 +1,4 @@
-import { CourseData } from "@/types/types";
+import type { CourseData } from "@/types/types";
 
 import LoadingButton from "../feed/LoadingButton";
 import { Button } from "../ui/button";
@@ -27,13 +27,13 @@ export default function DeleteCourseDialog({
   const mutation = useDeleteCourseMutation();
 
   function handleOpenChange(open: boolean) {
-    if (!open || !mutation.isPending) {
+    if (!(open && mutation.isPending)) {
       onClose();
     }
   }
 
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
+    <Dialog onOpenChange={handleOpenChange} open={open}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Delete post?</DialogTitle>
@@ -44,16 +44,16 @@ export default function DeleteCourseDialog({
         </DialogHeader>
         <DialogFooter>
           <LoadingButton
-            variant="destructive"
-            onClick={() => mutation.mutate(course.id, { onSuccess: onClose })}
             loading={mutation.isPending}
+            onClick={() => mutation.mutate(course.id, { onSuccess: onClose })}
+            variant="destructive"
           >
             Delete
           </LoadingButton>
           <Button
-            variant="outline"
-            onClick={onClose}
             disabled={mutation.isPending}
+            onClick={onClose}
+            variant="outline"
           >
             Cancel
           </Button>

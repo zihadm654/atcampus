@@ -1,24 +1,35 @@
 "use client";
 
+import { Calendar, Plus, Search } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import {
+  getEventsAction,
+  joinEventAction,
+  toggleEventLikeAction,
+} from "@/actions/event-actions";
 import { EventCard } from "@/components/events/EventCard";
 import { EventDetailModal } from "@/components/events/EventDetailModal";
-import { getEventsAction } from "@/actions/event-actions";
-import { joinEventAction, toggleEventLikeAction } from "@/actions/event-actions";
-import { useState, useEffect } from "react";
-import { ExtendedEvent } from "@/types/event-types";
-import { useSession } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, Plus, Calendar } from "lucide-react";
-import { useRouter } from "next/navigation";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useSession } from "@/lib/auth-client";
+import type { ExtendedEvent } from "@/types/event-types";
 
 export default function EventsPage() {
   const { data: session } = useSession();
   const router = useRouter();
   const [events, setEvents] = useState<ExtendedEvent[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedEvent, setSelectedEvent] = useState<ExtendedEvent | null>(null);
+  const [selectedEvent, setSelectedEvent] = useState<ExtendedEvent | null>(
+    null
+  );
   const [searchTerm, setSearchTerm] = useState("");
   const [eventType, setEventType] = useState<string>("all");
   const [eventStatus, setEventStatus] = useState<string>("all");
@@ -33,12 +44,12 @@ export default function EventsPage() {
       setLoading(true);
       const result = await getEventsAction({
         search: searchTerm || undefined,
-        type: eventType === "all" ? undefined : eventType as any,
-        status: eventStatus === "all" ? undefined : eventStatus as any,
+        type: eventType === "all" ? undefined : (eventType as any),
+        status: eventStatus === "all" ? undefined : (eventStatus as any),
         limit: 20,
-        page: 1
+        page: 1,
       });
-      
+
       if (result.data) {
         setEvents(result.data);
       }
@@ -58,14 +69,14 @@ export default function EventsPage() {
     try {
       const result = await toggleEventLikeAction({
         eventId,
-        userId: ""
+        userId: "",
       });
       if (result.isLiked !== undefined) {
-        setEvents(prev => prev.map(event => 
-          event.id === eventId 
-            ? { ...event, isLiked: result.isLiked || false }
-            : event
-        ));
+        setEvents((prev) =>
+          prev.map((event) =>
+            event.id === eventId ? { ...event, isLiked: result.isLiked } : event
+          )
+        );
       }
     } catch (error) {
       console.error("Failed to toggle like:", error);
@@ -76,7 +87,7 @@ export default function EventsPage() {
     try {
       const result = await joinEventAction({
         eventId,
-        userId: ""
+        userId: "",
       });
       if (result.success) {
         loadEvents(); // Reload events to update attendance status
@@ -86,43 +97,46 @@ export default function EventsPage() {
     }
   };
 
-  const filteredEvents = events.filter(event => {
-    const matchesSearch = !searchTerm || 
+  const filteredEvents = events.filter((event) => {
+    const matchesSearch =
+      !searchTerm ||
       event.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       event.description.toLowerCase().includes(searchTerm.toLowerCase());
-    
+
     const matchesType = eventType === "all" || event.type === eventType;
     const matchesStatus = eventStatus === "all" || event.status === eventStatus;
-    
+
     return matchesSearch && matchesType && matchesStatus;
   });
 
   return (
-    <div className="container mx-auto py-8 px-4">
-      <div className="flex justify-between items-center mb-8">
+    <div className="container mx-auto px-4 py-8">
+      <div className="mb-8 flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Events</h1>
-          <p className="text-muted-foreground">Discover and join campus events</p>
+          <h1 className="font-bold text-3xl">Events</h1>
+          <p className="text-muted-foreground">
+            Discover and join campus events
+          </p>
         </div>
         {session?.user && (
           <Button onClick={() => router.push("/events/create")}>
-            <Plus className="h-4 w-4 mr-2" />
+            <Plus className="mr-2 h-4 w-4" />
             Create Event
           </Button>
         )}
       </div>
 
-      <div className="flex flex-col md:flex-row gap-4 mb-8">
+      <div className="mb-8 flex flex-col gap-4 md:flex-row">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+          <Search className="-translate-y-1/2 absolute top-1/2 left-3 h-4 w-4 transform text-muted-foreground" />
           <Input
+            className="pl-10"
+            onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Search events..."
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
           />
         </div>
-        <Select value={eventType} onValueChange={setEventType}>
+        <Select onValueChange={setEventType} value={eventType}>
           <SelectTrigger className="w-full md:w-48">
             <SelectValue placeholder="Filter by type" />
           </SelectTrigger>
@@ -139,7 +153,7 @@ export default function EventsPage() {
             <SelectItem value="OTHER">Other</SelectItem>
           </SelectContent>
         </Select>
-        <Select value={eventStatus} onValueChange={setEventStatus}>
+        <Select onValueChange={setEventStatus} value={eventStatus}>
           <SelectTrigger className="w-full md:w-48">
             <SelectValue placeholder="Filter by status" />
           </SelectTrigger>
@@ -155,45 +169,47 @@ export default function EventsPage() {
       </div>
 
       {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[...Array(6)].map((_, i) => (
-            <div key={i} className="animate-pulse">
-              <div className="bg-muted h-48 rounded-lg"></div>
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {[...new Array(6)].map((_, i) => (
+            <div className="animate-pulse" key={i}>
+              <div className="h-48 rounded-lg bg-muted" />
             </div>
           ))}
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
           {filteredEvents.map((event) => (
             <EventCard
-              key={event.id}
               event={event}
+              key={event.id}
               onClick={() => handleEventClick(event)}
-              onLike={() => handleLikeEvent(event.id)}
               onJoin={() => handleJoinEvent(event.id)}
+              onLike={() => handleLikeEvent(event.id)}
             />
           ))}
         </div>
       )}
 
       {filteredEvents.length === 0 && !loading && (
-        <div className="text-center py-12">
-          <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-          <p className="text-muted-foreground">No events found matching your criteria.</p>
+        <div className="py-12 text-center">
+          <Calendar className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
+          <p className="text-muted-foreground">
+            No events found matching your criteria.
+          </p>
         </div>
       )}
 
       {selectedEvent && (
         <EventDetailModal
           event={selectedEvent}
-          open={showModal}
           onClose={() => setShowModal(false)}
-          onLike={() => handleLikeEvent(selectedEvent.id)}
           onJoin={() => handleJoinEvent(selectedEvent.id)}
+          onLike={() => handleLikeEvent(selectedEvent.id)}
           onMessage={() => {
             // Handle message organizer action
             console.log("Message organizer:", selectedEvent.creator?.name);
           }}
+          open={showModal}
         />
       )}
     </div>

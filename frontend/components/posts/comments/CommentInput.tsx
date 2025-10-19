@@ -1,7 +1,7 @@
-import { useState } from "react";
 import { Loader2, SendHorizonal } from "lucide-react";
+import { useState } from "react";
 
-import { PostData } from "@/types/types";
+import type { PostData } from "@/types/types";
 
 import { Button } from "../../ui/button";
 import { Input } from "../../ui/input";
@@ -28,28 +28,28 @@ export default function CommentInput({ post }: CommentInputProps) {
       },
       {
         onSuccess: () => setInput(""),
-      },
+      }
     );
   }
 
   return (
     <form className="flex w-full items-center gap-2" onSubmit={onSubmit}>
       <Input
+        autoFocus
+        onChange={(e) => setInput(e.target.value)}
         placeholder="Write a comment..."
         value={input}
-        onChange={(e) => setInput(e.target.value)}
-        autoFocus
       />
       <Button
+        disabled={!input.trim() || mutation.isPending}
+        size="icon"
         type="submit"
         variant="ghost"
-        size="icon"
-        disabled={!input.trim() || mutation.isPending}
       >
-        {!mutation.isPending ? (
-          <SendHorizonal />
-        ) : (
+        {mutation.isPending ? (
           <Loader2 className="animate-spin" />
+        ) : (
+          <SendHorizonal />
         )}
       </Button>
     </form>

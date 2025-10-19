@@ -1,27 +1,10 @@
 "use client";
 
+import { ShieldCheck, Users } from "lucide-react";
 import Link from "next/link";
-import {
-  Calendar,
-  ShieldCheck,
-  Users,
-  BookOpen,
-  Clock,
-  Tag,
-} from "lucide-react";
+import { useOptimistic, useState, useTransition } from "react";
 import { toast } from "sonner";
-
-import { ResearchData } from "@/types/types";
-import { useSession } from "@/lib/auth-client";
-import { formatDate, formatRelativeDate } from "@/lib/utils";
-
-import { UserAvatar } from "../shared/user-avatar";
-import { Button } from "../ui/button";
-import UserTooltip from "../UserTooltip";
-import { sendCollaborationRequest } from "./collaboration-actions";
-import ResearchMoreButton from "./ResearchMoreButton";
-import SaveResearchButton from "./SaveResearchButton";
-import { useTransition, useOptimistic, useState } from "react";
+import { Badge } from "@/components/ui/badge";
 import {
   Card,
   CardContent,
@@ -30,11 +13,19 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { useSession } from "@/lib/auth-client";
+import { formatRelativeDate } from "@/lib/utils";
+import type { ResearchData } from "@/types";
 import { JsonToHtml } from "../editor/JsonToHtml";
+import { UserAvatar } from "../shared/user-avatar";
+import UserTooltip from "../UserTooltip";
+import { Button } from "../ui/button";
+import { sendCollaborationRequest } from "./collaboration-actions";
+import ResearchMoreButton from "./ResearchMoreButton";
+import SaveResearchButton from "./SaveResearchButton";
 
 interface ResearchProps {
-  research: any;
+  research: ResearchData;
 }
 
 export default function Research({ research }: ResearchProps) {
@@ -46,34 +37,36 @@ export default function Research({ research }: ResearchProps) {
   const [isPending, startTransition] = useTransition();
 
   // Safely check if user is a collaborator
-  const isCollaborator = research.collaborators && research.collaborators.some
-    ? research.collaborators.some((c: any) => c.id === user.id)
+  const isCollaborator = research.collaborators?.some
+    ? research.collaborators?.some((c: any) => c.id === user.id)
     : false;
 
   // Use a local state to track collaboration request status
   const [hasRequested, setHasRequested] = useState<boolean>(
-    research.collaborationRequests && research.collaborationRequests.some
-      ? research.collaborationRequests.some((c: any) => c.requesterId === user.id)
+    research.collaborationRequests.some
+      ? research.collaborationRequests?.some(
+          (c: any) => c.requesterId === user.id
+        )
       : false
   );
 
-  const [optimisticRequested, setOptimisticRequested] = useOptimistic<boolean, boolean>(
-    hasRequested,
-    (_, newState: boolean) => newState
-  );
+  const [optimisticRequested, setOptimisticRequested] = useOptimistic<
+    boolean,
+    boolean
+  >(hasRequested, (_, newState: boolean) => newState);
 
   const handleCollaborationRequest = () => {
     startTransition(async () => {
       setOptimisticRequested(true);
       try {
         const res = await sendCollaborationRequest(research.id);
-        if (!res.success) {
-          setOptimisticRequested(false);
-          toast.error(res.message);
-        } else {
+        if (res.success) {
           toast.success(res.message);
           // Update the local state to persist the request
           setHasRequested(true);
+        } else {
+          setOptimisticRequested(false);
+          toast.error(res.message);
         }
       } catch (error) {
         setOptimisticRequested(false);
@@ -82,7 +75,7 @@ export default function Research({ research }: ResearchProps) {
     });
   };
   return (
-    <Card className="group hover:shadow-lg transition-shadow duration-200">
+    <Card className="group transition-shadow duration-200 hover:shadow-lg">
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
@@ -94,8 +87,8 @@ export default function Research({ research }: ResearchProps) {
             <div>
               <UserTooltip user={research?.user}>
                 <Link
-                  href={`/${research.user.username}`}
                   className="flex items-center gap-1 font-semibold hover:underline"
+                  href={`/${research.user.username}`}
                 >
                   {research.user.name}
                   {research.user.emailVerified && (
@@ -103,10 +96,10 @@ export default function Research({ research }: ResearchProps) {
                   )}
                 </Link>
               </UserTooltip>
-              <div className="text-sm text-muted-foreground">
+              <div className="text-muted-foreground text-sm">
                 <Link
-                  href={`/researches/${research.id}`}
                   className="hover:underline"
+                  href={`/researches/${research.id}`}
                   suppressHydrationWarning
                 >
                   <span>@{research.user.username}</span> •{" "}
@@ -128,7 +121,7 @@ export default function Research({ research }: ResearchProps) {
 
       <Link href={`/researches/${research.id}`}>
         <CardContent className="pt-0 pb-4">
-          <CardTitle className="text-lg mb-2 line-clamp-2">
+          <CardTitle className="mb-2 line-clamp-2 text-lg">
             {research.title}
           </CardTitle>
           <CardDescription className="mb-4 line-clamp-3">
@@ -137,33 +130,22 @@ export default function Research({ research }: ResearchProps) {
 
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div className="flex items-center gap-2 text-muted-foreground">
-              <Tag className="size-4" />
-              <span className="capitalize">
-                {research.category?.toLowerCase()}
-              </span>
-            </div>
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <Calendar className="size-4" />
-              {/* <span>{formatDate(research.deadline)}</span> */}
-            </div>
-            <div className="flex items-center gap-2 text-muted-foreground">
               <Users className="size-4" />
-              <span>{research.collaborators ? research.collaborators.length : 0} collaborators</span>
-            </div>
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <BookOpen className="size-4" />
-              <span>{research.applications?.length || 0} applications</span>
+              <span>
+                {research.collaborators ? research.collaborators.length : 0}{" "}
+                collaborators
+              </span>
             </div>
           </div>
 
-          {research.tags && research.tags.length > 0 && (
+          {research.keywords?.length > 0 && (
             <div className="mt-3">
-              <span className="text-sm font-medium text-muted-foreground">
+              <span className="font-medium text-muted-foreground text-sm">
                 Tags:
               </span>
-              <div className="flex flex-wrap gap-1 mt-1">
-                {research.tags.map((tag: string, index: number) => (
-                  <Badge key={index} variant="secondary" className="text-xs">
+              <div className="mt-1 flex flex-wrap gap-1">
+                {research.keywords?.map((tag: string, index: number) => (
+                  <Badge className="text-xs" key={index} variant="secondary">
                     {tag}
                   </Badge>
                 ))}
@@ -174,34 +156,43 @@ export default function Research({ research }: ResearchProps) {
       </Link>
 
       <CardFooter className="pt-0">
-        <div className="flex items-center justify-between w-full gap-2">
-          {research.user.id !== user.id && (
+        <div className="flex w-full items-center justify-between gap-2">
+          {research.user.id !== user.id ? (
             <Button
+              className="flex-1"
+              disabled={
+                isCollaborator ||
+                optimisticRequested ||
+                hasRequested ||
+                isPending
+              }
               onClick={handleCollaborationRequest}
               variant={
                 isCollaborator
                   ? "secondary"
-                  : (optimisticRequested || hasRequested)
+                  : optimisticRequested || hasRequested
                     ? "outline"
                     : "default"
               }
-              disabled={isCollaborator || optimisticRequested || hasRequested || isPending || user?.role !== "STUDENT"}
-              className="flex-1"
             >
               {isCollaborator
                 ? "Already Collaborating"
-                : (optimisticRequested || hasRequested)
+                : optimisticRequested || hasRequested
                   ? "Request Sent"
                   : "Request to Collaborate"}
             </Button>
+          ) : (
+            <Button>Own research</Button>
           )}
           <SaveResearchButton
-            researchId={research.id}
             initialState={{
-              isSaveResearchByUser: research.savedResearch && research.savedResearch.some
-                ? research.savedResearch.some((bookmark: any) => bookmark.userId === user.id)
+              isSaveResearchByUser: research.savedResearch?.some
+                ? research.savedResearch.some(
+                    (bookmark: any) => bookmark.userId === user.id
+                  )
                 : false,
             }}
+            researchId={research.id}
           />
         </div>
       </CardFooter>

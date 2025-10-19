@@ -27,13 +27,13 @@ export function CopyButton({ value, className, ...props }: CopyButtonProps) {
 
   return (
     <Button
-      size="sm"
-      variant="ghost"
       className={cn(
         "z-10 size-[30px] border border-white/25 bg-zinc-900 p-1.5 text-primary-foreground hover:text-foreground dark:text-foreground",
-        className,
+        className
       )}
       onClick={() => handleCopyValue(value)}
+      size="sm"
+      variant="ghost"
       {...props}
     >
       <span className="sr-only">Copy</span>

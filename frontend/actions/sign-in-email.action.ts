@@ -1,11 +1,11 @@
 "use server";
 
+import { APIError } from "better-auth/api";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { APIError } from "better-auth/api";
 
-import { auth, ErrorCode } from "@/lib/auth";
-import { loginSchema, TLogin } from "@/lib/validations/auth";
+import { auth, type ErrorCode } from "@/lib/auth";
+import { loginSchema, type TLogin } from "@/lib/validations/auth";
 
 export async function signInEmailAction(data: TLogin) {
   const result = loginSchema.safeParse(data);
@@ -32,12 +32,11 @@ export async function signInEmailAction(data: TLogin) {
     if (err instanceof APIError) {
       const errCode = err.body ? (err.body.code as ErrorCode) : "UNKNOWN";
       console.dir(err, { depth: 5 });
-      switch (errCode) {
-        case "EMAIL_NOT_VERIFIED":
-          redirect("/verify?error=email_not_verified");
-        default:
-          return { error: err.message };
+
+      if (errCode === "EMAIL_NOT_VERIFIED") {
+        redirect("/verify?error=email_not_verified");
       }
+      return { error: err.message };
     }
 
     return { error: "Internal Server Error" };

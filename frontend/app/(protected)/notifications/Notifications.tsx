@@ -1,17 +1,16 @@
 "use client";
 
-import { useEffect } from "react";
 import {
   useInfiniteQuery,
   useMutation,
   useQueryClient,
 } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
-
-import { NotificationsPage } from "@/types/types";
-import kyInstance from "@/lib/ky";
+import { useEffect } from "react";
 import InfiniteScrollContainer from "@/components/feed/InfiniteScrollContainer";
 import PostsLoadingSkeleton from "@/components/posts/PostsLoadingSkeleton";
+import kyInstance from "@/lib/ky";
+import type { NotificationsPage } from "@/types/types";
 
 import Notification from "./Notification";
 
@@ -29,7 +28,7 @@ export default function Notifications() {
       kyInstance
         .get(
           "/api/notifications",
-          pageParam ? { searchParams: { cursor: pageParam } } : {},
+          pageParam ? { searchParams: { cursor: pageParam } } : {}
         )
         .json<NotificationsPage>(),
     initialPageParam: null as string | null,
@@ -62,7 +61,7 @@ export default function Notifications() {
 
   if (status === "success" && !notifications.length && !hasNextPage) {
     return (
-      <p className="text-muted-foreground text-center">
+      <p className="text-center text-muted-foreground">
         You don&apos;t have any notifications yet.
       </p>
     );
@@ -70,7 +69,7 @@ export default function Notifications() {
 
   if (status === "error") {
     return (
-      <p className="text-destructive text-center">
+      <p className="text-center text-destructive">
         An error occurred while loading notifications.
       </p>
     );

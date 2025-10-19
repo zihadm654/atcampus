@@ -1,8 +1,5 @@
-import { sendEmailAction } from "@/actions/send-email.action";
-import { reactInvitationEmail } from "@/emails/invitation";
-import { reactResetPasswordEmail } from "@/emails/reset-password";
 import { render } from "@react-email/components";
-import { betterAuth, User, type BetterAuthOptions } from "better-auth";
+import { type BetterAuthOptions, betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { APIError, createAuthMiddleware } from "better-auth/api";
 import { nextCookies } from "better-auth/next-js";
@@ -15,18 +12,18 @@ import {
   twoFactor,
   username,
 } from "better-auth/plugins";
-
+import { getActiveOrganization } from "@/actions/organizations";
+import { sendEmailAction } from "@/actions/send-email.action";
+import { reactInvitationEmail } from "@/emails/invitation";
+import { reactResetPasswordEmail } from "@/emails/reset-password";
+import VerifyEmail from "@/emails/verify-email";
 import { env } from "@/env.mjs";
 import { hashPassword, verifyPassword } from "@/lib/argon2";
 import { prisma } from "@/lib/db";
 import { ac, roles } from "@/lib/permissions";
 import { normalizeName, VALID_DOMAINS } from "@/lib/utils";
-
+import type { ExtendedUser } from "@/types/auth-types";
 import transporter from "./nodemailer";
-import { getActiveOrganization } from "@/actions/organizations";
-import VerifyEmail from "@/emails/verify-email";
-import { ExtendedUser } from "@/types/auth-types";
-
 
 const options = {
   database: prismaAdapter(prisma, {
@@ -46,11 +43,11 @@ const options = {
         html: await render(
           VerifyEmail({
             username: user.name,
-            verifyUrl: String(link)
+            verifyUrl: String(link),
           })
-        )
-      })
-    }
+        ),
+      });
+    },
   },
   emailAndPassword: {
     enabled: true,
@@ -69,7 +66,7 @@ const options = {
           reactResetPasswordEmail({
             username: user.email,
             resetLink: url,
-          }),
+          })
         ),
       });
     },
@@ -95,8 +92,8 @@ const options = {
             ...ctx,
             body: {
               ...ctx.body,
-              name
-            }
+              name,
+            },
           },
         };
       }
@@ -132,23 +129,37 @@ const options = {
                 data: {
                   ...userData,
                   role: "ADMIN" as const,
-                  status: "ACTIVE" as const
-                }
+                  status: "ACTIVE" as const,
+                },
               };
             }
 
             // Get the role and other fields from the context
-            const { role, institution, instituteId, phone } = context?.body || {};
+            const { role, institution, instituteId, phone } =
+              context?.body || {};
 
             // Validate role
-            if (!role || !["STUDENT", "PROFESSOR", "ORGANIZATION", "INSTITUTION", "ADMIN"].includes(role)) {
+            if (
+              !(
+                role &&
+                [
+                  "STUDENT",
+                  "PROFESSOR",
+                  "ORGANIZATION",
+                  "INSTITUTION",
+                  "ADMIN",
+                ].includes(role)
+              )
+            ) {
               throw new APIError("BAD_REQUEST", {
-                message: "Invalid or missing role"
+                message: "Invalid or missing role",
               });
             }
 
             // Determine status based on role
-            const status = ["ORGANIZATION", "INSTITUTION"].includes(role) ? "PENDING" : "ACTIVE";
+            const status = ["ORGANIZATION", "INSTITUTION"].includes(role)
+              ? "PENDING"
+              : "ACTIVE";
 
             return {
               data: {
@@ -157,8 +168,8 @@ const options = {
                 status,
                 institution: institution || null,
                 instituteId: instituteId || null,
-                phone: phone || null
-              }
+                phone: phone || null,
+              },
             };
           } catch (error) {
             console.error("User creation error:", error);
@@ -170,43 +181,43 @@ const options = {
     session: {
       create: {
         before: async (session) => {
-          const organization = await getActiveOrganization(session.userId)
+          const organization = await getActiveOrganization(session.userId);
           return {
             data: {
               ...session,
-              activeOrganizationId: organization?.id
-            }
-          }
-        }
-      }
-    }
+              activeOrganizationId: organization?.id,
+            },
+          };
+        },
+      },
+    },
   },
   user: {
     additionalFields: {
       role: {
         type: ["STUDENT", "PROFESSOR", "INSTITUTION", "ORGANIZATION", "ADMIN"],
         input: true,
-        required: true
+        required: true,
       },
       status: {
         type: ["PENDING", "ACTIVE", "REJECTED", "SUSPENDED"],
         input: false, // Status is managed by the system, not user input
-        required: false // We'll set this in the databaseHooks
+        required: false, // We'll set this in the databaseHooks
       },
       institution: {
         type: "string",
         input: true,
-        required: false
+        required: false,
       },
       instituteId: {
         type: "string",
         input: true,
-        required: false
+        required: false,
       },
       phone: {
         type: "string",
         input: true,
-        required: false
+        required: false,
       },
     },
   },
@@ -289,7 +300,7 @@ const options = {
                     process.env.NODE_ENV === "development"
                       ? `http://localhost:3000/accept-invitation/${invitation.id}`
                       : `${process.env.NEXT_PUBLIC_APP_URL}/accept-invitation/${invitation.id}`,
-                }),
+                })
               ),
             });
           } catch (error) {
@@ -298,7 +309,11 @@ const options = {
         },
 
         // Before accepting an invitation
-        beforeAcceptInvitation: async ({ invitation, user, organization }: any) => {
+        beforeAcceptInvitation: async ({
+          invitation,
+          user,
+          organization,
+        }: any) => {
           // Check if invitation is still valid
           if (invitation.expiresAt < new Date()) {
             throw new APIError("BAD_REQUEST", {
@@ -316,8 +331,8 @@ const options = {
             data: {
               invitation,
               user,
-              organization
-            }
+              organization,
+            },
           };
         },
 
@@ -330,11 +345,11 @@ const options = {
         }: any) => {
           // Update invitation status
           // Fix: only update if invitation exists
-          if (invitation && invitation.id) {
+          if (invitation?.id) {
             try {
               await prisma.invitation.update({
                 where: { id: invitation.id },
-                data: { status: "accepted" }
+                data: { status: "accepted" },
               });
             } catch (error) {
               console.error("Error updating invitation:", error);
@@ -360,16 +375,18 @@ const options = {
           html: await render(
             reactInvitationEmail({
               username: data.email,
-              invitedByUsername: data.inviter.user.name || data.inviter.user.email,
+              invitedByUsername:
+                data.inviter.user.name || data.inviter.user.email,
               invitedByEmail: data.inviter.user.email,
               teamName: data.organization.name,
               inviteLink:
                 process.env.NODE_ENV === "development"
                   ? `http://localhost:3000/accept-invitation/${data.id}`
-                  : `${process.env.BETTER_AUTH_URL ||
-                  process.env.NEXT_PUBLIC_APP_URL
-                  }/accept-invitation/${data.id}`,
-            }),
+                  : `${
+                      process.env.BETTER_AUTH_URL ||
+                      process.env.NEXT_PUBLIC_APP_URL
+                    }/accept-invitation/${data.id}`,
+            })
           ),
         });
       },
@@ -405,8 +422,8 @@ export const auth = betterAuth({
   ...options,
   plugins: [
     ...(options.plugins ?? []),
-    customSession(async ({ user, session }) => {
-      return {
+    customSession(
+      async ({ user, session }) => ({
         session: {
           ...session,
           ipAddress: session.ipAddress,
@@ -433,8 +450,9 @@ export const auth = betterAuth({
           banReason: user.banReason,
           banExpires: user.banExpires,
         },
-      };
-    }, options),
+      }),
+      options
+    ),
   ],
 });
 

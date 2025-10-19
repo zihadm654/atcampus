@@ -1,9 +1,9 @@
-'use server';
+"use server";
 
-import { prisma } from '@/lib/db';
-import { getCurrentUser } from '@/lib/session';
-import { createPostSchema } from '@/lib/validations/validation';
-import { getPostDataInclude } from '@/types/types';
+import { prisma } from "@/lib/db";
+import { getCurrentUser } from "@/lib/session";
+import { createPostSchema } from "@/lib/validations/validation";
+import { getPostDataInclude } from "@/types/types";
 
 export async function submitPost(input: {
   content: string;
@@ -11,7 +11,7 @@ export async function submitPost(input: {
 }) {
   const user = await getCurrentUser();
 
-  if (!user) throw new Error('Unauthorized');
+  if (!user) throw new Error("Unauthorized");
 
   const { content, mediaIds } = createPostSchema.parse(input);
 

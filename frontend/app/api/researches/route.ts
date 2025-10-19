@@ -1,9 +1,8 @@
-import { NextRequest } from "next/server";
-
-import { getResearchDataInclude, ResearchesPage } from "@/types/types";
+import type { Prisma } from "@prisma/client";
+import type { NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/session";
-import { Prisma } from "@prisma/client";
+import { getResearchDataInclude, type ResearchesPage } from "@/types/types";
 
 export async function GET(req: NextRequest) {
   try {

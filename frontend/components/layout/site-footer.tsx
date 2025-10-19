@@ -1,9 +1,8 @@
-import * as React from "react";
 import Link from "next/link";
-
+import type * as React from "react";
+import { ModeToggle } from "@/components/layout/mode-toggle";
 import { footerLinks, siteConfig } from "@/config/site";
 import { cn } from "@/lib/utils";
-import { ModeToggle } from "@/components/layout/mode-toggle";
 
 import { NewsletterForm } from "../forms/newsletter-form";
 import { Icons } from "../shared/icons";
@@ -11,18 +10,18 @@ import { Icons } from "../shared/icons";
 export function SiteFooter({ className }: React.HTMLAttributes<HTMLElement>) {
   return (
     <footer className={cn("border-t", className)}>
-      <div className="container grid max-w-6xl grid-cols-2 gap-6 py-14 md:grid-cols-5">
+      <div className="container grid max-w-6xl grid-cols-2 gap-6 py-14 md:grid-cols-4">
         {footerLinks.map((section) => (
           <div key={section.title}>
-            <span className="text-sm font-medium text-foreground">
+            <span className="font-medium text-foreground text-sm">
               {section.title}
             </span>
             <ul className="mt-4 list-inside space-y-3">
-              {section.items?.map((link:any) => (
+              {section.items?.map((link: any) => (
                 <li key={link.title}>
                   <Link
+                    className="text-muted-foreground text-sm hover:text-primary"
                     href={link.href}
-                    className="text-sm text-muted-foreground hover:text-primary"
                   >
                     {link.title}
                   </Link>
@@ -44,10 +43,10 @@ export function SiteFooter({ className }: React.HTMLAttributes<HTMLElement>) {
 
           <div className="flex items-center gap-3">
             <Link
-              href={siteConfig.links.github}
-              target="_blank"
-              rel="noreferrer"
               className="font-medium underline underline-offset-4"
+              href={siteConfig.links.github}
+              rel="noreferrer"
+              target="_blank"
             >
               <Icons.gitHub className="size-5" />
             </Link>

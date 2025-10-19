@@ -1,18 +1,17 @@
 "use client";
 
-import { Fragment } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-
-import { marketingConfig } from "@/config/marketing";
-import { useSession } from "@/lib/auth-client";
-import { cn } from "@/lib/utils";
-import { useScroll } from "@/hooks/use-scroll";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Fragment } from "react";
 import { Icons } from "@/components/shared/icons";
 import MaxWidthWrapper from "@/components/shared/max-width-wrapper";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { marketingConfig } from "@/config/marketing";
+import { useScroll } from "@/hooks/use-scroll";
+import { useSession } from "@/lib/auth-client";
+import { cn } from "@/lib/utils";
 
 import MessagesButton from "../feed/MessagesButton";
 import NotificationsButton from "../feed/NotificationsButton";
@@ -39,44 +38,45 @@ export function NavBar({
 
   return (
     <header
-      className={`bg-background/60 sticky top-0 z-40 flex w-full justify-center backdrop-blur-xl transition-all ${scroll ? (scrolled ? "border-b" : "bg-transparent") : "border-b"
-        }`}
+      className={`sticky top-0 z-40 flex w-full justify-center bg-background/60 backdrop-blur-xl transition-all ${
+        scroll ? (scrolled ? "border-b" : "bg-transparent") : "border-b"
+      }`}
     >
       <MaxWidthWrapper
-        className="grid grid-cols-2 gap-4 space-x-4 pt-2 md:grid-cols-4 max-md:gap-2"
-      // large={documentation}
+        className="grid grid-cols-2 gap-4 space-x-4 pt-2 max-md:gap-2 md:grid-cols-4"
+        // large={documentation}
       >
         <div className="flex items-center gap-2 md:gap-4">
-          <Link href="/" className="text-primary flex items-center space-x-2">
+          <Link className="flex items-center space-x-2 text-primary" href="/">
             <Image
-              src="/_static/logo1.png"
               alt="logo"
-              height={50}
-              width={50}
-              priority
               className=""
+              height={50}
+              priority
+              src="/_static/logo1.png"
+              width={50}
             />
           </Link>
           <SearchField />
         </div>
         {links && links.length > 0 ? (
-          <nav className="flex items-center justify-center gap-2 space-x-6 max-md:order-3 col-span-2 max-md:justify-around">
+          <nav className="col-span-2 flex items-center justify-center gap-2 space-x-6 max-md:order-3 max-md:justify-around">
             {links?.map((item) => {
               const Icon = Icons[item.icon || "arrowRight"];
               return (
                 <Fragment key={`link-fragment-${item.title}`}>
                   <Link
-                    key={`link-${item.title}`}
-                    href={item.disabled ? "#" : item.href}
-                    prefetch={true}
                     className={cn(
-                      "hover:bg-muted flex items-center gap-3 rounded-md p-2 text-sm font-medium",
+                      "flex items-center gap-3 rounded-md p-2 font-medium text-sm hover:bg-muted",
                       path === item.href
-                        ? "bg-muted border border-b-blue-700 text-blue-700"
+                        ? "border border-b-blue-700 bg-muted text-blue-700"
                         : "text-muted-foreground hover:text-accent-foreground",
                       item.disabled &&
-                      "hover:text-muted-foreground cursor-not-allowed opacity-80 hover:bg-transparent",
+                        "cursor-not-allowed opacity-80 hover:bg-transparent hover:text-muted-foreground"
                     )}
+                    href={item.disabled ? "#" : item.href}
+                    key={`link-${item.title}`}
+                    prefetch={true}
                   >
                     <Icon className="size-6.5" />
                     <span className="hidden lg:block">{item.title}</span>
@@ -98,27 +98,27 @@ export function NavBar({
               />
               <UserAccountNav />
             </>
-          ) : !session ? (
+          ) : session ? (
+            <Skeleton className="hidden h-9 w-28 rounded-full lg:flex" />
+          ) : (
             <>
               <Button
                 className="hidden gap-2 px-5 md:flex"
-                variant="default"
-                size="sm"
                 rounded="full"
+                size="sm"
+                variant="default"
               >
                 <Link href="/login">Login</Link>
               </Button>
               <Button
                 className="hidden gap-2 px-5 md:flex"
-                variant="default"
-                size="sm"
                 rounded="full"
+                size="sm"
+                variant="default"
               >
                 <Link href="/register">Sign Up</Link>
               </Button>
             </>
-          ) : (
-            <Skeleton className="hidden h-9 w-28 rounded-full lg:flex" />
           )}
         </div>
       </MaxWidthWrapper>

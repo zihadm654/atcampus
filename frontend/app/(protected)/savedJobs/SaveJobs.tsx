@@ -2,12 +2,11 @@
 
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
-
-import { JobsPage } from "@/types/types";
-import kyInstance from "@/lib/ky";
 import InfiniteScrollContainer from "@/components/feed/InfiniteScrollContainer";
 import Job from "@/components/jobs/Job";
 import JobsLoadingSkeleton from "@/components/jobs/JobsLoadingSkeleton";
+import kyInstance from "@/lib/ky";
+import type { JobsPage } from "@/types/types";
 
 export default function SaveJobs() {
   const {
@@ -23,7 +22,7 @@ export default function SaveJobs() {
       kyInstance
         .get(
           "/api/jobs/savedJobs",
-          pageParam ? { searchParams: { cursor: pageParam } } : {},
+          pageParam ? { searchParams: { cursor: pageParam } } : {}
         )
         .json<JobsPage>(),
     initialPageParam: null as string | null,
@@ -38,7 +37,7 @@ export default function SaveJobs() {
 
   if (status === "success" && !jobs.length && !hasNextPage) {
     return (
-      <p className="text-muted-foreground text-center">
+      <p className="text-center text-muted-foreground">
         You don&apos;t have any bookmarks yet.
       </p>
     );
@@ -46,7 +45,7 @@ export default function SaveJobs() {
 
   if (status === "error") {
     return (
-      <p className="text-destructive text-center">
+      <p className="text-center text-destructive">
         An error occurred while loading bookmarks.
       </p>
     );
@@ -58,7 +57,7 @@ export default function SaveJobs() {
       onBottomReached={() => hasNextPage && !isFetching && fetchNextPage()}
     >
       {jobs.map((job) => (
-        <Job key={job.id} job={job} />
+        <Job job={job} key={job.id} />
       ))}
       {isFetchingNextPage && <Loader2 className="mx-auto my-3 animate-spin" />}
     </InfiniteScrollContainer>

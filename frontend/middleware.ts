@@ -1,19 +1,36 @@
-import { NextRequest, NextResponse } from "next/server";
 import { getSessionCookie } from "better-auth/cookies";
+import { type NextRequest, NextResponse } from "next/server";
 
-const protectedRoutes = ["/", "/dashboard", "/admin", "/jobs", "/reserches", "/bookmarks", "/messages", "/notifications", "/dashboard/settings"];
-const authRoutes = ["/login", "/register", "/forgot-password", "/reset-password"];
+const protectedRoutes = [
+  "/",
+  "/dashboard",
+  "/admin",
+  "/jobs",
+  "/reserches",
+  "/bookmarks",
+  "/messages",
+  "/notifications",
+  "/dashboard/settings",
+];
+const authRoutes = [
+  "/login",
+  "/register",
+  "/forgot-password",
+  "/reset-password",
+];
 
 export async function middleware(req: NextRequest) {
   const { nextUrl } = req;
   const sessionCookie = await getSessionCookie(req);
 
   const isLoggedIn = !!sessionCookie;
-  const isProtectedRoute = protectedRoutes.some(route =>
-    nextUrl.pathname === route || nextUrl.pathname.startsWith(route + "/")
+  const isProtectedRoute = protectedRoutes.some(
+    (route) =>
+      nextUrl.pathname === route || nextUrl.pathname.startsWith(route + "/")
   );
-  const isAuthRoute = authRoutes.some(route =>
-    nextUrl.pathname === route || nextUrl.pathname.startsWith(route + "/")
+  const isAuthRoute = authRoutes.some(
+    (route) =>
+      nextUrl.pathname === route || nextUrl.pathname.startsWith(route + "/")
   );
 
   // Handle unauthenticated access to protected routes

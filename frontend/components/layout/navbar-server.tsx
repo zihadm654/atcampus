@@ -35,10 +35,10 @@ export async function NavBarServer({
 
   return (
     <NavBar
-      scroll={scroll}
-      large={large}
-      initialNotificationCount={unreadNotificationsCount}
       initialMessageCount={unreadMessagesCount}
+      initialNotificationCount={unreadNotificationsCount}
+      large={large}
+      scroll={scroll}
     />
   );
 }

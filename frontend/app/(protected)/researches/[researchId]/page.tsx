@@ -1,46 +1,20 @@
-import { cache } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound, redirect } from "next/navigation";
-import {
-  ArrowLeft,
-  Briefcase,
-  Building,
-  Calendar,
-  CalendarRange,
-  Clock,
-  DollarSign,
-  GraduationCap,
-  Mail,
-  MapPin,
-  Phone,
-  ShieldCheck,
-  User,
-} from "lucide-react";
-
-import { getResearchDataInclude } from "@/types/types";
-import { prisma } from "@/lib/db";
-import { getCurrentUser } from "@/lib/session";
-import { constructMetadata, formatDate, formatRelativeDate } from "@/lib/utils";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardAction,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { notFound } from "next/navigation";
+import { cache } from "react";
 import { JsonToHtml } from "@/components/editor/JsonToHtml";
 import {
   AcceptCollaborationButton,
   DeclineCollaborationButton,
 } from "@/components/researches/CollaborationButtons";
 import ResearchMoreButton from "@/components/researches/ResearchMoreButton";
-import { Icons } from "@/components/shared/icons";
 import { UserAvatar } from "@/components/shared/user-avatar";
 import UserTooltip from "@/components/UserTooltip";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { prisma } from "@/lib/db";
+import { getCurrentUser } from "@/lib/session";
+import { constructMetadata, formatRelativeDate } from "@/lib/utils";
+import { getResearchDataInclude } from "@/types/types";
 
 interface PageProps {
   params: Promise<{ researchId: string }>;
@@ -97,12 +71,12 @@ export default async function ResearchPage({ params }: PageProps) {
   return (
     <div className="flex w-full flex-col gap-3">
       <div className="rounded-xl p-3 shadow-md">
-        <h1 className="text-3xl font-bold">{research.title}</h1>
+        <h1 className="font-bold text-3xl">{research.title}</h1>
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-6 py-4">
             <h4>Published on</h4>
             <Link
-              className="text-muted-foreground block text-sm hover:underline"
+              className="block text-muted-foreground text-sm hover:underline"
               href={`/researches/${research.id}`}
               suppressHydrationWarning
             >
@@ -113,8 +87,8 @@ export default async function ResearchPage({ params }: PageProps) {
             <ResearchMoreButton research={research} />
           )}
         </div>
-        <div className="text-md mt-2 gap-4">
-          <h5 className="font-semibold pb-4 text-xl">Authors</h5>
+        <div className="mt-2 gap-4 text-md">
+          <h5 className="pb-4 font-semibold text-xl">Authors</h5>
           <div className="flex items-center gap-3 py-2">
             <UserTooltip user={research.user}>
               <Link href={`/${research.user.username}`}>
@@ -123,14 +97,14 @@ export default async function ResearchPage({ params }: PageProps) {
             </UserTooltip>
             <UserTooltip user={research?.user}>
               <Link
-                className="text-md flex items-center gap-1 font-medium hover:underline"
+                className="flex items-center gap-1 font-medium text-md hover:underline"
                 href={`/${research.user.username}`}
               >
                 {research.user.name}
               </Link>
             </UserTooltip>
             {research.collaborators.map((collab) => (
-              <div key={collab.id} className="flex items-center gap-2">
+              <div className="flex items-center gap-2" key={collab.id}>
                 <UserTooltip user={research.user}>
                   <Link href={`/${collab.username}`}>
                     <UserAvatar user={collab} />{" "}
@@ -138,7 +112,7 @@ export default async function ResearchPage({ params }: PageProps) {
                 </UserTooltip>
                 <UserTooltip user={research?.user}>
                   <Link
-                    className="text-md flex items-center gap-1 font-medium hover:underline"
+                    className="flex items-center gap-1 font-medium text-md hover:underline"
                     href={`/${collab.username}`}
                   >
                     {collab.name}
@@ -149,10 +123,10 @@ export default async function ResearchPage({ params }: PageProps) {
           </div>
         </div>
       </div>
-      <div className="bg-card overflow-hidden rounded-2xl">
-        <div className="flex-1 space-y-3 mb-4">
+      <div className="overflow-hidden rounded-2xl bg-card">
+        <div className="mb-4 flex-1 space-y-3">
           <div className="rounded-xl border p-3 shadow-sm">
-            <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold">
+            <h2 className="mb-4 flex items-center gap-2 font-semibold text-lg">
               Abstract and Figures
             </h2>
             <JsonToHtml json={JSON.parse(research.description)} />
@@ -160,11 +134,11 @@ export default async function ResearchPage({ params }: PageProps) {
         </div>
         {research.attachments.map((item) => (
           <object
-            key={item.url}
             data={item.url}
+            height="700px"
+            key={item.url}
             type="application/pdf"
             width="100%"
-            height="700px"
           >
             <p>
               Unable to display PDF file. <a href={item.url}>Download</a>{" "}
@@ -172,7 +146,7 @@ export default async function ResearchPage({ params }: PageProps) {
             </p>
           </object>
         ))}
-        {/* {research.user.id === user.id &&
+        {research.user.id === user.id &&
           research.collaborationRequests.length > 0 && (
             <Card>
               <CardHeader>
@@ -183,14 +157,14 @@ export default async function ResearchPage({ params }: PageProps) {
                   (req) =>
                     req.status === "PENDING" && (
                       <div
+                        className="mb-2 flex items-center justify-between"
                         key={req.id}
-                        className="flex items-center justify-between mb-2"
                       >
                         <div className="flex items-center gap-2">
                           <UserAvatar user={req.requester} />
                           <span>{req.requester.name} wants to collaborate</span>
                         </div>
-                        <div>
+                        <div className="gap-2 space-x-2">
                           <AcceptCollaborationButton requestId={req.id} />
                           <DeclineCollaborationButton requestId={req.id} />
                         </div>
@@ -199,7 +173,7 @@ export default async function ResearchPage({ params }: PageProps) {
                 )}
               </CardContent>
             </Card>
-          )} */}
+          )}
       </div>
     </div>
   );

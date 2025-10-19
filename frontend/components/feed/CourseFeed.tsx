@@ -1,16 +1,14 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { Loader2, Search, X } from "lucide-react";
-
-import { CoursesPage } from "@/types/types";
-import kyInstance from "@/lib/ky";
-import useDebounce from "@/hooks/useDebounce";
+import { useEffect, useMemo, useState } from "react";
 import InfiniteScrollContainer from "@/components/feed/InfiniteScrollContainer";
-
-import CourseLoadingSkeleton from "../courses/CourseLoadingSkeleton";
+import useDebounce from "@/hooks/useDebounce";
+import kyInstance from "@/lib/ky";
+import type { CoursesPage } from "@/types/types";
 import Course from "../courses/Course";
+import CourseLoadingSkeleton from "../courses/CourseLoadingSkeleton";
 
 interface Props {
   user: any;
@@ -56,9 +54,10 @@ export default function CourseFeed({ user }: Props) {
     }
   }, [searchQuery, debouncedSearchQuery]);
 
-  const courses = useMemo(() => {
-    return data?.pages.flatMap((page) => page.courses) || [];
-  }, [data]);
+  const courses = useMemo(
+    () => data?.pages.flatMap((page) => page.courses) || [],
+    [data]
+  );
 
   if (status === "pending") {
     return <CourseLoadingSkeleton />;
@@ -66,63 +65,72 @@ export default function CourseFeed({ user }: Props) {
 
   if (status === "error") {
     return (
-      <p className="text-destructive text-center">
+      <p className="text-center text-destructive">
         An error occurred while loading posts.
       </p>
     );
   }
 
-
   // Show "no courses found" message only when search has been performed and no results
-  const showNoResults = debouncedSearchQuery && status === "success" && !courses.length && !hasNextPage;
+  const showNoResults =
+    debouncedSearchQuery &&
+    status === "success" &&
+    !courses.length &&
+    !hasNextPage;
   // Show "no courses posted" message only when no search and no courses
-  const showNoJobs = !debouncedSearchQuery && status === "success" && !courses.length && !hasNextPage;
+  const showNoJobs =
+    !debouncedSearchQuery &&
+    status === "success" &&
+    !courses.length &&
+    !hasNextPage;
 
   return (
     <div className="space-y-6">
       {/* Search Bar */}
       <div className="relative max-w-2xl">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Search className="-translate-y-1/2 absolute top-1/2 left-3 h-4 w-4 text-muted-foreground" />
           <input
-            type="text"
-            placeholder="Search courses by title, code, or description..."
-            className="w-full rounded-lg border border-input bg-background pl-10 pr-10 py-3 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-            value={searchQuery}
+            className="w-full rounded-lg border border-input bg-background py-3 pr-10 pl-10 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
             onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search courses by title, code, or description..."
+            type="text"
+            value={searchQuery}
           />
           {searchQuery && (
             <button
+              className="-translate-y-1/2 absolute top-1/2 right-3 rounded-full p-1 hover:bg-muted"
               onClick={() => setSearchQuery("")}
-              className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1 hover:bg-muted"
+              type="button"
             >
               <X className="h-4 w-4 text-muted-foreground" />
             </button>
           )}
         </div>
         {isSearching && (
-          <div className="absolute right-3 top-1/2 -translate-y-1/2">
+          <div className="-translate-y-1/2 absolute top-1/2 right-3">
             <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
           </div>
         )}
         {debouncedSearchQuery && (
-          <p className="mt-2 text-sm text-muted-foreground">
+          <p className="mt-2 text-muted-foreground text-sm">
             Showing results for "{debouncedSearchQuery}"
           </p>
         )}
       </div>
       {/* No results message when search returns nothing */}
       {showNoResults && (
-        <div className="text-center py-8">
+        <div className="py-8 text-center">
           <p className="text-muted-foreground">
-            No courses found matching "{debouncedSearchQuery}". Try a different search term.
+            No courses found matching "{debouncedSearchQuery}". Try a different
+            search term.
           </p>
         </div>
       )}
 
       {/* No courses message when no jobs exist at all */}
       {showNoJobs && (
-        <div className="text-center py-8">
+        <div className="py-8 text-center">
           <p className="text-muted-foreground">
             No courses have been posted yet.
           </p>
@@ -136,9 +144,11 @@ export default function CourseFeed({ user }: Props) {
           onBottomReached={() => hasNextPage && !isFetching && fetchNextPage()}
         >
           {courses.map((course) => (
-            <Course key={course.id} course={course} />
+            <Course course={course} key={course.id} />
           ))}
-          {isFetchingNextPage && <Loader2 className="mx-auto my-3 animate-spin" />}
+          {isFetchingNextPage && (
+            <Loader2 className="mx-auto my-3 animate-spin" />
+          )}
         </InfiniteScrollContainer>
       )}
     </div>

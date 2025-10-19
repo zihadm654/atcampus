@@ -1,12 +1,8 @@
-import { Fragment } from "react";
 import { headers } from "next/headers";
 import Link from "next/link";
-import { redirect } from "next/navigation";
-
-import { auth } from "@/lib/auth";
-import { prisma } from "@/lib/db";
-import { getCurrentUser } from "@/lib/session";
-import { constructMetadata } from "@/lib/utils";
+import { ReturnButton } from "@/components/auth/return-button";
+import { SignOutButton } from "@/components/auth/sign-out-button";
+import { DashboardHeader } from "@/components/dashboard/header";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import {
@@ -17,9 +13,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { ReturnButton } from "@/components/auth/return-button";
-import { SignOutButton } from "@/components/auth/sign-out-button";
-import { DashboardHeader } from "@/components/dashboard/header";
+import { auth } from "@/lib/auth";
+import { prisma } from "@/lib/db";
+import { getCurrentUser } from "@/lib/session";
+import { constructMetadata } from "@/lib/utils";
 
 import { ApplicationStatusSelect } from "./_components/ApplicationStatusSelect";
 import { OrganizationCard } from "./_components/organization-card";
@@ -80,9 +77,9 @@ export default async function DashboardPage() {
           </div>
         </div>
         {user?.role === "ORGANIZATION" && (
-          <Fragment>
+          <>
             <Label className="text-2xl">Job Applicants</Label>
-            <Table className="border p-2 max-md:p-1 my-3 rounded-lg">
+            <Table className="my-3 rounded-lg border p-2 max-md:p-1">
               <TableHeader>
                 <TableRow>
                   <TableHead>Id</TableHead>
@@ -111,10 +108,10 @@ export default async function DashboardPage() {
                     </TableCell>
                   </TableRow>
                 ))}
-                <TableRow></TableRow>
+                <TableRow />
               </TableBody>
             </Table>
-          </Fragment>
+          </>
         )}
         {user?.role === "INSTITUTION" && (
           <OrganizationCard

@@ -45,8 +45,8 @@ export function NewsletterForm() {
   return (
     <Form {...form}>
       <form
-        onSubmit={form.handleSubmit(onSubmit)}
         className="w-full space-y-2 sm:max-w-sm"
+        onSubmit={form.handleSubmit(onSubmit)}
       >
         <FormField
           control={form.control}
@@ -56,9 +56,9 @@ export function NewsletterForm() {
               <FormLabel>Subscribe to our newsletter</FormLabel>
               <FormControl>
                 <Input
-                  type="email"
                   className="rounded-full px-4"
                   placeholder="janedoe@example.com"
+                  type="email"
                   {...field}
                 />
               </FormControl>
@@ -66,7 +66,7 @@ export function NewsletterForm() {
             </FormItem>
           )}
         />
-        <Button type="submit" size="sm" rounded="full" className="px-4">
+        <Button className="px-4" size="sm" type="submit">
           Subscribe
         </Button>
       </form>

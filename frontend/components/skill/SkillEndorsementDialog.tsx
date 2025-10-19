@@ -1,8 +1,10 @@
 "use client";
 
+import { formatDistanceToNow } from "date-fns";
+import { ThumbsUp } from "lucide-react";
 import { useState } from "react";
-import { UserSkillData } from "@/types/types";
-import { useSkillEndorsements } from "./endorsement.mutations";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -10,17 +12,17 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { ThumbsUp } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
-import { formatDistanceToNow } from "date-fns";
+import type { UserSkillData } from "@/types/types";
+import { useSkillEndorsements } from "./endorsement.mutations";
 
 interface SkillEndorsementDialogProps {
   skill: UserSkillData;
 }
 
-export default function SkillEndorsementDialog({ skill }: SkillEndorsementDialogProps) {
+export default function SkillEndorsementDialog({
+  skill,
+}: SkillEndorsementDialogProps) {
   const [open, setOpen] = useState(false);
   const { data: endorsements, isLoading } = useSkillEndorsements(skill.id);
   const endorsementCount = skill._count?.endorsements || 0;
@@ -30,11 +32,16 @@ export default function SkillEndorsementDialog({ skill }: SkillEndorsementDialog
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog onOpenChange={setOpen} open={open}>
       <DialogTrigger asChild>
-        <Button variant="ghost" size="sm" className="gap-1 text-xs text-muted-foreground">
+        <Button
+          className="gap-1 text-muted-foreground text-xs"
+          size="sm"
+          variant="ghost"
+        >
           <ThumbsUp className="h-3 w-3" />
-          {endorsementCount} {endorsementCount === 1 ? "endorsement" : "endorsements"}
+          {endorsementCount}{" "}
+          {endorsementCount === 1 ? "endorsement" : "endorsements"}
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
@@ -45,7 +52,7 @@ export default function SkillEndorsementDialog({ skill }: SkillEndorsementDialog
           {isLoading ? (
             <div className="space-y-4">
               {Array.from({ length: 3 }).map((_, i) => (
-                <div key={i} className="flex items-center gap-3">
+                <div className="flex items-center gap-3" key={i}>
                   <Skeleton className="h-10 w-10 rounded-full" />
                   <div className="space-y-2">
                     <Skeleton className="h-4 w-32" />
@@ -55,21 +62,31 @@ export default function SkillEndorsementDialog({ skill }: SkillEndorsementDialog
               ))}
             </div>
           ) : endorsements?.length === 0 ? (
-            <p className="text-center text-muted-foreground">No endorsements yet</p>
+            <p className="text-center text-muted-foreground">
+              No endorsements yet
+            </p>
           ) : (
             <ul className="space-y-4">
               {endorsements?.map((endorsement) => (
-                <li key={endorsement.id} className="flex items-center gap-3">
+                <li className="flex items-center gap-3" key={endorsement.id}>
                   <Avatar className="h-10 w-10">
-                    <AvatarImage src={endorsement.endorser.image || undefined} alt={endorsement.endorser.name || ""} />
+                    <AvatarImage
+                      alt={endorsement.endorser.name || ""}
+                      src={endorsement.endorser.image || undefined}
+                    />
                     <AvatarFallback>
-                      {endorsement.endorser.name?.charAt(0) || endorsement.endorser.username?.charAt(0) || "?"}
+                      {endorsement.endorser.name?.charAt(0) ||
+                        endorsement.endorser.username?.charAt(0) ||
+                        "?"}
                     </AvatarFallback>
                   </Avatar>
                   <div>
                     <p className="font-medium">{endorsement.endorser.name}</p>
-                    <p className="text-xs text-muted-foreground">
-                      @{endorsement.endorser.username} · {formatDistanceToNow(new Date(endorsement.createdAt), { addSuffix: true })}
+                    <p className="text-muted-foreground text-xs">
+                      @{endorsement.endorser.username} ·{" "}
+                      {formatDistanceToNow(new Date(endorsement.createdAt), {
+                        addSuffix: true,
+                      })}
                     </p>
                   </div>
                 </li>

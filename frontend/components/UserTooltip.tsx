@@ -1,10 +1,9 @@
 "use client";
 
-import { PropsWithChildren } from "react";
 import Link from "next/link";
-
-import { FollowerInfo, UserData } from "@/types/types";
+import type { PropsWithChildren } from "react";
 import { useSession } from "@/lib/auth-client";
+import type { FollowerInfo, UserData } from "@/types/types";
 
 import FollowButton from "./feed/FollowButton";
 import FollowerCount from "./feed/FollowerCount";
@@ -36,18 +35,18 @@ export default function UserTooltip({ children, user }: UserTooltipProps) {
       <Tooltip>
         <TooltipTrigger asChild>{children}</TooltipTrigger>
         <TooltipContent>
-          <div className="flex max-w-80 flex-col gap-3 px-1 py-2.5 break-words md:min-w-52">
+          <div className="flex max-w-80 flex-col gap-3 break-words px-1 py-2.5 md:min-w-52">
             <div className="flex items-center justify-between gap-2">
               <Link href={`/${user.username}`}>
                 <UserAvatar user={user} />
               </Link>
               {loggedInUser?.id !== user.id && (
-                <FollowButton userId={user.id} initialState={followerState} />
+                <FollowButton initialState={followerState} userId={user.id} />
               )}
             </div>
             <div>
               <Link href={`/${user.username}`}>
-                <div className="text-lg font-semibold hover:underline">
+                <div className="font-semibold text-lg hover:underline">
                   {user.displayUsername}
                 </div>
                 <div className="text-muted-foreground">@{user.username}</div>
@@ -61,7 +60,7 @@ export default function UserTooltip({ children, user }: UserTooltipProps) {
               </Linkify>
             )}
             {user._count && (
-              <FollowerCount userId={user.id} initialState={followerState} />
+              <FollowerCount initialState={followerState} userId={user.id} />
             )}
           </div>
         </TooltipContent>

@@ -20,12 +20,12 @@ export default function RejectedAccountPage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4">
-          <p className="text-sm text-muted-foreground">
+          <p className="text-muted-foreground text-sm">
             If you believe this is an error, please contact support for further
             assistance.
           </p>
         </CardContent>
-        <CardFooter className="flex justify-between items-center gap-2">
+        <CardFooter className="flex items-center justify-between gap-2">
           <ReturnButton href="/login" label="Go to Login" />
           <SignOutButton />
         </CardFooter>

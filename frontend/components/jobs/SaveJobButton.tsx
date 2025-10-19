@@ -1,18 +1,16 @@
 "use client";
 import {
-  QueryKey,
+  type QueryKey,
   useMutation,
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
 import { Bookmark } from "lucide-react";
-
-import { SaveJobInfo } from "@/types/types";
+import { toast } from "sonner";
 import kyInstance from "@/lib/ky";
 import { cn } from "@/lib/utils";
-
+import type { SaveJobInfo } from "@/types/types";
 import { Button } from "../ui/button";
-import { toast } from "sonner";
 
 interface BookmarkButtonProps {
   jobId: string;
@@ -32,7 +30,7 @@ export default function SaveJobButton({
     queryFn: () =>
       kyInstance.get(`/api/jobs/${jobId}/saveJob`).json<SaveJobInfo>(),
     initialData: initialState,
-    staleTime: Infinity,
+    staleTime: Number.POSITIVE_INFINITY,
   });
 
   const { mutate } = useMutation({
@@ -62,9 +60,9 @@ export default function SaveJobButton({
 
   return (
     <Button
-      variant="outline"
-      onClick={() => mutate()}
       className="flex items-center gap-2"
+      onClick={() => mutate()}
+      variant="outline"
     >
       <Bookmark
         className={cn(

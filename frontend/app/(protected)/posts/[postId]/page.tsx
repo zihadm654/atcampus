@@ -1,17 +1,16 @@
-import { cache, Suspense } from "react";
-import { Metadata } from "next";
+import { Loader2 } from "lucide-react";
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Loader2 } from "lucide-react";
-
-import { getPostDataInclude, UserData } from "@/types/types";
-import { prisma } from "@/lib/db";
-import { getCurrentUser } from "@/lib/session";
+import { cache, Suspense } from "react";
 import FollowButton from "@/components/feed/FollowButton";
 import Linkify from "@/components/feed/Linkify";
 import Post from "@/components/posts/Post";
 import UserAvatar from "@/components/UserAvatar";
 import UserTooltip from "@/components/UserTooltip";
+import { prisma } from "@/lib/db";
+import { getCurrentUser } from "@/lib/session";
+import { getPostDataInclude, type UserData } from "@/types/types";
 
 interface PageProps {
   params: Promise<{ postId: string }>;
@@ -83,35 +82,35 @@ async function UserInfoSidebar({ user }: UserInfoSidebarProps) {
   if (!loggedInUser) return null;
 
   return (
-    <div className="bg-card space-y-5 rounded-2xl p-5 shadow-sm">
-      <div className="text-xl font-bold">About this user</div>
+    <div className="space-y-5 rounded-2xl bg-card p-5 shadow-sm">
+      <div className="font-bold text-xl">About this user</div>
       <UserTooltip user={user}>
-        <Link href={`/${user.username}`} className="flex items-center gap-3">
+        <Link className="flex items-center gap-3" href={`/${user.username}`}>
           <UserAvatar avatarUrl={user.image} className="flex-none" />
           <div>
-            <p className="line-clamp-1 font-semibold break-all hover:underline">
+            <p className="line-clamp-1 break-all font-semibold hover:underline">
               {user.displayUsername}
             </p>
-            <p className="text-muted-foreground line-clamp-1 break-all">
+            <p className="line-clamp-1 break-all text-muted-foreground">
               @{user.username}
             </p>
           </div>
         </Link>
       </UserTooltip>
       <Linkify>
-        <div className="text-muted-foreground line-clamp-6 break-words whitespace-pre-line">
+        <div className="line-clamp-6 whitespace-pre-line break-words text-muted-foreground">
           {user.bio}
         </div>
       </Linkify>
       {user.id !== loggedInUser.id && (
         <FollowButton
-          userId={user.id}
           initialState={{
             followers: user._count.followers,
             isFollowedByUser: user.followers.some(
-              ({ followerId }) => followerId === loggedInUser.id,
+              ({ followerId }) => followerId === loggedInUser.id
             ),
           }}
+          userId={user.id}
         />
       )}
     </div>

@@ -18,7 +18,7 @@ export const jobSchema = z.object({
   duration: z.coerce.number().optional(),
   salary: z.coerce.number().min(1, "required"),
   requirements: z.array(
-    z.string().max(1000, "Must be at most 1000 characters"),
+    z.string().max(1000, "Must be at most 1000 characters")
   ),
   endDate: z.date(),
   courseId: z.string().optional(),

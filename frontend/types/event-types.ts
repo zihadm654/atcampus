@@ -1,6 +1,5 @@
-import type { Prisma } from '@prisma/client';
-import type { EventStatus, EventType, AttendanceStatus } from '@prisma/client';
-import { ReactNode } from 'react';
+import type { AttendanceStatus, EventStatus, EventType } from "@prisma/client";
+import type { ReactNode } from "react";
 
 // Enhanced event data types for comprehensive event management
 
@@ -214,7 +213,13 @@ export interface EventUpdateData extends Partial<EventCreationData> {
 
 // Event notification types
 export interface EventNotificationData {
-  type: 'EVENT_CREATED' | 'EVENT_UPDATED' | 'EVENT_CANCELLED' | 'EVENT_REMINDER' | 'REGISTRATION_OPEN' | 'REGISTRATION_CLOSING';
+  type:
+    | "EVENT_CREATED"
+    | "EVENT_UPDATED"
+    | "EVENT_CANCELLED"
+    | "EVENT_REMINDER"
+    | "REGISTRATION_OPEN"
+    | "REGISTRATION_CLOSING";
   eventId: string;
   eventName: string;
   eventDate: Date;
@@ -293,7 +298,7 @@ export interface EventSearchResult {
 export interface EventRSVPData {
   eventId: string;
   userId: string;
-  status: 'ATTENDING' | 'NOT_ATTENDING' | 'MAYBE';
+  status: "ATTENDING" | "NOT_ATTENDING" | "MAYBE";
   guestCount: number;
   dietaryRestrictions?: string;
   specialRequirements?: string;

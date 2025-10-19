@@ -1,15 +1,14 @@
 import {
-  QueryKey,
+  type QueryKey,
   useMutation,
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
 import { Bookmark } from "lucide-react";
-
-import { SaveResearchInfo } from "@/types/types";
+import { toast } from "sonner";
 import kyInstance from "@/lib/ky";
 import { cn } from "@/lib/utils";
-import { toast } from "sonner";
+import type { SaveResearchInfo } from "@/types/types";
 
 interface BookmarkButtonProps {
   researchId: string;
@@ -31,7 +30,7 @@ export default function SaveResearchButton({
         .get(`/api/researches/${researchId}/saveResearch`)
         .json<SaveResearchInfo>(),
     initialData: initialState,
-    staleTime: Infinity,
+    staleTime: Number.POSITIVE_INFINITY,
   });
 
   const { mutate } = useMutation({
@@ -61,7 +60,11 @@ export default function SaveResearchButton({
   });
 
   return (
-    <button onClick={() => mutate()} className="flex items-center gap-2">
+    <button
+      className="flex items-center gap-2"
+      onClick={() => mutate()}
+      type="button"
+    >
       <Bookmark
         className={cn(
           "size-5",

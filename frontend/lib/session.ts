@@ -1,25 +1,26 @@
 import "server-only";
 
-import { cache } from "react";
 import { headers } from "next/headers";
-
+import { cache } from "react";
+import type { ExtendedUser } from "@/types/auth-types";
 import { auth } from "./auth";
-import { ExtendedUser, SessionUser } from "@/types/auth-types";
 
-export const getCurrentUser = cache(async (): Promise<ExtendedUser | undefined> => {
-  const headersList = await headers();
+export const getCurrentUser = cache(
+  async (): Promise<ExtendedUser | undefined> => {
+    const headersList = await headers();
 
-  const session = await auth.api.getSession({
-    headers: headersList,
-  });
+    const session = await auth.api.getSession({
+      headers: headersList,
+    });
 
-  if (!session?.user) {
-    return undefined;
+    if (!session?.user) {
+      return;
+    }
+
+    // Cast to our extended user type
+    return session.user as ExtendedUser;
   }
-
-  // Cast to our extended user type
-  return session.user as ExtendedUser;
-});
+);
 
 export const getCurrentSession = cache(async () => {
   const headersList = await headers();
@@ -32,24 +33,24 @@ export const getCurrentSession = cache(async () => {
 });
 
 export const isSessionExpired = (
-  session: { expiresAt: Date } | null,
+  session: { expiresAt: Date } | null
 ): boolean => {
   if (!session) return true;
   return new Date() > new Date(session.expiresAt);
 };
 
 export const getSessionTimeRemaining = (
-  session: { expiresAt: Date } | null,
+  session: { expiresAt: Date } | null
 ): number => {
   if (!session) return 0;
-  const now = new Date().getTime();
-  const expiresAt = new Date(session.expiresAt).getTime();
+  const now = Date.now(); // Current time in milliseconds since January 1, 1970 00:00:00 UTC
+  const expiresAt = new Date(session.expiresAt).getTime(); // getTime() returns the number of milliseconds elapsed since January 1, 1970 00:00:00 UTC
   return Math.max(0, expiresAt - now);
 };
 
 export const isSessionExpiringSoon = (
   session: { expiresAt: Date } | null,
-  thresholdMinutes = 30,
+  thresholdMinutes = 30
 ): boolean => {
   if (!session) return false;
   const timeRemaining = getSessionTimeRemaining(session);
@@ -71,20 +72,24 @@ export const getUserRoleAndStatus = cache(async () => {
   return {
     role: user.role,
     status: user.status,
-    user: user
+    user,
   };
 });
 
 // Permission check utilities
-export const hasRole = cache(async (allowedRoles: ExtendedUser["role"][]): Promise<boolean> => {
-  const user = await getCurrentUser();
-  return user ? allowedRoles.includes(user.role) : false;
-});
+export const hasRole = cache(
+  async (allowedRoles: ExtendedUser["role"][]): Promise<boolean> => {
+    const user = await getCurrentUser();
+    return user ? allowedRoles.includes(user.role) : false;
+  }
+);
 
-export const hasAnyRole = cache(async (allowedRoles: ExtendedUser["role"][]): Promise<boolean> => {
-  const user = await getCurrentUser();
-  return user ? allowedRoles.includes(user.role) : false;
-});
+export const hasAnyRole = cache(
+  async (allowedRoles: ExtendedUser["role"][]): Promise<boolean> => {
+    const user = await getCurrentUser();
+    return user ? allowedRoles.includes(user.role) : false;
+  }
+);
 
 export const hasActiveStatus = cache(async (): Promise<boolean> => {
   const user = await getCurrentUser();
@@ -93,7 +98,7 @@ export const hasActiveStatus = cache(async (): Promise<boolean> => {
 
 export const isUserApproved = cache(async (): Promise<boolean> => {
   const user = await getCurrentUser();
-  return user ? (user.status === "ACTIVE" || user.status === "SUSPENDED") : false;
+  return user ? user.status === "ACTIVE" || user.status === "SUSPENDED" : false;
 });
 
 export const isUserPending = cache(async (): Promise<boolean> => {
@@ -108,7 +113,9 @@ export const isUserRejected = cache(async (): Promise<boolean> => {
 
 export const canCreateOrganizations = cache(async (): Promise<boolean> => {
   const user = await getCurrentUser();
-  return user ? (user.role === "INSTITUTION" || user.role === "ORGANIZATION") : false;
+  return user
+    ? user.role === "INSTITUTION" || user.role === "ORGANIZATION"
+    : false;
 });
 
 export const isAdmin = cache(async (): Promise<boolean> => {
@@ -118,5 +125,5 @@ export const isAdmin = cache(async (): Promise<boolean> => {
 
 export const canReviewCourses = cache(async (): Promise<boolean> => {
   const user = await getCurrentUser();
-  return user ? (user.role === "ADMIN" || user.role === "PROFESSOR") : false;
+  return user ? user.role === "ADMIN" || user.role === "PROFESSOR" : false;
 });

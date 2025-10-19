@@ -132,7 +132,7 @@ export default function SkillCategorySelect({
     <div className="space-y-4">
       <div>
         <label htmlFor="category">Select Category: </label>
-        <Select value={selectedCategory} onValueChange={handleCategoryChange}>
+        <Select onValueChange={handleCategoryChange} value={selectedCategory}>
           <SelectTrigger id="category">
             <SelectValue placeholder="-- Select a Category --" />
           </SelectTrigger>
@@ -149,7 +149,7 @@ export default function SkillCategorySelect({
       {selectedCategory && (
         <div>
           <label htmlFor="skill">Select Skill: </label>
-          <Select value={selectedSkill} onValueChange={handleSkillChange}>
+          <Select onValueChange={handleSkillChange} value={selectedSkill}>
             <SelectTrigger id="skill">
               <SelectValue placeholder="-- Select a Skill --" />
             </SelectTrigger>

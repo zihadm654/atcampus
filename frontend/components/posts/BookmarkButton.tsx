@@ -1,16 +1,15 @@
 "use client";
 import {
-  QueryKey,
+  type QueryKey,
   useMutation,
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
 import { Bookmark } from "lucide-react";
-
-import { BookmarkInfo } from "@/types/types";
+import { toast } from "sonner";
 import kyInstance from "@/lib/ky";
 import { cn } from "@/lib/utils";
-import { toast } from "sonner";
+import type { BookmarkInfo } from "@/types/types";
 
 interface BookmarkButtonProps {
   postId: string;
@@ -30,7 +29,7 @@ export default function BookmarkButton({
     queryFn: () =>
       kyInstance.get(`/api/posts/${postId}/bookmark`).json<BookmarkInfo>(),
     initialData: initialState,
-    staleTime: Infinity,
+    staleTime: Number.POSITIVE_INFINITY,
   });
 
   const { mutate } = useMutation({
@@ -59,7 +58,11 @@ export default function BookmarkButton({
   });
 
   return (
-    <button onClick={() => mutate()} className="flex items-center gap-2">
+    <button
+      className="flex items-center gap-2"
+      onClick={() => mutate()}
+      type="button"
+    >
       <Bookmark
         className={cn(
           "size-5",

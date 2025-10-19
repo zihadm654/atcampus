@@ -35,7 +35,7 @@ const cleanupFailedUpload = async (fileUrl: string | null) => {
   if (fileUrl) {
     try {
       const key = fileUrl.split(
-        `/a/${process.env.NEXT_PUBLIC_UPLOADTHING_APP_ID}/`,
+        `/a/${process.env.NEXT_PUBLIC_UPLOADTHING_APP_ID}/`
       )[1];
       await new UTApi().deleteFiles(key);
     } catch (error) {
@@ -62,7 +62,7 @@ export const ourFileRouter = {
         // Validate image type
         if (!allowedImageTypes.includes(metadata.type)) {
           throw new UploadThingError(
-            "Invalid file type. Only JPEG, PNG, GIF, WebP, and HEIC images are allowed.",
+            "Invalid file type. Only JPEG, PNG, GIF, WebP, and HEIC images are allowed."
           );
         }
 
@@ -119,7 +119,7 @@ export const ourFileRouter = {
         // Validate image type
         if (!allowedCoverImageTypes.includes(metadata.type)) {
           throw new UploadThingError(
-            "Invalid file type. Only JPEG, PNG, GIF, WebP, and HEIC images are allowed for cover images.",
+            "Invalid file type. Only JPEG, PNG, GIF, WebP, and HEIC images are allowed for cover images."
           );
         }
 
@@ -169,7 +169,7 @@ export const ourFileRouter = {
 
         if (metadata.type !== "application/pdf") {
           throw new UploadThingError(
-            "Invalid file type. Only PDFs are allowed.",
+            "Invalid file type. Only PDFs are allowed."
           );
         }
 
@@ -215,19 +215,19 @@ export const ourFileRouter = {
 
         if (isImage && !allowedImageTypes.includes(metadata.type)) {
           throw new UploadThingError(
-            "Invalid image type. Only JPEG, PNG, GIF, WebP, and HEIC images are allowed.",
+            "Invalid image type. Only JPEG, PNG, GIF, WebP, and HEIC images are allowed."
           );
         }
 
         if (isVideo && !allowedVideoTypes.includes(metadata.type)) {
           throw new UploadThingError(
-            "Invalid video type. Only MP4, WebM, and QuickTime videos are allowed.",
+            "Invalid video type. Only MP4, WebM, and QuickTime videos are allowed."
           );
         }
 
-        if (!isImage && !isVideo) {
+        if (!(isImage || isVideo)) {
           throw new UploadThingError(
-            "Invalid file type. Only images and videos are allowed.",
+            "Invalid file type. Only images and videos are allowed."
           );
         }
 

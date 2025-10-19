@@ -1,5 +1,5 @@
+import { type Notification, NotificationType } from "@prisma/client";
 import { prisma } from "@/lib/db";
-import { NotificationType, Notification } from "@prisma/client";
 
 export interface CreateNotificationData {
   type: NotificationType;
@@ -12,7 +12,9 @@ export interface CreateNotificationData {
   message?: string;
 }
 
-export async function createNotification(data: CreateNotificationData): Promise<Notification> {
+export async function createNotification(
+  data: CreateNotificationData
+): Promise<Notification> {
   return await prisma.notification.create({
     data: {
       type: data.type,
@@ -34,72 +36,86 @@ export async function createNotification(data: CreateNotificationData): Promise<
           image: true,
         },
       },
-      post: data.postId ? {
-        select: {
-          id: true,
-          content: true,
-        },
-      } : false,
-      job: data.jobId ? {
-        select: {
-          id: true,
-          title: true,
-          user: {
+      post: data.postId
+        ? {
             select: {
               id: true,
-              username: true,
+              content: true,
             },
-          },
-        },
-      } : false,
-      course: data.courseId ? {
-        select: {
-          id: true,
-          title: true,
-          code: true,
-        },
-      } : false,
+          }
+        : false,
+      job: data.jobId
+        ? {
+            select: {
+              id: true,
+              title: true,
+              user: {
+                select: {
+                  id: true,
+                  username: true,
+                },
+              },
+            },
+          }
+        : false,
+      course: data.courseId
+        ? {
+            select: {
+              id: true,
+              title: true,
+              code: true,
+            },
+          }
+        : false,
     },
   });
 }
 
-export async function createBulkNotifications(data: CreateNotificationData[]): Promise<Notification[]> {
+export async function createBulkNotifications(
+  data: CreateNotificationData[]
+): Promise<Notification[]> {
   const notifications = await Promise.all(
-    data.map(item => createNotification(item))
+    data.map((item) => createNotification(item))
   );
   return notifications;
 }
 
-export async function markNotificationAsRead(notificationId: string): Promise<Notification> {
+export async function markNotificationAsRead(
+  notificationId: string
+): Promise<Notification> {
   return await prisma.notification.update({
     where: { id: notificationId },
     data: { read: true },
   });
 }
 
-export async function markAllNotificationsAsRead(userId: string): Promise<number> {
+export async function markAllNotificationsAsRead(
+  userId: string
+): Promise<number> {
   const result = await prisma.notification.updateMany({
-    where: { 
+    where: {
       recipientId: userId,
-      read: false 
+      read: false,
     },
     data: { read: true },
   });
   return result.count;
 }
 
-export async function getUnreadNotificationCount(userId: string): Promise<number> {
+export async function getUnreadNotificationCount(
+  userId: string
+): Promise<number> {
   return await prisma.notification.count({
-    where: { 
+    where: {
       recipientId: userId,
-      read: false 
+      read: false,
     },
   });
 }
 
 export async function getUserNotifications(
-  userId: string, 
-  limit: number = 20, 
+  userId: string,
+  limit = 20,
   cursor?: string
 ) {
   const notifications = await prisma.notification.findMany({
@@ -145,8 +161,12 @@ export async function getUserNotifications(
     cursor: cursor ? { id: cursor } : undefined,
   });
 
-  const nextCursor = notifications.length > limit ? notifications[limit].id : null;
-  const data = notifications.length > limit ? notifications.slice(0, limit) : notifications;
+  const nextCursor =
+    notifications.length > limit ? notifications[limit].id : null;
+  const data =
+    notifications.length > limit
+      ? notifications.slice(0, limit)
+      : notifications;
 
   return {
     notifications: data,
@@ -155,16 +175,23 @@ export async function getUserNotifications(
 }
 
 // Club-specific notification helpers
-export async function notifyClubMemberJoined(clubId: string, memberId: string, userId: string) {
+export async function notifyClubMemberJoined(
+  clubId: string,
+  memberId: string,
+  userId: string
+) {
   const club = await prisma.club.findUnique({
     where: { id: clubId },
-    select: { name: true, members: { where: { role: "ADVISOR" }, select: { userId: true } } }
+    select: {
+      name: true,
+      members: { where: { role: "ADVISOR" }, select: { userId: true } },
+    },
   });
 
   if (!club) return;
 
   // Notify club advisors
-  const advisorNotifications = club.members.map(advisor => 
+  const advisorNotifications = club.members.map((advisor) =>
     createNotification({
       type: NotificationType.SYSTEM_ANNOUNCEMENT,
       recipientId: advisor.userId,
@@ -176,27 +203,31 @@ export async function notifyClubMemberJoined(clubId: string, memberId: string, u
   await Promise.all(advisorNotifications);
 }
 
-export async function notifyClubEventCreated(clubId: string, eventId: string, userId: string) {
+export async function notifyClubEventCreated(
+  clubId: string,
+  eventId: string,
+  userId: string
+) {
   const club = await prisma.club.findUnique({
     where: { id: clubId },
-    select: { 
-      name: true, 
-      members: { 
-        where: { isActive: true }, 
-        select: { userId: true } 
-      } 
-    }
+    select: {
+      name: true,
+      members: {
+        where: { isActive: true },
+        select: { userId: true },
+      },
+    },
   });
 
   const event = await prisma.event.findUnique({
     where: { id: eventId },
-    select: { name: true }
+    select: { name: true },
   });
 
-  if (!club || !event) return;
+  if (!(club && event)) return;
 
   // Notify all club members
-  const memberNotifications = club.members.map(member => 
+  const memberNotifications = club.members.map((member) =>
     createNotification({
       type: NotificationType.SYSTEM_ANNOUNCEMENT,
       recipientId: member.userId,
@@ -212,7 +243,7 @@ export async function notifyClubEventCreated(clubId: string, eventId: string, us
 export async function notifyEventReminder(eventId: string, userId: string) {
   const event = await prisma.event.findUnique({
     where: { id: eventId },
-    select: { name: true, startDate: true, creatorId: true }
+    select: { name: true, startDate: true, creatorId: true },
   });
 
   if (!event) return;
@@ -225,13 +256,18 @@ export async function notifyEventReminder(eventId: string, userId: string) {
   });
 }
 
-export async function notifyEventCapacityReached(eventId: string, name: string, newAttendeeCount: number, maxAttendees: number) {
+export async function notifyEventCapacityReached(
+  eventId: string,
+  name: string,
+  newAttendeeCount: number,
+  maxAttendees: number
+) {
   const event = await prisma.event.findUnique({
     where: { id: eventId },
-    select: { name: true, creatorId: true, maxAttendees: true }
+    select: { name: true, creatorId: true, maxAttendees: true },
   });
 
-  if (!event || !event.creatorId) return;
+  if (!event?.creatorId) return;
 
   await createNotification({
     type: NotificationType.SYSTEM_ANNOUNCEMENT,

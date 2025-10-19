@@ -1,10 +1,10 @@
-'use server';
+"use server";
 
-import { revalidatePath } from 'next/cache';
+import { revalidatePath } from "next/cache";
 
-import { prisma } from '@/lib/db';
-import { getCurrentUser } from '@/lib/session';
-import { userNameSchema } from '@/lib/validations/user';
+import { prisma } from "@/lib/db";
+import { getCurrentUser } from "@/lib/session";
+import { userNameSchema } from "@/lib/validations/user";
 
 export type FormData = {
   name: string;
@@ -15,7 +15,7 @@ export async function updateUserName(userId: string, data: FormData) {
     const session = await getCurrentUser();
 
     if (!session || session?.id !== userId) {
-      throw new Error('Unauthorized');
+      throw new Error("Unauthorized");
     }
 
     const { name } = userNameSchema.parse(data);
@@ -30,10 +30,10 @@ export async function updateUserName(userId: string, data: FormData) {
       },
     });
 
-    revalidatePath('/dashboard/settings');
-    return { status: 'success' };
+    revalidatePath("/dashboard/settings");
+    return { status: "success" };
   } catch (_error) {
     // console.log(error)
-    return { status: 'error' };
+    return { status: "error" };
   }
 }

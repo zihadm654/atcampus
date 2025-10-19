@@ -1,5 +1,5 @@
-import type { Prisma } from '@prisma/client';
-import type { UserRole } from '@/lib/validations/auth';
+import type { Prisma } from "@prisma/client";
+import type { UserRole } from "@/lib/validations/auth";
 
 // Enhanced profile data types according to the design specification
 
@@ -102,7 +102,6 @@ export interface Member {
   };
 }
 
-
 export interface Course {
   id: string;
   title: string;
@@ -144,7 +143,7 @@ export enum EnrollmentStatus {
   ENROLLED = "ENROLLED",
   COMPLETED = "COMPLETED",
   DROPPED = "DROPPED",
-  FAILED = "FAILED"
+  FAILED = "FAILED",
 }
 
 export interface Job {
@@ -177,7 +176,7 @@ export enum JobType {
   INTERNSHIP = "INTERNSHIP",
   CONTRACT = "CONTRACT",
   FREELANCE = "FREELANCE",
-  VOLUNTEER = "VOLUNTEER"
+  VOLUNTEER = "VOLUNTEER",
 }
 
 export interface Research {
@@ -211,7 +210,7 @@ export enum ResearchStatus {
   IN_PROGRESS = "IN_PROGRESS",
   UNDER_REVIEW = "UNDER_REVIEW",
   PUBLISHED = "PUBLISHED",
-  COMPLETED = "COMPLETED"
+  COMPLETED = "COMPLETED",
 }
 
 export interface ProfileUserData {
@@ -262,14 +261,14 @@ export enum SkillLevel {
   BEGINNER = "BEGINNER",
   INTERMEDIATE = "INTERMEDIATE",
   ADVANCED = "ADVANCED",
-  EXPERT = "EXPERT"
+  EXPERT = "EXPERT",
 }
 
 export enum UserStatus {
   PENDING = "PENDING",
   ACTIVE = "ACTIVE",
   REJECTED = "REJECTED",
-  SUSPENDED = "SUSPENDED"
+  SUSPENDED = "SUSPENDED",
 }
 
 export interface ProfileData {

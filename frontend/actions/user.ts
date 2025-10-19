@@ -1,7 +1,10 @@
-import { prisma } from '@/lib/db';
-import { getCurrentSession } from '@/lib/session';
-import { TUserSkillSchema, userSkillSchema } from '@/lib/validations/validation';
-import { z } from 'zod';
+import { z } from "zod";
+import { prisma } from "@/lib/db";
+import { getCurrentSession } from "@/lib/session";
+import {
+  type TUserSkillSchema,
+  userSkillSchema,
+} from "@/lib/validations/validation";
 
 export const getUserByEmail = async (email: string) => {
   try {
@@ -132,7 +135,9 @@ export async function deleteSkill(id: string) {
     });
 
     if (endorsementCount > 0) {
-      throw new Error(`Cannot delete skill "${existingSkill.title}" as it has ${endorsementCount} endorsement${endorsementCount > 1 ? 's' : ''}`);
+      throw new Error(
+        `Cannot delete skill "${existingSkill.title}" as it has ${endorsementCount} endorsement${endorsementCount > 1 ? "s" : ""}`
+      );
     }
 
     const skill = await prisma.userSkill.delete({

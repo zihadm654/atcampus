@@ -1,10 +1,10 @@
-import { FollowerInfo } from "@/types/types";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/session";
+import type { FollowerInfo } from "@/types/types";
 
 export async function GET(
   req: Request,
-  { params }: { params: Promise<{ userId: string }> },
+  { params }: { params: Promise<{ userId: string }> }
 ) {
   try {
     const { userId } = await params;
@@ -51,7 +51,7 @@ export async function GET(
 
 export async function POST(
   req: Request,
-  { params }: { params: Promise<{ userId: string }> },
+  { params }: { params: Promise<{ userId: string }> }
 ) {
   const { userId } = await params;
   try {
@@ -93,7 +93,7 @@ export async function POST(
 
 export async function DELETE(
   req: Request,
-  { params }: { params: Promise<{ userId: string }> },
+  { params }: { params: Promise<{ userId: string }> }
 ) {
   const { userId } = await params;
   try {

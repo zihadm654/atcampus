@@ -1,24 +1,20 @@
-"use client"
+"use client";
 
-import { useEffect, useRef, useState } from 'react';
-import Image, { StaticImageData } from 'next/image';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { Camera } from 'lucide-react';
-import { useForm } from 'react-hook-form';
-import Resizer from 'react-image-file-resizer';
-
-import { UserData } from '@/types/types';
-import {
-  updateUserProfileSchema,
-  UpdateUserProfileValues,
-} from '@/lib/validations/validation';
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Camera } from "lucide-react";
+import Image, { type StaticImageData } from "next/image";
+import { useEffect, useRef, useState } from "react";
+import { useForm } from "react-hook-form";
+import Resizer from "react-image-file-resizer";
+import LoadingButton from "@/components/feed/LoadingButton";
+import CropImageDialog from "@/components/shared/CropImageDialog";
 import {
   Dialog,
   DialogContent,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
+} from "@/components/ui/dialog";
 import {
   Form,
   FormControl,
@@ -26,14 +22,17 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import LoadingButton from '@/components/feed/LoadingButton';
-import CropImageDialog from '@/components/shared/CropImageDialog';
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  type UpdateUserProfileValues,
+  updateUserProfileSchema,
+} from "@/lib/validations/validation";
+import type { UserData } from "@/types/types";
 
-import { useUpdateProfileMutation } from './mutations';
+import { useUpdateProfileMutation } from "./mutations";
 
 interface EditProfileDialogProps {
   user: UserData;
@@ -50,7 +49,7 @@ export default function EditProfileDialog({
     resolver: zodResolver(updateUserProfileSchema),
     defaultValues: {
       name: user.name,
-      bio: user.bio || '',
+      bio: user.bio || "",
       currentSemester: user.currentSemester || 0,
     },
   });
@@ -61,10 +60,10 @@ export default function EditProfileDialog({
   const [croppedCover, setCroppedCover] = useState<Blob | null>(null);
 
   const [avatarPreviewUrl, setAvatarPreviewUrl] = useState<string>(
-    user.image || ''
+    user.image || ""
   );
   const [coverPreviewUrl, setCoverPreviewUrl] = useState<string>(
-    user.coverImage || ''
+    user.coverImage || ""
   );
 
   useEffect(() => {
@@ -72,7 +71,8 @@ export default function EditProfileDialog({
       const url = URL.createObjectURL(croppedAvatar);
       setAvatarPreviewUrl(url);
       return () => URL.revokeObjectURL(url);
-    } else if (user.image) {
+    }
+    if (user.image) {
       setAvatarPreviewUrl(user.image);
     }
   }, [croppedAvatar, user.image]);
@@ -82,7 +82,8 @@ export default function EditProfileDialog({
       const url = URL.createObjectURL(croppedCover);
       setCoverPreviewUrl(url);
       return () => URL.revokeObjectURL(url);
-    } else if (user.coverImage) {
+    }
+    if (user.coverImage) {
       setCoverPreviewUrl(user.coverImage);
     }
   }, [croppedCover, user.coverImage]);
@@ -90,13 +91,13 @@ export default function EditProfileDialog({
   async function onSubmit(values: UpdateUserProfileValues) {
     const newAvatarFile = croppedAvatar
       ? new File([croppedAvatar], `avatar_${user.id}.webp`, {
-        type: 'image/webp',
-      })
+          type: "image/webp",
+        })
       : undefined;
     const newCoverFile = croppedCover
       ? new File([croppedCover], `cover_${user.id}.webp`, {
-        type: 'image/webp',
-      })
+          type: "image/webp",
+        })
       : undefined;
 
     mutation.mutate(
@@ -109,8 +110,8 @@ export default function EditProfileDialog({
         onSuccess: () => {
           setCroppedAvatar(null);
           setCroppedCover(null);
-          setAvatarPreviewUrl(user.image || '');
-          setCoverPreviewUrl(user.coverImage || '');
+          setAvatarPreviewUrl(user.image || "");
+          setCoverPreviewUrl(user.coverImage || "");
           onOpenChange(false);
         },
       }
@@ -118,36 +119,36 @@ export default function EditProfileDialog({
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className='max-h-[90vh] w-full max-w-md overflow-y-auto'>
+    <Dialog onOpenChange={onOpenChange} open={open}>
+      <DialogContent className="max-h-[90vh] w-full max-w-md overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Edit profile</DialogTitle>
         </DialogHeader>
-        <div className='space-y-1.5'>
+        <div className="space-y-1.5">
           <Label>Avatar</Label>
           <AvatarInput
-            src={avatarPreviewUrl}
             onImageCropped={setCroppedAvatar}
+            src={avatarPreviewUrl}
           />
         </div>
-        <div className='space-y-1.5'>
+        <div className="space-y-1.5">
           <Label>Cover Image</Label>
           <CoverImageInput
-            src={coverPreviewUrl}
             onImageCropped={setCroppedCover}
+            src={coverPreviewUrl}
           />
         </div>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-3'>
+          <form className="space-y-3" onSubmit={form.handleSubmit(onSubmit)}>
             <FormField
               control={form.control}
-              name='name'
+              name="name"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Display name</FormLabel>
                   <FormControl>
-                    <Input placeholder='Your display name' {...field} />
+                    <Input placeholder="Your display name" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -155,14 +156,14 @@ export default function EditProfileDialog({
             />
             <FormField
               control={form.control}
-              name='bio'
+              name="bio"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Bio</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder='Tell us a little bit about yourself'
-                      className='resize-none'
+                      className="resize-none"
+                      placeholder="Tell us a little bit about yourself"
                       {...field}
                     />
                   </FormControl>
@@ -198,16 +199,16 @@ export default function EditProfileDialog({
             /> */}
             <FormField
               control={form.control}
-              name='currentSemester'
+              name="currentSemester"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Current Seamester</FormLabel>
                   <FormControl>
                     <Input
-                      min={0}
                       max={100}
-                      type='number'
-                      placeholder='current seamester'
+                      min={0}
+                      placeholder="current seamester"
+                      type="number"
                       {...field}
                     />
                   </FormControl>
@@ -216,7 +217,7 @@ export default function EditProfileDialog({
               )}
             />
             <DialogFooter>
-              <LoadingButton type='submit' loading={mutation.isPending}>
+              <LoadingButton loading={mutation.isPending} type="submit">
                 Save
               </LoadingButton>
             </DialogFooter>
@@ -244,52 +245,52 @@ export function AvatarInput({ src, onImageCropped }: AvatarInputProps) {
       image,
       1024,
       1024,
-      'WEBP',
+      "WEBP",
       100,
       0,
       (uri) => setImageToCrop(uri as File),
-      'file'
+      "file"
     );
   }
 
   return (
     <>
       <input
-        type='file'
-        accept='image/*'
+        accept="image/*"
+        className="sr-only hidden"
         onChange={(e) => onImageSelected(e.target.files?.[0])}
         ref={fileInputRef}
-        className='sr-only hidden'
+        type="file"
       />
       <button
-        type='button'
+        aria-label="Change avatar"
+        className="group relative block"
         onClick={() => fileInputRef.current?.click()}
-        className='group relative block'
-        aria-label='Change avatar'
+        type="button"
       >
         <Image
-          src={src}
-          alt='Avatar preview'
-          width={150}
+          alt="Avatar preview"
+          className="size-20 flex-none rounded-full border-2 border-gray-200 object-cover shadow"
           height={150}
-          className='size-20 flex-none rounded-full border-2 border-gray-200 object-cover shadow'
-          key={typeof src === 'string' ? src : src.src} // Use string URL as key
+          key={typeof src === "string" ? src : src.src}
+          src={src}
+          width={150} // Use string URL as key
         />
-        <span className='bg-opacity-30 group-hover:bg-opacity-25 absolute inset-0 m-auto flex size-12 items-center justify-center rounded-full bg-black text-white transition-colors duration-200'>
+        <span className="absolute inset-0 m-auto flex size-12 items-center justify-center rounded-full bg-black bg-opacity-30 text-white transition-colors duration-200 group-hover:bg-opacity-25">
           <Camera size={24} />
         </span>
       </button>
       {imageToCrop && (
         <CropImageDialog
-          src={URL.createObjectURL(imageToCrop)}
           cropAspectRatio={1}
-          onCropped={onImageCropped}
           onClose={() => {
             setImageToCrop(undefined);
             if (fileInputRef.current) {
-              fileInputRef.current.value = '';
+              fileInputRef.current.value = "";
             }
           }}
+          onCropped={onImageCropped}
+          src={URL.createObjectURL(imageToCrop)}
         />
       )}
     </>
@@ -313,52 +314,52 @@ function CoverImageInput({
       image,
       1800,
       600,
-      'WEBP',
+      "WEBP",
       100,
       0,
       (uri) => setImageToCrop(uri as File),
-      'file'
+      "file"
     );
   }
 
   return (
     <>
       <input
-        type='file'
-        accept='image/*'
+        accept="image/*"
+        className="sr-only hidden"
         onChange={(e) => onImageSelected(e.target.files?.[0])}
         ref={fileInputRef}
-        className='sr-only hidden'
+        type="file"
       />
       <button
-        type='button'
+        aria-label="Change cover image"
+        className="group relative block w-full"
         onClick={() => fileInputRef.current?.click()}
-        className='group relative block w-full'
-        aria-label='Change cover image'
+        type="button"
       >
         <Image
-          src={src}
-          alt='Cover preview'
-          width={600}
+          alt="Cover preview"
+          className="h-32 w-full rounded-lg border-2 border-gray-200 object-cover shadow"
           height={200}
-          className='h-32 w-full rounded-lg border-2 border-gray-200 object-cover shadow'
-          key={typeof src === 'string' ? src : src.src} // Use string URL as key
+          key={typeof src === "string" ? src : src.src}
+          src={src}
+          width={600} // Use string URL as key
         />
-        <span className='bg-opacity-30 group-hover:bg-opacity-25 absolute inset-0 m-auto flex items-center justify-center rounded-lg bg-black text-white transition-colors duration-200'>
+        <span className="absolute inset-0 m-auto flex items-center justify-center rounded-lg bg-black bg-opacity-30 text-white transition-colors duration-200 group-hover:bg-opacity-25">
           <Camera size={32} />
         </span>
       </button>
       {imageToCrop && (
         <CropImageDialog
-          src={URL.createObjectURL(imageToCrop)}
           cropAspectRatio={3}
-          onCropped={onImageCropped}
           onClose={() => {
             setImageToCrop(undefined);
             if (fileInputRef.current) {
-              fileInputRef.current.value = '';
+              fileInputRef.current.value = "";
             }
           }}
+          onCropped={onImageCropped}
+          src={URL.createObjectURL(imageToCrop)}
         />
       )}
     </>

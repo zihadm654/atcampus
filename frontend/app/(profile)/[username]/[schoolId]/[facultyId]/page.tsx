@@ -1,35 +1,32 @@
+import { DotsHorizontalIcon } from "@radix-ui/react-icons";
+import {
+  Award,
+  BookOpen,
+  GraduationCap,
+  Mail,
+  MapPin,
+  Users,
+} from "lucide-react";
+import type { Metadata } from "next";
+import Image from "next/image";
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { cache } from "react";
+import Course from "@/components/courses/Course";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/session";
 import { getUserDataSelect } from "@/types/types";
-import { DotsHorizontalIcon } from "@radix-ui/react-icons";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import Image from "next/image";
-import Link from "next/link";
-import { notFound } from "next/navigation";
-import {
-  Users,
-  BookOpen,
-  GraduationCap,
-  Mail,
-  Globe,
-  MapPin,
-  Calendar,
-  Award,
-  Building,
-} from "lucide-react";
-import { Metadata } from "next";
-import { cache } from "react";
-import { Button } from "@/components/ui/button";
-import Course from "@/components/courses/Course";
 
 interface PageProps {
   params: Promise<{ username: string; schoolId: string; facultyId: string }>;
@@ -230,14 +227,14 @@ export default async function Page({ params }: PageProps) {
     const isAdmin = ["admin", "owner"].includes(member.role);
 
     return (
-      <Card className="group hover:shadow-lg transition-all duration-300">
+      <Card className="group transition-all duration-300 hover:shadow-lg">
         <CardHeader>
           <CardTitle>
             <div className="flex items-center gap-3">
               <Avatar className="size-8">
                 <AvatarImage
-                  src={userData.image || undefined}
                   alt={userData.name}
+                  src={userData.image || undefined}
                 />
                 <AvatarFallback className="text-lg">
                   {userData.name
@@ -248,24 +245,24 @@ export default async function Page({ params }: PageProps) {
                 </AvatarFallback>
               </Avatar>
 
-              <div className="flex-1 min-w-0">
-                <div className="flex items-start justify-between mb-2">
+              <div className="min-w-0 flex-1">
+                <div className="mb-2 flex items-start justify-between">
                   <div>
-                    <h3 className="text-lg font-semibold text-foreground">
+                    <h3 className="font-semibold text-foreground text-lg">
                       {userData.name}
                     </h3>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-muted-foreground text-sm">
                       @{userData.username}
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
                     {isAdmin && (
-                      <Badge variant="secondary" className="text-xs">
+                      <Badge className="text-xs" variant="secondary">
                         Admin
                       </Badge>
                     )}
                     {isProfessor && (
-                      <Badge variant="outline" className="text-xs">
+                      <Badge className="text-xs" variant="outline">
                         Professor
                       </Badge>
                     )}
@@ -274,9 +271,9 @@ export default async function Page({ params }: PageProps) {
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <Button
-                              variant="ghost"
+                              className="h-8 w-8 p-0 opacity-0 transition-opacity group-hover:opacity-100"
                               size="sm"
-                              className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                              variant="ghost"
                             >
                               <DotsHorizontalIcon className="h-4 w-4" />
                               <span className="sr-only">Open menu</span>
@@ -286,7 +283,7 @@ export default async function Page({ params }: PageProps) {
                             <DropdownMenuItem className="text-sm">
                               Edit Member
                             </DropdownMenuItem>
-                            <DropdownMenuItem className="text-sm text-destructive">
+                            <DropdownMenuItem className="text-destructive text-sm">
                               Remove Member
                             </DropdownMenuItem>
                           </DropdownMenuContent>
@@ -300,19 +297,19 @@ export default async function Page({ params }: PageProps) {
         </CardHeader>
         <CardContent className="px-6">
           {/* Contact Information */}
-          <div className="space-y-2 mb-4">
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <div className="mb-4 space-y-2">
+            <div className="flex items-center gap-2 text-muted-foreground text-sm">
               <Mail className="h-4 w-4" />
               <span>{userData.email}</span>
             </div>
             {userData.phone && (
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <div className="flex items-center gap-2 text-muted-foreground text-sm">
                 <MapPin className="h-4 w-4" />
                 <span>{userData.phone}</span>
               </div>
             )}
             {userData.bio && (
-              <div className="text-sm text-muted-foreground">
+              <div className="text-muted-foreground text-sm">
                 <span>{userData.bio}</span>
               </div>
             )}
@@ -320,7 +317,7 @@ export default async function Page({ params }: PageProps) {
 
           {/* Academic Information for Professors */}
           {isProfessor && (
-            <div className="space-y-3 pt-4 border-t">
+            <div className="space-y-3 border-t pt-4">
               {userData.institution && (
                 <div className="flex items-center gap-2 text-sm">
                   <GraduationCap className="h-4 w-4 text-muted-foreground" />
@@ -349,14 +346,14 @@ export default async function Page({ params }: PageProps) {
       {/* Faculty Header */}
       <div className="relative">
         {/* Cover Photo */}
-        <div className="relative h-64 w-full rounded-2xl overflow-hidden">
+        <div className="relative h-64 w-full overflow-hidden rounded-2xl">
           {faculty.coverPhoto ? (
             <Image
-              src={faculty.coverPhoto}
               alt={`${faculty.name} Cover`}
-              fill
               className="object-cover"
+              fill
               priority
+              src={faculty.coverPhoto}
             />
           ) : (
             <div className="h-full w-full bg-gradient-to-br from-purple-500 via-pink-500 to-red-500" />
@@ -365,27 +362,27 @@ export default async function Page({ params }: PageProps) {
         </div>
 
         {/* Faculty Info Overlay */}
-        <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
+        <div className="absolute right-0 bottom-0 left-0 p-6 text-white">
           <div className="flex items-end gap-4">
             {faculty.logo && (
-              <div className="relative h-20 w-20 rounded-xl overflow-hidden bg-white/10 backdrop-blur-sm">
+              <div className="relative h-20 w-20 overflow-hidden rounded-xl bg-white/10 backdrop-blur-sm">
                 <Image
-                  src={faculty.logo}
                   alt={`${faculty.name} Logo`}
-                  fill
                   className="object-contain p-2"
+                  fill
+                  src={faculty.logo}
                 />
               </div>
             )}
             <div className="flex-1">
-              <h1 className="text-4xl font-bold mb-2">{faculty.name}</h1>
+              <h1 className="mb-2 font-bold text-4xl">{faculty.name}</h1>
               {faculty.shortName && (
                 <p className="text-lg opacity-90">{faculty.shortName}</p>
               )}
               {faculty.school && (
                 <Link
+                  className="inline-flex items-center gap-1 text-sm opacity-80 hover:underline"
                   href={`/${username}/${faculty.school.id}`}
-                  className="text-sm opacity-80 hover:underline inline-flex items-center gap-1"
                 >
                   {faculty.school.name}
                 </Link>
@@ -397,11 +394,13 @@ export default async function Page({ params }: PageProps) {
 
       {/* Members Section */}
       <div className="space-y-6">
-        <h2 className="text-3xl font-bold">Faculty Members</h2>
+        <h2 className="font-bold text-3xl">Faculty Members</h2>
 
-        <Tabs defaultValue="all" className="w-full">
+        <Tabs className="w-full" defaultValue="all">
           <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="all">All Members ({professors?.length || 0})</TabsTrigger>
+            <TabsTrigger value="all">
+              All Members ({professors?.length || 0})
+            </TabsTrigger>
             <TabsTrigger value="professors">
               Professors ({professors.length})
             </TabsTrigger>
@@ -411,8 +410,8 @@ export default async function Page({ params }: PageProps) {
             {/* <TabsTrigger value="admins">Admins ({admins.length})</TabsTrigger> */}
           </TabsList>
 
-          <TabsContent value="all" className="mt-3">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <TabsContent className="mt-3" value="all">
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
               {faculty.members.map((member) => (
                 <MemberCard key={member.id} member={member} />
               ))}
@@ -420,11 +419,11 @@ export default async function Page({ params }: PageProps) {
             {faculty.members.length === 0 && (
               <Card className="border-dashed">
                 <CardContent className="flex flex-col items-center justify-center py-12 text-center">
-                  <Users className="h-12 w-12 text-muted-foreground mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">
+                  <Users className="mb-4 h-12 w-12 text-muted-foreground" />
+                  <h3 className="mb-2 font-semibold text-lg">
                     No Members Found
                   </h3>
-                  <p className="text-sm text-muted-foreground max-w-md">
+                  <p className="max-w-md text-muted-foreground text-sm">
                     This faculty doesn't have any members yet. Members will
                     appear here once they are added.
                   </p>
@@ -433,8 +432,8 @@ export default async function Page({ params }: PageProps) {
             )}
           </TabsContent>
 
-          <TabsContent value="professors" className="mt-3">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <TabsContent className="mt-3" value="professors">
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
               {professors.map((member) => (
                 <MemberCard key={member.id} member={member} />
               ))}
@@ -442,11 +441,11 @@ export default async function Page({ params }: PageProps) {
             {professors.length === 0 && (
               <Card className="border-dashed">
                 <CardContent className="flex flex-col items-center justify-center py-12 text-center">
-                  <GraduationCap className="h-12 w-12 text-muted-foreground mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">
+                  <GraduationCap className="mb-4 h-12 w-12 text-muted-foreground" />
+                  <h3 className="mb-2 font-semibold text-lg">
                     No Professors Found
                   </h3>
-                  <p className="text-sm text-muted-foreground max-w-md">
+                  <p className="max-w-md text-muted-foreground text-sm">
                     This faculty doesn't have any professors yet.
                   </p>
                 </CardContent>
@@ -454,20 +453,20 @@ export default async function Page({ params }: PageProps) {
             )}
           </TabsContent>
 
-          <TabsContent value="courses" className="mt-3">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <TabsContent className="mt-3" value="courses">
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
               {faculty?.courses?.map((course: any) => (
-                <Course key={course.id} course={course} />
+                <Course course={course} key={course.id} />
               ))}
             </div>
             {(!faculty?.courses || faculty?.courses?.length === 0) && (
               <Card className="border-dashed">
                 <CardContent className="flex flex-col items-center justify-center py-12 text-center">
-                  <BookOpen className="h-12 w-12 text-muted-foreground mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">
+                  <BookOpen className="mb-4 h-12 w-12 text-muted-foreground" />
+                  <h3 className="mb-2 font-semibold text-lg">
                     No Courses Found
                   </h3>
-                  <p className="text-sm text-muted-foreground max-w-md">
+                  <p className="max-w-md text-muted-foreground text-sm">
                     This faculty doesn't have any courses yet.
                   </p>
                 </CardContent>
@@ -475,8 +474,8 @@ export default async function Page({ params }: PageProps) {
             )}
           </TabsContent>
 
-          <TabsContent value="admins" className="mt-3">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <TabsContent className="mt-3" value="admins">
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
               {admins.map((member) => (
                 <MemberCard key={member.id} member={member} />
               ))}
@@ -484,11 +483,11 @@ export default async function Page({ params }: PageProps) {
             {admins.length === 0 && (
               <Card className="border-dashed">
                 <CardContent className="flex flex-col items-center justify-center py-12 text-center">
-                  <Award className="h-12 w-12 text-muted-foreground mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">
+                  <Award className="mb-4 h-12 w-12 text-muted-foreground" />
+                  <h3 className="mb-2 font-semibold text-lg">
                     No Admins Found
                   </h3>
-                  <p className="text-sm text-muted-foreground max-w-md">
+                  <p className="max-w-md text-muted-foreground text-sm">
                     This faculty doesn't have any administrators yet.
                   </p>
                 </CardContent>

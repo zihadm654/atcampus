@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { changePasswordAction } from "@/actions/change-password.action";
 import { toast } from "sonner";
+import { changePasswordAction } from "@/actions/change-password.action";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,18 +30,18 @@ export const ChangePasswordForm = () => {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="w-full max-w-sm space-y-4 p-2">
+    <form className="w-full max-w-sm space-y-4 p-2" onSubmit={handleSubmit}>
       <div className="flex flex-col gap-2">
         <Label htmlFor="currentPassword">Current Password</Label>
-        <Input type="password" id="currentPassword" name="currentPassword" />
+        <Input id="currentPassword" name="currentPassword" type="password" />
       </div>
 
       <div className="flex flex-col gap-2">
         <Label htmlFor="newPassword">New Password</Label>
-        <Input type="password" id="newPassword" name="newPassword" />
+        <Input id="newPassword" name="newPassword" type="password" />
       </div>
 
-      <Button type="submit" disabled={isPending}>
+      <Button disabled={isPending} type="submit">
         Change Password
       </Button>
     </form>

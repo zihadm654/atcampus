@@ -1,10 +1,10 @@
-import { constructMetadata } from '@/lib/utils';
+import { constructMetadata } from "@/lib/utils";
 
-import Bookmarks from './Bookmarks';
+import Bookmarks from "./Bookmarks";
 
 export const metadata = constructMetadata({
-  title: 'Bookmarks – AtCampus',
-  description: 'Latest news and updates from Next AtCampus.',
+  title: "Bookmarks – AtCampus",
+  description: "Latest news and updates from Next AtCampus.",
 });
 
 export default function Page() {

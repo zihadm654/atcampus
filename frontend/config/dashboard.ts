@@ -1,5 +1,5 @@
-import { SidebarNavItem } from "@/types";
 import { UserRole } from "@prisma/client";
+import type { SidebarNavItem } from "@/types";
 
 export const sidebarLinks: SidebarNavItem[] = [
   {

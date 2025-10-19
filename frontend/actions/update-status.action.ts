@@ -1,14 +1,14 @@
 "use server";
 
+import type { UserStatus } from "@prisma/client";
 import { revalidatePath } from "next/cache";
-import { UserStatus } from "@prisma/client";
 
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/session";
 
 export const updateStatusAction = async (
   userId: string,
-  status: UserStatus,
+  status: UserStatus
 ) => {
   const user = await getCurrentUser();
 
@@ -19,7 +19,7 @@ export const updateStatusAction = async (
   try {
     await prisma.user.update({
       where: { id: userId },
-      data: { status: status },
+      data: { status },
     });
     revalidatePath("/admin/users");
     return { success: true };

@@ -1,25 +1,19 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { User, Job, ExperienceLevel } from "@prisma/client";
-import { useQueryClient } from "@tanstack/react-query";
+import { ExperienceLevel, type Job, JobType, type User } from "@prisma/client";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { CalendarIcon } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { useQuery } from "@tanstack/react-query";
 import { getInstructorCourses } from "@/components/courses/actions";
-
-import { cn } from "@/lib/utils";
-import {
-  jobSchema,
-  type TJob,
-} from "@/lib/validations/job";
-import { JobType } from "@prisma/client";
 import JobDescriptionEditor from "@/components/editor/richEditor";
 import { createJob, updateJob } from "@/components/jobs/actions";
+import { cn } from "@/lib/utils";
+import { jobSchema, type TJob } from "@/lib/validations/job";
 
 import { Button } from "../ui/button";
 import { Calendar } from "../ui/calendar";
@@ -71,27 +65,27 @@ export function CreateJobForm({ user, job }: CreateJobFormProps) {
     resolver: zodResolver(jobSchema),
     defaultValues: job
       ? {
-        ...job,
-        type: job.type as JobType,
-        experienceLevel: job.experienceLevel as ExperienceLevel,
-        endDate: new Date(job.endDate),
-        duration: job.duration || undefined,
-        courseId: job.courseId || undefined,
-        summary: job.summary || "", // Convert null to empty string
-      }
+          ...job,
+          type: job.type as JobType,
+          experienceLevel: job.experienceLevel as ExperienceLevel,
+          endDate: new Date(job.endDate),
+          duration: job.duration || undefined,
+          courseId: job.courseId || undefined,
+          summary: job.summary || "", // Convert null to empty string
+        }
       : {
-        title: "",
-        summary: "",
-        description: "",
-        location: "",
-        weeklyHours: 0,
-        type: JobType.INTERNSHIP,
-        experienceLevel: ExperienceLevel.ENTRY_LEVEL,
-        salary: 0,
-        requirements: [],
-        endDate: new Date(),
-        courseId: "",
-      },
+          title: "",
+          summary: "",
+          description: "",
+          location: "",
+          weeklyHours: 0,
+          type: JobType.INTERNSHIP,
+          experienceLevel: ExperienceLevel.ENTRY_LEVEL,
+          salary: 0,
+          requirements: [],
+          endDate: new Date(),
+          courseId: "",
+        },
   });
   const queryClient = useQueryClient();
 
@@ -199,12 +193,14 @@ export function CreateJobForm({ user, job }: CreateJobFormProps) {
                         <SelectContent>
                           <SelectGroup>
                             <SelectLabel>Employment Type</SelectLabel>
-                            {(Object.values(JobType) as string[]).map((type) => (
-                              <SelectItem key={type} value={type}>
-                                {type.charAt(0).toUpperCase() +
-                                  type.slice(1).toLowerCase()}
-                              </SelectItem>
-                            ))}
+                            {(Object.values(JobType) as string[]).map(
+                              (type) => (
+                                <SelectItem key={type} value={type}>
+                                  {type.charAt(0).toUpperCase() +
+                                    type.slice(1).toLowerCase()}
+                                </SelectItem>
+                              )
+                            )}
                           </SelectGroup>
                         </SelectContent>
                       </Select>
@@ -231,12 +227,14 @@ export function CreateJobForm({ user, job }: CreateJobFormProps) {
                         <SelectContent>
                           <SelectGroup>
                             <SelectLabel>Experience Level</SelectLabel>
-                            {(Object.values(ExperienceLevel) as string[]).map((roleValue) => (
-                              <SelectItem key={roleValue} value={roleValue}>
-                                {roleValue.charAt(0).toUpperCase() +
-                                  roleValue.slice(1).toLowerCase()}
-                              </SelectItem>
-                            ))}
+                            {(Object.values(ExperienceLevel) as string[]).map(
+                              (roleValue) => (
+                                <SelectItem key={roleValue} value={roleValue}>
+                                  {roleValue.charAt(0).toUpperCase() +
+                                    roleValue.slice(1).toLowerCase()}
+                                </SelectItem>
+                              )
+                            )}
                           </SelectGroup>
                         </SelectContent>
                       </Select>
@@ -268,9 +266,9 @@ export function CreateJobForm({ user, job }: CreateJobFormProps) {
                   <FormItem>
                     <FormLabel>Associated Course (Optional)</FormLabel>
                     <Select
-                      onValueChange={field.onChange}
                       defaultValue={field.value}
                       disabled={isLoadingCourses}
+                      onValueChange={field.onChange}
                     >
                       <FormControl>
                         <SelectTrigger>
@@ -289,8 +287,8 @@ export function CreateJobForm({ user, job }: CreateJobFormProps) {
                             {course.title} ({course.code})
                           </SelectItem>
                         ))}
-                        {!isLoadingCourses && !courses?.length && (
-                          <SelectItem value="empty" disabled>
+                        {!(isLoadingCourses || courses?.length) && (
+                          <SelectItem disabled value="empty">
                             No courses available
                           </SelectItem>
                         )}
@@ -325,11 +323,11 @@ export function CreateJobForm({ user, job }: CreateJobFormProps) {
                     <PopoverTrigger asChild>
                       <FormControl>
                         <Button
-                          variant={"outline"}
                           className={cn(
                             "w-[240px] pl-3 text-left font-normal",
                             !field.value && "text-muted-foreground"
                           )}
+                          variant={"outline"}
                         >
                           {field.value ? (
                             format(field.value, "PPP")
@@ -340,19 +338,21 @@ export function CreateJobForm({ user, job }: CreateJobFormProps) {
                         </Button>
                       </FormControl>
                     </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
+                    <PopoverContent align="start" className="w-auto p-0">
                       <Calendar
-                        mode="single"
-                        selected={field.value}
-                        onSelect={field.onChange}
+                        captionLayout="dropdown"
                         disabled={(date) =>
                           date < new Date() || date < new Date("1900-01-01")
                         }
-                        captionLayout="dropdown"
+                        mode="single"
+                        onSelect={field.onChange}
+                        selected={field.value}
                       />
                     </PopoverContent>
                   </Popover>
-                  <FormDescription>Last date to apply for this job.</FormDescription>
+                  <FormDescription>
+                    Last date to apply for this job.
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}

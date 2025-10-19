@@ -1,7 +1,7 @@
 "use server";
 
+import type { UserRole } from "@prisma/client";
 import { revalidatePath } from "next/cache";
-import { UserRole } from "@prisma/client";
 
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/session";

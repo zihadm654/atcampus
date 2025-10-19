@@ -1,27 +1,71 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { Users, Calendar, MapPin, Heart, Share2, Edit, Trash2, Plus, Filter, Search, UserPlus, UserMinus, Settings, Crown, Shield } from "lucide-react";
+import { ClubMemberRole, ClubStatus, type ClubType } from "@prisma/client";
 import { format } from "date-fns";
-
-import { ExtendedClub, ClubFilterOptions } from "@/types/club-types";
-import { getClubsAction, joinClubAction, leaveClubAction, toggleClubLikeAction, getUserClubsAction } from "@/actions/club-actions";
-import { ClubStatus, ClubMemberRole, ClubType } from "@prisma/client";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import {
+  Calendar,
+  Crown,
+  Edit,
+  Heart,
+  MapPin,
+  Plus,
+  Search,
+  Settings,
+  Share2,
+  Shield,
+  Trash2,
+  UserMinus,
+  UserPlus,
+  Users,
+} from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import {
+  getClubsAction,
+  getUserClubsAction,
+  joinClubAction,
+  leaveClubAction,
+  toggleClubLikeAction,
+} from "@/actions/club-actions";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Separator } from "@/components/ui/separator";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
-import { Skeleton } from "@/components/ui/skeleton";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import type { ClubFilterOptions, ExtendedClub } from "@/types/club-types";
 
 interface ClubsTabProps {
   username: string;
@@ -228,27 +272,21 @@ export function ClubsTab({ username, isOwnProfile, userRole }: ClubsTabProps) {
     }
   };
 
-  const isClubCreator = (club: ExtendedClub) => {
-    return isOwnProfile && club.creatorId === username;
-  };
+  const isClubCreator = (club: ExtendedClub) =>
+    isOwnProfile && club.creatorId === username;
 
-  const isClubMember = (club: ExtendedClub) => {
-    return club.isMember === true;
-  };
+  const isClubMember = (club: ExtendedClub) => club.isMember === true;
 
-  const getUserClubRole = (club: ExtendedClub): ClubMemberRole | null => {
-    return club.memberRole || null;
-  };
+  const getUserClubRole = (club: ExtendedClub): ClubMemberRole | null =>
+    club.memberRole || null;
 
-  const hasUserLikedClub = (club: ExtendedClub) => {
-    return club.isLiked === true;
-  };
+  const hasUserLikedClub = (club: ExtendedClub) => club.isLiked === true;
 
   const ClubCard = ({ club }: { club: ExtendedClub }) => {
     const userRole = getUserClubRole(club);
 
     return (
-      <Card className="hover:shadow-lg transition-shadow duration-200">
+      <Card className="transition-shadow duration-200 hover:shadow-lg">
         <CardHeader className="pb-3">
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-3">
@@ -259,39 +297,48 @@ export function ClubsTab({ username, isOwnProfile, userRole }: ClubsTabProps) {
               <div>
                 <CardTitle className="text-lg">{club.name}</CardTitle>
                 <CardDescription>
-                  by {club.creator.name} • {format(new Date(club.createdAt), "MMM d, yyyy")}
+                  by {club.creator.name} •{" "}
+                  {format(new Date(club.createdAt), "MMM d, yyyy")}
                 </CardDescription>
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <Badge variant={club.status === ClubStatus.ACTIVE ? "default" : "secondary"}>
+              <Badge
+                variant={
+                  club.status === ClubStatus.ACTIVE ? "default" : "secondary"
+                }
+              >
                 {club.status}
               </Badge>
               {isClubCreator(club) && (
                 <div className="flex gap-1">
                   <Button
-                    variant="ghost"
-                    size="sm"
                     onClick={() => {
                       setEditingClub(club);
                       setShowEditDialog(true);
                     }}
+                    size="sm"
+                    variant="ghost"
                   >
                     <Edit className="h-4 w-4" />
                   </Button>
                   <Button
-                    variant="ghost"
-                    size="sm"
                     onClick={() => handleDeleteClub(club.id)}
+                    size="sm"
+                    variant="ghost"
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
               )}
               {userRole && (
-                <Badge variant="outline" className="flex items-center gap-1">
-                  {userRole === ClubMemberRole.PRESIDENT && <Crown className="h-3 w-3" />}
-                  {userRole === ClubMemberRole.VICE_PRESIDENT && <Shield className="h-3 w-3" />}
+                <Badge className="flex items-center gap-1" variant="outline">
+                  {userRole === ClubMemberRole.PRESIDENT && (
+                    <Crown className="h-3 w-3" />
+                  )}
+                  {userRole === ClubMemberRole.VICE_PRESIDENT && (
+                    <Shield className="h-3 w-3" />
+                  )}
                   {userRole}
                 </Badge>
               )}
@@ -300,7 +347,7 @@ export function ClubsTab({ username, isOwnProfile, userRole }: ClubsTabProps) {
         </CardHeader>
 
         <CardContent className="pb-3">
-          <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
+          <p className="mb-3 line-clamp-2 text-muted-foreground text-sm">
             {club.description}
           </p>
 
@@ -334,29 +381,37 @@ export function ClubsTab({ username, isOwnProfile, userRole }: ClubsTabProps) {
             )}
           </div>
 
-          <div className="flex flex-wrap gap-2 mt-3">
+          <div className="mt-3 flex flex-wrap gap-2">
             <Badge variant="outline">{club.type}</Badge>
-            {club.categories.map((category, index) => (
-              <Badge key={index} variant="outline">{category}</Badge>
+            {club.categories.map((category) => (
+              <Badge key={category} variant="outline">
+                {category}
+              </Badge>
             ))}
-            {club.isOpenMembership && <Badge variant="outline">Open Membership</Badge>}
-            {club.approvalRequired && <Badge variant="outline">Approval Required</Badge>}
+            {club.isOpenMembership && (
+              <Badge variant="outline">Open Membership</Badge>
+            )}
+            {club.approvalRequired && (
+              <Badge variant="outline">Approval Required</Badge>
+            )}
           </div>
         </CardContent>
 
-        <CardFooter className="flex justify-between items-center pt-3">
+        <CardFooter className="flex items-center justify-between pt-3">
           <div className="flex items-center gap-2">
             <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => handleToggleLike(club.id)}
               className={hasUserLikedClub(club) ? "text-red-500" : ""}
+              onClick={() => handleToggleLike(club.id)}
+              size="sm"
+              variant="ghost"
             >
-              <Heart className={`h-4 w-4 ${hasUserLikedClub(club) ? "fill-current" : ""}`} />
+              <Heart
+                className={`h-4 w-4 ${hasUserLikedClub(club) ? "fill-current" : ""}`}
+              />
               <span className="ml-1">{club._count?.likes || 0}</span>
             </Button>
 
-            <Button variant="ghost" size="sm">
+            <Button size="sm" variant="ghost">
               <Share2 className="h-4 w-4" />
             </Button>
           </div>
@@ -364,29 +419,29 @@ export function ClubsTab({ username, isOwnProfile, userRole }: ClubsTabProps) {
           <div className="flex gap-2">
             {isClubMember(club) ? (
               <Button
-                variant="outline"
-                size="sm"
-                onClick={() => handleLeaveClub(club.id)}
                 disabled={club.approvalRequired && !userRole}
+                onClick={() => handleLeaveClub(club.id)}
+                size="sm"
+                variant="outline"
               >
-                <UserMinus className="h-4 w-4 mr-1" />
+                <UserMinus className="mr-1 h-4 w-4" />
                 Leave
               </Button>
             ) : (
               <Button
-                size="sm"
-                onClick={() => handleJoinClub(club.id)}
                 disabled={club.approvalRequired}
+                onClick={() => handleJoinClub(club.id)}
+                size="sm"
               >
-                <UserPlus className="h-4 w-4 mr-1" />
+                <UserPlus className="mr-1 h-4 w-4" />
                 {club.approvalRequired ? "Apply" : "Join"}
               </Button>
             )}
 
             <Button
-              variant="outline"
-              size="sm"
               onClick={() => router.push(`/clubs/${club.id}`)}
+              size="sm"
+              variant="outline"
             >
               View Details
             </Button>
@@ -394,19 +449,25 @@ export function ClubsTab({ username, isOwnProfile, userRole }: ClubsTabProps) {
             {userRole && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm">
+                  <Button size="sm" variant="outline">
                     <Settings className="h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent>
-                  <DropdownMenuItem onClick={() => router.push(`/clubs/${club.id}/manage`)}>
+                  <DropdownMenuItem
+                    onClick={() => router.push(`/clubs/${club.id}/manage`)}
+                  >
                     Manage Club
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => router.push(`/clubs/${club.id}/members`)}>
+                  <DropdownMenuItem
+                    onClick={() => router.push(`/clubs/${club.id}/members`)}
+                  >
                     View Members
                   </DropdownMenuItem>
                   {userRole === ClubMemberRole.PRESIDENT && (
-                    <DropdownMenuItem onClick={() => router.push(`/clubs/${club.id}/settings`)}>
+                    <DropdownMenuItem
+                      onClick={() => router.push(`/clubs/${club.id}/settings`)}
+                    >
                       Club Settings
                     </DropdownMenuItem>
                   )}
@@ -420,23 +481,27 @@ export function ClubsTab({ username, isOwnProfile, userRole }: ClubsTabProps) {
   };
 
   const FilterBar = () => (
-    <div className="flex flex-col sm:flex-row gap-4 mb-6">
+    <div className="mb-6 flex flex-col gap-4 sm:flex-row">
       <div className="relative flex-1">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <Search className="-translate-y-1/2 absolute top-1/2 left-3 h-4 w-4 transform text-muted-foreground" />
         <Input
+          className="pl-10"
+          onChange={(e) =>
+            setFilterOptions((prev) => ({ ...prev, search: e.target.value }))
+          }
           placeholder="Search clubs..."
           value={filterOptions.search || ""}
-          onChange={(e) => setFilterOptions(prev => ({ ...prev, search: e.target.value }))}
-          className="pl-10"
         />
       </div>
 
       <Select
+        onValueChange={(value) =>
+          setFilterOptions((prev) => ({
+            ...prev,
+            type: value === "all" ? undefined : (value as ClubType),
+          }))
+        }
         value={filterOptions.type || "all"}
-        onValueChange={(value) => setFilterOptions(prev => ({
-          ...prev,
-          type: value === "all" ? undefined : value as ClubType
-        }))}
       >
         <SelectTrigger className="w-[180px]">
           <SelectValue placeholder="Club Type" />
@@ -455,11 +520,13 @@ export function ClubsTab({ username, isOwnProfile, userRole }: ClubsTabProps) {
       </Select>
 
       <Select
+        onValueChange={(value) =>
+          setFilterOptions((prev) => ({
+            ...prev,
+            categories: value === "all" ? undefined : [value],
+          }))
+        }
         value={filterOptions.categories?.[0] || "all"}
-        onValueChange={(value) => setFilterOptions(prev => ({
-          ...prev,
-          categories: value === "all" ? undefined : [value]
-        }))}
       >
         <SelectTrigger className="w-[180px]">
           <SelectValue placeholder="Category" />
@@ -478,7 +545,7 @@ export function ClubsTab({ username, isOwnProfile, userRole }: ClubsTabProps) {
 
       {userRole === "INSTITUTION" && (
         <Button onClick={() => setShowCreateDialog(true)}>
-          <Plus className="h-4 w-4 mr-2" />
+          <Plus className="mr-2 h-4 w-4" />
           Create Club
         </Button>
       )}
@@ -494,43 +561,49 @@ export function ClubsTab({ username, isOwnProfile, userRole }: ClubsTabProps) {
           <FilterBar />
 
           {isOwnProfile ? (
-            <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <Tabs onValueChange={setActiveTab} value={activeTab}>
               <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="all">All Clubs</TabsTrigger>
                 <TabsTrigger value="member">Joined Clubs</TabsTrigger>
               </TabsList>
 
-              <TabsContent value="all" className="space-y-4 mt-6">
+              <TabsContent className="mt-6 space-y-4" value="all">
                 {clubs.length === 0 ? (
                   <Card>
-                    <CardContent className="text-center py-12">
-                      <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                      <h3 className="text-lg font-semibold mb-2">No clubs found</h3>
+                    <CardContent className="py-12 text-center">
+                      <Users className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
+                      <h3 className="mb-2 font-semibold text-lg">
+                        No clubs found
+                      </h3>
                       <p className="text-muted-foreground">
-                        {filterOptions.search ? "Try adjusting your search criteria" : "No clubs available at the moment"}
+                        {filterOptions.search
+                          ? "Try adjusting your search criteria"
+                          : "No clubs available at the moment"}
                       </p>
                     </CardContent>
                   </Card>
                 ) : (
-                  clubs.map((club) => <ClubCard key={club.id} club={club} />)
+                  clubs.map((club) => <ClubCard club={club} key={club.id} />)
                 )}
               </TabsContent>
 
-              <TabsContent value="member" className="space-y-4 mt-6">
-                {userClubs.filter(club => club.isMember).length === 0 ? (
+              <TabsContent className="mt-6 space-y-4" value="member">
+                {userClubs.filter((club) => club.isMember).length === 0 ? (
                   <Card>
-                    <CardContent className="text-center py-12">
-                      <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                      <h3 className="text-lg font-semibold mb-2">Not a member of any clubs</h3>
+                    <CardContent className="py-12 text-center">
+                      <Users className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
+                      <h3 className="mb-2 font-semibold text-lg">
+                        Not a member of any clubs
+                      </h3>
                       <p className="text-muted-foreground">
                         Join some clubs to see them here
                       </p>
                     </CardContent>
                   </Card>
                 ) : (
-                  userClubs.filter(club => club.isMember).map((club) => (
-                    <ClubCard key={club.id} club={club} />
-                  ))
+                  userClubs
+                    .filter((club) => club.isMember)
+                    .map((club) => <ClubCard club={club} key={club.id} />)
                 )}
               </TabsContent>
             </Tabs>
@@ -538,16 +611,20 @@ export function ClubsTab({ username, isOwnProfile, userRole }: ClubsTabProps) {
             <div className="space-y-4">
               {clubs.length === 0 ? (
                 <Card>
-                  <CardContent className="text-center py-12">
-                    <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                    <h3 className="text-lg font-semibold mb-2">No clubs found</h3>
+                  <CardContent className="py-12 text-center">
+                    <Users className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
+                    <h3 className="mb-2 font-semibold text-lg">
+                      No clubs found
+                    </h3>
                     <p className="text-muted-foreground">
-                      {filterOptions.search ? "Try adjusting your search criteria" : "No clubs available at the moment"}
+                      {filterOptions.search
+                        ? "Try adjusting your search criteria"
+                        : "No clubs available at the moment"}
                     </p>
                   </CardContent>
                 </Card>
               ) : (
-                clubs.map((club) => <ClubCard key={club.id} club={club} />)
+                clubs.map((club) => <ClubCard club={club} key={club.id} />)
               )}
             </div>
           )}
@@ -562,43 +639,50 @@ export function ClubsTab({ username, isOwnProfile, userRole }: ClubsTabProps) {
           <FilterBar />
 
           {isOwnProfile ? (
-            <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <Tabs onValueChange={setActiveTab} value={activeTab}>
               <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="all">All Clubs</TabsTrigger>
                 <TabsTrigger value="created">Created Clubs</TabsTrigger>
               </TabsList>
 
-              <TabsContent value="all" className="space-y-4 mt-6">
+              <TabsContent className="mt-6 space-y-4" value="all">
                 {clubs.length === 0 ? (
                   <Card>
-                    <CardContent className="text-center py-12">
-                      <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                      <h3 className="text-lg font-semibold mb-2">No clubs found</h3>
+                    <CardContent className="py-12 text-center">
+                      <Users className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
+                      <h3 className="mb-2 font-semibold text-lg">
+                        No clubs found
+                      </h3>
                       <p className="text-muted-foreground">
-                        {filterOptions.search ? "Try adjusting your search criteria" : "No clubs available at the moment"}
+                        {filterOptions.search
+                          ? "Try adjusting your search criteria"
+                          : "No clubs available at the moment"}
                       </p>
                     </CardContent>
                   </Card>
                 ) : (
-                  clubs.map((club) => <ClubCard key={club.id} club={club} />)
+                  clubs.map((club) => <ClubCard club={club} key={club.id} />)
                 )}
               </TabsContent>
 
-              <TabsContent value="created" className="space-y-4 mt-6">
-                {userClubs.filter(club => club.creatorId === username).length === 0 ? (
+              <TabsContent className="mt-6 space-y-4" value="created">
+                {userClubs.filter((club) => club.creatorId === username)
+                  .length === 0 ? (
                   <Card>
-                    <CardContent className="text-center py-12">
-                      <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                      <h3 className="text-lg font-semibold mb-2">No created clubs</h3>
+                    <CardContent className="py-12 text-center">
+                      <Users className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
+                      <h3 className="mb-2 font-semibold text-lg">
+                        No created clubs
+                      </h3>
                       <p className="text-muted-foreground">
                         Create your first club to get started
                       </p>
                     </CardContent>
                   </Card>
                 ) : (
-                  userClubs.filter(club => club.creatorId === username).map((club) => (
-                    <ClubCard key={club.id} club={club} />
-                  ))
+                  userClubs
+                    .filter((club) => club.creatorId === username)
+                    .map((club) => <ClubCard club={club} key={club.id} />)
                 )}
               </TabsContent>
             </Tabs>
@@ -606,16 +690,20 @@ export function ClubsTab({ username, isOwnProfile, userRole }: ClubsTabProps) {
             <div className="space-y-4">
               {clubs.length === 0 ? (
                 <Card>
-                  <CardContent className="text-center py-12">
-                    <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                    <h3 className="text-lg font-semibold mb-2">No clubs found</h3>
+                  <CardContent className="py-12 text-center">
+                    <Users className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
+                    <h3 className="mb-2 font-semibold text-lg">
+                      No clubs found
+                    </h3>
                     <p className="text-muted-foreground">
-                      {filterOptions.search ? "Try adjusting your search criteria" : "No clubs available at the moment"}
+                      {filterOptions.search
+                        ? "Try adjusting your search criteria"
+                        : "No clubs available at the moment"}
                     </p>
                   </CardContent>
                 </Card>
               ) : (
-                clubs.map((club) => <ClubCard key={club.id} club={club} />)
+                clubs.map((club) => <ClubCard club={club} key={club.id} />)
               )}
             </div>
           )}
@@ -631,16 +719,18 @@ export function ClubsTab({ username, isOwnProfile, userRole }: ClubsTabProps) {
         <div className="space-y-4">
           {clubs.length === 0 ? (
             <Card>
-              <CardContent className="text-center py-12">
-                <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-lg font-semibold mb-2">No clubs found</h3>
+              <CardContent className="py-12 text-center">
+                <Users className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
+                <h3 className="mb-2 font-semibold text-lg">No clubs found</h3>
                 <p className="text-muted-foreground">
-                  {filterOptions.search ? "Try adjusting your search criteria" : "No clubs available at the moment"}
+                  {filterOptions.search
+                    ? "Try adjusting your search criteria"
+                    : "No clubs available at the moment"}
                 </p>
               </CardContent>
             </Card>
           ) : (
-            clubs.map((club) => <ClubCard key={club.id} club={club} />)
+            clubs.map((club) => <ClubCard club={club} key={club.id} />)
           )}
         </div>
       </div>
@@ -650,14 +740,14 @@ export function ClubsTab({ username, isOwnProfile, userRole }: ClubsTabProps) {
   if (loading) {
     return (
       <div className="space-y-4">
-        {[...Array(3)].map((_, i) => (
+        {[...new Array(3)].map((_, i) => (
           <Card key={i}>
             <CardHeader>
               <Skeleton className="h-4 w-[250px]" />
               <Skeleton className="h-4 w-[200px]" />
             </CardHeader>
             <CardContent>
-              <Skeleton className="h-4 w-full mb-2" />
+              <Skeleton className="mb-2 h-4 w-full" />
               <Skeleton className="h-4 w-full" />
             </CardContent>
           </Card>
@@ -671,42 +761,58 @@ export function ClubsTab({ username, isOwnProfile, userRole }: ClubsTabProps) {
       {renderClubsContent()}
 
       {/* Create Club Dialog */}
-      <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <Dialog onOpenChange={setShowCreateDialog} open={showCreateDialog}>
+        <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Create New Club</DialogTitle>
             <DialogDescription>
-              Fill in the details for your new club. Students will be able to join and participate.
+              Fill in the details for your new club. Students will be able to
+              join and participate.
             </DialogDescription>
           </DialogHeader>
 
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="name" className="text-right">Club Name</Label>
+              <Label className="text-right" htmlFor="name">
+                Club Name
+              </Label>
               <Input
+                className="col-span-3"
                 id="name"
+                onChange={(e) =>
+                  setCreateForm((prev) => ({ ...prev, name: e.target.value }))
+                }
                 value={createForm.name}
-                onChange={(e) => setCreateForm(prev => ({ ...prev, name: e.target.value }))}
-                className="col-span-3"
               />
             </div>
 
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="description" className="text-right">Description</Label>
+              <Label className="text-right" htmlFor="description">
+                Description
+              </Label>
               <Textarea
-                id="description"
-                value={createForm.description}
-                onChange={(e) => setCreateForm(prev => ({ ...prev, description: e.target.value }))}
                 className="col-span-3"
+                id="description"
+                onChange={(e) =>
+                  setCreateForm((prev) => ({
+                    ...prev,
+                    description: e.target.value,
+                  }))
+                }
                 rows={3}
+                value={createForm.description}
               />
             </div>
 
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="type" className="text-right">Type</Label>
+              <Label className="text-right" htmlFor="type">
+                Type
+              </Label>
               <Select
+                onValueChange={(value) =>
+                  setCreateForm((prev) => ({ ...prev, type: value }))
+                }
                 value={createForm.type}
-                onValueChange={(value) => setCreateForm(prev => ({ ...prev, type: value }))}
               >
                 <SelectTrigger className="col-span-3">
                   <SelectValue />
@@ -725,10 +831,14 @@ export function ClubsTab({ username, isOwnProfile, userRole }: ClubsTabProps) {
             </div>
 
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="category" className="text-right">Category</Label>
+              <Label className="text-right" htmlFor="category">
+                Category
+              </Label>
               <Select
+                onValueChange={(value) =>
+                  setCreateForm((prev) => ({ ...prev, category: value }))
+                }
                 value={createForm.category}
-                onValueChange={(value) => setCreateForm(prev => ({ ...prev, category: value }))}
               >
                 <SelectTrigger className="col-span-3">
                   <SelectValue />
@@ -746,82 +856,134 @@ export function ClubsTab({ username, isOwnProfile, userRole }: ClubsTabProps) {
             </div>
 
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="location" className="text-right">Location</Label>
+              <Label className="text-right" htmlFor="location">
+                Location
+              </Label>
               <Input
-                id="location"
-                value={createForm.location}
-                onChange={(e) => setCreateForm(prev => ({ ...prev, location: e.target.value }))}
                 className="col-span-3"
+                id="location"
+                onChange={(e) =>
+                  setCreateForm((prev) => ({
+                    ...prev,
+                    location: e.target.value,
+                  }))
+                }
+                value={createForm.location}
               />
             </div>
 
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="capacity" className="text-right">Capacity</Label>
+              <Label className="text-right" htmlFor="capacity">
+                Capacity
+              </Label>
               <Input
+                className="col-span-3"
                 id="capacity"
+                onChange={(e) =>
+                  setCreateForm((prev) => ({
+                    ...prev,
+                    capacity: Number.parseInt(e.target.value, 10),
+                  }))
+                }
                 type="number"
                 value={createForm.capacity}
-                onChange={(e) => setCreateForm(prev => ({ ...prev, capacity: parseInt(e.target.value) }))}
-                className="col-span-3"
               />
             </div>
 
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="membershipFee" className="text-right">Membership Fee ($)</Label>
+              <Label className="text-right" htmlFor="membershipFee">
+                Membership Fee ($)
+              </Label>
               <Input
+                className="col-span-3"
                 id="membershipFee"
+                onChange={(e) =>
+                  setCreateForm((prev) => ({
+                    ...prev,
+                    membershipFee: Number.parseFloat(e.target.value),
+                  }))
+                }
                 type="number"
                 value={createForm.membershipFee}
-                onChange={(e) => setCreateForm(prev => ({ ...prev, membershipFee: parseFloat(e.target.value) }))}
-                className="col-span-3"
               />
             </div>
 
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="meetingSchedule" className="text-right">Meeting Schedule</Label>
+              <Label className="text-right" htmlFor="meetingSchedule">
+                Meeting Schedule
+              </Label>
               <Input
+                className="col-span-3"
                 id="meetingSchedule"
+                onChange={(e) =>
+                  setCreateForm((prev) => ({
+                    ...prev,
+                    meetingSchedule: e.target.value,
+                  }))
+                }
                 value={createForm.meetingSchedule}
-                onChange={(e) => setCreateForm(prev => ({ ...prev, meetingSchedule: e.target.value }))}
-                className="col-span-3"
               />
             </div>
 
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="contactEmail" className="text-right">Contact Email</Label>
+              <Label className="text-right" htmlFor="contactEmail">
+                Contact Email
+              </Label>
               <Input
+                className="col-span-3"
                 id="contactEmail"
+                onChange={(e) =>
+                  setCreateForm((prev) => ({
+                    ...prev,
+                    contactEmail: e.target.value,
+                  }))
+                }
                 type="email"
                 value={createForm.contactEmail}
-                onChange={(e) => setCreateForm(prev => ({ ...prev, contactEmail: e.target.value }))}
-                className="col-span-3"
               />
             </div>
 
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="website" className="text-right">Website</Label>
+              <Label className="text-right" htmlFor="website">
+                Website
+              </Label>
               <Input
+                className="col-span-3"
                 id="website"
+                onChange={(e) =>
+                  setCreateForm((prev) => ({
+                    ...prev,
+                    website: e.target.value,
+                  }))
+                }
                 type="url"
                 value={createForm.website}
-                onChange={(e) => setCreateForm(prev => ({ ...prev, website: e.target.value }))}
-                className="col-span-3"
               />
             </div>
 
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="socialMedia" className="text-right">Social Media</Label>
+              <Label className="text-right" htmlFor="socialMedia">
+                Social Media
+              </Label>
               <Input
-                id="socialMedia"
-                value={createForm.socialMedia}
-                onChange={(e) => setCreateForm(prev => ({ ...prev, socialMedia: e.target.value }))}
                 className="col-span-3"
+                id="socialMedia"
+                onChange={(e) =>
+                  setCreateForm((prev) => ({
+                    ...prev,
+                    socialMedia: e.target.value,
+                  }))
+                }
+                value={createForm.socialMedia}
               />
             </div>
           </div>
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowCreateDialog(false)}>
+            <Button
+              onClick={() => setShowCreateDialog(false)}
+              variant="outline"
+            >
               Cancel
             </Button>
             <Button onClick={handleCreateClub}>Create Club</Button>
@@ -830,8 +992,8 @@ export function ClubsTab({ username, isOwnProfile, userRole }: ClubsTabProps) {
       </Dialog>
 
       {/* Edit Club Dialog */}
-      <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <Dialog onOpenChange={setShowEditDialog} open={showEditDialog}>
+        <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Edit Club</DialogTitle>
             <DialogDescription>
@@ -841,29 +1003,41 @@ export function ClubsTab({ username, isOwnProfile, userRole }: ClubsTabProps) {
 
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="edit-name" className="text-right">Club Name</Label>
+              <Label className="text-right" htmlFor="edit-name">
+                Club Name
+              </Label>
               <Input
-                id="edit-name"
-                value={editingClub?.name || ""}
-                onChange={(e) => setEditingClub(prev => prev ? { ...prev, name: e.target.value } : null)}
                 className="col-span-3"
+                id="edit-name"
+                onChange={(e) =>
+                  setEditingClub((prev) =>
+                    prev ? { ...prev, name: e.target.value } : null
+                  )
+                }
+                value={editingClub?.name || ""}
               />
             </div>
 
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="edit-description" className="text-right">Description</Label>
+              <Label className="text-right" htmlFor="edit-description">
+                Description
+              </Label>
               <Textarea
-                id="edit-description"
-                value={editingClub?.description || ""}
-                onChange={(e) => setEditingClub(prev => prev ? { ...prev, description: e.target.value } : null)}
                 className="col-span-3"
+                id="edit-description"
+                onChange={(e) =>
+                  setEditingClub((prev) =>
+                    prev ? { ...prev, description: e.target.value } : null
+                  )
+                }
                 rows={3}
+                value={editingClub?.description || ""}
               />
             </div>
           </div>
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowEditDialog(false)}>
+            <Button onClick={() => setShowEditDialog(false)} variant="outline">
               Cancel
             </Button>
             <Button onClick={handleEditClub}>Save Changes</Button>

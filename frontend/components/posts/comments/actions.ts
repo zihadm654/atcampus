@@ -1,9 +1,9 @@
 "use server";
 
-import { getCommentDataInclude, PostData } from "@/types/types";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/session";
 import { createCommentSchema } from "@/lib/validations/validation";
+import { getCommentDataInclude, type PostData } from "@/types/types";
 
 export async function submitComment({
   post,

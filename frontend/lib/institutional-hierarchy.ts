@@ -1,5 +1,5 @@
-import { prisma } from '@/lib/db';
-import { UserRole } from '@prisma/client';
+import { UserRole } from "@prisma/client";
+import { prisma } from "@/lib/db";
 
 // ============================================================================
 // TYPES
@@ -79,10 +79,10 @@ export async function getInstitutionalHierarchy(
                   },
                 },
               },
-              orderBy: { name: 'asc' },
+              orderBy: { name: "asc" },
             },
           },
-          orderBy: { name: 'asc' },
+          orderBy: { name: "asc" },
         },
       },
     });
@@ -95,7 +95,7 @@ export async function getInstitutionalHierarchy(
       organization: {
         id: institution.id,
         name: institution.name,
-        slug: institution.username || '',
+        slug: institution.username || "",
         logo: institution.image || undefined,
         description: institution.bio || undefined,
         website: institution.institution || undefined,
@@ -127,8 +127,8 @@ export async function getInstitutionalHierarchy(
       })),
     };
   } catch (error) {
-    console.error('Error fetching institutional hierarchy:', error);
-    throw new Error('Failed to fetch institutional hierarchy');
+    console.error("Error fetching institutional hierarchy:", error);
+    throw new Error("Failed to fetch institutional hierarchy");
   }
 }
 
@@ -152,11 +152,11 @@ export async function getInstitutionSchools(institutionId: string) {
           },
         },
       },
-      orderBy: { name: 'asc' },
+      orderBy: { name: "asc" },
     });
   } catch (error) {
-    console.error('Error fetching organization schools:', error);
-    throw new Error('Failed to fetch organization schools');
+    console.error("Error fetching organization schools:", error);
+    throw new Error("Failed to fetch organization schools");
   }
 }
 
@@ -181,11 +181,11 @@ export async function getSchoolFaculties(schoolId: string) {
           },
         },
       },
-      orderBy: { name: 'asc' },
+      orderBy: { name: "asc" },
     });
   } catch (error) {
-    console.error('Error fetching school faculties:', error);
-    throw new Error('Failed to fetch school faculties');
+    console.error("Error fetching school faculties:", error);
+    throw new Error("Failed to fetch school faculties");
   }
 }
 
@@ -224,18 +224,18 @@ export async function getFacultyDetails(facultyId: string) {
             _count: {
               select: {
                 enrollments: {
-                  where: { status: 'ENROLLED' },
+                  where: { status: "ENROLLED" },
                 },
               },
             },
           },
-          orderBy: { createdAt: 'desc' },
+          orderBy: { createdAt: "desc" },
         },
       },
     });
   } catch (error) {
-    console.error('Error fetching faculty details:', error);
-    throw new Error('Failed to fetch faculty details');
+    console.error("Error fetching faculty details:", error);
+    throw new Error("Failed to fetch faculty details");
   }
 }
 
@@ -278,14 +278,14 @@ export async function validateInstitutionalAccess(
       member.user.role === UserRole.INSTITUTION ||
       member.role === "admin" ||
       member.role === "owner" ||
-      member.role === "member"
+      member.role === "member";
 
     // Check if user account is active
-    const isUserActive = member.user.status === 'ACTIVE';
+    const isUserActive = member.user.status === "ACTIVE";
 
     return hasInstitutionalRole && isUserActive;
   } catch (error) {
-    console.error('Error validating institutional access:', error);
+    console.error("Error validating institutional access:", error);
     return false;
   }
 }
@@ -325,7 +325,7 @@ export async function validateSchoolManagementAccess(
       },
     });
 
-    if (!member || member.user.status !== 'ACTIVE') {
+    if (!member || member.user.status !== "ACTIVE") {
       return false;
     }
 
@@ -338,7 +338,7 @@ export async function validateSchoolManagementAccess(
       member.role === "member"
     );
   } catch (error) {
-    console.error('Error validating school management access:', error);
+    console.error("Error validating school management access:", error);
     return false;
   }
 }
@@ -382,7 +382,7 @@ export async function validateFacultyManagementAccess(
       },
     });
 
-    if (!member || member.user.status !== 'ACTIVE') {
+    if (!member || member.user.status !== "ACTIVE") {
       return false;
     }
 
@@ -400,7 +400,7 @@ export async function validateFacultyManagementAccess(
 
     return canManageFaculty;
   } catch (error) {
-    console.error('Error validating faculty management access:', error);
+    console.error("Error validating faculty management access:", error);
     return false;
   }
 }
@@ -433,9 +433,9 @@ export async function verifyProfessorFacultyAssignment(
       },
     });
 
-    return assignment !== null && assignment.user.status === 'ACTIVE';
+    return assignment !== null && assignment.user.status === "ACTIVE";
   } catch (error) {
-    console.error('Error verifying professor faculty assignment:', error);
+    console.error("Error verifying professor faculty assignment:", error);
     return false;
   }
 }
@@ -480,8 +480,8 @@ export async function getProfessorFacultyAssignments(
       role: assignment.role, // Cast string to MemberRole enum
     }));
   } catch (error) {
-    console.error('Error getting professor faculty assignments:', error);
-    throw new Error('Failed to get professor faculty assignments');
+    console.error("Error getting professor faculty assignments:", error);
+    throw new Error("Failed to get professor faculty assignments");
   }
 }
 
@@ -506,7 +506,7 @@ export async function canAssignProfessorToFaculty(
     if (existingAssignment) {
       return {
         canAssign: false,
-        reason: 'Professor is already assigned to this faculty',
+        reason: "Professor is already assigned to this faculty",
       };
     }
 
@@ -522,21 +522,21 @@ export async function canAssignProfessorToFaculty(
     if (!user) {
       return {
         canAssign: false,
-        reason: 'User not found',
+        reason: "User not found",
       };
     }
 
     if (user.role !== UserRole.PROFESSOR) {
       return {
         canAssign: false,
-        reason: 'User does not have professor role',
+        reason: "User does not have professor role",
       };
     }
 
-    if (user.status !== 'ACTIVE') {
+    if (user.status !== "ACTIVE") {
       return {
         canAssign: false,
-        reason: 'User account is not active',
+        reason: "User account is not active",
       };
     }
 
@@ -552,7 +552,7 @@ export async function canAssignProfessorToFaculty(
     if (!faculty) {
       return {
         canAssign: false,
-        reason: 'Faculty not found',
+        reason: "Faculty not found",
       };
     }
 
@@ -568,7 +568,7 @@ export async function canAssignProfessorToFaculty(
     if (!school) {
       return {
         canAssign: false,
-        reason: 'School not found',
+        reason: "School not found",
       };
     }
 
@@ -584,30 +584,29 @@ export async function canAssignProfessorToFaculty(
     if (!institution) {
       return {
         canAssign: false,
-        reason: 'Institution not found',
+        reason: "Institution not found",
       };
     }
 
     if (
-      !faculty.isActive ||
-      !school.isActive ||
-      institution.status !== 'ACTIVE' // User model uses status instead of isActive
+      !(faculty.isActive && school.isActive) ||
+      institution.status !== "ACTIVE" // User model uses status instead of isActive
     ) {
       return {
         canAssign: false,
-        reason: 'Faculty, school, or institution is not active',
+        reason: "Faculty, school, or institution is not active",
       };
     }
 
     return { canAssign: true };
   } catch (error) {
     console.error(
-      'Error checking professor faculty assignment eligibility:',
+      "Error checking professor faculty assignment eligibility:",
       error
     );
     return {
       canAssign: false,
-      reason: 'Error checking assignment eligibility',
+      reason: "Error checking assignment eligibility",
     };
   }
 }
@@ -641,7 +640,7 @@ export async function getFacultyInstitutionalContext(facultyId: string) {
       },
     });
   } catch (error) {
-    console.error('Error getting faculty institutional context:', error);
-    throw new Error('Failed to get faculty institutional context');
+    console.error("Error getting faculty institutional context:", error);
+    throw new Error("Failed to get faculty institutional context");
   }
 }

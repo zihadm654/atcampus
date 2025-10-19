@@ -1,12 +1,11 @@
 "use client";
 
-import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
 
 import { DataTable } from "@/components/dashboard/data-table/data-table";
-
-import { columns } from "./_components/columns";
 import { admin } from "@/lib/auth-client";
+import { columns } from "./_components/columns";
 
 export default function AdminDashboard() {
   const [isLoading, setIsLoading] = useState<string | undefined>();

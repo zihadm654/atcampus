@@ -1,14 +1,12 @@
-import { Metadata } from "next";
-import { redirect } from "next/navigation";
-
-import { getCurrentUser } from "@/lib/session";
-import { constructMetadata } from "@/lib/utils";
-import CourseFeed from "@/components/feed/CourseFeed";
-import { Button } from "@/components/ui/button";
-import { prisma } from "@/lib/db";
+import type { Metadata } from "next";
 import Link from "next/link";
 import { cache } from "react";
+import CourseFeed from "@/components/feed/CourseFeed";
 import { Icons } from "@/components/shared/icons";
+import { Button } from "@/components/ui/button";
+import { prisma } from "@/lib/db";
+import { getCurrentUser } from "@/lib/session";
+import { constructMetadata } from "@/lib/utils";
 
 export const metadata: Metadata = constructMetadata({
   title: "Courses - AtCampus",
@@ -86,45 +84,54 @@ export default async function CoursesPage() {
     <div className="flex w-full flex-col gap-6">
       <div className="flex items-center justify-between gap-2 p-2">
         <div className="">
-          <h1 className="text-3xl max-md:text-xl font-bold">Courses</h1>
-          <p className="text-muted-foreground max-md:text-sm hidden lg:block">
+          <h1 className="font-bold text-3xl max-md:text-xl">Courses</h1>
+          <p className="hidden text-muted-foreground max-md:text-sm lg:block">
             Browse and enroll in courses to enhance your skills
           </p>
         </div>
         <div className="flex gap-2">
           {canCreateCourses && (
             <>
-              <Button className="rounded-xl max-sm:text-sm" size="sm" variant="outline">
-                <Link className="flex items-center justify-center gap-2" href="/courses/my-courses">
-                  <span className="hidden lg:block">
-                    My Courses
-                  </span>
-                  <Icons.home className="size-5" />
+              <Button
+                className="rounded-xl max-sm:text-sm"
+                size="sm"
+                variant="outline"
+              >
+                <Link
+                  className="flex items-center justify-center gap-2"
+                  href="/courses/my-courses"
+                >
+                  <span className="hidden lg:block">My Courses</span>
+                  <Icons.home className="hidden size-5 max-md:block" />
                 </Link>
               </Button>
-              <Button className="rounded-xl max-sm:text-sm" size="sm" variant="outline">
+              <Button
+                className="rounded-xl max-sm:text-sm"
+                size="sm"
+                variant="outline"
+              >
                 <Link href="/courses/createCourse">
-                  <span className="hidden lg:block">
-                    Create Course
-                  </span>
-                  <Icons.add className="size-5" />
+                  <span className="hidden lg:block">Add Course</span>
+                  <Icons.add className="hidden size-5 max-md:block" />
                 </Link>
               </Button>
             </>
           )}
           {hasApprovalPermissions && (
-            <Button className="rounded-xl max-sm:text-sm" size="sm" variant="secondary">
+            <Button
+              className="rounded-xl max-sm:text-sm"
+              size="sm"
+              variant="secondary"
+            >
               <Link href="/courses/approvals">
-                <span className="hidden lg:block">
-                  Course Approvals
-                </span>
-                <Icons.home className="size-5" />
+                <span className="hidden lg:block">Course Approvals</span>
+                <Icons.home className="hidden size-5 lg:block" />
               </Link>
             </Button>
           )}
         </div>
       </div>
-      <CourseFeed user={user} initialData={initialCoursesData} />
+      <CourseFeed initialData={initialCoursesData} user={user} />
     </div>
   );
 }

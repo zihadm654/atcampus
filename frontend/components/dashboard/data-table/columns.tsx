@@ -1,7 +1,7 @@
 "use client";
 
-import { User } from "@prisma/client";
-import { ColumnDef } from "@tanstack/react-table";
+import type { User } from "@prisma/client";
+import type { ColumnDef } from "@tanstack/react-table";
 
 import { cn } from "@/lib/utils";
 
@@ -27,76 +27,64 @@ export const columns: ColumnDef<User>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="title" />
     ),
-    cell: ({ row }) => {
-      return (
-        <div className="flex space-x-2 truncate font-medium">
-          <span className="max-w-[500px] truncate font-medium capitalize">
-            {row.getValue("title")}
-          </span>
-        </div>
-      );
-    },
+    cell: ({ row }) => (
+      <div className="flex space-x-2 truncate font-medium">
+        <span className="max-w-[500px] truncate font-medium capitalize">
+          {row.getValue("title")}
+        </span>
+      </div>
+    ),
   },
   {
     accessorKey: "description",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="description" />
     ),
-    cell: ({ row }) => {
-      return (
-        <div className="flex space-x-2 truncate font-medium">
-          <span className="max-w-48 truncate font-medium capitalize">
-            {row.getValue("description")}
-          </span>
-        </div>
-      );
-    },
+    cell: ({ row }) => (
+      <div className="flex space-x-2 truncate font-medium">
+        <span className="max-w-48 truncate font-medium capitalize">
+          {row.getValue("description")}
+        </span>
+      </div>
+    ),
   },
   {
     accessorKey: "category",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Category" />
     ),
-    cell: ({ row }) => {
-      return (
-        <div className="flex max-w-[500px] space-x-2">
-          <span className="truncate font-medium capitalize">
-            {row.getValue("category")}
-          </span>
-        </div>
-      );
-    },
+    cell: ({ row }) => (
+      <div className="flex max-w-[500px] space-x-2">
+        <span className="truncate font-medium capitalize">
+          {row.getValue("category")}
+        </span>
+      </div>
+    ),
   },
   {
     accessorKey: "images",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Images" />
     ),
-    cell: ({ row }) => {
-      return (
-        <div className="flex max-w-48 space-x-2 truncate font-medium">
-          <span className="truncate font-medium capitalize">
-            {row.getValue("images")}
-          </span>
-        </div>
-      );
-    },
+    cell: ({ row }) => (
+      <div className="flex max-w-48 space-x-2 truncate font-medium">
+        <span className="truncate font-medium capitalize">
+          {row.getValue("images")}
+        </span>
+      </div>
+    ),
   },
   {
     accessorKey: "status",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Status" />
     ),
-    cell: ({ row }) => {
-      return (
-        <div className="flex w-[100px] items-center">
-          <span className="capitalize"> {row.getValue("status")}</span>
-        </div>
-      );
-    },
-    filterFn: (row, id, value) => {
-      return value.includes(row.getValue(id));
-    },
+    cell: ({ row }) => (
+      <div className="flex w-[100px] items-center">
+        <span className="capitalize"> {row.getValue("status")}</span>
+      </div>
+    ),
+    filterFn: (row, id, value) => value.includes(row.getValue(id)),
   },
   {
     accessorKey: "price",
@@ -110,7 +98,7 @@ export const columns: ColumnDef<User>[] = [
           <span
             className={cn(
               "capitalize",
-              type === "price" ? "text-green-500" : "text-red-500",
+              type === "price" ? "text-green-500" : "text-red-500"
             )}
           >
             {" "}
@@ -119,9 +107,7 @@ export const columns: ColumnDef<User>[] = [
         </div>
       );
     },
-    filterFn: (row, id, value) => {
-      return value.includes(row.getValue(id));
-    },
+    filterFn: (row, id, value) => value.includes(row.getValue(id)),
   },
   {
     accessorKey: "createdAt",

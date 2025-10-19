@@ -1,12 +1,12 @@
 "use client";
 
-import { useState } from "react";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { updateUser } from "@/lib/auth-client";
-import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { updateUser } from "@/lib/auth-client";
 
 interface UpdateUserFormProps {
   name: string;
@@ -23,7 +23,7 @@ export const UpdateUserForm = ({ name, image }: UpdateUserFormProps) => {
     const name = String(formData.get("name"));
     const image = String(formData.get("image"));
 
-    if (!name && !image) {
+    if (!(name || image)) {
       return toast.error("Please enter a name or image");
     }
 
@@ -50,18 +50,18 @@ export const UpdateUserForm = ({ name, image }: UpdateUserFormProps) => {
   }
 
   return (
-    <form className="max-w-sm w-full space-y-4" onSubmit={handleSubmit}>
+    <form className="w-full max-w-sm space-y-4" onSubmit={handleSubmit}>
       <div className="flex flex-col gap-2">
         <Label htmlFor="name">Name</Label>
-        <Input id="name" name="name" defaultValue={name} />
+        <Input defaultValue={name} id="name" name="name" />
       </div>
 
       <div className="flex flex-col gap-2">
         <Label htmlFor="image">Image</Label>
-        <Input id="image" name="image" defaultValue={image} />
+        <Input defaultValue={image} id="image" name="image" />
       </div>
 
-      <Button type="submit" disabled={isPending}>
+      <Button disabled={isPending} type="submit">
         Update User
       </Button>
     </form>

@@ -1,7 +1,6 @@
-import { User } from '@prisma/client';
-import type { Icon } from 'lucide-react';
+import { User } from "@prisma/client";
 
-import type { Icons } from '@/components/shared/icons';
+import type { Icons } from "@/components/shared/icons";
 
 export type SiteConfig = {
   name: string;
@@ -60,10 +59,10 @@ export type SubscriptionPlan = {
 };
 
 export type UserSubscriptionPlan = SubscriptionPlan &
-  Pick<User, 'stripeCustomerId' | 'stripeSubscriptionId' | 'stripePriceId'> & {
+  Pick<User, "stripeCustomerId" | "stripeSubscriptionId" | "stripePriceId"> & {
     stripeCurrentPeriodEnd: number;
     isPaid: boolean;
-    interval: 'month' | 'year' | null;
+    interval: "month" | "year" | null;
     isCanceled?: boolean;
   };
 

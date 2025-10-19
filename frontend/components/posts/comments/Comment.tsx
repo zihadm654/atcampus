@@ -1,8 +1,7 @@
 import Link from "next/link";
-
-import { CommentData } from "@/types/types";
 import { useSession } from "@/lib/auth-client";
 import { formatRelativeDate } from "@/lib/utils";
+import type { CommentData } from "@/types/types";
 
 import UserAvatar from "../../UserAvatar";
 import UserTooltip from "../../UserTooltip";
@@ -29,8 +28,8 @@ export default function Comment({ comment }: CommentProps) {
         <div className="flex items-center gap-1 text-sm">
           <UserTooltip user={comment.user}>
             <Link
-              href={`/${comment.user.username}`}
               className="font-medium hover:underline"
+              href={`/${comment.user.username}`}
             >
               {comment.user.displayUsername}
             </Link>
@@ -43,8 +42,8 @@ export default function Comment({ comment }: CommentProps) {
       </div>
       {comment.user.id === user.id && (
         <CommentMoreButton
-          comment={comment}
           className="ms-auto opacity-0 transition-opacity group-hover/comment:opacity-100"
+          comment={comment}
         />
       )}
     </div>

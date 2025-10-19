@@ -1,18 +1,26 @@
 "use client";
 
+import { Plus, Search } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import {
+  getClubsAction,
+  joinClubAction,
+  toggleClubLikeAction,
+} from "@/actions/club-actions";
 import { ClubCard } from "@/components/clubs/ClubCard";
 import { ClubDetailModal } from "@/components/clubs/ClubDetailModal";
-import { getClubsAction } from "@/actions/club-actions";
-import { joinClubAction, toggleClubLikeAction } from "@/actions/club-actions";
-import { useState, useEffect } from "react";
-import { ExtendedClub } from "@/types/club-types";
-import { useSession } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, Plus } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { ClubType } from "@prisma/client";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useSession } from "@/lib/auth-client";
+import type { ExtendedClub } from "@/types/club-types";
 
 export default function ClubsPage() {
   const { data: session } = useSession();
@@ -33,11 +41,11 @@ export default function ClubsPage() {
       setLoading(true);
       const result = await getClubsAction({
         search: searchTerm || undefined,
-        type: clubType === "all" ? undefined : clubType as any,
+        type: clubType === "all" ? undefined : (clubType as any),
         limit: 20,
-        page: 1
+        page: 1,
       });
-      
+
       if (result.data) {
         setClubs(result.data);
       }
@@ -57,14 +65,14 @@ export default function ClubsPage() {
     try {
       const result = await toggleClubLikeAction({
         clubId,
-        userId: session?.user?.id || ""
+        userId: session?.user?.id || "",
       });
       if (result.success) {
-        setClubs(prev => prev.map(club => 
-          club.id === clubId 
-            ? { ...club, isLiked: result.isLiked || false }
-            : club
-        ));
+        setClubs((prev) =>
+          prev.map((club) =>
+            club.id === clubId ? { ...club, isLiked: result.isLiked } : club
+          )
+        );
       }
     } catch (error) {
       console.error("Failed to toggle like:", error);
@@ -75,7 +83,7 @@ export default function ClubsPage() {
     try {
       const result = await joinClubAction({
         clubId,
-        userId: session?.user?.id || ""
+        userId: session?.user?.id || "",
       });
       if (result.success) {
         loadClubs(); // Reload clubs to update membership status
@@ -85,42 +93,45 @@ export default function ClubsPage() {
     }
   };
 
-  const filteredClubs = clubs.filter(club => {
-    const matchesSearch = !searchTerm || 
+  const filteredClubs = clubs.filter((club) => {
+    const matchesSearch =
+      !searchTerm ||
       club.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       club.description.toLowerCase().includes(searchTerm.toLowerCase());
-    
+
     const matchesType = clubType === "all" || club.type === clubType;
-    
+
     return matchesSearch && matchesType;
   });
 
   return (
-    <div className="container mx-auto py-8 px-4">
-      <div className="flex justify-between items-center mb-8">
+    <div className="container mx-auto px-4 py-8">
+      <div className="mb-8 flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Clubs & Organizations</h1>
-          <p className="text-muted-foreground">Discover and join student clubs</p>
+          <h1 className="font-bold text-3xl">Clubs & Organizations</h1>
+          <p className="text-muted-foreground">
+            Discover and join student clubs
+          </p>
         </div>
         {session?.user && (
           <Button onClick={() => router.push("/clubs/create")}>
-            <Plus className="h-4 w-4 mr-2" />
+            <Plus className="mr-2 h-4 w-4" />
             Create Club
           </Button>
         )}
       </div>
 
-      <div className="flex flex-col md:flex-row gap-4 mb-8">
+      <div className="mb-8 flex flex-col gap-4 md:flex-row">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+          <Search className="-translate-y-1/2 absolute top-1/2 left-3 h-4 w-4 transform text-muted-foreground" />
           <Input
+            className="pl-10"
+            onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Search clubs..."
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
           />
         </div>
-        <Select value={clubType} onValueChange={setClubType}>
+        <Select onValueChange={setClubType} value={clubType}>
           <SelectTrigger className="w-full md:w-48">
             <SelectValue placeholder="Filter by type" />
           </SelectTrigger>
@@ -139,44 +150,46 @@ export default function ClubsPage() {
       </div>
 
       {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[...Array(6)].map((_, i) => (
-            <div key={i} className="animate-pulse">
-              <div className="bg-muted h-48 rounded-lg"></div>
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {[...new Array(6)].map((_, i) => (
+            <div className="animate-pulse" key={i}>
+              <div className="h-48 rounded-lg bg-muted" />
             </div>
           ))}
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
           {filteredClubs.map((club) => (
             <ClubCard
-              key={club.id}
               club={club}
+              key={club.id}
               onClick={() => handleClubClick(club)}
-              onLike={() => handleLikeClub(club.id)}
               onJoin={() => handleJoinClub(club.id)}
+              onLike={() => handleLikeClub(club.id)}
             />
           ))}
         </div>
       )}
 
       {filteredClubs.length === 0 && !loading && (
-        <div className="text-center py-12">
-          <p className="text-muted-foreground">No clubs found matching your criteria.</p>
+        <div className="py-12 text-center">
+          <p className="text-muted-foreground">
+            No clubs found matching your criteria.
+          </p>
         </div>
       )}
 
       {selectedClub && (
         <ClubDetailModal
           club={selectedClub}
-          open={showModal}
           onClose={() => setShowModal(false)}
-          onLike={() => handleLikeClub(selectedClub.id)}
           onJoin={() => handleJoinClub(selectedClub.id)}
+          onLike={() => handleLikeClub(selectedClub.id)}
           onMessage={() => {
             // Handle message club action
             console.log("Message club:", selectedClub.name);
           }}
+          open={showModal}
         />
       )}
     </div>

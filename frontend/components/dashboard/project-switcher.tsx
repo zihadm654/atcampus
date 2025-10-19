@@ -1,16 +1,15 @@
 "use client";
 
-import { useState } from "react";
-import Link from "next/link";
 import { Check, ChevronsUpDown, Plus } from "lucide-react";
-
-import { cn } from "@/lib/utils";
+import Link from "next/link";
+import { useState } from "react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
 
 type ProjectType = {
   title: string;
@@ -45,12 +44,12 @@ export default function ProjectSwitcher({
 
   return (
     <div>
-      <Popover open={openPopover} onOpenChange={setOpenPopover}>
+      <Popover onOpenChange={setOpenPopover} open={openPopover}>
         <PopoverTrigger>
           <Button
             className="h-8 px-2"
-            variant={openPopover ? "secondary" : "ghost"}
             onClick={() => setOpenPopover(!openPopover)}
+            variant={openPopover ? "secondary" : "ghost"}
           >
             <div className="flex items-center space-x-3 pr-2">
               <div
@@ -59,8 +58,8 @@ export default function ProjectSwitcher({
               <div className="flex items-center space-x-3">
                 <span
                   className={cn(
-                    "inline-block truncate text-sm font-medium xl:max-w-[120px]",
-                    large ? "w-full" : "max-w-[80px]",
+                    "inline-block truncate font-medium text-sm xl:max-w-[120px]",
+                    large ? "w-full" : "max-w-[80px]"
                   )}
                 >
                   {selected.slug}
@@ -68,15 +67,15 @@ export default function ProjectSwitcher({
               </div>
             </div>
             <ChevronsUpDown
-              className="text-muted-foreground size-4"
               aria-hidden="true"
+              className="size-4 text-muted-foreground"
             />
           </Button>
         </PopoverTrigger>
         <PopoverContent align="start" className="max-w-60 p-2">
           <ProjectList
-            selected={selected}
             projects={projects}
+            selected={selected}
             setOpenPopover={setOpenPopover}
           />
         </PopoverContent>
@@ -98,39 +97,39 @@ function ProjectList({
     <div className="flex flex-col gap-1">
       {projects.map(({ slug, color }) => (
         <Link
-          key={slug}
           className={cn(
             buttonVariants({ variant: "ghost" }),
-            "text-muted-foreground hover:text-foreground relative flex h-9 items-center gap-3 p-3",
+            "relative flex h-9 items-center gap-3 p-3 text-muted-foreground hover:text-foreground"
           )}
           href="#"
+          key={slug}
           onClick={() => setOpenPopover(false)}
         >
           <div className={cn("size-3 shrink-0 rounded-full", color)} />
           <span
             className={`flex-1 truncate text-sm ${
               selected.slug === slug
-                ? "text-foreground font-medium"
+                ? "font-medium text-foreground"
                 : "font-normal"
             }`}
           >
             {slug}
           </span>
           {selected.slug === slug && (
-            <span className="text-foreground absolute inset-y-0 right-0 flex items-center pr-3">
-              <Check size={18} aria-hidden="true" />
+            <span className="absolute inset-y-0 right-0 flex items-center pr-3 text-foreground">
+              <Check aria-hidden="true" size={18} />
             </span>
           )}
         </Link>
       ))}
       <Button
-        variant="outline"
         className="relative flex h-9 items-center justify-center gap-2 p-2"
         onClick={() => {
           setOpenPopover(false);
         }}
+        variant="outline"
       >
-        <Plus size={18} className="absolute top-2 left-2.5" />
+        <Plus className="absolute top-2 left-2.5" size={18} />
         <span className="flex-1 truncate text-center">New Project</span>
       </Button>
     </div>
@@ -140,7 +139,7 @@ function ProjectList({
 function ProjectSwitcherPlaceholder() {
   return (
     <div className="flex animate-pulse items-center space-x-1.5 rounded-lg px-1.5 py-2 sm:w-60">
-      <div className="bg-muted h-8 w-36 animate-pulse rounded-md xl:w-[180px]" />
+      <div className="h-8 w-36 animate-pulse rounded-md bg-muted xl:w-[180px]" />
     </div>
   );
 }

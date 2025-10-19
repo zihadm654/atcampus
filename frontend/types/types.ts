@@ -1,5 +1,5 @@
-import { Prisma } from '@prisma/client';
-import type { LiteralStringForUnion, UR } from 'stream-chat';
+import { Prisma } from "@prisma/client";
+import type { LiteralStringForUnion, UR } from "stream-chat";
 
 export function getUserDataSelect(loggedInUserId: string) {
   return {
@@ -88,7 +88,7 @@ export function getUserDataSelect(loggedInUserId: string) {
         research: true,
         followers: true,
       },
-    }
+    },
   } satisfies Prisma.UserSelect;
 }
 export function getUserSkillDataSelect() {
@@ -196,8 +196,13 @@ export function getCourseDataInclude(loggedInUserId: string) {
     },
     enrollments: {
       include: {
-        course: true
-      }
+        course: true,
+      },
+    },
+    _count: {
+      select: {
+        enrollments: true,
+      },
     },
   } satisfies Prisma.CourseInclude;
 }
@@ -384,4 +389,4 @@ export type StreamChatGenerics = {
   userType: UserType;
   pollOptionType: Record<string, unknown>;
   pollType: Record<string, unknown>;
-}
+};

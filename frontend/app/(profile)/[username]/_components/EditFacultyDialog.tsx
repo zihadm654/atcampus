@@ -1,134 +1,108 @@
 "use client";
-import React from 'react';
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Faculty, School } from "@prisma/client";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 import { z } from "zod";
-
+import { useUpdateFacultyMutation } from "@/app/(profile)/[username]/_components/schoolMutations";
 import { Button } from "@/components/ui/button";
+import { DialogClose, DialogFooter } from "@/components/ui/dialog";
 import {
-  Dialog, DialogContent,
-  DialogDescription, DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  Form, FormControl,
-  FormField, FormItem,
-  FormLabel, FormMessage,
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { useToast } from "@/components/ui/use-toast";
-import { useUpdateFacultyMutation } from "./schoolMutations";
+import type { Faculty } from "./tabs/SchoolsTab";
 
-const facultySchema = z.object({
-  id: z.string().optional(),
-  name: z.string().min(1, { message: "Faculty name is required" }),
+const formSchema = z.object({
+  name: z.string().min(3, "Faculty name must be at least 3 characters long"),
   description: z.string().optional(),
-  schoolId: z.string().min(1, { message: "School ID is required" }),
 });
 
-type TFaculty = z.infer<typeof facultySchema>;
-
 interface EditFacultyDialogProps {
-  faculty: (Faculty & { school: School | null }) | undefined;
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
+  faculty: Faculty & { schoolId: string; description?: string }; // Include schoolId in the faculty type
 }
 
-export default function EditFacultyDialog({
-  faculty,
-  open,
-  onOpenChange,
-}: EditFacultyDialogProps) {
-  const { toast } = useToast();
+export default function EditFacultyDialog({ faculty }: EditFacultyDialogProps) {
+  const [open, setOpen] = useState(false);
   const updateFacultyMutation = useUpdateFacultyMutation();
 
-  const form = useForm<TFaculty>({
-    resolver: zodResolver(facultySchema),
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
     defaultValues: {
-      id: faculty?.id || "",
-      name: faculty?.name || "",
-      description: faculty?.description || "",
-      schoolId: faculty?.schoolId || "",
+      name: faculty.name,
+      description: faculty.description || "",
     },
   });
 
-  async function onSubmit(values: TFaculty) {
-    try {
-      if (faculty) {
-        await updateFacultyMutation.mutateAsync({
-          id: faculty.id,
-          name: values.name,
-          description: values.description,
-          schoolId: values.schoolId,
-        });
+  const onSubmit = (values: z.infer<typeof formSchema>) => {
+    updateFacultyMutation.mutate(
+      {
+        id: faculty.id,
+        ...values,
+        schoolId: faculty.schoolId, // Include schoolId in the mutation
+      },
+      {
+        onSuccess: () => {
+          toast.success("Faculty updated successfully");
+          setOpen(false);
+        },
+        onError: (error) => {
+          toast.error(error.message || "Failed to update faculty");
+        },
       }
-      onOpenChange(false);
-    } catch (error) {
-      console.error(error);
-      toast({
-        title: "Error",
-        description: "Failed to update faculty.",
-        variant: "destructive",
-      });
-    }
-  }
+    );
+  };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle>Edit Faculty</DialogTitle>
-          <DialogDescription>
-            Make changes to your faculty here. Click save when you're done.
-          </DialogDescription>
-        </DialogHeader>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4 py-4">
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Name</FormLabel>
-                  <FormControl>
-                    <Input {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Description</FormLabel>
-                  <FormControl>
-                    <Input {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="schoolId"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>School ID</FormLabel>
-                  <FormControl>
-                    <Input {...field} disabled />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <Button type="submit">Save changes</Button>
-          </form>
-        </Form>
-      </DialogContent>
-    </Dialog>
+    <Form {...form}>
+      <form className="space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
+        <FormField
+          control={form.control}
+          name="name"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Faculty Name</FormLabel>
+              <FormControl>
+                <Input placeholder="e.g. Computer Science" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="description"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Faculty Description</FormLabel>
+              <FormControl>
+                <Input placeholder="e.g. Faculty description" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <DialogFooter>
+          <DialogClose asChild>
+            <Button
+              onClick={() => setOpen(false)}
+              type="button"
+              variant="outline"
+            >
+              Cancel
+            </Button>
+          </DialogClose>
+          <Button disabled={updateFacultyMutation.isPending} type="submit">
+            {updateFacultyMutation.isPending ? "Updating..." : "Update Faculty"}
+          </Button>
+        </DialogFooter>
+      </form>
+    </Form>
   );
 }

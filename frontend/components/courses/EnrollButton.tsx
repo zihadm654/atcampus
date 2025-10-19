@@ -1,10 +1,10 @@
 "use client";
 
-import { useSession } from "@/lib/auth-client";
-import { Button } from "../ui/button";
+import { useTransition } from "react";
 import { toast } from "sonner";
 import { enrollCourse } from "@/actions/enrollment";
-import { useTransition } from "react";
+import { useSession } from "@/lib/auth-client";
+import { Button } from "../ui/button";
 
 export default function EnrollButton({ courseId, initialEnrolled = false }) {
   const { data: session } = useSession();
@@ -26,11 +26,15 @@ export default function EnrollButton({ courseId, initialEnrolled = false }) {
 
   return (
     <Button
+      disabled={initialEnrolled || isPending || user.role !== "STUDENT"}
       onClick={handleEnroll}
       variant="default"
-      disabled={initialEnrolled || isPending || user.role !== "STUDENT"}
     >
-      {isPending ? "Enrolling..." : initialEnrolled ? "Already Enrolled" : "Enroll Now"}
+      {isPending
+        ? "Enrolling..."
+        : initialEnrolled
+          ? "Already Enrolled"
+          : "Enroll Now"}
     </Button>
   );
 }

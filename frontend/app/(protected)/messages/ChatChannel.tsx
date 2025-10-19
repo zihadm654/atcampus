@@ -2,14 +2,13 @@ import { Menu } from "lucide-react";
 import {
   Channel,
   ChannelHeader,
-  ChannelHeaderProps,
+  type ChannelHeaderProps,
   MessageInput,
   MessageList,
   Window,
 } from "stream-chat-react";
-
-import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 interface ChatChannelProps {
   open: boolean;
@@ -43,7 +42,7 @@ function CustomChannelHeader({
   return (
     <div className="flex items-center gap-3">
       <div className="h-full p-2 md:hidden">
-        <Button size="icon" variant="ghost" onClick={openSidebar}>
+        <Button onClick={openSidebar} size="icon" variant="ghost">
           <Menu className="size-5" />
         </Button>
       </div>

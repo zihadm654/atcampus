@@ -2,12 +2,11 @@
 
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
-
-import { PostsPage } from "@/types/types";
-import kyInstance from "@/lib/ky";
 import InfiniteScrollContainer from "@/components/feed/InfiniteScrollContainer";
 import Post from "@/components/posts/Post";
 import PostsLoadingSkeleton from "@/components/posts/PostsLoadingSkeleton";
+import kyInstance from "@/lib/ky";
+import type { PostsPage } from "@/types/types";
 
 interface SearchResultsProps {
   query: string;
@@ -45,7 +44,7 @@ export default function SearchResults({ query }: SearchResultsProps) {
 
   if (status === "success" && !posts.length && !hasNextPage) {
     return (
-      <p className="text-muted-foreground text-center">
+      <p className="text-center text-muted-foreground">
         No posts found for this query.
       </p>
     );
@@ -53,7 +52,7 @@ export default function SearchResults({ query }: SearchResultsProps) {
 
   if (status === "error") {
     return (
-      <p className="text-destructive text-center">
+      <p className="text-center text-destructive">
         An error occurred while loading posts.
       </p>
     );

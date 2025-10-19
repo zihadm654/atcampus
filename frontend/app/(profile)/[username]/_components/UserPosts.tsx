@@ -1,14 +1,12 @@
 "use client";
-import React from 'react';
 
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
-
-import { PostsPage } from "@/types/types";
-import kyInstance from "@/lib/ky";
 import InfiniteScrollContainer from "@/components/feed/InfiniteScrollContainer";
 import Post from "@/components/posts/Post";
 import PostsLoadingSkeleton from "@/components/posts/PostsLoadingSkeleton";
+import kyInstance from "@/lib/ky";
+import type { PostsPage } from "@/types/types";
 
 interface UserPostsProps {
   userId: string;
@@ -28,7 +26,7 @@ export default function UserPosts({ userId }: UserPostsProps) {
       kyInstance
         .get(
           `/api/users/${userId}/posts`,
-          pageParam ? { searchParams: { cursor: pageParam } } : {},
+          pageParam ? { searchParams: { cursor: pageParam } } : {}
         )
         .json<PostsPage>(),
     initialPageParam: null as string | null,
@@ -43,7 +41,7 @@ export default function UserPosts({ userId }: UserPostsProps) {
 
   if (status === "success" && !posts.length && !hasNextPage) {
     return (
-      <p className="text-muted-foreground text-center">
+      <p className="text-center text-muted-foreground">
         This user hasn&apos;t posted anything yet.
       </p>
     );
@@ -51,7 +49,7 @@ export default function UserPosts({ userId }: UserPostsProps) {
 
   if (status === "error") {
     return (
-      <p className="text-destructive text-center">
+      <p className="text-center text-destructive">
         An error occurred while loading posts.
       </p>
     );

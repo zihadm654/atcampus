@@ -1,9 +1,8 @@
 "use client";
 
-import * as React from "react";
 import { Check, ChevronsUpDown } from "lucide-react";
-
-import { cn } from "@/lib/utils";
+import * as React from "react";
+import { Button } from "@/components/ui/button";
 import {
   Command,
   CommandEmpty,
@@ -16,7 +15,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 // This will be replaced with actual data from the backend
 const skills = [
@@ -48,7 +47,10 @@ interface SkillSearchInputProps {
   defaultValue?: string;
 }
 
-export function SkillSearchInput({ onChange, defaultValue }: SkillSearchInputProps) {
+export function SkillSearchInput({
+  onChange,
+  defaultValue,
+}: SkillSearchInputProps) {
   const [open, setOpen] = React.useState(false);
   const [value, setValue] = React.useState(defaultValue || "");
 
@@ -57,13 +59,13 @@ export function SkillSearchInput({ onChange, defaultValue }: SkillSearchInputPro
   }, [value, onChange]);
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover onOpenChange={setOpen} open={open}>
       <PopoverTrigger asChild>
         <Button
-          variant="outline"
-          role="combobox"
           aria-expanded={open}
           className="w-[200px] justify-between"
+          role="combobox"
+          variant="outline"
         >
           {value
             ? skills.find((skill) => skill.value === value)?.label
@@ -79,16 +81,16 @@ export function SkillSearchInput({ onChange, defaultValue }: SkillSearchInputPro
             {skills.map((skill) => (
               <CommandItem
                 key={skill.value}
-                value={skill.value}
                 onSelect={(currentValue) => {
                   setValue(currentValue === value ? "" : currentValue);
                   setOpen(false);
                 }}
+                value={skill.value}
               >
                 <Check
                   className={cn(
                     "mr-2 h-4 w-4",
-                    value === skill.value ? "opacity-100" : "opacity-0",
+                    value === skill.value ? "opacity-100" : "opacity-0"
                   )}
                 />
                 {skill.label}

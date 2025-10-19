@@ -1,11 +1,10 @@
-import { Metadata } from "next";
-import { clsx, type ClassValue } from "clsx";
+import { type ClassValue, clsx } from "clsx";
 import { format, formatDistanceToNowStrict } from "date-fns";
+import type { Metadata } from "next";
 // import ms from "ms";
 import { twMerge } from "tailwind-merge";
-
-import { env } from "@/env.mjs";
 import { siteConfig } from "@/config/site";
+import { env } from "@/env.mjs";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -75,13 +74,11 @@ export function formatRelativeDate(from: Date) {
   const currentDate = new Date();
   if (currentDate.getTime() - from.getTime() < 24 * 60 * 60 * 1000) {
     return formatDistanceToNowStrict(from, { addSuffix: true });
-  } else {
-    if (currentDate.getFullYear() === from.getFullYear()) {
-      return formatDate(from, "MMM d");
-    } else {
-      return formatDate(from, "MMM d, yyyy");
-    }
   }
+  if (currentDate.getFullYear() === from.getFullYear()) {
+    return formatDate(from, "MMM d");
+  }
+  return formatDate(from, "MMM d, yyyy");
 }
 
 export function formatNumber(n: number): string {
@@ -146,15 +143,15 @@ export const timeAgo = (timestamp: Date, timeOnly?: boolean): string => {
     return "just now";
   }
 
-  let interval = Math.floor(seconds / 31536000);
+  let interval = Math.floor(seconds / 31_536_000);
   if (interval > 1) {
     return interval + " years" + (timeOnly ? "" : " ago");
   }
-  interval = Math.floor(seconds / 2592000);
+  interval = Math.floor(seconds / 2_592_000);
   if (interval > 1) {
     return interval + " months" + (timeOnly ? "" : " ago");
   }
-  interval = Math.floor(seconds / 86400);
+  interval = Math.floor(seconds / 86_400);
   if (interval > 1) {
     return interval + " days" + (timeOnly ? "" : " ago");
   }
@@ -175,7 +172,7 @@ export const timeAgo = (timestamp: Date, timeOnly?: boolean): string => {
 
 export async function fetcher<JSON = any>(
   input: RequestInfo,
-  init?: RequestInit,
+  init?: RequestInit
 ): Promise<JSON> {
   const res = await fetch(input, init);
 
@@ -187,9 +184,8 @@ export async function fetcher<JSON = any>(
       };
       error.status = res.status;
       throw error;
-    } else {
-      throw new Error("An unexpected error occurred");
     }
+    throw new Error("An unexpected error occurred");
   }
 
   return res.json();
@@ -207,12 +203,10 @@ export function nFormatter(num: number, digits?: number) {
     { value: 1e18, symbol: "E" },
   ];
   const rx = /\.0+$|(\.[0-9]*[1-9])0+$/;
-  var item = lookup
+  const item = lookup
     .slice()
     .reverse()
-    .find(function (item) {
-      return num >= item.value;
-    });
+    .find((item) => num >= item.value);
   return item
     ? (num / item.value).toFixed(digits || 1).replace(rx, "$1") + item.symbol
     : "0";
@@ -239,7 +233,7 @@ export const getBlurDataURL = async (url: string | null) => {
 
   try {
     const response = await fetch(
-      `https://wsrv.nl/?url=${url}&w=50&h=50&blur=5`,
+      `https://wsrv.nl/?url=${url}&w=50&h=50&blur=5`
     );
     const buffer = await response.arrayBuffer();
     const base64 = Buffer.from(buffer).toString("base64");

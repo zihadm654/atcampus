@@ -1,4 +1,10 @@
-import React, { useState, useMemo } from "react";
+import { useMemo, useState } from "react";
+import { Icons } from "@/components/shared/icons";
+import SkillButton from "@/components/skill/SkillButton";
+import UserSkillList from "@/components/skill/UserSkillList";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardAction,
@@ -6,15 +12,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Icons } from "@/components/shared/icons";
-import SkillButton from "@/components/skill/SkillButton";
-import UserSkillList from "@/components/skill/UserSkillList";
-import { UserSkillData } from "@/types/types";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { cn } from "@/lib/utils";
+import type { UserSkillData } from "@/types/types";
 
 interface UserSkill {
   id: string;
@@ -55,31 +54,31 @@ function SkillsSkeleton({
   return (
     <Card
       className={cn(
-        "overflow-hidden rounded-xl border border-gray-100 shadow-sm animate-pulse",
+        "animate-pulse overflow-hidden rounded-xl border border-gray-100 shadow-sm",
         className
       )}
     >
       {showHeader && (
         <CardHeader className="flex items-center justify-between pb-2">
           <div className="flex items-center">
-            <div className="w-7 h-7 bg-gray-200 rounded mr-2" />
-            <div className="w-20 h-6 bg-gray-200 rounded" />
+            <div className="mr-2 h-7 w-7 rounded bg-gray-200" />
+            <div className="h-6 w-20 rounded bg-gray-200" />
           </div>
           {canEdit && (
             <CardAction>
-              <div className="h-8 w-20 bg-gray-200 rounded-md" />
+              <div className="h-8 w-20 rounded-md bg-gray-200" />
             </CardAction>
           )}
         </CardHeader>
       )}
       <CardContent className={showHeader ? "pt-1" : ""}>
         <div className="space-y-2">
-          {[...Array(3)].map((_, i) => (
-            <div key={i} className="flex items-center space-x-3">
-              <div className="w-12 h-12 bg-gray-200 rounded-full" />
+          {[...new Array(3)].map((_, i) => (
+            <div className="flex items-center space-x-3" key={i}>
+              <div className="h-12 w-12 rounded-full bg-gray-200" />
               <div className="flex-1 space-y-2">
-                <div className="h-4 bg-gray-200 rounded w-3/4" />
-                <div className="h-3 bg-gray-200 rounded w-1/2" />
+                <div className="h-4 w-3/4 rounded bg-gray-200" />
+                <div className="h-3 w-1/2 rounded bg-gray-200" />
               </div>
             </div>
           ))}
@@ -108,14 +107,14 @@ function SkillsError({
     >
       {showHeader && (
         <CardHeader className="flex items-center justify-between pb-2">
-          <CardTitle className="flex items-center text-lg font-medium">
+          <CardTitle className="flex items-center font-medium text-lg">
             <Icons.skill className="size-7 pr-2" />
             Skills
           </CardTitle>
         </CardHeader>
       )}
       <CardContent className={showHeader ? "pt-1" : ""}>
-        <Alert variant="destructive" className="border-0">
+        <Alert className="border-0" variant="destructive">
           <Icons.warning className="h-4 w-4" />
           <div className="flex flex-col items-start gap-2">
             <AlertDescription>
@@ -123,10 +122,10 @@ function SkillsError({
             </AlertDescription>
             {onRetry && (
               <Button
-                variant="outline"
-                size="sm"
-                onClick={onRetry}
                 className="mt-2"
+                onClick={onRetry}
+                size="sm"
+                variant="outline"
               >
                 <Icons.refresh className="mr-2 h-4 w-4" />
                 Retry
@@ -162,15 +161,15 @@ function SkillsEmpty({
     >
       {showHeader && (
         <CardHeader className="flex items-center justify-between pb-2">
-          <CardTitle className="flex items-center text-lg font-medium">
+          <CardTitle className="flex items-center font-medium text-lg">
             <Icons.skill className="size-7 pr-2" />
             Skills
           </CardTitle>
           {canEdit && (
             <CardAction>
               <SkillButton
-                user={{ id: userId }}
                 onSkillAdded={onSkillsUpdate}
+                user={{ id: userId }}
               />
             </CardAction>
           )}
@@ -179,18 +178,18 @@ function SkillsEmpty({
       <CardContent className={showHeader ? "pt-1" : ""}>
         <div className="flex h-28 items-center justify-center rounded-lg">
           <div className="flex flex-col items-center text-center">
-            <div className="rounded-full bg-gray-50 p-3 mb-2">
+            <div className="mb-2 rounded-full bg-gray-50 p-3">
               <Icons.skill className="size-8 text-gray-400" />
             </div>
-            <p className="text-sm font-medium text-gray-900">
+            <p className="font-medium text-gray-900 text-sm">
               No skills added yet
             </p>
             {canEdit ? (
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="mt-1 text-gray-500 text-xs">
                 Add your first skill to showcase your expertise
               </p>
             ) : (
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="mt-1 text-gray-500 text-xs">
                 This user hasn't added any skills yet
               </p>
             )}
@@ -229,25 +228,31 @@ export default function SkillsSection({
   if (isLoading) {
     return (
       <SkillsSkeleton
-        showHeader={showHeader}
         canEdit={canEdit}
         className={className}
+        showHeader={showHeader}
       />
     );
   }
 
   if (error) {
-    return <SkillsError showHeader={showHeader} className={className} onRetry={onSkillsUpdate} />;
+    return (
+      <SkillsError
+        className={className}
+        onRetry={onSkillsUpdate}
+        showHeader={showHeader}
+      />
+    );
   }
 
   if (!userSkills || userSkills.length === 0) {
     return (
       <SkillsEmpty
         canEdit={canEdit}
-        userId={userId}
+        className={className}
         onSkillsUpdate={onSkillsUpdate}
         showHeader={showHeader}
-        className={className}
+        userId={userId}
       />
     );
   }
@@ -261,18 +266,18 @@ export default function SkillsSection({
     >
       {showHeader && (
         <CardHeader className="flex items-center justify-between pb-2">
-          <CardTitle className="flex items-center text-lg font-medium">
+          <CardTitle className="flex items-center font-medium text-lg">
             <Icons.skill className="size-7 pr-2" />
             Skills
-            <Badge variant="secondary" className="ml-2">
+            <Badge className="ml-2" variant="secondary">
               {totalSkills}
             </Badge>
           </CardTitle>
           {canEdit && (
             <CardAction>
               <SkillButton
-                user={{ id: userId }}
                 onSkillAdded={onSkillsUpdate}
+                user={{ id: userId }}
               />
             </CardAction>
           )}
@@ -281,19 +286,19 @@ export default function SkillsSection({
       <CardContent className={showHeader ? "pt-1" : ""}>
         <div className="space-y-2">
           <UserSkillList
-            skills={displaySkills}
-            userId={userId}
             canEdit={canEdit}
             onSkillUpdated={onSkillsUpdate}
+            skills={displaySkills}
+            userId={userId}
           />
 
           {hasMoreSkills && (
             <div className="pt-2 text-center">
               <Button
-                variant="ghost"
-                size="sm"
+                className="text-blue-600 transition-colors hover:bg-blue-50 hover:text-blue-700"
                 onClick={() => setShowAll(!showAll)}
-                className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 transition-colors"
+                size="sm"
+                variant="ghost"
               >
                 {showAll ? (
                   <>

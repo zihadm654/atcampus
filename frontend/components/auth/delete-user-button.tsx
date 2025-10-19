@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
-import { deleteUserAction } from "@/actions/delete-user.action";
 import { TrashIcon } from "lucide-react";
+import { useState } from "react";
 import { toast } from "sonner";
+import { deleteUserAction } from "@/actions/delete-user.action";
 
 import { Button } from "@/components/ui/button";
 
@@ -28,12 +28,12 @@ export const DeleteUserButton = ({ userId }: DeleteUserButtonProps) => {
 
   return (
     <Button
+      className="size-7 rounded-sm"
+      disabled={isPending}
+      onClick={handleClick}
       size="icon"
       type="submit"
       variant="destructive"
-      className="size-7 rounded-sm"
-      onClick={handleClick}
-      disabled={isPending}
     >
       <span className="sr-only">Delete User</span>
       <TrashIcon />
@@ -41,16 +41,14 @@ export const DeleteUserButton = ({ userId }: DeleteUserButtonProps) => {
   );
 };
 
-export const PlaceholderDeleteUserButton = () => {
-  return (
-    <Button
-      size="icon"
-      variant="destructive"
-      className="size-7 rounded-sm"
-      disabled
-    >
-      <span className="sr-only">Delete User</span>
-      <TrashIcon />
-    </Button>
-  );
-};
+export const PlaceholderDeleteUserButton = () => (
+  <Button
+    className="size-7 rounded-sm"
+    disabled
+    size="icon"
+    variant="destructive"
+  >
+    <span className="sr-only">Delete User</span>
+    <TrashIcon />
+  </Button>
+);

@@ -5,46 +5,46 @@ export async function sendEventReminders() {
   try {
     const now = new Date();
     const reminderTime = new Date(now.getTime() + 24 * 60 * 60 * 1000); // 24 hours from now
-    
+
     // Find events starting within 24 hours
     const upcomingEvents = await prisma.event.findMany({
       where: {
         startDate: {
           gte: reminderTime,
-          lt: new Date(reminderTime.getTime() + 60 * 60 * 1000) // Within 1 hour window
+          lt: new Date(reminderTime.getTime() + 60 * 60 * 1000), // Within 1 hour window
         },
         status: "PUBLISHED",
         isActive: true,
-        reminderSent: false // Only send once
+        reminderSent: false, // Only send once
       },
       include: {
         attendees: {
           where: {
-            status: "REGISTERED"
+            status: "REGISTERED",
           },
           include: {
             user: {
               select: {
                 id: true,
                 name: true,
-                email: true
-              }
-            }
-          }
-        }
-      }
+                email: true,
+              },
+            },
+          },
+        },
+      },
     });
 
     // Send reminders for each event
-      for (const event of upcomingEvents) {
-        for (const attendee of event.attendees) {
-          await notifyEventReminder(event.id, attendee.user.id);
-        }
+    for (const event of upcomingEvents) {
+      for (const attendee of event.attendees) {
+        await notifyEventReminder(event.id, attendee.user.id);
+      }
 
       // Mark reminder as sent
       await prisma.event.update({
         where: { id: event.id },
-        data: { reminderSent: true }
+        data: { reminderSent: true },
       });
     }
 
@@ -61,15 +61,15 @@ export async function resetEventReminders() {
     // Reset reminder flags for past events
     const now = new Date();
     const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-    
+
     await prisma.event.updateMany({
       where: {
         startDate: {
-          lt: yesterday
+          lt: yesterday,
         },
-        reminderSent: true
+        reminderSent: true,
       },
-      data: { reminderSent: false }
+      data: { reminderSent: false },
     });
 
     console.log("Reset event reminder flags");

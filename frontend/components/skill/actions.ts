@@ -3,7 +3,7 @@
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/session";
 import {
-  TUserSkillSchema,
+  type TUserSkillSchema,
   userSkillSchema,
 } from "@/lib/validations/validation";
 
@@ -37,7 +37,9 @@ export async function addSkill(values: TUserSkillSchema) {
   });
 
   if (existingUserSkill) {
-    throw new Error("User already has this skill with the same level and years of experience.");
+    throw new Error(
+      "User already has this skill with the same level and years of experience."
+    );
   }
 
   // Create a new user skill

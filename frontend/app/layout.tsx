@@ -1,17 +1,16 @@
 import "@/app/globals.css";
 
-import { fontGeist, fontHeading, fontSans, fontUrban } from "@/assets/fonts";
-import ReactQueryProvider from "@/utils/ReactQueryProvider";
 import { NextSSRPlugin } from "@uploadthing/react/next-ssr-plugin";
 import { ThemeProvider } from "next-themes";
 import { extractRouterConfig } from "uploadthing/server";
-
-import { cn, constructMetadata } from "@/lib/utils";
-import { Toaster } from "@/components/ui/sonner";
+import { ourFileRouter } from "@/app/api/uploadthing/core";
+import { fontGeist, fontHeading, fontSans, fontUrban } from "@/assets/fonts";
 import { Analytics } from "@/components/analytics";
 import ModalProvider from "@/components/modals/providers";
 import { TailwindIndicator } from "@/components/tailwind-indicator";
-import { ourFileRouter } from "@/app/api/uploadthing/core";
+import { Toaster } from "@/components/ui/sonner";
+import { cn, constructMetadata } from "@/lib/utils";
+import ReactQueryProvider from "@/utils/ReactQueryProvider";
 
 interface RootLayoutProps {
   children: React.ReactNode;
@@ -25,11 +24,11 @@ export default function RootLayout({ children }: RootLayoutProps) {
       <head />
       <body
         className={cn(
-          "bg-background min-h-screen font-sans antialiased",
+          "min-h-screen bg-background font-sans antialiased",
           fontSans.variable,
           fontUrban.variable,
           fontHeading.variable,
-          fontGeist.variable,
+          fontGeist.variable
         )}
       >
         <NextSSRPlugin routerConfig={extractRouterConfig(ourFileRouter)} />
@@ -37,12 +36,12 @@ export default function RootLayout({ children }: RootLayoutProps) {
           <ThemeProvider
             attribute="class"
             defaultTheme="system"
-            enableSystem
             disableTransitionOnChange
+            enableSystem
           >
             <ModalProvider>{children}</ModalProvider>
             <Analytics />
-            <Toaster richColors closeButton />
+            <Toaster closeButton richColors />
             <TailwindIndicator />
           </ThemeProvider>
         </ReactQueryProvider>

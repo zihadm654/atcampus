@@ -7,7 +7,7 @@ export const signUpSchema = z.object({
   email: requiredString.email("Invalid email address"),
   username: requiredString.regex(
     /^[a-zA-Z0-9_-]+$/,
-    "Only letters, numbers, - and _ allowed",
+    "Only letters, numbers, - and _ allowed"
   ),
   password: requiredString.min(8, "Must be at least 8 characters"),
 });
@@ -83,7 +83,7 @@ export const schoolSchema = z.object({
       id: z.string().optional(),
       name: z.string().min(1),
       description: z.string().optional(),
-    }),
+    })
   ),
 });
 export type TSchool = z.infer<typeof schoolSchema>;

@@ -1,25 +1,36 @@
 "use client";
 
+import type { ApplicationStatus } from "@prisma/client";
 import { useTransition } from "react";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { updateApplicationStatus } from "@/actions/appllication";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { toast } from "@/components/ui/use-toast";
-import { ApplicationStatus } from "@prisma/client";
-
 
 interface ApplicationStatusSelectProps {
   applicationId: string;
   currentStatus: ApplicationStatus;
 }
 
-export function ApplicationStatusSelect({ applicationId, currentStatus }: ApplicationStatusSelectProps) {
+export function ApplicationStatusSelect({
+  applicationId,
+  currentStatus,
+}: ApplicationStatusSelectProps) {
   const [isPending, startTransition] = useTransition();
 
   const handleStatusChange = (newStatus: ApplicationStatus) => {
     startTransition(async () => {
       try {
         await updateApplicationStatus(applicationId, newStatus);
-        toast({ title: "Success", description: "Status updated successfully." });
+        toast({
+          title: "Success",
+          description: "Status updated successfully.",
+        });
       } catch (error) {
         toast({ title: "Error", description: "Failed to update status." });
       }
@@ -27,7 +38,11 @@ export function ApplicationStatusSelect({ applicationId, currentStatus }: Applic
   };
 
   return (
-    <Select onValueChange={handleStatusChange} defaultValue={currentStatus} disabled={isPending}>
+    <Select
+      defaultValue={currentStatus}
+      disabled={isPending}
+      onValueChange={handleStatusChange}
+    >
       <SelectTrigger className="w-[180px]">
         <SelectValue placeholder="Select status" />
       </SelectTrigger>

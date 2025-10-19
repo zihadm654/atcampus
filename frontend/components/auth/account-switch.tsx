@@ -1,11 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { ChevronDown, PlusCircle } from "lucide-react";
-
-import { Session } from "@/types/auth-types";
-import { authClient as client, useSession } from "@/lib/auth-client";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -20,25 +17,27 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { authClient as client, useSession } from "@/lib/auth-client";
+import type { Session } from "@/types/auth-types";
 
 export default function AccountSwitcher({ sessions }: { sessions: Session[] }) {
   const { data: currentUser } = useSession();
   const [open, setOpen] = useState(false);
   const router = useRouter();
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover onOpenChange={setOpen} open={open}>
       <PopoverTrigger asChild>
         <Button
-          variant="outline"
-          role="combobox"
           aria-expanded={open}
           aria-label="Select a user"
           className="justify-between"
+          role="combobox"
+          variant="outline"
         >
           <Avatar className="mr-2 h-6 w-6">
             <AvatarImage
-              src={currentUser?.user.image || undefined}
               alt={currentUser?.user.name}
+              src={currentUser?.user.image || undefined}
             />
             <AvatarFallback>{currentUser?.user.name.charAt(0)}</AvatarFallback>
           </Avatar>
@@ -51,15 +50,15 @@ export default function AccountSwitcher({ sessions }: { sessions: Session[] }) {
           <CommandList>
             <CommandGroup heading="Current Account">
               <CommandItem
-                onSelect={() => { }}
                 className="w-full justify-between text-sm"
                 key={currentUser?.user.id}
+                onSelect={() => {}}
               >
                 <div className="flex items-center">
                   <Avatar className="mr-2 h-5 w-5">
                     <AvatarImage
-                      src={currentUser?.user.image || undefined}
                       alt={currentUser?.user.name}
+                      src={currentUser?.user.image || undefined}
                     />
                     <AvatarFallback>
                       {currentUser?.user.name.charAt(0)}
@@ -76,6 +75,7 @@ export default function AccountSwitcher({ sessions }: { sessions: Session[] }) {
                   .filter((s) => s.user.id !== currentUser?.user.id)
                   .map((u, i) => (
                     <CommandItem
+                      className="text-sm"
                       key={u.user.id}
                       onSelect={async () => {
                         await client.multiSession.setActive({
@@ -83,12 +83,11 @@ export default function AccountSwitcher({ sessions }: { sessions: Session[] }) {
                         });
                         setOpen(false);
                       }}
-                      className="text-sm"
                     >
                       <Avatar className="mr-2 h-5 w-5">
                         <AvatarImage
-                          src={u.user.image || undefined}
                           alt={u.user.name}
+                          src={u.user.image || undefined}
                         />
                         <AvatarFallback>{u.user.name.charAt(0)}</AvatarFallback>
                       </Avatar>
@@ -106,11 +105,11 @@ export default function AccountSwitcher({ sessions }: { sessions: Session[] }) {
           <CommandList>
             <CommandGroup>
               <CommandItem
+                className="cursor-pointer text-sm"
                 onSelect={() => {
                   router.push("/login");
                   setOpen(false);
                 }}
-                className="cursor-pointer text-sm"
               >
                 <PlusCircle className="mr-2 h-5 w-5" />
                 Add Account

@@ -1,16 +1,15 @@
 "use client";
 import {
-  QueryKey,
+  type QueryKey,
   useMutation,
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
 import { Heart } from "lucide-react";
-
-import { LikeInfo } from "@/types/types";
+import { toast } from "sonner";
 import kyInstance from "@/lib/ky";
 import { cn } from "@/lib/utils";
-import { toast } from "sonner";
+import type { LikeInfo } from "@/types/types";
 
 interface LikeButtonProps {
   postId: string;
@@ -27,7 +26,7 @@ export default function LikeButton({ postId, initialState }: LikeButtonProps) {
     queryFn: () =>
       kyInstance.get(`/api/posts/${postId}/likes`).json<LikeInfo>(),
     initialData: initialState,
-    staleTime: Infinity,
+    staleTime: Number.POSITIVE_INFINITY,
   });
 
   const { mutate } = useMutation({
@@ -56,14 +55,18 @@ export default function LikeButton({ postId, initialState }: LikeButtonProps) {
   });
 
   return (
-    <button onClick={() => mutate()} className="flex items-center gap-2">
+    <button
+      className="flex items-center gap-2"
+      onClick={() => mutate()}
+      type="button"
+    >
       <Heart
         className={cn(
           "size-5",
           data.isLikedByUser && "fill-red-500 text-red-500"
         )}
       />
-      <span className="text-sm font-medium tabular-nums">
+      <span className="font-medium text-sm tabular-nums">
         {data.likes} <span className="hidden sm:inline">likes</span>
       </span>
     </button>

@@ -1,11 +1,10 @@
 "use client";
 
-
-import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { toast } from "sonner";
+import { formatDistanceToNow } from "date-fns";
 import Link from "next/link";
-
+import { useState } from "react";
+import { JsonToHtml } from "@/components/editor/JsonToHtml";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,8 +15,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { formatDistanceToNow } from "date-fns";
-import { JsonToHtml } from "@/components/editor/JsonToHtml";
 
 interface User {
   id: string;
@@ -57,9 +54,7 @@ interface ApprovalDashboardProps {
   user: User;
 }
 
-export function ApprovalDashboard({
-  user,
-}: ApprovalDashboardProps) {
+export function ApprovalDashboard({ user }: ApprovalDashboardProps) {
   const [activeTab, setActiveTab] = useState("pending");
   const [page, setPage] = useState(1);
 
@@ -72,13 +67,10 @@ export function ApprovalDashboard({
   };
   const apiStatus = statusMap[activeTab] || activeTab;
 
-  const {
-    data,
-    isLoading,
-    isError,
-    error,
-    refetch,
-  } = useQuery<{ approvals?: CourseApproval[]; pagination?: { pages?: number } }, Error>({
+  const { data, isLoading, isError, error, refetch } = useQuery<
+    { approvals?: CourseApproval[]; pagination?: { pages?: number } },
+    Error
+  >({
     queryKey: ["course-approvals", apiStatus, page],
     queryFn: async () => {
       const response = await fetch(
@@ -89,8 +81,9 @@ export function ApprovalDashboard({
         try {
           const errorData = await response.json();
           errorMsg = errorData.error || errorMsg;
-        } catch { }
-        throw new Error(errorMsg);
+        } catch {
+          throw new Error(errorMsg);
+        }
       }
       return response.json();
     },
@@ -98,8 +91,12 @@ export function ApprovalDashboard({
     staleTime: 1000 * 30, // 30s
   });
 
-  const approvals: CourseApproval[] = Array.isArray(data?.approvals) ? data?.approvals : [];
-  const totalPages: number = data?.pagination?.pages ? Number(data.pagination.pages) : 1;
+  const approvals: CourseApproval[] = Array.isArray(data?.approvals)
+    ? data?.approvals
+    : [];
+  const totalPages: number = data?.pagination?.pages
+    ? Number(data.pagination.pages)
+    : 1;
 
   const getLevelName = (level: number) => {
     const levels = ["Faculty", "School", "Institution"];
@@ -121,12 +118,11 @@ export function ApprovalDashboard({
     }
   };
 
-
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+          <div className="mx-auto h-8 w-8 animate-spin rounded-full border-primary border-b-2" />
           <p className="mt-2 text-muted-foreground">Loading approvals...</p>
         </div>
       </div>
@@ -137,8 +133,12 @@ export function ApprovalDashboard({
     return (
       <div className="flex items-center justify-center py-12">
         <div className="text-center">
-          <p className="text-destructive font-semibold mb-2">{(error as Error)?.message || "Failed to load approvals."}</p>
-          <Button variant="outline" onClick={() => refetch()}>Retry</Button>
+          <p className="mb-2 font-semibold text-destructive">
+            {(error as Error)?.message || "Failed to load approvals."}
+          </p>
+          <Button onClick={() => refetch()} variant="outline">
+            Retry
+          </Button>
         </div>
       </div>
     );
@@ -146,14 +146,17 @@ export function ApprovalDashboard({
 
   return (
     <div className="space-y-6">
-      <Tabs value={activeTab} onValueChange={(value) => {
-        setActiveTab(value);
-        setPage(1); // Reset page when changing tabs
-      }}>
+      <Tabs
+        onValueChange={(value) => {
+          setActiveTab(value);
+          setPage(1); // Reset page when changing tabs
+        }}
+        value={activeTab}
+      >
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="pending">
             Pending
-            <Badge variant="default" className="ml-2">
+            <Badge className="ml-2" variant="default">
               {activeTab === "pending" ? approvals.length : ""}
             </Badge>
           </TabsTrigger>
@@ -162,11 +165,11 @@ export function ApprovalDashboard({
           <TabsTrigger value="needs_revision">Needs Revision</TabsTrigger>
         </TabsList>
 
-        <TabsContent value={activeTab} className="mt-6">
-          {(!approvals || approvals.length === 0) ? (
+        <TabsContent className="mt-6" value={activeTab}>
+          {!approvals || approvals.length === 0 ? (
             <Card>
               <CardContent className="flex flex-col items-center justify-center py-12">
-                <p className="text-muted-foreground text-center">
+                <p className="text-center text-muted-foreground">
                   No courses for approval.
                 </p>
               </CardContent>
@@ -175,21 +178,22 @@ export function ApprovalDashboard({
             <>
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 {approvals.map((approval) => (
-                  <Card key={approval.id} className="flex flex-col">
+                  <Card className="flex flex-col" key={approval.id}>
                     <CardHeader className="pb-3">
                       <div className="flex items-start justify-between gap-2">
-                        <div className="flex-1 min-w-0">
-                          <CardTitle className="text-lg line-clamp-2">
+                        <div className="min-w-0 flex-1">
+                          <CardTitle className="line-clamp-2 text-lg">
                             {approval.course.title}
                           </CardTitle>
                           <CardDescription className="text-sm">
-                            {approval.course.code} • {approval.course.faculty.name}
+                            {approval.course.code} •{" "}
+                            {approval.course.faculty.name}
                           </CardDescription>
                         </div>
-                        <div className="flex flex-col gap-1 shrink-0">
+                        <div className="flex shrink-0 flex-col gap-1">
                           <Badge
-                            variant={getStatusColor(approval.status) as any}
                             className="text-xs"
+                            variant={getStatusColor(approval.status) as any}
                           >
                             {approval.status.replace("_", " ")}
                           </Badge>
@@ -199,20 +203,24 @@ export function ApprovalDashboard({
                     </CardHeader>
 
                     <CardContent className="flex-1 pb-3">
-                      <p className="text-sm text-muted-foreground line-clamp-3 mb-3">
-                        <JsonToHtml json={JSON.parse(approval.course.description)} />
+                      <p className="mb-3 line-clamp-3 text-muted-foreground text-sm">
+                        <JsonToHtml
+                          json={JSON.parse(approval.course.description)}
+                        />
                       </p>
 
-                      <div className="space-y-2 text-xs text-muted-foreground">
+                      <div className="space-y-2 text-muted-foreground text-xs">
                         <div>
-                          <strong>Creator:</strong> {approval.course.instructor?.name}
+                          <strong>Creator:</strong>{" "}
+                          {approval.course.instructor?.name}
                         </div>
                         <div>
                           <strong>Institution:</strong>{" "}
                           {approval.course.faculty.school.institution.name}
                         </div>
                         <div>
-                          <strong>Faculty:</strong> {approval.course.faculty.name}
+                          <strong>Faculty:</strong>{" "}
+                          {approval.course.faculty.name}
                         </div>
                         <div>
                           <strong>Submitted:</strong>{" "}
@@ -223,20 +231,24 @@ export function ApprovalDashboard({
                       </div>
 
                       {approval.comments && (
-                        <div className="mt-3 p-2 bg-muted rounded-md">
-                          <p className="text-xs text-muted-foreground">
+                        <div className="mt-3 rounded-md bg-muted p-2">
+                          <p className="text-muted-foreground text-xs">
                             <strong>Comments:</strong> {approval.comments}
                           </p>
                         </div>
                       )}
                     </CardContent>
 
-                    <div className="p-3 border-t">
+                    <div className="border-t p-3">
                       <Button
                         asChild
                         className="w-full"
                         size="sm"
-                        variant={approval.status === "UNDER_REVIEW" ? "default" : "secondary"}
+                        variant={
+                          approval.status === "UNDER_REVIEW"
+                            ? "default"
+                            : "secondary"
+                        }
                       >
                         <Link href={`/courses/approvals/${approval.id}`}>
                           {approval.status === "UNDER_REVIEW"
@@ -251,32 +263,34 @@ export function ApprovalDashboard({
 
               {/* Pagination */}
               {totalPages > 1 && (
-                <div className="flex justify-center gap-2 mt-6">
+                <div className="mt-6 flex justify-center gap-2">
                   <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setPage((p) => Math.max(1, p - 1))}
                     disabled={page === 1}
+                    onClick={() => setPage((p) => Math.max(1, p - 1))}
+                    size="sm"
+                    variant="outline"
                   >
                     Previous
                   </Button>
                   <div className="flex items-center gap-2">
-                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
-                      <Button
-                        key={p}
-                        variant={p === page ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => setPage(p)}
-                      >
-                        {p}
-                      </Button>
-                    ))}
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                      (p) => (
+                        <Button
+                          key={p}
+                          onClick={() => setPage(p)}
+                          size="sm"
+                          variant={p === page ? "default" : "outline"}
+                        >
+                          {p}
+                        </Button>
+                      )
+                    )}
                   </div>
                   <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                     disabled={page === totalPages}
+                    onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                    size="sm"
+                    variant="outline"
                   >
                     Next
                   </Button>

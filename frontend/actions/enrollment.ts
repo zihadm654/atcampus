@@ -1,14 +1,13 @@
-'use server';
+"use server";
 
-import { revalidatePath } from 'next/cache';
-
-import { prisma } from '@/lib/db';
-import { getCurrentUser } from '@/lib/session';
-import { EnrollmentStatus, NotificationType } from '@prisma/client';
+import { EnrollmentStatus, NotificationType } from "@prisma/client";
+import { revalidatePath } from "next/cache";
+import { prisma } from "@/lib/db";
+import { getCurrentUser } from "@/lib/session";
 
 export const enrollCourse = async (courseId: string) => {
   const user = await getCurrentUser();
-  if (!user) throw new Error('Unauthorized');
+  if (!user) throw new Error("Unauthorized");
 
   try {
     // Check if user is already enrolled
@@ -23,7 +22,7 @@ export const enrollCourse = async (courseId: string) => {
     if (existingEnrollment) {
       return {
         success: false,
-        message: 'You are already enrolled in this course.',
+        message: "You are already enrolled in this course.",
       };
     }
 
@@ -33,10 +32,13 @@ export const enrollCourse = async (courseId: string) => {
       select: { instructorId: true },
     });
     if (!course) {
-      return { success: false, message: 'Course not found.' };
+      return { success: false, message: "Course not found." };
     }
     if (course.instructorId === user.id) {
-      return { success: false, message: "You cannot enroll in your own course." };
+      return {
+        success: false,
+        message: "You cannot enroll in your own course.",
+      };
     }
 
     // Use a transaction to create enrollment and notification atomically
@@ -58,14 +60,14 @@ export const enrollCourse = async (courseId: string) => {
       });
     });
 
-    revalidatePath('/courses');
+    revalidatePath("/courses");
     return {
       success: true,
-      message: 'Successfully enrolled in the course.',
+      message: "Successfully enrolled in the course.",
     };
   } catch (error) {
-    console.error('Error enrolling in course:', error);
-    throw new Error('Failed to enroll in course.');
+    console.error("Error enrolling in course:", error);
+    throw new Error("Failed to enroll in course.");
   }
 };
 
@@ -74,7 +76,7 @@ export const updateEnrollmentStatus = async (
   newStatus: EnrollmentStatus
 ) => {
   const user = await getCurrentUser();
-  if (!user || user.role !== 'PROFESSOR') throw new Error('Unauthorized');
+  if (!user || user.role !== "PROFESSOR") throw new Error("Unauthorized");
 
   const enrollment = await prisma.enrollment.findUnique({
     where: { id: enrollmentId },
@@ -88,8 +90,8 @@ export const updateEnrollmentStatus = async (
     data: { status: newStatus },
   });
 
-  revalidatePath('/courses');
-  return { success: true, message: 'Enrollment status updated successfully.' };
+  revalidatePath("/courses");
+  return { success: true, message: "Enrollment status updated successfully." };
 };
 
 export async function isEnrolledInCourse(courseId: string) {

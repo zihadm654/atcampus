@@ -1,20 +1,19 @@
 "use client";
 
-import * as React from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { signUpEmailAction } from "@/actions/sign-up-email.action";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { UserRole } from "@prisma/client";
 import { Briefcase, GraduationCap, HomeIcon } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
+import * as React from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-
-import { signIn } from "@/lib/auth-client";
-import { cn } from "@/lib/utils";
-import { registerSchema, TRegister } from "@/lib/validations/auth";
+import { signUpEmailAction } from "@/actions/sign-up-email.action";
+import { Icons } from "@/components/shared/icons";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Icons } from "@/components/shared/icons";
-
+import { signIn } from "@/lib/auth-client";
+import { cn } from "@/lib/utils";
+import { registerSchema, type TRegister } from "@/lib/validations/auth";
 import {
   Form,
   FormControl,
@@ -25,13 +24,12 @@ import {
   FormMessage,
 } from "../ui/form";
 import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
-import { UserRole } from "@prisma/client";
 
 interface UserRegisterFormProps {
   className?: string;
 }
 
-interface UserAuthFormProps extends React.HTMLAttributes<HTMLDivElement> { }
+interface UserAuthFormProps extends React.HTMLAttributes<HTMLDivElement> {}
 
 export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
   const [currentStep, setCurrentStep] = React.useState(1);
@@ -118,85 +116,85 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
             {currentStep === 1 && (
               <div className="grid gap-2 place-self-center">
                 <FormField
-                  name="role"
                   control={form.control}
+                  name="role"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel htmlFor="role" className="text-2xl">
+                      <FormLabel className="text-2xl" htmlFor="role">
                         Choose Your Role
                       </FormLabel>
                       <FormControl>
                         <RadioGroup
+                          className="grid grid-cols-2 gap-4 max-md:grid-cols-1"
                           onValueChange={field.onChange}
                           value={field.value}
-                          className="grid grid-cols-2 gap-4 max-md:grid-cols-1"
                         >
-                          <FormItem className="flex items-start gap-3 border p-4 rounded-xl hover:bg-accent/50 transition-colors">
+                          <FormItem className="flex items-start gap-3 rounded-xl border p-4 transition-colors hover:bg-accent/50">
                             <FormControl>
                               <RadioGroupItem
-                                value={UserRole.STUDENT}
                                 className="mt-1"
+                                value={UserRole.STUDENT}
                               />
                             </FormControl>
                             <div className="space-y-1">
-                              <FormLabel className="font-medium flex items-center gap-2">
+                              <FormLabel className="flex items-center gap-2 font-medium">
                                 <GraduationCap className="size-5" />
                                 Student
                               </FormLabel>
-                              <p className="text-sm text-muted-foreground">
+                              <p className="text-muted-foreground text-sm">
                                 Join as a student to access courses and learning
                                 materials
                               </p>
                             </div>
                           </FormItem>
-                          <FormItem className="flex items-start gap-3 border p-4 rounded-xl hover:bg-accent/50 transition-colors">
+                          <FormItem className="flex items-start gap-3 rounded-xl border p-4 transition-colors hover:bg-accent/50">
                             <FormControl>
                               <RadioGroupItem
-                                value={UserRole.PROFESSOR}
                                 className="mt-1"
+                                value={UserRole.PROFESSOR}
                               />
                             </FormControl>
                             <div className="space-y-1">
-                              <FormLabel className="font-medium flex items-center gap-2">
+                              <FormLabel className="flex items-center gap-2 font-medium">
                                 <HomeIcon className="size-5" />
                                 Professor
                               </FormLabel>
-                              <p className="text-sm text-muted-foreground">
+                              <p className="text-muted-foreground text-sm">
                                 Teach courses and manage student interactions
                               </p>
                             </div>
                           </FormItem>
-                          <FormItem className="flex items-start gap-3 border p-4 rounded-xl hover:bg-accent/50 transition-colors">
+                          <FormItem className="flex items-start gap-3 rounded-xl border p-4 transition-colors hover:bg-accent/50">
                             <FormControl>
                               <RadioGroupItem
-                                value={UserRole.ORGANIZATION}
                                 className="mt-1"
+                                value={UserRole.ORGANIZATION}
                               />
                             </FormControl>
                             <div className="space-y-1">
-                              <FormLabel className="font-medium flex items-center gap-2">
+                              <FormLabel className="flex items-center gap-2 font-medium">
                                 <Briefcase className="size-5" />
                                 Organization
                               </FormLabel>
-                              <p className="text-sm text-muted-foreground">
+                              <p className="text-muted-foreground text-sm">
                                 Register your company for recruitment and
                                 partnerships
                               </p>
                             </div>
                           </FormItem>
-                          <FormItem className="flex items-start gap-3 border p-4 rounded-xl hover:bg-accent/50 transition-colors">
+                          <FormItem className="flex items-start gap-3 rounded-xl border p-4 transition-colors hover:bg-accent/50">
                             <FormControl>
                               <RadioGroupItem
-                                value={UserRole.INSTITUTION}
                                 className="mt-1"
+                                value={UserRole.INSTITUTION}
                               />
                             </FormControl>
                             <div className="space-y-1">
-                              <FormLabel className="font-medium flex items-center gap-2">
+                              <FormLabel className="flex items-center gap-2 font-medium">
                                 <HomeIcon className="size-5" />
                                 Institution
                               </FormLabel>
-                              <p className="text-sm text-muted-foreground">
+                              <p className="text-muted-foreground text-sm">
                                 Register your university or college for
                                 institutional access
                               </p>
@@ -226,6 +224,10 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
                     <FormControl>
                       <Input
                         {...field}
+                        autoCapitalize="none"
+                        autoComplete="name"
+                        autoCorrect="off"
+                        disabled={isLoading || isGoogleLoading}
                         id="name"
                         placeholder={
                           role === UserRole.STUDENT
@@ -238,10 +240,6 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
                                   ? "professor name" // Assuming professor name for professors
                                   : "full name" // Default case or fallback
                         }
-                        autoCapitalize="none"
-                        autoComplete="name"
-                        autoCorrect="off"
-                        disabled={isLoading || isGoogleLoading}
                       />
                     </FormControl>
                     <FormMessage />
@@ -262,13 +260,13 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
                       <FormControl>
                         <Input
                           {...field}
-                          id="instituteId"
-                          placeholder="0910203"
-                          type="number"
                           autoCapitalize="none"
                           autoComplete="instituteId"
                           autoCorrect="off"
                           disabled={isLoading || isGoogleLoading}
+                          id="instituteId"
+                          placeholder="0910203"
+                          type="number"
                         />
                       </FormControl>
                       <FormMessage />
@@ -285,12 +283,12 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
                     <FormControl>
                       <Input
                         {...field}
-                        id="institution"
-                        placeholder={`${role === UserRole.STUDENT || role === UserRole.PROFESSOR ? "college/university name" : "institute website"}`}
                         autoCapitalize="none"
                         autoComplete="institution"
                         autoCorrect="off"
                         disabled={isLoading || isGoogleLoading}
+                        id="institution"
+                        placeholder={`${role === UserRole.STUDENT || role === UserRole.PROFESSOR ? "college/university name" : "institute website"}`}
                       />
                     </FormControl>
                     <FormMessage />
@@ -299,29 +297,29 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
               />
               {(role === UserRole.ORGANIZATION ||
                 role === UserRole.INSTITUTION) && (
-                  <FormField
-                    control={form.control}
-                    name="phone"
-                    render={({ field }) => (
-                      <FormItem className="grid gap-1">
-                        <FormLabel htmlFor="telephone">Phone Number</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="telephone"
-                            {...field}
-                            id="telephone"
-                            placeholder="05555555555"
-                            autoCapitalize="none"
-                            autoComplete="tel"
-                            autoCorrect="off"
-                            disabled={isLoading || isGoogleLoading}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                )}
+                <FormField
+                  control={form.control}
+                  name="phone"
+                  render={({ field }) => (
+                    <FormItem className="grid gap-1">
+                      <FormLabel htmlFor="telephone">Phone Number</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="telephone"
+                          {...field}
+                          autoCapitalize="none"
+                          autoComplete="tel"
+                          autoCorrect="off"
+                          disabled={isLoading || isGoogleLoading}
+                          id="telephone"
+                          placeholder="05555555555"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
               <FormField
                 control={form.control}
                 name="email"
@@ -331,12 +329,12 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
                     <FormControl>
                       <Input
                         {...field}
-                        id="email"
-                        placeholder="example.edu@gmail.com"
                         autoCapitalize="none"
                         autoComplete="email"
                         autoCorrect="off"
                         disabled={isLoading || isGoogleLoading}
+                        id="email"
+                        placeholder="example.edu@gmail.com"
                       />
                     </FormControl>
                     <FormMessage />
@@ -352,13 +350,13 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
                     <FormControl>
                       <Input
                         {...field}
-                        id="password"
-                        placeholder="********"
-                        type="password"
                         autoCapitalize="none"
                         autoComplete="none"
                         autoCorrect="off"
                         disabled={isLoading || isGoogleLoading}
+                        id="password"
+                        placeholder="********"
+                        type="password"
                       />
                     </FormControl>
                     <FormMessage />
@@ -370,29 +368,29 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
           <div className="flex items-center justify-between gap-2">
             {currentStep > 1 && (
               <Button
-                type="button"
-                onClick={prevStep}
                 className={cn(buttonVariants({ variant: "ghost" }))}
                 disabled={isLoading}
+                onClick={prevStep}
+                type="button"
               >
                 Previous
               </Button>
             )}
             {currentStep < 2 && (
               <Button
-                type="button"
-                onClick={nextStep}
                 className={cn(buttonVariants({ variant: "ghost" }), "self-end")}
                 disabled={isLoading || (currentStep === 1 && !role)}
+                onClick={nextStep}
+                type="button"
               >
                 Next
               </Button>
             )}
             {currentStep === 2 && (
               <Button
-                type="submit"
                 className={cn(buttonVariants())}
-                disabled={isLoading} // Disable if form is not valid
+                disabled={isLoading}
+                type="submit" // Disable if form is not valid
               >
                 {isLoading && (
                   <Icons.spinner className="mr-2 size-4 animate-spin" />
@@ -408,14 +406,14 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
           <span className="w-full border-t" />
         </div>
         <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-background text-muted-foreground px-2">
+          <span className="bg-background px-2 text-muted-foreground">
             Or continue with
           </span>
         </div>
       </div>
       <button
-        type="button"
         className={cn(buttonVariants({ variant: "outline" }))}
+        disabled={isLoading || isGoogleLoading}
         onClick={async () => {
           setIsGoogleLoading(true);
           await signIn.social({
@@ -424,7 +422,7 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
             errorCallbackURL: "/login/error",
           });
         }}
-        disabled={isLoading || isGoogleLoading}
+        type="button"
       >
         {isGoogleLoading ? (
           <Icons.spinner className="mr-2 size-4 animate-spin" />

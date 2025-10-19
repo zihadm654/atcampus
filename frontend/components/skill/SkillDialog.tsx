@@ -1,13 +1,20 @@
-import { useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { SkillLevel } from "@prisma/client";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-
-import { UserData, UserSkillData } from "@/types/types";
+import LoadingButton from "@/components/feed/LoadingButton";
+import { Icons } from "@/components/shared/icons";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
-  TUserSkillSchema,
-  userSkillSchema,
-} from "@/lib/validations/validation";
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -15,7 +22,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogClose,
 } from "@/components/ui/dialog";
 import {
   Form,
@@ -27,14 +33,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import LoadingButton from "@/components/feed/LoadingButton";
-import { Button } from "@/components/ui/button";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { useSkillMutation, useDeleteSkillMutation } from "./mutations";
-import SkillCategorySelect from "./SkillCategorySelect";
-import { SkillSearchInput } from "./SkillSearchInput";
-import { Icons } from "@/components/shared/icons";
-import { useToast } from "@/components/ui/use-toast";
 import {
   Select,
   SelectContent,
@@ -42,17 +40,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useToast } from "@/components/ui/use-toast";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { useState } from "react";
+  type TUserSkillSchema,
+  userSkillSchema,
+} from "@/lib/validations/validation";
+import type { UserData, UserSkillData } from "@/types/types";
+import { useDeleteSkillMutation, useSkillMutation } from "./mutations";
+import SkillCategorySelect from "./SkillCategorySelect";
+import { SkillSearchInput } from "./SkillSearchInput";
 
 interface SkillDialogProps {
   skill?: UserSkillData | null;
@@ -182,25 +178,25 @@ export default function SkillDialog({
   return (
     <>
       <Dialog
-        open={open}
         onOpenChange={(isOpen) => !isSubmitting && handleClose()}
+        open={open}
       >
         <DialogContent
+          aria-describedby="skill-dialog-description"
           className="sm:max-w-[425px]"
           onEscapeKeyDown={(e) => isSubmitting && e.preventDefault()}
           onPointerDownOutside={(e) => isSubmitting && e.preventDefault()}
-          aria-describedby="skill-dialog-description"
         >
           <DialogHeader>
             <DialogTitle className="flex items-center" id="skill-dialog-title">
               {skill ? (
                 <>
-                  <Icons.pencil className="mr-2 h-4 w-4" aria-hidden="true" />
+                  <Icons.pencil aria-hidden="true" className="mr-2 h-4 w-4" />
                   Edit Skill
                 </>
               ) : (
                 <>
-                  <Icons.add className="mr-2 h-4 w-4" aria-hidden="true" />
+                  <Icons.add aria-hidden="true" className="mr-2 h-4 w-4" />
                   Add New Skill
                 </>
               )}
@@ -213,7 +209,7 @@ export default function SkillDialog({
           </DialogHeader>
 
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <form className="space-y-6" onSubmit={form.handleSubmit(onSubmit)}>
               <div className="space-y-4">
                 <FormField
                   control={form.control}
@@ -227,8 +223,8 @@ export default function SkillDialog({
                       </FormLabel>
                       <FormControl>
                         <SkillSearchInput
-                          onChange={field.onChange}
                           defaultValue={field.value}
+                          onChange={field.onChange}
                           // placeholder="e.g., React, Python, Design"
                           // disabled={isSubmitting}
                         />
@@ -254,7 +250,7 @@ export default function SkillDialog({
                           // disabled={isSubmitting}
                         />
                       </FormControl>
-                      <FormDescription className="text-sm text-gray-600">
+                      <FormDescription className="text-gray-600 text-sm">
                         Choose a category that best describes your skill
                       </FormDescription>
                       <FormMessage />
@@ -273,9 +269,9 @@ export default function SkillDialog({
                           Proficiency
                         </FormLabel>
                         <Select
-                          onValueChange={field.onChange}
                           defaultValue={field.value}
                           disabled={isSubmitting}
+                          onValueChange={field.onChange}
                         >
                           <FormControl>
                             <SelectTrigger className="border-gray-200 focus:border-blue-500 focus:ring-blue-500">
@@ -325,16 +321,18 @@ export default function SkillDialog({
                         </FormLabel>
                         <FormControl>
                           <Input
-                            type="number"
-                            min="0"
                             max="50"
+                            min="0"
+                            type="number"
                             {...field}
-                            onChange={(e) =>
-                              field.onChange(parseInt(e.target.value) || 0)
-                            }
-                            disabled={isSubmitting}
-                            placeholder="0 years"
                             className="border-gray-200 focus:border-blue-500 focus:ring-blue-500"
+                            disabled={isSubmitting}
+                            onChange={(e) =>
+                              field.onChange(
+                                Number.parseInt(e.target.value) || 0
+                              )
+                            }
+                            placeholder="0 years"
                           />
                         </FormControl>
                         <FormMessage />
@@ -345,7 +343,7 @@ export default function SkillDialog({
               </div>
 
               {form.formState.errors.root && (
-                <Alert variant="destructive" className="border-red-200">
+                <Alert className="border-red-200" variant="destructive">
                   <Icons.warning className="h-4 w-4" />
                   <AlertDescription>
                     {form.formState.errors.root.message}
@@ -353,14 +351,14 @@ export default function SkillDialog({
                 </Alert>
               )}
 
-              <DialogFooter className="gap-2 pt-4 border-t">
+              <DialogFooter className="gap-2 border-t pt-4">
                 {skill && (
                   <Button
+                    className="border-red-200 text-red-600 transition-colors hover:border-red-300 hover:bg-red-50 hover:text-red-700"
+                    disabled={isSubmitting}
+                    onClick={() => setShowDeleteDialog(true)}
                     type="button"
                     variant="outline"
-                    onClick={() => setShowDeleteDialog(true)}
-                    disabled={isSubmitting}
-                    className="border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700 hover:border-red-300 transition-colors"
                   >
                     <Icons.trash className="mr-2 h-4 w-4" />
                     Delete
@@ -368,19 +366,19 @@ export default function SkillDialog({
                 )}
                 <div className="flex-1" />
                 <Button
+                  className="border-gray-200 transition-colors hover:border-gray-300"
+                  disabled={isSubmitting}
+                  onClick={() => handleClose()}
                   type="button"
                   variant="outline"
-                  onClick={() => handleClose()}
-                  disabled={isSubmitting}
-                  className="border-gray-200 hover:border-gray-300 transition-colors"
                 >
                   Cancel
                 </Button>
                 <LoadingButton
-                  type="submit"
-                  loading={mutation.isPending}
+                  className="bg-blue-600 text-white transition-colors hover:bg-blue-700"
                   disabled={isSubmitting}
-                  className="bg-blue-600 hover:bg-blue-700 text-white transition-colors"
+                  loading={mutation.isPending}
+                  type="submit"
                 >
                   {skill ? "Update Skill" : "Add Skill"}
                 </LoadingButton>
@@ -390,7 +388,7 @@ export default function SkillDialog({
         </DialogContent>
       </Dialog>
 
-      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+      <AlertDialog onOpenChange={setShowDeleteDialog} open={showDeleteDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Skill</AlertDialogTitle>
@@ -404,9 +402,9 @@ export default function SkillDialog({
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction
-              onClick={handleDelete}
-              disabled={deleteMutation.isPending}
               className="bg-red-600 hover:bg-red-700"
+              disabled={deleteMutation.isPending}
+              onClick={handleDelete}
             >
               {deleteMutation.isPending ? (
                 <>

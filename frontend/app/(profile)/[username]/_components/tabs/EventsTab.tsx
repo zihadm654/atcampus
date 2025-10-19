@@ -1,27 +1,64 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { Calendar, Clock, MapPin, Users, Heart, Share2, Edit, Trash2, Plus, Filter, Search, UserPlus, UserMinus, CalendarClock } from "lucide-react";
+import { EventStatus, type EventType } from "@prisma/client";
 import { format } from "date-fns";
-
-import { ExtendedEvent, EventFilterOptions } from "@/types/event-types";
-import { getEventsAction, joinEventAction, leaveEventAction, toggleEventLikeAction, getUserEventsAction } from "@/actions/event-actions";
-import { EventStatus, EventType } from "@prisma/client";
+import {
+  Calendar,
+  CalendarClock,
+  Edit,
+  Heart,
+  MapPin,
+  Plus,
+  Search,
+  Share2,
+  Trash2,
+  UserMinus,
+  UserPlus,
+  Users,
+} from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import {
+  getEventsAction,
+  getUserEventsAction,
+  joinEventAction,
+  leaveEventAction,
+  toggleEventLikeAction,
+} from "@/actions/event-actions";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 // import { EventType } from "@/lib/validations/event";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Separator } from "@/components/ui/separator";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
-import { Skeleton } from "@/components/ui/skeleton";
+import type { EventFilterOptions, ExtendedEvent } from "@/types/event-types";
 
 interface EventsTabProps {
   username: string;
@@ -29,7 +66,11 @@ interface EventsTabProps {
   userRole?: string;
 }
 
-export function EventsTab({ username, isOwnProfile, userRole }: EventsTabProps) {
+export function EventsTab({
+  username,
+  isOwnProfile,
+  userRole,
+}: EventsTabProps) {
   const router = useRouter();
   const { toast } = useToast();
 
@@ -227,20 +268,16 @@ export function EventsTab({ username, isOwnProfile, userRole }: EventsTabProps) 
     }
   };
 
-  const isEventCreator = (event: ExtendedEvent) => {
-    return isOwnProfile && event.creatorId === username;
-  };
+  const isEventCreator = (event: ExtendedEvent) =>
+    isOwnProfile && event.creatorId === username;
 
-  const isEventAttendee = (event: ExtendedEvent) => {
-    return event.attendees?.some(attendee => attendee.userId === username);
-  };
+  const isEventAttendee = (event: ExtendedEvent) =>
+    event.attendees?.some((attendee) => attendee.userId === username);
 
-  const hasUserLikedEvent = (event: ExtendedEvent) => {
-    return event.likesUsers === true;
-  };
+  const hasUserLikedEvent = (event: ExtendedEvent) => event.likesUsers === true;
 
   const EventCard = ({ event }: { event: ExtendedEvent }) => (
-    <Card className="hover:shadow-lg transition-shadow duration-200">
+    <Card className="transition-shadow duration-200 hover:shadow-lg">
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
@@ -251,30 +288,37 @@ export function EventsTab({ username, isOwnProfile, userRole }: EventsTabProps) 
             <div>
               <CardTitle className="text-lg">{event.name}</CardTitle>
               <CardDescription>
-                by {event.creator.name} • {format(new Date(event.createdAt), "MMM d, yyyy")}
+                by {event.creator.name} •{" "}
+                {format(new Date(event.createdAt), "MMM d, yyyy")}
               </CardDescription>
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Badge variant={event.status as EventStatus === EventStatus.PUBLISHED ? "default" : "secondary"}>
+            <Badge
+              variant={
+                (event.status as EventStatus) === EventStatus.PUBLISHED
+                  ? "default"
+                  : "secondary"
+              }
+            >
               {event.status}
             </Badge>
             {isEventCreator(event) && (
               <div className="flex gap-1">
                 <Button
-                  variant="ghost"
-                  size="sm"
                   onClick={() => {
                     setEditingEvent(event);
                     setShowEditDialog(true);
                   }}
+                  size="sm"
+                  variant="ghost"
                 >
                   <Edit className="h-4 w-4" />
                 </Button>
                 <Button
-                  variant="ghost"
-                  size="sm"
                   onClick={() => handleDeleteEvent(event.id)}
+                  size="sm"
+                  variant="ghost"
                 >
                   <Trash2 className="h-4 w-4" />
                 </Button>
@@ -285,7 +329,7 @@ export function EventsTab({ username, isOwnProfile, userRole }: EventsTabProps) 
       </CardHeader>
 
       <CardContent className="pb-3">
-        <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
+        <p className="mb-3 line-clamp-2 text-muted-foreground text-sm">
           {event.description}
         </p>
 
@@ -317,28 +361,31 @@ export function EventsTab({ username, isOwnProfile, userRole }: EventsTabProps) 
           )}
         </div>
 
-        <div className="flex flex-wrap gap-2 mt-3">
+        <div className="mt-3 flex flex-wrap gap-2">
           <Badge variant="outline">{event.type}</Badge>
           {event.isPublic && <Badge variant="outline">Public</Badge>}
-          {event.registrationDeadline && new Date(event.registrationDeadline) > new Date() && (
-            <Badge variant="outline">Registration Open</Badge>
-          )}
+          {event.registrationDeadline &&
+            new Date(event.registrationDeadline) > new Date() && (
+              <Badge variant="outline">Registration Open</Badge>
+            )}
         </div>
       </CardContent>
 
-      <CardFooter className="flex justify-between items-center pt-3">
+      <CardFooter className="flex items-center justify-between pt-3">
         <div className="flex items-center gap-2">
           <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => handleToggleLike(event.id)}
             className={hasUserLikedEvent(event) ? "text-red-500" : ""}
+            onClick={() => handleToggleLike(event.id)}
+            size="sm"
+            variant="ghost"
           >
-            <Heart className={`h-4 w-4 ${hasUserLikedEvent(event) ? "fill-current" : ""}`} />
+            <Heart
+              className={`h-4 w-4 ${hasUserLikedEvent(event) ? "fill-current" : ""}`}
+            />
             <span className="ml-1">{event._count?.likesUsers || 0}</span>
           </Button>
 
-          <Button variant="ghost" size="sm">
+          <Button size="sm" variant="ghost">
             <Share2 className="h-4 w-4" />
           </Button>
         </div>
@@ -346,30 +393,39 @@ export function EventsTab({ username, isOwnProfile, userRole }: EventsTabProps) 
         <div className="flex gap-2">
           {isEventAttendee(event) ? (
             <Button
-              variant="outline"
-              size="sm"
+              disabled={Boolean(
+                event.registrationDeadline
+                  ? new Date(event.registrationDeadline) < new Date()
+                  : new Date(event.startDate) < new Date()
+              )}
               onClick={() => handleLeaveEvent(event.id)}
-              disabled={Boolean(event.registrationDeadline ? new Date(event.registrationDeadline) < new Date() : new Date(event.startDate) < new Date())}
+              size="sm"
+              variant="outline"
             >
-              <UserMinus className="h-4 w-4 mr-1" />
+              <UserMinus className="mr-1 h-4 w-4" />
               Leave
             </Button>
           ) : (
             <Button
-              size="sm"
+              disabled={Boolean(
+                (event.registrationDeadline
+                  ? new Date(event.registrationDeadline) < new Date()
+                  : new Date(event.startDate) < new Date()) ||
+                  (event.capacity &&
+                    (event._count?.attendees || 0) >= Number(event.capacity))
+              )}
               onClick={() => handleJoinEvent(event.id)}
-              disabled={Boolean((event.registrationDeadline ? new Date(event.registrationDeadline) < new Date() : new Date(event.startDate) < new Date()) ||
-                (event.capacity && (event._count?.attendees || 0) >= Number(event.capacity)))}
+              size="sm"
             >
-              <UserPlus className="h-4 w-4 mr-1" />
+              <UserPlus className="mr-1 h-4 w-4" />
               Join
             </Button>
           )}
 
           <Button
-            variant="outline"
-            size="sm"
             onClick={() => router.push(`/events/${event.id}`)}
+            size="sm"
+            variant="outline"
           >
             View Details
           </Button>
@@ -379,23 +435,27 @@ export function EventsTab({ username, isOwnProfile, userRole }: EventsTabProps) 
   );
 
   const FilterBar = () => (
-    <div className="flex flex-col sm:flex-row gap-4 mb-6">
+    <div className="mb-6 flex flex-col gap-4 sm:flex-row">
       <div className="relative flex-1">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <Search className="-translate-y-1/2 absolute top-1/2 left-3 h-4 w-4 transform text-muted-foreground" />
         <Input
+          className="pl-10"
+          onChange={(e) =>
+            setFilterOptions((prev) => ({ ...prev, search: e.target.value }))
+          }
           placeholder="Search events..."
           value={filterOptions.search || ""}
-          onChange={(e) => setFilterOptions(prev => ({ ...prev, search: e.target.value }))}
-          className="pl-10"
         />
       </div>
 
       <Select
+        onValueChange={(value) =>
+          setFilterOptions((prev) => ({
+            ...prev,
+            type: value === "all" ? undefined : (value as EventType),
+          }))
+        }
         value={filterOptions.type || "all"}
-        onValueChange={(value) => setFilterOptions(prev => ({
-          ...prev,
-          type: value === "all" ? undefined : value as EventType
-        }))}
       >
         <SelectTrigger className="w-[180px]">
           <SelectValue placeholder="Event Type" />
@@ -415,7 +475,7 @@ export function EventsTab({ username, isOwnProfile, userRole }: EventsTabProps) 
 
       {userRole === "INSTITUTION" && (
         <Button onClick={() => setShowCreateDialog(true)}>
-          <Plus className="h-4 w-4 mr-2" />
+          <Plus className="mr-2 h-4 w-4" />
           Create Event
         </Button>
       )}
@@ -431,43 +491,59 @@ export function EventsTab({ username, isOwnProfile, userRole }: EventsTabProps) 
           <FilterBar />
 
           {isOwnProfile ? (
-            <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <Tabs onValueChange={setActiveTab} value={activeTab}>
               <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="all">All Events</TabsTrigger>
                 <TabsTrigger value="attending">Attending Events</TabsTrigger>
               </TabsList>
 
-              <TabsContent value="all" className="space-y-4 mt-6">
+              <TabsContent className="mt-6 space-y-4" value="all">
                 {events.length === 0 ? (
                   <Card>
-                    <CardContent className="text-center py-12">
-                      <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                      <h3 className="text-lg font-semibold mb-2">No events found</h3>
+                    <CardContent className="py-12 text-center">
+                      <Calendar className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
+                      <h3 className="mb-2 font-semibold text-lg">
+                        No events found
+                      </h3>
                       <p className="text-muted-foreground">
-                        {filterOptions.search ? "Try adjusting your search criteria" : "No events available at the moment"}
+                        {filterOptions.search
+                          ? "Try adjusting your search criteria"
+                          : "No events available at the moment"}
                       </p>
                     </CardContent>
                   </Card>
                 ) : (
-                  events.map((event) => <EventCard key={event.id} event={event} />)
+                  events.map((event) => (
+                    <EventCard event={event} key={event.id} />
+                  ))
                 )}
               </TabsContent>
 
-              <TabsContent value="attending" className="space-y-4 mt-6">
-                {userEvents.filter(event => event.attendees?.some(attendee => attendee.userId === username)).length === 0 ? (
+              <TabsContent className="mt-6 space-y-4" value="attending">
+                {userEvents.filter((event) =>
+                  event.attendees?.some(
+                    (attendee) => attendee.userId === username
+                  )
+                ).length === 0 ? (
                   <Card>
-                    <CardContent className="text-center py-12">
-                      <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                      <h3 className="text-lg font-semibold mb-2">Not attending any events</h3>
+                    <CardContent className="py-12 text-center">
+                      <Calendar className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
+                      <h3 className="mb-2 font-semibold text-lg">
+                        Not attending any events
+                      </h3>
                       <p className="text-muted-foreground">
                         Join some events to see them here
                       </p>
                     </CardContent>
                   </Card>
                 ) : (
-                  userEvents.filter(event => event.attendees?.some(attendee => attendee.userId === username)).map((event) => (
-                    <EventCard key={event.id} event={event} />
-                  ))
+                  userEvents
+                    .filter((event) =>
+                      event.attendees?.some(
+                        (attendee) => attendee.userId === username
+                      )
+                    )
+                    .map((event) => <EventCard event={event} key={event.id} />)
                 )}
               </TabsContent>
             </Tabs>
@@ -475,16 +551,22 @@ export function EventsTab({ username, isOwnProfile, userRole }: EventsTabProps) 
             <div className="space-y-4">
               {events.length === 0 ? (
                 <Card>
-                  <CardContent className="text-center py-12">
-                    <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                    <h3 className="text-lg font-semibold mb-2">No events found</h3>
+                  <CardContent className="py-12 text-center">
+                    <Calendar className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
+                    <h3 className="mb-2 font-semibold text-lg">
+                      No events found
+                    </h3>
                     <p className="text-muted-foreground">
-                      {filterOptions.search ? "Try adjusting your search criteria" : "No events available at the moment"}
+                      {filterOptions.search
+                        ? "Try adjusting your search criteria"
+                        : "No events available at the moment"}
                     </p>
                   </CardContent>
                 </Card>
               ) : (
-                events.map((event) => <EventCard key={event.id} event={event} />)
+                events.map((event) => (
+                  <EventCard event={event} key={event.id} />
+                ))
               )}
             </div>
           )}
@@ -499,43 +581,52 @@ export function EventsTab({ username, isOwnProfile, userRole }: EventsTabProps) 
           <FilterBar />
 
           {isOwnProfile ? (
-            <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <Tabs onValueChange={setActiveTab} value={activeTab}>
               <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="all">All Events</TabsTrigger>
                 <TabsTrigger value="created">Created Events</TabsTrigger>
               </TabsList>
 
-              <TabsContent value="all" className="space-y-4 mt-6">
+              <TabsContent className="mt-6 space-y-4" value="all">
                 {events.length === 0 ? (
                   <Card>
-                    <CardContent className="text-center py-12">
-                      <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                      <h3 className="text-lg font-semibold mb-2">No events found</h3>
+                    <CardContent className="py-12 text-center">
+                      <Calendar className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
+                      <h3 className="mb-2 font-semibold text-lg">
+                        No events found
+                      </h3>
                       <p className="text-muted-foreground">
-                        {filterOptions.search ? "Try adjusting your search criteria" : "No events available at the moment"}
+                        {filterOptions.search
+                          ? "Try adjusting your search criteria"
+                          : "No events available at the moment"}
                       </p>
                     </CardContent>
                   </Card>
                 ) : (
-                  events.map((event) => <EventCard key={event.id} event={event} />)
+                  events.map((event) => (
+                    <EventCard event={event} key={event.id} />
+                  ))
                 )}
               </TabsContent>
 
-              <TabsContent value="created" className="space-y-4 mt-6">
-                {userEvents.filter(event => event.creatorId === username).length === 0 ? (
+              <TabsContent className="mt-6 space-y-4" value="created">
+                {userEvents.filter((event) => event.creatorId === username)
+                  .length === 0 ? (
                   <Card>
-                    <CardContent className="text-center py-12">
-                      <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                      <h3 className="text-lg font-semibold mb-2">No created events</h3>
+                    <CardContent className="py-12 text-center">
+                      <Calendar className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
+                      <h3 className="mb-2 font-semibold text-lg">
+                        No created events
+                      </h3>
                       <p className="text-muted-foreground">
                         Create your first event to get started
                       </p>
                     </CardContent>
                   </Card>
                 ) : (
-                  userEvents.filter(event => event.creatorId === username).map((event) => (
-                    <EventCard key={event.id} event={event} />
-                  ))
+                  userEvents
+                    .filter((event) => event.creatorId === username)
+                    .map((event) => <EventCard event={event} key={event.id} />)
                 )}
               </TabsContent>
             </Tabs>
@@ -543,16 +634,22 @@ export function EventsTab({ username, isOwnProfile, userRole }: EventsTabProps) 
             <div className="space-y-4">
               {events.length === 0 ? (
                 <Card>
-                  <CardContent className="text-center py-12">
-                    <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                    <h3 className="text-lg font-semibold mb-2">No events found</h3>
+                  <CardContent className="py-12 text-center">
+                    <Calendar className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
+                    <h3 className="mb-2 font-semibold text-lg">
+                      No events found
+                    </h3>
                     <p className="text-muted-foreground">
-                      {filterOptions.search ? "Try adjusting your search criteria" : "No events available at the moment"}
+                      {filterOptions.search
+                        ? "Try adjusting your search criteria"
+                        : "No events available at the moment"}
                     </p>
                   </CardContent>
                 </Card>
               ) : (
-                events.map((event) => <EventCard key={event.id} event={event} />)
+                events.map((event) => (
+                  <EventCard event={event} key={event.id} />
+                ))
               )}
             </div>
           )}
@@ -568,16 +665,18 @@ export function EventsTab({ username, isOwnProfile, userRole }: EventsTabProps) 
         <div className="space-y-4">
           {events.length === 0 ? (
             <Card>
-              <CardContent className="text-center py-12">
-                <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-lg font-semibold mb-2">No events found</h3>
+              <CardContent className="py-12 text-center">
+                <Calendar className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
+                <h3 className="mb-2 font-semibold text-lg">No events found</h3>
                 <p className="text-muted-foreground">
-                  {filterOptions.search ? "Try adjusting your search criteria" : "No events available at the moment"}
+                  {filterOptions.search
+                    ? "Try adjusting your search criteria"
+                    : "No events available at the moment"}
                 </p>
               </CardContent>
             </Card>
           ) : (
-            events.map((event) => <EventCard key={event.id} event={event} />)
+            events.map((event) => <EventCard event={event} key={event.id} />)
           )}
         </div>
       </div>
@@ -587,14 +686,14 @@ export function EventsTab({ username, isOwnProfile, userRole }: EventsTabProps) 
   if (loading) {
     return (
       <div className="space-y-4">
-        {[...Array(3)].map((_, i) => (
+        {[...new Array(3)].map((_, i) => (
           <Card key={i}>
             <CardHeader>
               <Skeleton className="h-4 w-[250px]" />
               <Skeleton className="h-4 w-[200px]" />
             </CardHeader>
             <CardContent>
-              <Skeleton className="h-4 w-full mb-2" />
+              <Skeleton className="mb-2 h-4 w-full" />
               <Skeleton className="h-4 w-full" />
             </CardContent>
           </Card>
@@ -608,42 +707,58 @@ export function EventsTab({ username, isOwnProfile, userRole }: EventsTabProps) 
       {renderEventsContent()}
 
       {/* Create Event Dialog */}
-      <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <Dialog onOpenChange={setShowCreateDialog} open={showCreateDialog}>
+        <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Create New Event</DialogTitle>
             <DialogDescription>
-              Fill in the details for your new event. Students will be able to join and participate.
+              Fill in the details for your new event. Students will be able to
+              join and participate.
             </DialogDescription>
           </DialogHeader>
 
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="name" className="text-right">Event Name</Label>
+              <Label className="text-right" htmlFor="name">
+                Event Name
+              </Label>
               <Input
+                className="col-span-3"
                 id="name"
+                onChange={(e) =>
+                  setCreateForm((prev) => ({ ...prev, name: e.target.value }))
+                }
                 value={createForm.name}
-                onChange={(e) => setCreateForm(prev => ({ ...prev, name: e.target.value }))}
-                className="col-span-3"
               />
             </div>
 
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="description" className="text-right">Description</Label>
+              <Label className="text-right" htmlFor="description">
+                Description
+              </Label>
               <Textarea
-                id="description"
-                value={createForm.description}
-                onChange={(e) => setCreateForm(prev => ({ ...prev, description: e.target.value }))}
                 className="col-span-3"
+                id="description"
+                onChange={(e) =>
+                  setCreateForm((prev) => ({
+                    ...prev,
+                    description: e.target.value,
+                  }))
+                }
                 rows={3}
+                value={createForm.description}
               />
             </div>
 
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="type" className="text-right">Type</Label>
+              <Label className="text-right" htmlFor="type">
+                Type
+              </Label>
               <Select
+                onValueChange={(value) =>
+                  setCreateForm((prev) => ({ ...prev, type: value }))
+                }
                 value={createForm.type}
-                onValueChange={(value) => setCreateForm(prev => ({ ...prev, type: value }))}
               >
                 <SelectTrigger className="col-span-3">
                   <SelectValue />
@@ -662,95 +777,154 @@ export function EventsTab({ username, isOwnProfile, userRole }: EventsTabProps) 
             </div>
 
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="location" className="text-right">Location</Label>
+              <Label className="text-right" htmlFor="location">
+                Location
+              </Label>
               <Input
-                id="location"
-                value={createForm.location}
-                onChange={(e) => setCreateForm(prev => ({ ...prev, location: e.target.value }))}
                 className="col-span-3"
+                id="location"
+                onChange={(e) =>
+                  setCreateForm((prev) => ({
+                    ...prev,
+                    location: e.target.value,
+                  }))
+                }
+                value={createForm.location}
               />
             </div>
 
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="capacity" className="text-right">Capacity</Label>
+              <Label className="text-right" htmlFor="capacity">
+                Capacity
+              </Label>
               <Input
+                className="col-span-3"
                 id="capacity"
+                onChange={(e) =>
+                  setCreateForm((prev) => ({
+                    ...prev,
+                    capacity: Number.parseInt(e.target.value, 10),
+                  }))
+                }
                 type="number"
                 value={createForm.capacity}
-                onChange={(e) => setCreateForm(prev => ({ ...prev, capacity: parseInt(e.target.value) }))}
-                className="col-span-3"
               />
             </div>
 
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="price" className="text-right">Price ($)</Label>
+              <Label className="text-right" htmlFor="price">
+                Price ($)
+              </Label>
               <Input
+                className="col-span-3"
                 id="price"
+                onChange={(e) =>
+                  setCreateForm((prev) => ({
+                    ...prev,
+                    price: Number.parseFloat(e.target.value),
+                  }))
+                }
                 type="number"
                 value={createForm.price}
-                onChange={(e) => setCreateForm(prev => ({ ...prev, price: parseFloat(e.target.value) }))}
-                className="col-span-3"
               />
             </div>
 
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="startDate" className="text-right">Start Date</Label>
+              <Label className="text-right" htmlFor="startDate">
+                Start Date
+              </Label>
               <Input
+                className="col-span-3"
                 id="startDate"
+                onChange={(e) =>
+                  setCreateForm((prev) => ({
+                    ...prev,
+                    startDate: e.target.value,
+                  }))
+                }
                 type="datetime-local"
                 value={createForm.startDate}
-                onChange={(e) => setCreateForm(prev => ({ ...prev, startDate: e.target.value }))}
-                className="col-span-3"
               />
             </div>
 
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="endDate" className="text-right">End Date</Label>
+              <Label className="text-right" htmlFor="endDate">
+                End Date
+              </Label>
               <Input
+                className="col-span-3"
                 id="endDate"
+                onChange={(e) =>
+                  setCreateForm((prev) => ({
+                    ...prev,
+                    endDate: e.target.value,
+                  }))
+                }
                 type="datetime-local"
                 value={createForm.endDate}
-                onChange={(e) => setCreateForm(prev => ({ ...prev, endDate: e.target.value }))}
-                className="col-span-3"
               />
             </div>
 
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="registrationDeadline" className="text-right">Registration Deadline</Label>
+              <Label className="text-right" htmlFor="registrationDeadline">
+                Registration Deadline
+              </Label>
               <Input
+                className="col-span-3"
                 id="registrationDeadline"
+                onChange={(e) =>
+                  setCreateForm((prev) => ({
+                    ...prev,
+                    registrationDeadline: e.target.value,
+                  }))
+                }
                 type="datetime-local"
                 value={createForm.registrationDeadline}
-                onChange={(e) => setCreateForm(prev => ({ ...prev, registrationDeadline: e.target.value }))}
-                className="col-span-3"
               />
             </div>
 
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="contactEmail" className="text-right">Contact Email</Label>
+              <Label className="text-right" htmlFor="contactEmail">
+                Contact Email
+              </Label>
               <Input
+                className="col-span-3"
                 id="contactEmail"
+                onChange={(e) =>
+                  setCreateForm((prev) => ({
+                    ...prev,
+                    contactEmail: e.target.value,
+                  }))
+                }
                 type="email"
                 value={createForm.contactEmail}
-                onChange={(e) => setCreateForm(prev => ({ ...prev, contactEmail: e.target.value }))}
-                className="col-span-3"
               />
             </div>
 
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="website" className="text-right">Website</Label>
+              <Label className="text-right" htmlFor="website">
+                Website
+              </Label>
               <Input
+                className="col-span-3"
                 id="website"
+                onChange={(e) =>
+                  setCreateForm((prev) => ({
+                    ...prev,
+                    website: e.target.value,
+                  }))
+                }
                 type="url"
                 value={createForm.website}
-                onChange={(e) => setCreateForm(prev => ({ ...prev, website: e.target.value }))}
-                className="col-span-3"
               />
             </div>
           </div>
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowCreateDialog(false)}>
+            <Button
+              onClick={() => setShowCreateDialog(false)}
+              variant="outline"
+            >
               Cancel
             </Button>
             <Button onClick={handleCreateEvent}>Create Event</Button>
@@ -759,8 +933,8 @@ export function EventsTab({ username, isOwnProfile, userRole }: EventsTabProps) 
       </Dialog>
 
       {/* Edit Event Dialog */}
-      <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <Dialog onOpenChange={setShowEditDialog} open={showEditDialog}>
+        <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Edit Event</DialogTitle>
             <DialogDescription>
@@ -770,29 +944,41 @@ export function EventsTab({ username, isOwnProfile, userRole }: EventsTabProps) 
 
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="edit-name" className="text-right">Event Name</Label>
+              <Label className="text-right" htmlFor="edit-name">
+                Event Name
+              </Label>
               <Input
-                id="edit-name"
-                value={editingEvent?.name || ""}
-                onChange={(e) => setEditingEvent(prev => prev ? { ...prev, name: e.target.value } : null)}
                 className="col-span-3"
+                id="edit-name"
+                onChange={(e) =>
+                  setEditingEvent((prev) =>
+                    prev ? { ...prev, name: e.target.value } : null
+                  )
+                }
+                value={editingEvent?.name || ""}
               />
             </div>
 
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="edit-description" className="text-right">Description</Label>
+              <Label className="text-right" htmlFor="edit-description">
+                Description
+              </Label>
               <Textarea
-                id="edit-description"
-                value={editingEvent?.description || ""}
-                onChange={(e) => setEditingEvent(prev => prev ? { ...prev, description: e.target.value } : null)}
                 className="col-span-3"
+                id="edit-description"
+                onChange={(e) =>
+                  setEditingEvent((prev) =>
+                    prev ? { ...prev, description: e.target.value } : null
+                  )
+                }
                 rows={3}
+                value={editingEvent?.description || ""}
               />
             </div>
           </div>
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowEditDialog(false)}>
+            <Button onClick={() => setShowEditDialog(false)} variant="outline">
               Cancel
             </Button>
             <Button onClick={handleEditEvent}>Save Changes</Button>

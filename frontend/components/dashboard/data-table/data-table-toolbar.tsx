@@ -1,16 +1,13 @@
 "use client";
 
-import { useState } from "react";
-import { Table } from "@tanstack/react-table";
-import { CrossIcon, Loader2 } from "lucide-react";
-
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-
-import { CalendarDatePicker } from "./calender-date-picker";
-import { DataTableFacetedFilter } from "./data-table-faceted-filter";
-import { DataTableViewOptions } from "./data-table-view-options";
 import { UserRole, UserStatus } from "@prisma/client";
+import { useQueryClient } from "@tanstack/react-query";
+import type { Table } from "@tanstack/react-table";
+import { CrossIcon, Loader2 } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
+import { Icons } from "@/components/shared/icons";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -18,10 +15,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Icons } from "@/components/shared/icons";
-import { admin } from "@/lib/auth-client";
-import { toast } from "sonner";
-import { useQueryClient } from "@tanstack/react-query";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -30,6 +24,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { admin } from "@/lib/auth-client";
+import { CalendarDatePicker } from "./calender-date-picker";
+import { DataTableFacetedFilter } from "./data-table-faceted-filter";
+import { DataTableViewOptions } from "./data-table-view-options";
 
 interface DataTableToolbarProps<TData> {
   table: Table<TData>;
@@ -95,38 +93,38 @@ export function DataTableToolbar<TData>({
     <div className="flex flex-wrap items-center justify-between">
       <div className="flex flex-1 flex-wrap items-center gap-2">
         <Input
-          placeholder="Filter name..."
-          value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
+          className="h-8 w-[150px] lg:w-[250px]"
           onChange={(event) => {
             table.getColumn("name")?.setFilterValue(event.target.value);
           }}
-          className="h-8 w-[150px] lg:w-[250px]"
+          placeholder="Filter name..."
+          value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
         />
         {table.getColumn("status") && (
           <DataTableFacetedFilter
             column={table.getColumn("status")}
-            title="Status"
             options={Object.values(UserStatus).map((type) => ({ name: type }))}
+            title="Status"
           />
         )}
         {isFiltered && (
           <Button
-            variant="ghost"
-            onClick={() => table.resetColumnFilters()}
             className="h-8 px-2 lg:px-3"
+            onClick={() => table.resetColumnFilters()}
+            variant="ghost"
           >
             Reset
             <CrossIcon className="ml-2 size-4" />
           </Button>
         )}
         <CalendarDatePicker
+          className="h-8 w-[250px]"
           date={dateRange}
           onDateSelect={handleDateSelect}
-          className="h-8 w-[250px]"
           variant="outline"
         />
       </div>
-      <div className="space-x-3 flex items-center">
+      <div className="flex items-center space-x-3">
         <Dialog onOpenChange={setIsDialogOpen} open={isDialogOpen}>
           <DialogTrigger asChild>
             <Button>

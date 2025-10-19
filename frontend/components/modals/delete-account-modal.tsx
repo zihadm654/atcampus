@@ -1,19 +1,18 @@
+import { redirect } from "next/navigation";
 import {
-  Dispatch,
-  SetStateAction,
+  type Dispatch,
+  type SetStateAction,
   useCallback,
   useMemo,
   useState,
 } from "react";
-import { redirect } from "next/navigation";
-import { deleteUserAction } from "@/actions/delete-user.action";
 import { toast } from "sonner";
-
-import { useSession } from "@/lib/auth-client";
+import { deleteUserAction } from "@/actions/delete-user.action";
+import { UserAvatar } from "@/components/shared/user-avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Modal } from "@/components/ui/modal";
-import { UserAvatar } from "@/components/shared/user-avatar";
+import { useSession } from "@/lib/auth-client";
 
 function DeleteAccountModal({
   showDeleteAccountModal,
@@ -29,7 +28,7 @@ function DeleteAccountModal({
 
   async function deleteAccount() {
     setDeleting(true);
-    const res = await deleteUserAction({ userId: userId });
+    const res = await deleteUserAction({ userId });
 
     if (res.error) {
       toast.error(res.error);
@@ -41,9 +40,9 @@ function DeleteAccountModal({
 
   return (
     <Modal
-      showModal={showDeleteAccountModal}
-      setShowModal={setShowDeleteAccountModal}
       className="gap-0"
+      setShowModal={setShowDeleteAccountModal}
+      showModal={showDeleteAccountModal}
     >
       <div className="flex flex-col items-center justify-center space-y-3 border-b p-4 pt-8 sm:px-16">
         <UserAvatar
@@ -53,8 +52,8 @@ function DeleteAccountModal({
             image: session?.user?.image || null,
           }}
         />
-        <h3 className="text-lg font-semibold">Delete Account</h3>
-        <p className="text-muted-foreground text-center text-sm">
+        <h3 className="font-semibold text-lg">Delete Account</h3>
+        <p className="text-center text-muted-foreground text-sm">
           <b>Warning:</b> This will permanently delete your account and your
           active subscription!
         </p>
@@ -63,6 +62,7 @@ function DeleteAccountModal({
       </div>
 
       <form
+        className="flex flex-col space-y-6 bg-accent px-4 py-8 text-left sm:px-16"
         onSubmit={async (e) => {
           e.preventDefault();
           toast.promise(deleteAccount(), {
@@ -71,10 +71,9 @@ function DeleteAccountModal({
             error: (err) => err,
           });
         }}
-        className="bg-accent flex flex-col space-y-6 px-4 py-8 text-left sm:px-16"
       >
         <div>
-          <label htmlFor="verification" className="block text-sm">
+          <label className="block text-sm" htmlFor="verification">
             To verify, type{" "}
             <span className="font-semibold text-black dark:text-white">
               confirm delete account
@@ -82,18 +81,18 @@ function DeleteAccountModal({
             below
           </label>
           <Input
-            type="text"
-            name="verification"
+            autoComplete="off"
+            autoFocus={false}
+            className="mt-1 w-full border bg-background"
             id="verification"
+            name="verification"
             pattern="confirm delete account"
             required
-            autoFocus={false}
-            autoComplete="off"
-            className="bg-background mt-1 w-full border"
+            type="text"
           />
         </div>
 
-        <Button variant={"destructive"} disabled={deleting}>
+        <Button disabled={deleting} variant={"destructive"}>
           Confirm delete account
         </Button>
       </form>
@@ -104,20 +103,21 @@ function DeleteAccountModal({
 export function useDeleteAccountModal() {
   const [showDeleteAccountModal, setShowDeleteAccountModal] = useState(false);
 
-  const DeleteAccountModalCallback = useCallback(() => {
-    return (
+  const DeleteAccountModalCallback = useCallback(
+    () => (
       <DeleteAccountModal
-        showDeleteAccountModal={showDeleteAccountModal}
         setShowDeleteAccountModal={setShowDeleteAccountModal}
+        showDeleteAccountModal={showDeleteAccountModal}
       />
-    );
-  }, [showDeleteAccountModal, setShowDeleteAccountModal]);
+    ),
+    [showDeleteAccountModal, setShowDeleteAccountModal]
+  );
 
   return useMemo(
     () => ({
       setShowDeleteAccountModal,
       DeleteAccountModal: DeleteAccountModalCallback,
     }),
-    [setShowDeleteAccountModal, DeleteAccountModalCallback],
+    [setShowDeleteAccountModal, DeleteAccountModalCallback]
   );
 }

@@ -1,7 +1,6 @@
 import type { MetadataRoute } from "next";
-
-import { env } from "@/env.mjs";
 import { getPosts } from "@/components/posts/actions";
+import { env } from "@/env.mjs";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const res = await getPosts();

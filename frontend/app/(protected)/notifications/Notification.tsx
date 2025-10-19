@@ -1,11 +1,10 @@
-import React, { JSX } from "react";
-import Link from "next/link";
-import { NotificationType } from "@prisma/client";
+import type { NotificationType } from "@prisma/client";
 import { Heart, MessageCircle, User2 } from "lucide-react";
-
-import { NotificationData } from "@/types/types";
-import { cn } from "@/lib/utils";
+import Link from "next/link";
+import type { JSX } from "react";
 import UserAvatar from "@/components/UserAvatar";
+import { cn } from "@/lib/utils";
+import type { NotificationData } from "@/types/types";
 
 interface NotificationProps {
   notification: NotificationData;
@@ -18,12 +17,12 @@ export default function Notification({ notification }: NotificationProps) {
   > = {
     FOLLOW: {
       message: `${notification.issuer.displayUsername} followed you`,
-      icon: <User2 className="text-primary size-7" />,
+      icon: <User2 className="size-7 text-primary" />,
       href: `/${notification.issuer.username}`,
     },
     COMMENT: {
       message: `${notification.issuer.displayUsername} commented on your post`,
-      icon: <MessageCircle className="fill-primary text-primary size-7" />,
+      icon: <MessageCircle className="size-7 fill-primary text-primary" />,
       href: `/posts/${notification.postId}`,
     },
     LIKE: {
@@ -49,37 +48,37 @@ export default function Notification({ notification }: NotificationProps) {
     RESEARCH_COLLABORATION: {
       message: "",
       icon: <Heart className="size-7 fill-current text-current" />,
-      href: ""
+      href: "",
     },
     SYSTEM_ANNOUNCEMENT: {
       message: "",
       icon: <Heart className="size-7 fill-current text-current" />,
-      href: ""
+      href: "",
     },
     PROFESSOR_INVITATION: {
       message: "",
       icon: <Heart className="size-7 fill-current text-current" />,
-      href: ""
+      href: "",
     },
     COURSE_APPROVAL_REQUEST: {
       message: "",
       icon: <Heart className="size-7 fill-current text-current" />,
-      href: ""
+      href: "",
     },
     COURSE_APPROVAL_RESULT: {
       message: "",
       icon: <Heart className="size-7 fill-current text-current" />,
-      href: ""
-    }
+      href: "",
+    },
   };
 
   const { message, icon, href } = notificationTypeMap[notification.type];
 
   return (
-    <Link href={href} className="block">
+    <Link className="block" href={href}>
       <article
         className={cn(
-          "bg-card hover:bg-card/70 flex gap-3 rounded-2xl p-5 shadow-sm transition-colors",
+          "flex gap-3 rounded-2xl bg-card p-5 shadow-sm transition-colors hover:bg-card/70",
           !notification.read && "bg-primary/10"
         )}
       >
@@ -93,7 +92,7 @@ export default function Notification({ notification }: NotificationProps) {
             <span>{message}</span>
           </div>
           {notification.post && (
-            <div className="text-muted-foreground line-clamp-3 whitespace-pre-line">
+            <div className="line-clamp-3 whitespace-pre-line text-muted-foreground">
               {notification.post.content}
             </div>
           )}

@@ -1,10 +1,10 @@
-'use server';
+"use server";
 
-import { Prisma } from '@prisma/client';
-import { z } from 'zod';
+import { Prisma } from "@prisma/client";
+import { z } from "zod";
 
-import { prisma } from '@/lib/db';
-import { getCurrentUser } from '@/lib/session';
+import { prisma } from "@/lib/db";
+import { getCurrentUser } from "@/lib/session";
 
 // Remove all user profile related imports and schemas
 // Keep only school and faculty schemas and actions
@@ -21,8 +21,8 @@ const createSchoolSchema = z.object({
 export async function createSchool(values: z.infer<typeof createSchoolSchema>) {
   const validatedValues = createSchoolSchema.parse(values);
   const user = await getCurrentUser();
-  if (!user || user.role !== 'INSTITUTION') {
-    throw new Error('Unauthorized');
+  if (!user || user.role !== "INSTITUTION") {
+    throw new Error("Unauthorized");
   }
   try {
     // Generate a unique slug if not provided
@@ -30,20 +30,20 @@ export async function createSchool(values: z.infer<typeof createSchoolSchema>) {
     if (!slug) {
       slug = validatedValues.name
         .toLowerCase()
-        .replace(/[^a-z0-9-]+/g, '-')
-        .replace(/^-*|-*$/g, '');
+        .replace(/[^a-z0-9-]+/g, "-")
+        .replace(/^-*|-*$/g, "");
 
       // Check if slug already exists and generate a unique one
       let existingSchool = await prisma.school.findUnique({
-        where: { slug_institutionId: { slug, institutionId: user.id } }
+        where: { slug_institutionId: { slug, institutionId: user.id } },
       });
 
       let counter = 1;
       while (existingSchool) {
-        slug = `${validatedValues.name.toLowerCase().replace(/[^a-z0-9-]+/g, '-')}-${counter}`;
+        slug = `${validatedValues.name.toLowerCase().replace(/[^a-z0-9-]+/g, "-")}-${counter}`;
         counter++;
         existingSchool = await prisma.school.findUnique({
-          where: { slug_institutionId: { slug, institutionId: user.id } }
+          where: { slug_institutionId: { slug, institutionId: user.id } },
         });
       }
     }
@@ -59,9 +59,9 @@ export async function createSchool(values: z.infer<typeof createSchoolSchema>) {
   } catch (error) {
     if (
       error instanceof Prisma.PrismaClientKnownRequestError &&
-      error.code === 'P2002'
+      error.code === "P2002"
     ) {
-      throw new Error('A school with this slug already exists.');
+      throw new Error("A school with this slug already exists.");
     }
     throw error;
   }
@@ -74,25 +74,25 @@ export async function updateSchool(values: z.infer<typeof updateSchoolSchema>) {
   const validatedValues = updateSchoolSchema.parse(values);
   const { id, ...dataToUpdate } = validatedValues;
 
-  if (!user || user.role !== 'INSTITUTION') {
-    throw new Error('Unauthorized');
+  if (!user || user.role !== "INSTITUTION") {
+    throw new Error("Unauthorized");
   }
 
   // Verify that the school belongs to this institution
   const existingSchool = await prisma.school.findUnique({
-    where: { id, institutionId: user.id }
+    where: { id, institutionId: user.id },
   });
 
   if (!existingSchool) {
-    throw new Error('School not found or unauthorized');
+    throw new Error("School not found or unauthorized");
   }
 
   // Handle slug generation if not provided
   if (!dataToUpdate.slug && dataToUpdate.name) {
     dataToUpdate.slug = dataToUpdate.name
       .toLowerCase()
-      .replace(/[^a-z0-9-]+/g, '-')
-      .replace(/^-*|-*$/g, '');
+      .replace(/[^a-z0-9-]+/g, "-")
+      .replace(/^-*|-*$/g, "");
   }
 
   const school = await prisma.school.update({
@@ -104,26 +104,26 @@ export async function updateSchool(values: z.infer<typeof updateSchoolSchema>) {
 
 export async function deleteSchool(schoolId: string) {
   const user = await getCurrentUser();
-  if (!user || user.role !== 'INSTITUTION') {
-    throw new Error('Unauthorized');
+  if (!user || user.role !== "INSTITUTION") {
+    throw new Error("Unauthorized");
   }
 
   // Verify that the school belongs to this institution
   const school = await prisma.school.findUnique({
     where: {
       id: schoolId,
-      institutionId: user.id
-    }
+      institutionId: user.id,
+    },
   });
 
   if (!school) {
-    throw new Error('School not found or unauthorized');
+    throw new Error("School not found or unauthorized");
   }
 
   await prisma.school.delete({
     where: {
       id: schoolId,
-      institutionId: user.id
+      institutionId: user.id,
     },
   });
 }
@@ -143,15 +143,15 @@ export async function createFaculty(
   const validatedValues = createFacultySchema.parse(values);
   const user = await getCurrentUser();
 
-  if (!user || user.role !== 'INSTITUTION') {
-    throw new Error('Unauthorized');
+  if (!user || user.role !== "INSTITUTION") {
+    throw new Error("Unauthorized");
   }
 
   const school = await prisma.school.findUnique({
     where: { id: validatedValues.schoolId, institutionId: user.id },
   });
 
-  if (!school) throw new Error('School not found');
+  if (!school) throw new Error("School not found");
 
   try {
     // Generate a unique slug using the compound unique constraint
@@ -159,20 +159,22 @@ export async function createFaculty(
     if (!slug) {
       slug = validatedValues.name
         .toLowerCase()
-        .replace(/[^a-z0-9-]+/g, '-')
-        .replace(/^-*|-*$/g, '');
+        .replace(/[^a-z0-9-]+/g, "-")
+        .replace(/^-*|-*$/g, "");
 
       // Check if slug already exists for this school and generate a unique one
       let existingFaculty = await prisma.faculty.findUnique({
-        where: { slug_schoolId: { slug, schoolId: validatedValues.schoolId } }
+        where: { slug_schoolId: { slug, schoolId: validatedValues.schoolId } },
       });
 
       let counter = 1;
       while (existingFaculty) {
-        slug = `${validatedValues.name.toLowerCase().replace(/[^a-z0-9-]+/g, '-')}-${counter}`;
+        slug = `${validatedValues.name.toLowerCase().replace(/[^a-z0-9-]+/g, "-")}-${counter}`;
         counter++;
         existingFaculty = await prisma.faculty.findUnique({
-          where: { slug_schoolId: { slug, schoolId: validatedValues.schoolId } }
+          where: {
+            slug_schoolId: { slug, schoolId: validatedValues.schoolId },
+          },
         });
       }
     }
@@ -184,7 +186,7 @@ export async function createFaculty(
         description: validatedValues.description,
         logo: validatedValues.logo,
         coverPhoto: validatedValues.coverPhoto,
-        slug: slug,
+        slug,
         school: {
           connect: { id: validatedValues.schoolId },
         },
@@ -201,20 +203,20 @@ export async function createFaculty(
 
     return { success: true, faculty };
   } catch (error) {
-    console.error('Error creating faculty:', error);
+    console.error("Error creating faculty:", error);
 
     if (
       error instanceof Prisma.PrismaClientKnownRequestError &&
-      error.code === 'P2002'
+      error.code === "P2002"
     ) {
-      throw new Error('A faculty with this slug already exists.');
+      throw new Error("A faculty with this slug already exists.");
     }
 
     if (error instanceof Error) {
       throw error;
     }
 
-    throw new Error('Failed to create faculty. Please try again.');
+    throw new Error("Failed to create faculty. Please try again.");
   }
 }
 
@@ -225,20 +227,20 @@ export async function updateFaculty(
 ) {
   const validatedValues = updateFacultySchema.parse(values);
   const user = await getCurrentUser();
-  if (!user || user.role !== 'INSTITUTION') {
-    throw new Error('Unauthorized');
+  if (!user || user.role !== "INSTITUTION") {
+    throw new Error("Unauthorized");
   }
 
   // Verify that the faculty belongs to a school owned by this institution
   const faculty = await prisma.faculty.findUnique({
     where: { id: validatedValues.id },
     include: {
-      school: true
-    }
+      school: true,
+    },
   });
 
   if (!faculty || faculty.school.institutionId !== user.id) {
-    throw new Error('Unauthorized');
+    throw new Error("Unauthorized");
   }
 
   // Handle slug generation if not provided
@@ -252,14 +254,17 @@ export async function updateFaculty(
   if (!validatedValues.slug && validatedValues.name) {
     data.slug = validatedValues.name
       .toLowerCase()
-      .replace(/[^a-z0-9-]+/g, '-')
-      .replace(/^-*|-*$/g, '');
+      .replace(/[^a-z0-9-]+/g, "-")
+      .replace(/^-*|-*$/g, "");
   } else if (validatedValues.slug) {
     data.slug = validatedValues.slug;
   }
 
   // Only update school if provided and different
-  if (validatedValues.schoolId && validatedValues.schoolId !== faculty.schoolId) {
+  if (
+    validatedValues.schoolId &&
+    validatedValues.schoolId !== faculty.schoolId
+  ) {
     data.school = {
       connect: {
         id: validatedValues.schoolId,
@@ -276,26 +281,26 @@ export async function updateFaculty(
 
 export async function deleteFaculty(facultyId: string) {
   const user = await getCurrentUser();
-  if (!user || user.role !== 'INSTITUTION') {
-    throw new Error('Unauthorized');
+  if (!user || user.role !== "INSTITUTION") {
+    throw new Error("Unauthorized");
   }
 
   // First, verify that the faculty belongs to a school owned by this institution
   const faculty = await prisma.faculty.findUnique({
     where: { id: facultyId },
     include: {
-      school: true
-    }
+      school: true,
+    },
   });
 
   if (!faculty || faculty.school.institutionId !== user.id) {
-    throw new Error('Unauthorized');
+    throw new Error("Unauthorized");
   }
 
   await prisma.faculty.delete({
     where: {
-      id: facultyId
-    }
+      id: facultyId,
+    },
   });
 }
 
@@ -306,7 +311,7 @@ export async function getProfessorsForFaculty(facultyId: string) {
       include: {
         members: {
           include: {
-            user: true
+            user: true,
           },
         },
       },
@@ -314,7 +319,7 @@ export async function getProfessorsForFaculty(facultyId: string) {
 
     return faculty?.members || [];
   } catch (error) {
-    console.error('Error fetching professors:', error);
+    console.error("Error fetching professors:", error);
     throw error;
   }
 }
@@ -325,8 +330,8 @@ export async function assignMemberToFaculty(
 ) {
   try {
     const user = await getCurrentUser();
-    if (!user || user.role !== 'INSTITUTION') {
-      throw new Error('Unauthorized');
+    if (!user || user.role !== "INSTITUTION") {
+      throw new Error("Unauthorized");
     }
 
     // Get member with user details
@@ -339,7 +344,7 @@ export async function assignMemberToFaculty(
     });
 
     if (!member) {
-      throw new Error('Member not found');
+      throw new Error("Member not found");
     }
 
     // Get faculty
@@ -352,7 +357,7 @@ export async function assignMemberToFaculty(
     });
 
     if (!faculty) {
-      throw new Error('Faculty not found');
+      throw new Error("Faculty not found");
     }
 
     // Update member
@@ -380,7 +385,7 @@ export async function assignMemberToFaculty(
       faculty,
     };
   } catch (error) {
-    console.error('Error assigning member to faculty:', error);
+    console.error("Error assigning member to faculty:", error);
     throw error;
   }
 }
@@ -411,7 +416,7 @@ export async function getFacultyMembers(facultyId: string) {
 
     return faculty?.members || [];
   } catch (error) {
-    console.error('Error fetching faculty members:', error);
+    console.error("Error fetching faculty members:", error);
     throw error;
   }
 }
@@ -422,8 +427,8 @@ export async function removeProfessorFromFaculty(
 ) {
   try {
     const user = await getCurrentUser();
-    if (!user || user.role !== 'INSTITUTION') {
-      throw new Error('Unauthorized');
+    if (!user || user.role !== "INSTITUTION") {
+      throw new Error("Unauthorized");
     }
 
     // Update member role
@@ -439,11 +444,11 @@ export async function removeProfessorFromFaculty(
 
     return {
       success: true,
-      message: 'Professor removed from faculty successfully',
+      message: "Professor removed from faculty successfully",
       member: updatedMember,
     };
   } catch (error) {
-    console.error('Error removing professor from faculty:', error);
+    console.error("Error removing professor from faculty:", error);
     throw error;
   }
 }
@@ -455,7 +460,7 @@ export async function getFacultyDetails(facultyId: string) {
       include: {
         members: {
           include: {
-            user: true
+            user: true,
           },
         },
         school: true,
@@ -463,12 +468,12 @@ export async function getFacultyDetails(facultyId: string) {
     });
 
     if (!faculty) {
-      throw new Error('Faculty not found');
+      throw new Error("Faculty not found");
     }
 
     return faculty;
   } catch (error) {
-    console.error('Error fetching faculty details:', error);
+    console.error("Error fetching faculty details:", error);
     throw error;
   }
 }

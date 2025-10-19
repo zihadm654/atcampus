@@ -1,32 +1,13 @@
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { GraduationCap } from "lucide-react";
+import type { Metadata } from "next";
+import Image from "next/image";
+import { notFound } from "next/navigation";
+import { cache } from "react";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent } from "@/components/ui/card";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/session";
 import { getUserDataSelect } from "@/types/types";
-import { DotsHorizontalIcon } from "@radix-ui/react-icons";
-import { Metadata } from "next";
-import { notFound } from "next/navigation";
-import { cache } from "react";
-import ProfessorList from "../_components/ProfessorList";
-import Image from "next/image";
-import Link from "next/link";
-import {
-  Users,
-  BookOpen,
-  Calendar,
-  Globe,
-  MapPin,
-  GraduationCap,
-} from "lucide-react";
 import { FacultyCard } from "../_components/FacultyCard";
 
 interface PageProps {
@@ -184,18 +165,18 @@ export default async function Page({ params }: PageProps) {
   }
 
   return (
-    <div className="w-full space-y-6 container mx-auto max-md:p-3">
+    <div className="container mx-auto w-full space-y-6 max-md:p-3">
       {/* School Header Section */}
       <div className="relative">
         {/* Cover Photo */}
-        <div className="relative h-64 w-full rounded-2xl overflow-hidden">
+        <div className="relative h-64 w-full overflow-hidden rounded-2xl">
           {school.coverPhoto ? (
             <Image
-              src={school.coverPhoto}
               alt={`${school.name} Cover`}
-              fill
               className="object-cover"
+              fill
               priority
+              src={school.coverPhoto}
             />
           ) : (
             <div className="h-full w-full bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-600" />
@@ -204,25 +185,25 @@ export default async function Page({ params }: PageProps) {
         </div>
 
         {/* School Info Overlay */}
-        <div className="absolute bottom-0 left-0 right-0 p-6 max-md:p-3 text-white">
+        <div className="absolute right-0 bottom-0 left-0 p-6 text-white max-md:p-3">
           <div className="flex items-end gap-4">
             {school.logo && (
-              <div className="relative h-20 w-20 rounded-xl overflow-hidden bg-white/10 backdrop-blur-sm">
+              <div className="relative h-20 w-20 overflow-hidden rounded-xl bg-white/10 backdrop-blur-sm">
                 <Image
-                  src={school.logo}
                   alt={`${school.name} Logo`}
-                  fill
                   className="object-contain p-2"
+                  fill
+                  src={school.logo}
                 />
               </div>
             )}
             <div className="flex-1">
-              <h1 className="text-4xl font-bold mb-2">{school.name}</h1>
+              <h1 className="mb-2 font-bold text-4xl">{school.name}</h1>
               {school.shortName && (
                 <p className="text-lg opacity-90">{school.shortName}</p>
               )}
               {school.description && (
-                <p className="text-sm opacity-80 mt-2">{school.description}</p>
+                <p className="mt-2 text-sm opacity-80">{school.description}</p>
               )}
             </div>
           </div>
@@ -232,34 +213,34 @@ export default async function Page({ params }: PageProps) {
       {/* Faculties Section */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-3xl font-bold">Faculties</h2>
-          <Badge variant="secondary" className="text-sm">
+          <h2 className="font-bold text-3xl">Faculties</h2>
+          <Badge className="text-sm" variant="secondary">
             {school.faculties.length}{" "}
             {school.faculties.length === 1 ? "Faculty" : "Faculties"}
           </Badge>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
           {school.faculties && school.faculties.length > 0 ? (
             school.faculties.map((faculty) => (
               <FacultyCard
-                key={faculty.id}
                 faculty={faculty}
-                username={username}
+                key={faculty.id}
                 schoolId={school.id}
                 showActions={
                   user.role === "INSTITUTION" && loggedInUser.id === user.id
                 }
+                username={username}
               />
             ))
           ) : (
             <Card className="col-span-full border-dashed">
               <CardContent className="flex flex-col items-center justify-center py-12 text-center">
-                <GraduationCap className="h-12 w-12 text-muted-foreground mb-4" />
-                <h3 className="text-lg font-semibold mb-2">
+                <GraduationCap className="mb-4 h-12 w-12 text-muted-foreground" />
+                <h3 className="mb-2 font-semibold text-lg">
                   No Faculties Found
                 </h3>
-                <p className="text-sm text-muted-foreground max-w-md">
+                <p className="max-w-md text-muted-foreground text-sm">
                   This school doesn't have any faculties yet. Faculties will
                   appear here once they are added.
                 </p>

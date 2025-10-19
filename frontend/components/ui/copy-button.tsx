@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
 import { Check, Copy } from "lucide-react";
+import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -37,10 +37,10 @@ export default function CopyButton({ textToCopy }: CopyButtonProps) {
       <Tooltip>
         <TooltipTrigger asChild>
           <Button
-            variant="link"
-            size="icon"
-            onClick={handleCopy}
             className="h-8 w-8"
+            onClick={handleCopy}
+            size="icon"
+            variant="link"
           >
             {isCopied ? (
               <Check className="h-4 w-4" />

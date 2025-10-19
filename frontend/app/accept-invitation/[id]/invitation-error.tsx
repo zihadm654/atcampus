@@ -164,8 +164,8 @@ export function InvitationError({
         </p>
 
         {type === "expired" && (
-          <div className="bg-orange-50 p-3 rounded-lg">
-            <p className="text-sm text-orange-800">
+          <div className="rounded-lg bg-orange-50 p-3">
+            <p className="text-orange-800 text-sm">
               <strong>Need a new professor invitation?</strong> Contact the
               organization administrator who sent you the original invitation to
               request a new one. Professor invitations include faculty
@@ -176,8 +176,8 @@ export function InvitationError({
         )}
 
         {type === "declined" && (
-          <div className="bg-red-50 p-3 rounded-lg">
-            <p className="text-sm text-red-800">
+          <div className="rounded-lg bg-red-50 p-3">
+            <p className="text-red-800 text-sm">
               <strong>Changed your mind?</strong> The organization administrator
               has been notified of your decision. You can contact them directly
               to discuss joining the organization with a new invitation.
@@ -198,7 +198,7 @@ export function InvitationError({
         </Link>
         {type === "expired" && (
           <Link className="w-full" href="/contact">
-            <Button className="w-full" variant="ghost" size="sm">
+            <Button className="w-full" size="sm" variant="ghost">
               Contact Support
             </Button>
           </Link>

@@ -1,8 +1,7 @@
-import { MagicLinkEmail } from "@/emails/magic-link-email";
 import { Resend } from "resend";
-
-import { env } from "@/env.mjs";
 import { siteConfig } from "@/config/site";
+import { MagicLinkEmail } from "@/emails/magic-link-email";
+import { env } from "@/env.mjs";
 
 import { getUserByEmail } from "../actions/user";
 
@@ -14,9 +13,9 @@ export const sendVerificationRequest = async ({
   provider,
 }) => {
   const user = await getUserByEmail(identifier);
-  if (!user || !user.name) return;
+  if (!user?.name) return;
 
-  const userVerified = user?.emailVerified ? true : false;
+  const userVerified = !!user?.emailVerified;
   const authSubject = userVerified
     ? `Sign-in link for ${siteConfig.name}`
     : "Activate your account";
@@ -38,7 +37,7 @@ export const sendVerificationRequest = async ({
       // Set this to prevent Gmail from threading emails.
       // More info: https://resend.com/changelog/custom-email-headers
       headers: {
-        "X-Entity-Ref-ID": new Date().getTime() + "",
+        "X-Entity-Ref-ID": Date.now() + "",
       },
     });
 

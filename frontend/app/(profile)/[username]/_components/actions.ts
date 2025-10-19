@@ -1,13 +1,13 @@
 "use server";
 
-import { getUserDataSelect } from "@/types/types";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/session";
 import streamServerClient from "@/lib/stream";
 import {
-  updateUserProfileSchema,
   type UpdateUserProfileValues,
+  updateUserProfileSchema,
 } from "@/lib/validations/validation";
+import { getUserDataSelect } from "@/types/types";
 
 export async function updateUserProfile(values: UpdateUserProfileValues) {
   const validatedValues = updateUserProfileSchema.parse(values);

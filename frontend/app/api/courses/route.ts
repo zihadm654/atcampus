@@ -1,9 +1,8 @@
-import { NextRequest } from "next/server";
-
-import { getCourseDataInclude, CoursesPage } from "@/types/types";
+import { CourseStatus, type Prisma } from "@prisma/client";
+import type { NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/session";
-import { CourseStatus, Prisma } from "@prisma/client";
+import { type CoursesPage, getCourseDataInclude } from "@/types/types";
 
 export async function GET(req: NextRequest) {
   try {
@@ -24,14 +23,14 @@ export async function GET(req: NextRequest) {
           mode: "insensitive",
         },
       }),
-      status: CourseStatus.PUBLISHED
+      status: CourseStatus.PUBLISHED,
     };
     const courses = await prisma.course.findMany({
       include: getCourseDataInclude(user.id),
       orderBy: { createdAt: "desc" },
       take: pageSize + 1,
       cursor: cursor ? { id: cursor } : undefined,
-      where: whereClause
+      where: whereClause,
     });
 
     const nextCursor = courses.length > pageSize ? courses[pageSize].id : null;

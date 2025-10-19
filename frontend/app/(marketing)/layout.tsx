@@ -1,11 +1,11 @@
-import { menubar } from "@/config/dashboard";
-import { getCurrentUser } from "@/lib/session";
+import { redirect } from "next/navigation";
 import TrendsSidebar from "@/components/feed/TrendsSidebar";
 import { DashboardSidebar } from "@/components/layout/dashboard-sidebar";
 // import { NavMobile } from "@/components/layout/mobile-nav";
 import { NavBarServer } from "@/components/layout/navbar-server";
 import { SiteFooter } from "@/components/layout/site-footer";
-import { redirect } from "next/navigation";
+import { menubar } from "@/config/dashboard";
+import { getCurrentUser } from "@/lib/session";
 
 interface MarketingLayoutProps {
   children: React.ReactNode;

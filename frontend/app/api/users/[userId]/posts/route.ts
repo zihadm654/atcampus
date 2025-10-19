@@ -1,12 +1,11 @@
-import { NextRequest } from "next/server";
-
-import { getPostDataInclude, PostsPage } from "@/types/types";
+import type { NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/session";
+import { getPostDataInclude, type PostsPage } from "@/types/types";
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: Promise<{ userId: string }> },
+  { params }: { params: Promise<{ userId: string }> }
 ) {
   const { userId } = await params;
   try {

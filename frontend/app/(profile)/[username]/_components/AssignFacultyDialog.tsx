@@ -1,11 +1,10 @@
 "use client";
-import React from "react";
-
+import { zodResolver } from "@hookform/resolvers/zod";
+import type { Faculty, Member } from "@prisma/client";
+import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -31,9 +30,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "@/components/ui/use-toast";
-import { Member, Faculty } from "@prisma/client";
 import { assignMemberToFaculty } from "./schoolActions";
-import { useQueryClient } from "@tanstack/react-query";
 
 interface AssignFacultyDialogProps {
   open: boolean;
@@ -76,7 +73,7 @@ export default function AssignFacultyDialog({
 
       toast({
         title: "Success!",
-        description: `Member has been assigned as professor to the faculty.`,
+        description: "Member has been assigned as professor to the faculty.",
       });
       onOpenChange(false);
     } catch (error) {
@@ -92,7 +89,7 @@ export default function AssignFacultyDialog({
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog onOpenChange={onOpenChange} open={open}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Assign Member as Professor</DialogTitle>
@@ -101,7 +98,7 @@ export default function AssignFacultyDialog({
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <form className="space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
             <FormField
               control={form.control}
               name="facultyId"
@@ -109,8 +106,8 @@ export default function AssignFacultyDialog({
                 <FormItem>
                   <FormLabel>Faculty</FormLabel>
                   <Select
-                    onValueChange={field.onChange}
                     defaultValue={field.value}
+                    onValueChange={field.onChange}
                   >
                     <FormControl>
                       <SelectTrigger>
@@ -130,7 +127,7 @@ export default function AssignFacultyDialog({
               )}
             />
             <DialogFooter>
-              <Button type="submit" disabled={isLoading}>
+              <Button disabled={isLoading} type="submit">
                 {isLoading ? "Assigning..." : "Assign as Professor"}
               </Button>
             </DialogFooter>

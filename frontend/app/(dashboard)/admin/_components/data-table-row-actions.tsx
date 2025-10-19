@@ -1,10 +1,13 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { UserRole, UserStatus } from "@prisma/client";
 import { DotsHorizontalIcon } from "@radix-ui/react-icons";
-import { Row } from "@tanstack/react-table";
+import { useQueryClient } from "@tanstack/react-query";
+import type { Row } from "@tanstack/react-table";
+import { RefreshCw, UserCircle } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-
+import { updateStatusAction } from "@/actions/update-status.action";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -14,11 +17,7 @@ import {
   DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { updateStatusAction } from "@/actions/update-status.action";
-import { UserRole, UserStatus } from "@prisma/client";
 import { admin } from "@/lib/auth-client";
-import { useQueryClient } from "@tanstack/react-query";
-import { RefreshCw, Trash, UserCircle } from "lucide-react";
 
 interface DataTableRowActionsProps<TData> {
   row: Row<TData>;
@@ -73,8 +72,8 @@ export function DataTableRowActions<TData>({
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button
+          className="flex size-8 p-0 data-[state=open]:bg-muted"
           variant="ghost"
-          className="data-[state=open]:bg-muted flex size-8 p-0"
         >
           <DotsHorizontalIcon className="size-4" />
           <span className="sr-only">Open menu</span>
@@ -83,7 +82,7 @@ export function DataTableRowActions<TData>({
       <DropdownMenuContent align="end" className="w-[160px]">
         {row.getValue("role") === UserRole.ORGANIZATION && (
           <>
-            <span className="text-gray-500 pl-3">Change Status</span>
+            <span className="pl-3 text-gray-500">Change Status</span>
             <DropdownMenuSeparator />
             <DropdownMenuItem
               onClick={async () => {

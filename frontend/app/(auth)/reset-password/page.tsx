@@ -17,7 +17,7 @@ export default async function Page({ searchParams }: PageProps) {
       <div className="space-y-4">
         <ReturnButton href="/login" label="Login" />
 
-        <h1 className="text-3xl font-bold">Reset Password</h1>
+        <h1 className="font-bold text-3xl">Reset Password</h1>
 
         <p className="text-muted-foreground">
           Please enter your new password. Make sure it is at least 6 characters.

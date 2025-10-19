@@ -1,15 +1,14 @@
-import { usePathname, useRouter } from "next/navigation";
 import {
-  InfiniteData,
-  QueryFilters,
+  type InfiniteData,
+  type QueryFilters,
   useMutation,
   useQueryClient,
 } from "@tanstack/react-query";
+import { usePathname, useRouter } from "next/navigation";
 import { toast } from "sonner";
 
-import { CoursesPage } from "@/types/types";
+import type { CoursesPage } from "@/types/types";
 import { deleteCourse } from "./actions";
-
 
 export function useDeleteCourseMutation() {
   const queryClient = useQueryClient();
@@ -35,7 +34,7 @@ export function useDeleteCourseMutation() {
               courses: page.courses.filter((j) => j.id !== deletedCourse.id),
             })),
           };
-        },
+        }
       );
 
       toast.success("Course deleted");

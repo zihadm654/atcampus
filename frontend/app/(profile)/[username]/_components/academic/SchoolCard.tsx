@@ -1,14 +1,10 @@
-import React from 'react';
 import { DotsHorizontalIcon } from "@radix-ui/react-icons";
-import { GraduationCap, BookOpen } from "lucide-react";
-
+import { BookOpen, GraduationCap } from "lucide-react";
+import type React from "react";
+import { Icons } from "@/components/shared/icons";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Collapsible,
   CollapsibleContent,
@@ -20,10 +16,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Badge } from "@/components/ui/badge";
-import { Icons } from "@/components/shared/icons";
-
-import FacultyCard from "./FacultyCard";
 
 // Types
 interface ExtendedFaculty {
@@ -78,10 +70,11 @@ export default function SchoolCard({
   onViewCourseDetails,
 }: SchoolCardProps) {
   const facultiesCount = school.faculties?.length || 0;
-  const coursesCount = school.faculties?.reduce(
-    (total, faculty) => total + (faculty.courses?.length || 0),
-    0
-  ) || 0;
+  const coursesCount =
+    school.faculties?.reduce(
+      (total, faculty) => total + (faculty.courses?.length || 0),
+      0
+    ) || 0;
 
   const handleEdit = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -95,32 +88,32 @@ export default function SchoolCard({
 
   return (
     <Card className="overflow-hidden rounded-xl border border-gray-100 shadow-sm transition-all hover:border-gray-200 hover:shadow">
-      <Collapsible open={expanded} onOpenChange={onToggle}>
+      <Collapsible onOpenChange={onToggle} open={expanded}>
         <CollapsibleTrigger className="w-full">
-          <CardHeader className="flex flex-row items-center justify-between py-4 hover:bg-gray-50 transition-colors">
+          <CardHeader className="flex flex-row items-center justify-between py-4 transition-colors hover:bg-gray-50">
             <div className="flex items-center gap-4">
               {/* School Avatar */}
-              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center text-white font-bold text-lg">
+              <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 font-bold text-lg text-white">
                 {school.name.charAt(0).toUpperCase()}
               </div>
 
               {/* School Info */}
               <div className="text-left">
-                <CardTitle className="text-lg font-semibold">
+                <CardTitle className="font-semibold text-lg">
                   {school.name}
                 </CardTitle>
-                <p className="text-sm text-gray-600 mt-1">
-                  {school.description || 'No description available'}
+                <p className="mt-1 text-gray-600 text-sm">
+                  {school.description || "No description available"}
                 </p>
 
                 {/* Stats Badges */}
-                <div className="flex items-center gap-4 mt-2">
-                  <Badge variant="outline" className="text-xs">
-                    <GraduationCap className="size-3 mr-1" />
+                <div className="mt-2 flex items-center gap-4">
+                  <Badge className="text-xs" variant="outline">
+                    <GraduationCap className="mr-1 size-3" />
                     {facultiesCount} Faculties
                   </Badge>
-                  <Badge variant="outline" className="text-xs">
-                    <BookOpen className="size-3 mr-1" />
+                  <Badge className="text-xs" variant="outline">
+                    <BookOpen className="mr-1 size-3" />
                     {coursesCount} Courses
                   </Badge>
                 </div>
@@ -131,21 +124,24 @@ export default function SchoolCard({
             <div className="flex items-center gap-2">
               {canEdit && (
                 <DropdownMenu>
-                  <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                  <DropdownMenuTrigger
+                    asChild
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <Button className="h-8 w-8 p-0" size="sm" variant="ghost">
                       <DotsHorizontalIcon className="h-4 w-4" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem onClick={handleEdit}>
-                      <Icons.pencil className="size-4 mr-2" />
+                      <Icons.pencil className="mr-2 size-4" />
                       Edit School
                     </DropdownMenuItem>
                     <DropdownMenuItem
-                      onClick={handleDelete}
                       className="text-red-600"
+                      onClick={handleDelete}
                     >
-                      <Icons.trash className="size-4 mr-2" />
+                      <Icons.trash className="mr-2 size-4" />
                       Delete School
                     </DropdownMenuItem>
                   </DropdownMenuContent>
@@ -154,8 +150,9 @@ export default function SchoolCard({
 
               {/* Expansion Indicator */}
               <Icons.chevronDown
-                className={`size-5 transition-transform ${expanded ? 'rotate-180' : ''
-                  }`}
+                className={`size-5 transition-transform ${
+                  expanded ? "rotate-180" : ""
+                }`}
               />
             </div>
           </CardHeader>

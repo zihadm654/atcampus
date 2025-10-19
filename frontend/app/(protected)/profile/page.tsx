@@ -6,8 +6,8 @@ export default async function ProfilePage() {
   if (!user) return null;
   return (
     <div className="container mx-auto py-8">
-      <h1 className="text-3xl font-bold mb-4">Profile</h1>
-      <div className="bg-white p-6 rounded-lg shadow">
+      <h1 className="mb-4 font-bold text-3xl">Profile</h1>
+      <div className="rounded-lg bg-white p-6 shadow">
         <p>
           <strong>Name:</strong> {user.name}
         </p>

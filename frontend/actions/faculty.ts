@@ -42,7 +42,7 @@ export async function addFaculty(formData: FormData) {
     await prisma.faculty.create({
       data: {
         name: validatedFields.data.name,
-        slug: slug,
+        slug,
         schoolId: validatedFields.data.schoolId,
       },
     });
@@ -52,7 +52,7 @@ export async function addFaculty(formData: FormData) {
     };
   }
 
-  revalidatePath(`/(profile)/[username]`);
+  revalidatePath("/(profile)/[username]");
 }
 
 export async function editFaculty(formData: FormData) {
@@ -90,7 +90,7 @@ export async function editFaculty(formData: FormData) {
     };
   }
 
-  revalidatePath(`/(profile)/[username]`);
+  revalidatePath("/(profile)/[username]");
 }
 
 export async function deleteFaculty(formData: FormData) {
@@ -114,11 +114,11 @@ export async function deleteFaculty(formData: FormData) {
     // First, verify that the faculty belongs to a school owned by this institution
     const faculty = await prisma.faculty.findUnique({
       where: {
-        id: id,
+        id,
       },
       include: {
-        school: true
-      }
+        school: true,
+      },
     });
 
     if (!faculty || faculty.school.institutionId !== user.id) {
@@ -129,7 +129,7 @@ export async function deleteFaculty(formData: FormData) {
 
     await prisma.faculty.delete({
       where: {
-        id: id,
+        id,
       },
     });
   } catch (error) {
@@ -138,5 +138,5 @@ export async function deleteFaculty(formData: FormData) {
     };
   }
 
-  revalidatePath(`/(profile)/[username]`);
+  revalidatePath("/(profile)/[username]");
 }

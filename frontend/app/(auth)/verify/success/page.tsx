@@ -6,7 +6,7 @@ export default function Page() {
       <div className="space-y-4">
         <ReturnButton href="/login" label="Login" />
 
-        <h1 className="text-3xl font-bold">Success</h1>
+        <h1 className="font-bold text-3xl">Success</h1>
 
         <p className="text-muted-foreground">
           Success! You have re-sent a verification link to your email.

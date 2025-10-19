@@ -1,4 +1,4 @@
-import React from 'react';
+import { Icons } from "@/components/shared/icons";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -7,7 +7,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Icons } from "@/components/shared/icons";
 
 interface CourseEnrollment {
   id: string;
@@ -51,36 +50,38 @@ export default function CoursesSection({
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'ENROLLED':
-        return 'bg-green-100 text-green-700';
-      case 'COMPLETED':
-        return 'bg-blue-100 text-blue-700';
-      case 'PENDING':
-        return 'bg-yellow-100 text-yellow-700';
+      case "ENROLLED":
+        return "bg-green-100 text-green-700";
+      case "COMPLETED":
+        return "bg-blue-100 text-blue-700";
+      case "PENDING":
+        return "bg-yellow-100 text-yellow-700";
       default:
-        return 'bg-gray-100 text-gray-700';
+        return "bg-gray-100 text-gray-700";
     }
   };
 
   return (
-    <Card className={`overflow-hidden rounded-xl border border-gray-100 shadow-sm transition-all hover:border-gray-200 hover:shadow ${className}`}>
+    <Card
+      className={`overflow-hidden rounded-xl border border-gray-100 shadow-sm transition-all hover:border-gray-200 hover:shadow ${className}`}
+    >
       {showHeader && (
         <CardHeader className="flex items-center justify-between pb-2">
-          <CardTitle className="flex items-center text-lg font-medium">
+          <CardTitle className="flex items-center font-medium text-lg">
             <Icons.bookOpen className="size-7 pr-2" />
-            {userRole === 'PROFESSOR' ? 'Teaching' : 'Courses'}
+            {userRole === "PROFESSOR" ? "Teaching" : "Courses"}
             {hasMoreCourses && (
-              <span className="ml-2 text-sm text-gray-500">
+              <span className="ml-2 text-gray-500 text-sm">
                 (+{enrollments.length - limit} more)
               </span>
             )}
           </CardTitle>
           <CardAction>
             <Button
-              variant="ghost"
-              size="sm"
               className="rounded-full text-green-600 hover:bg-green-50 hover:text-green-800"
               onClick={onViewAll}
+              size="sm"
+              variant="ghost"
             >
               <span>See More</span>
               <Icons.chevronRight className="size-5" />
@@ -93,19 +94,25 @@ export default function CoursesSection({
           <div className="max-h-40 overflow-y-auto">
             <div className="space-y-2">
               {displayCourses.map((enrollment) => (
-                <div key={enrollment.id} className="border p-2 rounded-md hover:border-gray-100 transition-colors">
+                <div
+                  className="rounded-md border p-2 transition-colors hover:border-gray-100"
+                  key={enrollment.id}
+                >
                   <div className="font-medium text-sm">
                     {enrollment.course.title} ({enrollment.course.code})
                   </div>
-                  <div className="text-xs text-gray-500">
-                    {enrollment.course.faculty.name} • {enrollment.course.credits || 0} credits
+                  <div className="text-gray-500 text-xs">
+                    {enrollment.course.faculty.name} •{" "}
+                    {enrollment.course.credits || 0} credits
                   </div>
-                  <div className="flex items-center gap-2 mt-1">
-                    <span className={`px-2 py-0.5 rounded-full text-xs ${getStatusColor(enrollment.status)}`}>
+                  <div className="mt-1 flex items-center gap-2">
+                    <span
+                      className={`rounded-full px-2 py-0.5 text-xs ${getStatusColor(enrollment.status)}`}
+                    >
                       {enrollment.status.toLowerCase()}
                     </span>
                     {enrollment.grade && (
-                      <span className="px-2 py-0.5 rounded-full text-xs bg-purple-100 text-purple-700">
+                      <span className="rounded-full bg-purple-100 px-2 py-0.5 text-purple-700 text-xs">
                         Grade: {enrollment.grade}
                       </span>
                     )}
@@ -118,17 +125,21 @@ export default function CoursesSection({
           <div className="flex h-28 items-center justify-center rounded-lg text-gray-500">
             <div className="flex flex-col items-center">
               <Icons.bookOpen className="size-10" />
-              <p className="text-sm mt-2">
-                {userRole === 'PROFESSOR' ? 'No courses assigned' : 'No courses enrolled'}
+              <p className="mt-2 text-sm">
+                {userRole === "PROFESSOR"
+                  ? "No courses assigned"
+                  : "No courses enrolled"}
               </p>
               {canEdit && (
                 <Button
-                  variant="outline"
-                  size="sm"
                   className="mt-3 rounded-full"
+                  size="sm"
+                  variant="outline"
                 >
-                  <Icons.add className="size-4 mr-1" />
-                  {userRole === 'PROFESSOR' ? 'Create Course' : 'Browse Courses'}
+                  <Icons.add className="mr-1 size-4" />
+                  {userRole === "PROFESSOR"
+                    ? "Create Course"
+                    : "Browse Courses"}
                 </Button>
               )}
             </div>

@@ -1,27 +1,26 @@
 "use client";
 
-import React, { useCallback, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { User } from "@prisma/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { useDropzone } from "@uploadthing/react";
 import { AlertCircle, Loader2, RefreshCw, X } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import {
   generateClientDropzoneAccept,
   generatePermittedFileTypes,
 } from "uploadthing/client";
-
-import { cn } from "@/lib/utils";
-import { researchSchema, TResearch } from "@/lib/validations/research";
 import JobDescriptionEditor from "@/components/editor/richEditor";
+import { cn } from "@/lib/utils";
+import { researchSchema, type TResearch } from "@/lib/validations/research";
 
 import { createResearch } from "../researches/actions";
 import { useSubmitPostMutation } from "../researches/editor/mutations";
 import useMediaUpload, {
-  Attachment,
+  type Attachment,
 } from "../researches/editor/useMediaUpload";
 import { Button } from "../ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
@@ -55,15 +54,15 @@ function AttachmentPreview({
         className={cn(
           "relative h-24 w-24 overflow-hidden rounded-lg border",
           attachment.error && "border-red-500",
-          attachment.isUploading && "border-muted",
+          attachment.isUploading && "border-muted"
         )}
       >
         {isPdf && attachment.preview ? (
           <object
             data={attachment.preview}
+            height="500px"
             type="application/pdf"
             width="100%"
-            height="500px"
           >
             <p>
               Unable to display PDF file.{" "}
@@ -73,14 +72,14 @@ function AttachmentPreview({
         ) : null}
 
         {attachment.isUploading && (
-          <div className="bg-background/50 absolute inset-0 flex items-center justify-center">
+          <div className="absolute inset-0 flex items-center justify-center bg-background/50">
             <Loader2 className="h-6 w-6 animate-spin" />
           </div>
         )}
 
         {attachment.error && (
-          <div className="bg-background/50 absolute inset-0 flex flex-col items-center justify-center gap-2 p-2">
-            <AlertCircle className="text-destructive h-6 w-6" />
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-background/50 p-2">
+            <AlertCircle className="h-6 w-6 text-destructive" />
             <Button
               className="h-8 px-2"
               onClick={onRetry}
@@ -101,7 +100,7 @@ function AttachmentPreview({
       </div>
 
       <Button
-        className="absolute -top-2 -right-2 h-6 w-6 rounded-full opacity-0 transition-opacity group-hover:opacity-100"
+        className="-top-2 -right-2 absolute h-6 w-6 rounded-full opacity-0 transition-opacity group-hover:opacity-100"
         onClick={onRemove}
         size="icon"
         variant="ghost"
@@ -144,13 +143,13 @@ export function CreateResearchForm({ user }: CreateJobFormProps) {
     (files: File[]) => {
       startUpload(files);
     },
-    [startUpload],
+    [startUpload]
   );
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: generateClientDropzoneAccept(
-      generatePermittedFileTypes(routeConfig).fileTypes,
+      generatePermittedFileTypes(routeConfig).fileTypes
     ),
     disabled: isUploading,
   });
@@ -163,7 +162,7 @@ export function CreateResearchForm({ user }: CreateJobFormProps) {
       const researchData = {
         ...values,
         mediaIds: attachments
-          .filter((a) => !a.isUploading && !a.error && a.mediaId)
+          .filter((a) => !(a.isUploading || a.error) && a.mediaId)
           .map((a) => a.mediaId!),
       };
 
@@ -183,7 +182,7 @@ export function CreateResearchForm({ user }: CreateJobFormProps) {
 
   useEffect(() => {
     const subscription = form.watch((value, { name, type }) =>
-      console.log(value, name, type),
+      console.log(value, name, type)
     );
     return () => subscription.unsubscribe();
   }, [form]);
@@ -231,8 +230,8 @@ export function CreateResearchForm({ user }: CreateJobFormProps) {
               <div
                 {...getRootProps()}
                 className={cn(
-                  "border-muted-foreground/50 hover:bg-muted/50 relative rounded-2xl border-2 border-dashed p-8 text-center transition-colors",
-                  isDragActive && "border-primary-500 bg-primary-500/10",
+                  "relative rounded-2xl border-2 border-muted-foreground/50 border-dashed p-8 text-center transition-colors hover:bg-muted/50",
+                  isDragActive && "border-primary-500 bg-primary-500/10"
                 )}
               >
                 <input {...getInputProps()} />
@@ -242,8 +241,8 @@ export function CreateResearchForm({ user }: CreateJobFormProps) {
                 <div className="mt-4 flex flex-wrap gap-4">
                   {attachments.map((attachment) => (
                     <AttachmentPreview
-                      key={attachment.id}
                       attachment={attachment}
+                      key={attachment.id}
                       onRemove={() => removeAttachment(attachment.id)}
                       onRetry={() => retryUpload(attachment.id)}
                     />

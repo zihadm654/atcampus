@@ -1,22 +1,21 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
-  User,
-  Course,
+  type Course,
   CourseStatus,
   SkillLevel,
+  type User,
 } from "@prisma/client";
-import { useQueryClient, useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-
-import { courseSchema, TCourse } from "@/lib/validations/course";
 import { createCourse, updateCourse } from "@/components/courses/actions";
+import JobDescriptionEditor from "@/components/editor/richEditor";
 import { coursesData } from "@/config/course";
-
+import { courseSchema, type TCourse } from "@/lib/validations/course";
 import { Button } from "../ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import {
@@ -37,7 +36,6 @@ import {
   SelectValue,
 } from "../ui/select";
 import { Textarea } from "../ui/textarea";
-import JobDescriptionEditor from "@/components/editor/richEditor";
 
 interface CreateCourseFormProps {
   user?: User;
@@ -95,35 +93,39 @@ export function CreateCourseForm({ user, course }: CreateCourseFormProps) {
     resolver: zodResolver(courseSchema),
     defaultValues: course
       ? {
-        title: course.title || "",
-        description: course.description || "",
-        code: course.code || "",
-        credits: course.credits || 3,
-        difficulty: course.difficulty || SkillLevel.BEGINNER,
-        estimatedHours: course.estimatedHours || 10,
-        facultyId: course.facultyId || "",
-        schoolId: course.schoolId || "",
-        objectives: course.objectives || [],
-        outcomes: course.outcomes || [],
-        status: course.status || CourseStatus.DRAFT,
-      }
+          title: course.title || "",
+          description: course.description || "",
+          code: course.code || "",
+          credits: course.credits || 3,
+          difficulty: course.difficulty || SkillLevel.BEGINNER,
+          estimatedHours: course.estimatedHours || 10,
+          facultyId: course.facultyId || "",
+          schoolId: course.schoolId || "",
+          objectives: course.objectives || [],
+          outcomes: course.outcomes || [],
+          status: course.status || CourseStatus.DRAFT,
+        }
       : {
-        title: "",
-        description: "",
-        code: "",
-        credits: 3,
-        difficulty: "BEGINNER",
-        estimatedHours: 10,
-        facultyId: "",
-        schoolId: "",
-        objectives: [],
-        outcomes: [],
-        status: CourseStatus.DRAFT,
-      },
+          title: "",
+          description: "",
+          code: "",
+          credits: 3,
+          difficulty: "BEGINNER",
+          estimatedHours: 10,
+          facultyId: "",
+          schoolId: "",
+          objectives: [],
+          outcomes: [],
+          status: CourseStatus.DRAFT,
+        },
   });
 
   // Fetch schools with TanStack Query
-  const { data: schoolsData, isLoading: loadingSchools, error: schoolsError } = useQuery({
+  const {
+    data: schoolsData,
+    isLoading: loadingSchools,
+    error: schoolsError,
+  } = useQuery({
     queryKey: ["user-schools-faculties"],
     queryFn: async () => {
       const response = await fetch("/api/user-schools-faculties");
@@ -139,7 +141,9 @@ export function CreateCourseForm({ user, course }: CreateCourseFormProps) {
   const selectedSchoolId = form.watch("schoolId");
   const selectedFacultyId = form.watch("facultyId");
 
-  const selectedSchool = schoolsData?.find((school: SchoolData) => school.id === selectedSchoolId);
+  const selectedSchool = schoolsData?.find(
+    (school: SchoolData) => school.id === selectedSchoolId
+  );
   const faculties = selectedSchool?.faculties || [];
 
   // Find matching faculty in coursesData
@@ -154,10 +158,15 @@ export function CreateCourseForm({ user, course }: CreateCourseFormProps) {
     if (selectedFaculty) {
       // Find matching faculty in coursesData
       const matchingFaculty = coursesData.schools
-        .flatMap(school => school.faculties)
-        .find(faculty =>
-          faculty.name.toLowerCase().includes(selectedFaculty.name.toLowerCase()) ||
-          selectedFaculty.name.toLowerCase().includes(faculty.name.toLowerCase())
+        .flatMap((school) => school.faculties)
+        .find(
+          (faculty) =>
+            faculty.name
+              .toLowerCase()
+              .includes(selectedFaculty.name.toLowerCase()) ||
+            selectedFaculty.name
+              .toLowerCase()
+              .includes(faculty.name.toLowerCase())
         );
 
       if (matchingFaculty) {
@@ -172,7 +181,11 @@ export function CreateCourseForm({ user, course }: CreateCourseFormProps) {
 
   // Auto-select first school if only one exists
   useEffect(() => {
-    if (schoolsData && schoolsData.length === 1 && !form.getValues("schoolId")) {
+    if (
+      schoolsData &&
+      schoolsData.length === 1 &&
+      !form.getValues("schoolId")
+    ) {
       form.setValue("schoolId", schoolsData[0].id);
     }
   }, [schoolsData, form]);
@@ -196,7 +209,9 @@ export function CreateCourseForm({ user, course }: CreateCourseFormProps) {
 
   // Auto-fill course code and title when a course is selected
   const handleCourseSelect = (courseCode: string) => {
-    const selectedCourse = availableCourses.find(course => course.code === courseCode);
+    const selectedCourse = availableCourses.find(
+      (course) => course.code === courseCode
+    );
     if (selectedCourse) {
       form.setValue("title", selectedCourse.name);
       form.setValue("code", courseCode);
@@ -269,9 +284,13 @@ export function CreateCourseForm({ user, course }: CreateCourseFormProps) {
                   <FormItem>
                     <FormLabel>School</FormLabel>
                     <Select
-                      value={field.value}
+                      disabled={
+                        loadingSchools ||
+                        !schoolsData ||
+                        schoolsData.length === 0
+                      }
                       onValueChange={field.onChange}
-                      disabled={loadingSchools || !schoolsData || schoolsData.length === 0}
+                      value={field.value}
                     >
                       <FormControl>
                         <SelectTrigger>
@@ -292,11 +311,13 @@ export function CreateCourseForm({ user, course }: CreateCourseFormProps) {
                         </SelectGroup>
                       </SelectContent>
                     </Select>
-                    {schoolsData && schoolsData.length === 0 && !loadingSchools && (
-                      <p className="text-sm text-muted-foreground">
-                        No schools found for your institution.
-                      </p>
-                    )}
+                    {schoolsData &&
+                      schoolsData.length === 0 &&
+                      !loadingSchools && (
+                        <p className="text-muted-foreground text-sm">
+                          No schools found for your institution.
+                        </p>
+                      )}
                     <FormMessage />
                   </FormItem>
                 )}
@@ -310,18 +331,20 @@ export function CreateCourseForm({ user, course }: CreateCourseFormProps) {
                   <FormItem>
                     <FormLabel>Faculty</FormLabel>
                     <Select
-                      value={field.value}
-                      onValueChange={field.onChange}
                       disabled={!selectedSchoolId || faculties.length === 0}
+                      onValueChange={field.onChange}
+                      value={field.value}
                     >
                       <FormControl>
                         <SelectTrigger>
-                          {!selectedSchoolId ? (
-                            <span>Select a school first</span>
-                          ) : faculties.length === 0 ? (
-                            <span>No faculties available</span>
+                          {selectedSchoolId ? (
+                            faculties.length === 0 ? (
+                              <span>No faculties available</span>
+                            ) : (
+                              <SelectValue placeholder="Select faculty" />
+                            )
                           ) : (
-                            <SelectValue placeholder="Select faculty" />
+                            <span>Select a school first</span>
                           )}
                         </SelectTrigger>
                       </FormControl>
@@ -336,7 +359,7 @@ export function CreateCourseForm({ user, course }: CreateCourseFormProps) {
                       </SelectContent>
                     </Select>
                     {selectedSchoolId && faculties.length === 0 && (
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-muted-foreground text-sm">
                         No faculties found for the selected school.
                       </p>
                     )}
@@ -353,21 +376,25 @@ export function CreateCourseForm({ user, course }: CreateCourseFormProps) {
                   <FormItem>
                     <FormLabel>Course Code</FormLabel>
                     <Select
-                      value={field.value}
+                      disabled={
+                        !selectedFacultyId || availableCourses.length === 0
+                      }
                       onValueChange={(value) => {
                         field.onChange(value);
                         handleCourseSelect(value);
                       }}
-                      disabled={!selectedFacultyId || availableCourses.length === 0}
+                      value={field.value}
                     >
                       <FormControl>
                         <SelectTrigger>
-                          {!selectedFacultyId ? (
-                            <span>Select a faculty first</span>
-                          ) : availableCourses.length === 0 ? (
-                            <span>No courses available</span>
+                          {selectedFacultyId ? (
+                            availableCourses.length === 0 ? (
+                              <span>No courses available</span>
+                            ) : (
+                              <SelectValue placeholder="Select course code" />
+                            )
                           ) : (
-                            <SelectValue placeholder="Select course code" />
+                            <span>Select a faculty first</span>
                           )}
                         </SelectTrigger>
                       </FormControl>
@@ -382,7 +409,7 @@ export function CreateCourseForm({ user, course }: CreateCourseFormProps) {
                       </SelectContent>
                     </Select>
                     {selectedFacultyId && availableCourses.length === 0 && (
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-muted-foreground text-sm">
                         No courses found for the selected faculty.
                       </p>
                     )}
@@ -400,7 +427,9 @@ export function CreateCourseForm({ user, course }: CreateCourseFormProps) {
                       <Input
                         placeholder="Course Title"
                         {...field}
-                        disabled={!!form.watch("code") && availableCourses.length > 0}
+                        disabled={
+                          !!form.watch("code") && availableCourses.length > 0
+                        }
                       />
                     </FormControl>
                     <FormMessage />
@@ -418,8 +447,8 @@ export function CreateCourseForm({ user, course }: CreateCourseFormProps) {
                     <FormLabel>Credits</FormLabel>
                     <FormControl>
                       <Input
-                        type="number"
                         placeholder="Credits"
+                        type="number"
                         {...field}
                         onChange={(e) => field.onChange(e.target.valueAsNumber)}
                         value={field.value || ""}
@@ -437,8 +466,8 @@ export function CreateCourseForm({ user, course }: CreateCourseFormProps) {
                     <FormLabel>Estimated Hours (weeks)</FormLabel>
                     <FormControl>
                       <Input
-                        type="number"
                         placeholder="Estimated Hours"
+                        type="number"
                         {...field}
                         onChange={(e) => field.onChange(e.target.valueAsNumber)}
                         value={field.value || ""}
@@ -457,7 +486,7 @@ export function CreateCourseForm({ user, course }: CreateCourseFormProps) {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Difficulty Level</FormLabel>
-                    <Select value={field.value} onValueChange={field.onChange}>
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select course difficulty" />
@@ -484,12 +513,12 @@ export function CreateCourseForm({ user, course }: CreateCourseFormProps) {
                   <FormItem>
                     <FormLabel>Status</FormLabel>
                     <Select
-                      value={field.value}
-                      onValueChange={field.onChange}
                       disabled={
                         user?.role === "PROFESSOR" &&
                         course?.status === CourseStatus.PUBLISHED
                       }
+                      onValueChange={field.onChange}
+                      value={field.value}
                     >
                       <FormControl>
                         <SelectTrigger>
@@ -508,7 +537,7 @@ export function CreateCourseForm({ user, course }: CreateCourseFormProps) {
                                     .replace("_", " ")}
                                 {user?.role === "PROFESSOR" &&
                                   status === CourseStatus.UNDER_REVIEW && (
-                                    <span className="ml-2 text-xs text-muted-foreground">
+                                    <span className="ml-2 text-muted-foreground text-xs">
                                       (Submit for institution approval)
                                     </span>
                                   )}
@@ -519,7 +548,7 @@ export function CreateCourseForm({ user, course }: CreateCourseFormProps) {
                       </SelectContent>
                     </Select>
                     {user?.role === "PROFESSOR" && (
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-muted-foreground text-sm">
                         Professors can save courses as drafts or submit for
                         review. Institution approval is required before courses
                         can be published.
@@ -539,7 +568,6 @@ export function CreateCourseForm({ user, course }: CreateCourseFormProps) {
                   <FormLabel>Learning Objectives</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="Enter learning objectives separated by commas"
                       onChange={(e) =>
                         field.onChange(
                           e.target.value
@@ -548,6 +576,7 @@ export function CreateCourseForm({ user, course }: CreateCourseFormProps) {
                             .filter((o) => o.length > 0)
                         )
                       }
+                      placeholder="Enter learning objectives separated by commas"
                       value={field.value?.join(", ") || ""}
                     />
                   </FormControl>
@@ -564,7 +593,6 @@ export function CreateCourseForm({ user, course }: CreateCourseFormProps) {
                   <FormLabel>Learning Outcomes</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="Enter learning outcomes separated by commas"
                       onChange={(e) =>
                         field.onChange(
                           e.target.value
@@ -573,6 +601,7 @@ export function CreateCourseForm({ user, course }: CreateCourseFormProps) {
                             .filter((o) => o.length > 0)
                         )
                       }
+                      placeholder="Enter learning outcomes separated by commas"
                       value={field.value?.join(", ") || ""}
                     />
                   </FormControl>
@@ -604,7 +633,7 @@ export function CreateCourseForm({ user, course }: CreateCourseFormProps) {
               : course
                 ? "Update Course"
                 : user?.role === "PROFESSOR" &&
-                  form.watch("status") === CourseStatus.UNDER_REVIEW
+                    form.watch("status") === CourseStatus.UNDER_REVIEW
                   ? "Submit for Approval"
                   : user?.role === "PROFESSOR"
                     ? "Save as Draft"

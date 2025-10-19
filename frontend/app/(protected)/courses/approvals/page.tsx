@@ -19,7 +19,7 @@ export default async function CourseApprovalsPage() {
     <div className="flex w-full flex-col gap-6">
       <div className="flex items-center justify-between gap-2 p-2">
         <div>
-          <h1 className="text-3xl max-md:text-xl font-bold">
+          <h1 className="font-bold text-3xl max-md:text-xl">
             Course Approvals
           </h1>
           <p className="text-muted-foreground max-md:text-sm">

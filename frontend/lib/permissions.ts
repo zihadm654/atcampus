@@ -1,14 +1,21 @@
 import { createAccessControl } from "better-auth/plugins/access";
 import { adminAc, defaultStatements } from "better-auth/plugins/admin/access";
-import type { ProfilePermissions } from "@/types/profile-types";
 import type { UserRole } from "@/lib/validations/auth";
+import type { ProfilePermissions } from "@/types/profile-types";
 
 const statements = {
   ...defaultStatements,
   posts: ["create", "read", "update", "delete", "update:own", "delete:own"],
   jobs: ["create", "read", "update", "delete", "update:own", "delete:own"],
   research: ["create", "read", "update", "delete", "update:own", "delete:own"],
-  organizations: ["create", "read", "update", "delete", "update:own", "delete:own"],
+  organizations: [
+    "create",
+    "read",
+    "update",
+    "delete",
+    "update:own",
+    "delete:own",
+  ],
   schools: ["create", "read", "update", "delete", "update:own", "delete:own"],
   faculties: ["create", "read", "update", "delete", "update:own", "delete:own"],
   courses: ["create", "read", "update", "delete", "update:own", "delete:own"],
@@ -50,11 +57,32 @@ export const roles = {
   }),
   ADMIN: ac.newRole({
     posts: ["create", "read", "update", "delete", "update:own", "delete:own"],
-    organizations: ["create", "read", "update", "delete", "update:own", "delete:own"],
+    organizations: [
+      "create",
+      "read",
+      "update",
+      "delete",
+      "update:own",
+      "delete:own",
+    ],
     jobs: ["create", "read", "update", "delete", "update:own", "delete:own"],
-    research: ["create", "read", "update", "delete", "update:own", "delete:own"],
+    research: [
+      "create",
+      "read",
+      "update",
+      "delete",
+      "update:own",
+      "delete:own",
+    ],
     schools: ["create", "read", "update", "delete", "update:own", "delete:own"],
-    faculties: ["create", "read", "update", "delete", "update:own", "delete:own"],
+    faculties: [
+      "create",
+      "read",
+      "update",
+      "delete",
+      "update:own",
+      "delete:own",
+    ],
     courses: ["create", "read", "update", "delete", "update:own", "delete:own"],
     professors: ["assign", "unassign", "manage"],
     members: ["create", "read", "update", "delete", "invite", "remove"],

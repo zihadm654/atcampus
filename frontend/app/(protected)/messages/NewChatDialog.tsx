@@ -1,13 +1,11 @@
 "use client";
 
-import { useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Check, Loader2, SearchIcon, X } from "lucide-react";
-import { UserResponse } from "stream-chat";
+import { useState } from "react";
+import type { UserResponse } from "stream-chat";
 import { useChatContext } from "stream-chat-react";
-
-import { useSession } from "@/lib/auth-client";
-import useDebounce from "@/hooks/useDebounce";
+import { UserAvatar } from "@/components/shared/user-avatar";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -17,7 +15,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/use-toast";
-import { UserAvatar } from "@/components/shared/user-avatar";
+import useDebounce from "@/hooks/useDebounce";
+import { useSession } from "@/lib/auth-client";
 
 interface NewChatDialogProps {
   onOpenChange: (open: boolean) => void;
@@ -44,7 +43,7 @@ export default function NewChatDialog({
   const { data, isFetching, isError, isSuccess } = useQuery({
     queryKey: ["stream-users", searchInputDebounced],
     queryFn: async () => {
-      if (!searchInputDebounced || !client) return { users: [] };
+      if (!(searchInputDebounced && client)) return { users: [] };
       return client.queryUsers(
         {
           id: { $in: [loggedInUser.id] }, // Use $nin instead of $ne for proper typing
@@ -54,7 +53,7 @@ export default function NewChatDialog({
           ],
         },
         { created_at: -1 }, // Sort by creation date descending
-        { limit: 15 },
+        { limit: 15 }
       );
     },
     enabled: !!client && !!searchInputDebounced,
@@ -104,19 +103,19 @@ export default function NewChatDialog({
   });
 
   return (
-    <Dialog open onOpenChange={onOpenChange}>
+    <Dialog onOpenChange={onOpenChange} open>
       <DialogContent className="bg-card p-0">
         <DialogHeader className="px-6 pt-6">
           <DialogTitle>New chat</DialogTitle>
         </DialogHeader>
         <div>
           <div className="group relative">
-            <SearchIcon className="text-muted-foreground group-focus-within:text-primary absolute top-1/2 left-5 size-5 -translate-y-1/2 transform" />
+            <SearchIcon className="-translate-y-1/2 absolute top-1/2 left-5 size-5 transform text-muted-foreground group-focus-within:text-primary" />
             <input
-              placeholder="Search users..."
               className="h-12 w-full ps-14 pe-4 focus:outline-none"
-              value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
+              placeholder="Search users..."
+              value={searchInput}
             />
           </div>
           {!!selectedUsers.length && (
@@ -124,12 +123,12 @@ export default function NewChatDialog({
               {selectedUsers.map((user) => (
                 <SelectedUserTag
                   key={user.id}
-                  user={user}
                   onRemove={() => {
                     setSelectedUsers((prev) =>
-                      prev.filter((u) => u.id !== user.id),
+                      prev.filter((u) => u.id !== user.id)
                     );
                   }}
+                  user={user}
                 />
               ))}
             </div>
@@ -138,47 +137,47 @@ export default function NewChatDialog({
           <div className="h-96 overflow-y-auto">
             {isFetching ? (
               <div className="flex justify-center py-4">
-                <Loader2 className="text-muted-foreground size-6 animate-spin" />
+                <Loader2 className="size-6 animate-spin text-muted-foreground" />
               </div>
             ) : isError ? (
-              <p className="text-destructive my-3 text-center">
+              <p className="my-3 text-center text-destructive">
                 An error occurred while loading users.
               </p>
             ) : isSuccess &&
               data?.users.length === 0 &&
               searchInputDebounced ? (
-              <p className="text-muted-foreground my-3 text-center">
+              <p className="my-3 text-center text-muted-foreground">
                 No users found. Try a different name.
               </p>
-            ) : !searchInputDebounced ? (
-              <p className="text-muted-foreground my-3 text-center">
-                Start typing to search for users
-              </p>
-            ) : (
+            ) : searchInputDebounced ? (
               data?.users.map((user) => (
                 <UserResult
                   key={user.id}
-                  user={user}
-                  selected={selectedUsers.some((u) => u.id === user.id)}
                   onClick={() => {
                     setSelectedUsers((prev) =>
                       prev.some((u) => u.id === user.id)
                         ? prev.filter((u) => u.id !== user.id)
-                        : [...prev, user],
+                        : [...prev, user]
                     );
                   }}
+                  selected={selectedUsers.some((u) => u.id === user.id)}
+                  user={user}
                 />
               ))
+            ) : (
+              <p className="my-3 text-center text-muted-foreground">
+                Start typing to search for users
+              </p>
             )}
           </div>
         </div>
         <DialogFooter className="flex-row items-center justify-between border-t p-4">
-          <Button variant="ghost" onClick={() => onOpenChange(false)}>
+          <Button onClick={() => onOpenChange(false)} variant="ghost">
             Cancel
           </Button>
           <Button
-            onClick={() => mutation.mutate()}
             disabled={selectedUsers.length === 0 || mutation.isPending}
+            onClick={() => mutation.mutate()}
           >
             {mutation.isPending && (
               <Loader2 className="mr-2 size-4 animate-spin" />
@@ -200,8 +199,9 @@ interface UserResultProps {
 function UserResult({ user, selected, onClick }: UserResultProps) {
   return (
     <button
-      className="hover:bg-muted/50 flex w-full items-center justify-between px-4 py-2.5 transition-colors"
+      className="flex w-full items-center justify-between px-4 py-2.5 transition-colors hover:bg-muted/50"
       onClick={onClick}
+      type="button"
     >
       <div className="flex items-center gap-2">
         <UserAvatar
@@ -229,8 +229,9 @@ interface SelectedUserTagProps {
 function SelectedUserTag({ user, onRemove }: SelectedUserTagProps) {
   return (
     <button
+      className="flex items-center gap-2 rounded-full border p-1 hover:bg-muted/50"
       onClick={onRemove}
-      className="hover:bg-muted/50 flex items-center gap-2 rounded-full border p-1"
+      type="button"
     >
       <UserAvatar
         user={{
@@ -240,7 +241,7 @@ function SelectedUserTag({ user, onRemove }: SelectedUserTagProps) {
         }}
       />
       <p className="font-bold">{user.name || user.id}</p>
-      <X className="text-muted-foreground mx-2 size-5" />
+      <X className="mx-2 size-5 text-muted-foreground" />
     </button>
   );
 }

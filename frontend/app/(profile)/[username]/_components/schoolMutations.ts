@@ -1,8 +1,15 @@
-'use client';
+"use client";
 
-import { useToast } from "@/components/ui/use-toast";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { createSchool, updateSchool, deleteSchool, createFaculty, updateFaculty, deleteFaculty } from "./schoolActions";
+import { useToast } from "@/components/ui/use-toast";
+import {
+  createFaculty,
+  createSchool,
+  deleteFaculty,
+  deleteSchool,
+  updateFaculty,
+  updateSchool,
+} from "./schoolActions";
 
 // The rest of the file defines school and faculty mutations
 
@@ -18,7 +25,7 @@ export function useCreateSchoolMutation() {
     onError: (error: Error) => {
       toast({
         variant: "destructive",
-        description: error.message || "Failed to create school"
+        description: error.message || "Failed to create school",
       });
     },
   });
@@ -37,7 +44,7 @@ export function useUpdateSchoolMutation() {
     onError: (error: Error) => {
       toast({
         variant: "destructive",
-        description: error.message || "Failed to update school"
+        description: error.message || "Failed to update school",
       });
     },
   });
@@ -56,7 +63,7 @@ export function useDeleteSchoolMutation() {
     onError: (error: Error) => {
       toast({
         variant: "destructive",
-        description: error.message || "Failed to delete school"
+        description: error.message || "Failed to delete school",
       });
     },
   });
@@ -71,10 +78,10 @@ export function useCreateFacultyMutation() {
     onMutate: async (newFaculty) => {
       // Cancel any outgoing refetches
       await queryClient.cancelQueries({ queryKey: ["user-schools"] });
-      
+
       // Snapshot the previous value
       const previousSchools = queryClient.getQueryData(["user-schools"]);
-      
+
       // Optimistically update to the new value
       queryClient.setQueryData(["user-schools"], (old: any) => {
         if (!old) return old;
@@ -82,18 +89,21 @@ export function useCreateFacultyMutation() {
           if (school.id === newFaculty.schoolId) {
             return {
               ...school,
-              faculties: [...(school.faculties || []), { 
-                id: `optimistic-${Date.now()}`, 
-                name: newFaculty.name,
-                schoolId: newFaculty.schoolId,
-                description: newFaculty.description
-              }]
+              faculties: [
+                ...(school.faculties || []),
+                {
+                  id: `optimistic-${Date.now()}`,
+                  name: newFaculty.name,
+                  schoolId: newFaculty.schoolId,
+                  description: newFaculty.description,
+                },
+              ],
             };
           }
           return school;
         });
       });
-      
+
       // Return a context object with the snapshotted value
       return { previousSchools };
     },
@@ -106,11 +116,12 @@ export function useCreateFacultyMutation() {
             // Replace the optimistic faculty with the actual one
             return {
               ...school,
-              faculties: school.faculties.map((faculty: any) => 
-                faculty.id.startsWith('optimistic-') && faculty.name === data.faculty.name 
-                  ? data.faculty 
+              faculties: school.faculties.map((faculty: any) =>
+                faculty.id.startsWith("optimistic-") &&
+                faculty.name === data.faculty.name
+                  ? data.faculty
                   : faculty
-              )
+              ),
             };
           }
           return school;
@@ -125,7 +136,7 @@ export function useCreateFacultyMutation() {
       }
       toast({
         variant: "destructive",
-        description: error.message || "Failed to create faculty"
+        description: error.message || "Failed to create faculty",
       });
     },
     onSettled: () => {
@@ -149,7 +160,7 @@ export function useUpdateFacultyMutation() {
     onError: (error: Error) => {
       toast({
         variant: "destructive",
-        description: error.message || "Failed to update faculty"
+        description: error.message || "Failed to update faculty",
       });
     },
   });
@@ -169,7 +180,7 @@ export function useDeleteFacultyMutation() {
     onError: (error: Error) => {
       toast({
         variant: "destructive",
-        description: error.message || "Failed to delete faculty"
+        description: error.message || "Failed to delete faculty",
       });
     },
   });

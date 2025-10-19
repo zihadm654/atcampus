@@ -1,11 +1,10 @@
 "use client";
 
-import Link from "next/link";
-import { ColumnDef } from "@tanstack/react-table";
+import type { ColumnDef } from "@tanstack/react-table";
 import { EditIcon } from "lucide-react";
-
-import { Button } from "@/components/ui/button";
+import Link from "next/link";
 import { DataTable } from "@/components/dashboard/data-table/data-table";
+import { Button } from "@/components/ui/button";
 
 export type UserColumn = {
   id: string;
@@ -38,6 +37,6 @@ interface UserClientProps {
   data: UserColumn[];
 }
 
-export const UsersClient: React.FC<UserClientProps> = ({ data }) => {
-  return <DataTable columns={columns} data={data} link="users" />;
-};
+export const UsersClient: React.FC<UserClientProps> = ({ data }) => (
+  <DataTable columns={columns} data={data} link="users" />
+);

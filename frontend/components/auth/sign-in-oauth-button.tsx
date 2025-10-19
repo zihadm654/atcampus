@@ -1,10 +1,9 @@
 "use client";
 
-import { useState } from "react";
 import { useSearchParams } from "next/navigation";
-
-import { signIn } from "@/lib/auth-client";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { signIn } from "@/lib/auth-client";
 
 interface SignInOauthButtonProps {
   provider: "google" | "github";
@@ -35,7 +34,7 @@ export const SignInOauthButton = ({
   const providerName = provider === "google" ? "Google" : "GitHub";
 
   return (
-    <Button onClick={handleClick} disabled={isPending}>
+    <Button disabled={isPending} onClick={handleClick}>
       Sign {action} with {providerName}
     </Button>
   );

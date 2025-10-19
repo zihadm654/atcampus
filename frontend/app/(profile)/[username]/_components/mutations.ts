@@ -1,15 +1,14 @@
-import { useRouter } from "next/navigation";
 import {
-  InfiniteData,
-  QueryFilters,
+  type InfiniteData,
+  type QueryFilters,
   useMutation,
   useQueryClient,
 } from "@tanstack/react-query";
-
-import { PostsPage } from "@/types/types";
-import { useUploadThing } from "@/lib/uploadthing";
-import { UpdateUserProfileValues } from "@/lib/validations/validation";
+import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/use-toast";
+import { useUploadThing } from "@/lib/uploadthing";
+import type { UpdateUserProfileValues } from "@/lib/validations/validation";
+import type { PostsPage } from "@/types/types";
 
 import { updateUserProfile } from "./actions";
 
@@ -32,13 +31,12 @@ export function useUpdateProfileMutation() {
       values: UpdateUserProfileValues;
       avatar?: File;
       coverImage?: File;
-    }) => {
-      return Promise.all([
+    }) =>
+      Promise.all([
         updateUserProfile(values),
         avatar && startAvatarUpload([avatar]),
         coverImage && startCoverUpload([coverImage]),
-      ]);
-    },
+      ]),
     onSuccess: async ([updatedUser, avatarUploadResult, coverUploadResult]) => {
       const newAvatarUrl = avatarUploadResult?.[0]?.serverData?.avatarUrl;
       const newCoverUrl = coverUploadResult?.[0]?.serverData?.coverImageUrl;
@@ -73,7 +71,7 @@ export function useUpdateProfileMutation() {
               }),
             })),
           };
-        },
+        }
       );
 
       router.refresh();

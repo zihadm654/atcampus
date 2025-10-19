@@ -1,10 +1,8 @@
 "use client";
-import React from 'react';
 
 import { useQuery } from "@tanstack/react-query";
 import { Icons } from "@/components/shared/icons";
 import { getProfessorsForFaculty } from "./schoolActions";
-import UserAvatar from "@/components/UserAvatar";
 
 interface ProfessorListProps {
   facultyId: string;
@@ -17,18 +15,18 @@ export default function ProfessorList({ facultyId }: ProfessorListProps) {
   });
 
   if (isLoading) {
-    return <div className="text-sm text-muted-foreground">Loading...</div>;
+    return <div className="text-muted-foreground text-sm">Loading...</div>;
   }
 
   return (
     <div className="mt-2">
-      <h5 className="text-sm font-medium text-muted-foreground mb-2">
+      <h5 className="mb-2 font-medium text-muted-foreground text-sm">
         Professors:
       </h5>
       {professors && professors.length > 0 ? (
         <div className="space-y-2">
           {professors.map((professor) => (
-            <div key={professor.id} className="flex items-center gap-2 text-sm">
+            <div className="flex items-center gap-2 text-sm" key={professor.id}>
               {/* <UserAvatar
                 avatarUrl={professor.professor.}
                 size={24}
@@ -39,7 +37,7 @@ export default function ProfessorList({ facultyId }: ProfessorListProps) {
           ))}
         </div>
       ) : (
-        <div className="text-sm text-muted-foreground flex items-center gap-2">
+        <div className="flex items-center gap-2 text-muted-foreground text-sm">
           <Icons.info className="h-4 w-4" />
           <span>No professors assigned</span>
         </div>

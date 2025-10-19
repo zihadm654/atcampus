@@ -1,10 +1,7 @@
 "use client";
 
-import { useState } from "react";
 import { ThumbsUp } from "lucide-react";
-
-import { UserSkillData } from "@/types/types";
-import { useSession } from "@/lib/auth-client";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Tooltip,
@@ -12,6 +9,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useSession } from "@/lib/auth-client";
+import type { UserSkillData } from "@/types/types";
 
 import {
   useEndorseSkillMutation,
@@ -51,7 +50,7 @@ export default function SkillEndorsementButton({
         { userSkillId: skill.id, skillId: skill.skillId },
         {
           onSuccess: () => setEndorsed(true),
-        },
+        }
       );
     }
   };
@@ -65,11 +64,11 @@ export default function SkillEndorsementButton({
       <Tooltip>
         <TooltipTrigger asChild>
           <Button
-            variant={endorsed ? "default" : "outline"}
-            size="sm"
             className="ml-2 h-7 gap-1 rounded-full px-2"
-            onClick={handleEndorsement}
             disabled={disabled || isLoading}
+            onClick={handleEndorsement}
+            size="sm"
+            variant={endorsed ? "default" : "outline"}
           >
             <ThumbsUp className="h-3.5 w-3.5" />
             {endorsementCount > 0 && (

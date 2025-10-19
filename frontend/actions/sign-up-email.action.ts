@@ -3,7 +3,6 @@
 import { APIError } from "better-auth/api";
 
 import { auth, type ErrorCode } from "@/lib/auth";
-import streamServerClient from "@/lib/stream";
 import { generateUsername } from "@/lib/utils";
 import { registerSchema, type TRegister } from "@/lib/validations/auth";
 
@@ -19,7 +18,6 @@ export async function signUpEmailAction(data: TRegister) {
     result.data;
   const generatedUsername = generateUsername(name);
 
-
   try {
     // Register the user with Better Auth and get the response
     const res = await auth.api.signUpEmail({
@@ -32,7 +30,7 @@ export async function signUpEmailAction(data: TRegister) {
         phone: phone ?? undefined,
         institution: institution ?? undefined,
         instituteId: instituteId ?? undefined,
-        callbackURL: "/dashboard"
+        callbackURL: "/dashboard",
       },
     });
 
@@ -55,9 +53,14 @@ export async function signUpEmailAction(data: TRegister) {
 
       switch (errCode) {
         case "USER_ALREADY_EXISTS":
-          return { error: "A user with this email already exists. Please try logging in instead." };
+          return {
+            error:
+              "A user with this email already exists. Please try logging in instead.",
+          };
         case "INVALID_EMAIL":
-          return { error: "Please provide a valid institutional email address." };
+          return {
+            error: "Please provide a valid institutional email address.",
+          };
         default:
           return { error: err.message };
       }

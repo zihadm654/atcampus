@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import { useRef, useState } from "react";
 import ReactCrop, { type Crop } from "react-image-crop";
 
@@ -31,7 +31,7 @@ export default function CropImageDialog({
   const imgRef = useRef<HTMLImageElement>(null);
 
   function onCrop() {
-    if (!completedCrop || !imgRef.current) {
+    if (!(completedCrop && imgRef.current)) {
       onCropped(null);
       onClose();
       return;
@@ -59,7 +59,7 @@ export default function CropImageDialog({
       0,
       0,
       completedCrop.width * scaleX,
-      completedCrop.height * scaleY,
+      completedCrop.height * scaleY
     );
 
     canvas.toBlob(
@@ -68,26 +68,31 @@ export default function CropImageDialog({
         onClose();
       },
       "image/webp",
-      0.95,
+      0.95
     );
   }
 
   return (
-    <Dialog open onOpenChange={onClose}>
+    <Dialog onOpenChange={onClose} open>
       <DialogContent className="max-h-[90vh] w-full max-w-md overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Crop image</DialogTitle>
         </DialogHeader>
         <ReactCrop
+          aspect={cropAspectRatio}
           crop={crop}
           onChange={(_, percentCrop) => setCrop(percentCrop)}
           onComplete={(c) => setCompletedCrop(c)}
-          aspect={cropAspectRatio}
         >
-          <img ref={imgRef} src={src} className="w-full" />
+          <img
+            alt="img"
+            className="h-auto w-full object-cover"
+            ref={imgRef}
+            src={src}
+          />
         </ReactCrop>
         <DialogFooter>
-          <Button variant="secondary" onClick={onClose}>
+          <Button onClick={onClose} variant="secondary">
             Cancel
           </Button>
           <Button onClick={onCrop}>Crop</Button>

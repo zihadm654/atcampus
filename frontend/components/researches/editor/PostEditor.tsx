@@ -1,37 +1,36 @@
-'use client';
+"use client";
 
-import Placeholder from '@tiptap/extension-placeholder';
-import { EditorContent, useEditor } from '@tiptap/react';
-import StarterKit from '@tiptap/starter-kit';
-import { useDropzone } from '@uploadthing/react';
+import Placeholder from "@tiptap/extension-placeholder";
+import { EditorContent, useEditor } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
+import { useDropzone } from "@uploadthing/react";
 import {
   AlertCircle,
   FileVideo,
   ImageIcon,
   Loader2,
   RefreshCw,
-  StickyNote,
   X,
-} from 'lucide-react';
-import Image from 'next/image';
-import { type ClipboardEvent, useCallback, useRef } from 'react';
+} from "lucide-react";
+import Image from "next/image";
+import { type ClipboardEvent, useCallback, useRef } from "react";
 import {
   generateClientDropzoneAccept,
   generatePermittedFileTypes,
-} from 'uploadthing/client';
-import LoadingButton from '@/components/feed/LoadingButton';
-import UserAvatar from '@/components/UserAvatar';
-import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
-import { useSession } from '@/lib/auth-client';
-import { cn } from '@/lib/utils';
+} from "uploadthing/client";
+import LoadingButton from "@/components/feed/LoadingButton";
+import UserAvatar from "@/components/UserAvatar";
+import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
+import { useSession } from "@/lib/auth-client";
+import { cn } from "@/lib/utils";
 
-import { useSubmitPostMutation } from './mutations';
-import useMediaUpload, { type Attachment } from './useMediaUpload';
+import { useSubmitPostMutation } from "./mutations";
+import useMediaUpload, { type Attachment } from "./useMediaUpload";
 
-import './styles.css';
+import "./styles.css";
 
-import { Icons } from '@/components/shared/icons';
+import { Icons } from "@/components/shared/icons";
 
 interface AttachmentPreviewProps {
   attachment: Attachment;
@@ -44,24 +43,24 @@ function AttachmentPreview({
   onRemove,
   onRetry,
 }: AttachmentPreviewProps) {
-  const isImage = attachment.file.type.startsWith('image/');
-  const isVideo = attachment.file.type.startsWith('video/');
+  const isImage = attachment.file.type.startsWith("image/");
+  const isVideo = attachment.file.type.startsWith("video/");
 
   return (
     <div className="group relative">
       <div
         className={cn(
-          'relative h-24 w-24 overflow-hidden rounded-lg border',
-          attachment.error && 'border-red-500',
-          attachment.isUploading && 'border-muted'
+          "relative h-24 w-24 overflow-hidden rounded-lg border",
+          attachment.error && "border-red-500",
+          attachment.isUploading && "border-muted"
         )}
       >
         {isImage && attachment.preview ? (
           <Image
             alt={attachment.file.name}
             className={cn(
-              'h-full w-full object-cover transition-opacity',
-              attachment.isUploading && 'opacity-50'
+              "h-full w-full object-cover transition-opacity",
+              attachment.isUploading && "opacity-50"
             )}
             height={96}
             src={attachment.preview}
@@ -153,20 +152,20 @@ export default function PostEditor() {
         italic: false,
       }),
       Placeholder.configure({
-        placeholder: 'share your thoughts...',
+        placeholder: "share your thoughts...",
       }),
     ],
   });
 
   editorRef.current = editor;
 
-  const getContent = useCallback(() => {
-    return (
+  const getContent = useCallback(
+    () =>
       editorRef.current?.getText({
-        blockSeparator: '\n',
-      }) || ''
-    );
-  }, []);
+        blockSeparator: "\n",
+      }) || "",
+    []
+  );
 
   const handleSubmit = useCallback(() => {
     const content = getContent();
@@ -189,7 +188,7 @@ export default function PostEditor() {
   const onPaste = useCallback(
     (e: ClipboardEvent<HTMLInputElement>) => {
       const files = Array.from(e.clipboardData.items)
-        .filter((item) => item.kind === 'file')
+        .filter((item) => item.kind === "file")
         .map((item) => item.getAsFile())
         .filter((file): file is File => file !== null);
       if (files.length > 0) {
@@ -207,15 +206,15 @@ export default function PostEditor() {
           <div
             {...rootProps}
             className={cn(
-              'relative rounded-2xl transition-colors',
-              isDragActive && 'ring-2 ring-primary ring-offset-2'
+              "relative rounded-2xl transition-colors",
+              isDragActive && "ring-2 ring-primary ring-offset-2"
             )}
           >
             <input {...getInputProps()} />
             <EditorContent
               className={cn(
-                'max-h-[20rem] w-full overflow-y-auto rounded-2xl bg-background px-5 py-3',
-                isDragActive && 'pointer-events-none opacity-50'
+                "max-h-[20rem] w-full overflow-y-auto rounded-2xl bg-background px-5 py-3",
+                isDragActive && "pointer-events-none opacity-50"
               )}
               editor={editor}
               onPaste={onPaste}

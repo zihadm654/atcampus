@@ -1,32 +1,16 @@
 "use client";
 
-import { User, UserRole } from "@prisma/client";
-import { ColumnDef } from "@tanstack/react-table";
-
-import { cn } from "@/lib/utils";
-import { DataTableColumnHeader } from "@/components/dashboard/data-table/column-header";
-
-import { DataTableRowActions } from "./data-table-row-actions";
-import { Badge } from "@/components/ui/badge";
-import { UserRoleSelect } from "@/components/user-role-select";
-import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
-import { useState } from "react";
-import { admin, useSession } from "@/lib/auth-client";
+import type { User, UserRole } from "@prisma/client";
 import { useQueryClient } from "@tanstack/react-query";
-import { Label } from "@/components/ui/label";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import type { ColumnDef } from "@tanstack/react-table";
+import { format } from "date-fns";
+import { CalendarIcon } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
+import { DataTableColumnHeader } from "@/components/dashboard/data-table/column-header";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
 import {
   Dialog,
   DialogContent,
@@ -34,9 +18,16 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { CalendarIcon } from "lucide-react";
-import { format } from "date-fns";
-import { Calendar } from "@/components/ui/calendar";
+import { Label } from "@/components/ui/label";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { UserRoleSelect } from "@/components/user-role-select";
+import { admin } from "@/lib/auth-client";
+import { cn } from "@/lib/utils";
+import { DataTableRowActions } from "./data-table-row-actions";
 
 export const columns: ColumnDef<User>[] = [
   {
@@ -57,80 +48,70 @@ export const columns: ColumnDef<User>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Name" />
     ),
-    cell: ({ row }) => {
-      return (
-        <div className="flex space-x-2 truncate font-medium">
-          <span className="max-w-[500px] truncate font-medium capitalize">
-            {row.getValue("name")}
-          </span>
-        </div>
-      );
-    },
+    cell: ({ row }) => (
+      <div className="flex space-x-2 truncate font-medium">
+        <span className="max-w-[500px] truncate font-medium capitalize">
+          {row.getValue("name")}
+        </span>
+      </div>
+    ),
   },
   {
     accessorKey: "status",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Status" />
     ),
-    cell: ({ row }) => {
-      return (
-        <div className="flex max-w-48 space-x-2 truncate font-medium">
-          <span className="truncate font-medium capitalize">
-            {row.getValue("status")}
-          </span>
-        </div>
-      );
-    },
+    cell: ({ row }) => (
+      <div className="flex max-w-48 space-x-2 truncate font-medium">
+        <span className="truncate font-medium capitalize">
+          {row.getValue("status")}
+        </span>
+      </div>
+    ),
   },
   {
     accessorKey: "phone",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Phone" />
     ),
-    cell: ({ row }) => {
-      return (
-        <div className="flex max-w-48 space-x-2 truncate font-medium">
-          <span className="truncate font-medium capitalize">
-            {row.getValue("phone")}
-          </span>
-        </div>
-      );
-    },
+    cell: ({ row }) => (
+      <div className="flex max-w-48 space-x-2 truncate font-medium">
+        <span className="truncate font-medium capitalize">
+          {row.getValue("phone")}
+        </span>
+      </div>
+    ),
   },
   {
     accessorKey: "banned",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Banned" />
     ),
-    cell: ({ row }) => {
-      return (
-        <div className="flex max-w-48 space-x-2 truncate font-medium">
-          <span className="truncate font-medium capitalize">
-            <Badge variant={row.getValue("banned") ? "destructive" : "outline"}>
-              {row.getValue("banned") ? "Yes" : "No"}
-            </Badge>
-          </span>
-        </div>
-      );
-    },
+    cell: ({ row }) => (
+      <div className="flex max-w-48 space-x-2 truncate font-medium">
+        <span className="truncate font-medium capitalize">
+          <Badge variant={row.getValue("banned") ? "destructive" : "outline"}>
+            {row.getValue("banned") ? "Yes" : "No"}
+          </Badge>
+        </span>
+      </div>
+    ),
   },
   {
     accessorKey: "role",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Role" />
     ),
-    cell: ({ row }) => {
-      return (
-        <div className="flex max-w-48 space-x-2 truncate font-medium">
-          <span className="truncate font-medium capitalize">
-            <UserRoleSelect
-              role={row.getValue("role") as UserRole}
-              userId={row.getValue("id")}
-            />
-          </span>
-        </div>
-      );
-    },
+    cell: ({ row }) => (
+      <div className="flex max-w-48 space-x-2 truncate font-medium">
+        <span className="truncate font-medium capitalize">
+          <UserRoleSelect
+            role={row.getValue("role") as UserRole}
+            userId={row.getValue("id")}
+          />
+        </span>
+      </div>
+    ),
   },
   {
     accessorKey: "ban",

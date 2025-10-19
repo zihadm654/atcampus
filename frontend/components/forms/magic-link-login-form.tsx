@@ -1,7 +1,7 @@
 "use client";
 
-import { useRef, useState } from "react";
 import { StarIcon } from "lucide-react";
+import { useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { signIn } from "@/lib/auth-client";
@@ -45,19 +45,19 @@ export const MagicLinkLoginForm = () => {
 
   return (
     <details
-      ref={ref}
       className="max-w-sm overflow-hidden rounded-md border border-purple-600"
+      ref={ref}
     >
       <summary className="flex items-center gap-2 bg-purple-600 px-2 py-1 text-white transition hover:bg-purple-600/80">
         Try Magic Link <StarIcon size={16} />
       </summary>
 
-      <form onSubmit={handleSubmit} className="px-2 py-1">
-        <Label htmlFor="email" className="sr-only">
+      <form className="px-2 py-1" onSubmit={handleSubmit}>
+        <Label className="sr-only" htmlFor="email">
           Email
         </Label>
         <div className="flex items-center gap-2">
-          <Input type="email" id="email" name="email" />
+          <Input id="email" name="email" type="email" />
           <Button disabled={isPending}>Send</Button>
         </div>
       </form>

@@ -1,7 +1,6 @@
 import Image from "next/image";
-
-import { testimonials } from "@/config/landing";
 import { HeaderSection } from "@/components/shared/header-section";
+import { testimonials } from "@/config/landing";
 
 export default function Testimonials() {
   return (
@@ -9,12 +8,12 @@ export default function Testimonials() {
       <div className="container flex max-w-6xl flex-col gap-10 py-32 sm:gap-y-16">
         <HeaderSection
           label="Testimonials"
-          title="What our clients are sharing."
           subtitle="Discover the glowing feedback from our delighted customers
             worldwide."
+          title="What our clients are sharing."
         />
 
-        <div className="column-1 gap-5 space-y-5 md:columns-2 lg:columns-3 ">
+        <div className="column-1 gap-5 space-y-5 md:columns-2 lg:columns-3">
           {testimonials.map((item) => (
             <div className="break-inside-avoid" key={item.name}>
               <div className="relative rounded-xl border bg-muted/25">
@@ -23,18 +22,18 @@ export default function Testimonials() {
                     <div className="relative mb-4 flex items-center gap-3">
                       <span className="relative inline-flex size-10 shrink-0 items-center justify-center rounded-full text-base">
                         <Image
-                          width={100}
-                          height={100}
-                          className="size-full rounded-full border"
-                          src={item.image}
                           alt={item.name}
+                          className="size-full rounded-full border"
+                          height={100}
+                          src={item.image}
+                          width={100}
                         />
                       </span>
                       <div>
-                        <p className="text-sm font-semibold text-foreground">
+                        <p className="font-semibold text-foreground text-sm">
                           {item.name}
                         </p>
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-muted-foreground text-sm">
                           {item.job}
                         </p>
                       </div>

@@ -1,5 +1,5 @@
-import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
+import Link from "next/link";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -29,8 +29,8 @@ export default function TransactionsList() {
             Recent transactions from your store.
           </CardDescription>
         </div>
-        <Button size="sm" className="ml-auto shrink-0 gap-1 px-4">
-          <Link href="#" className="flex items-center gap-2">
+        <Button className="ml-auto shrink-0 gap-1 px-4" size="sm">
+          <Link className="flex items-center gap-2" href="#">
             <span>View All</span>
             <ArrowUpRight className="hidden size-4 sm:block" />
           </Link>
@@ -51,7 +51,7 @@ export default function TransactionsList() {
             <TableRow>
               <TableCell>
                 <div className="font-medium">Liam Johnson</div>
-                <div className="hidden text-sm text-muted-foreground md:inline">
+                <div className="hidden text-muted-foreground text-sm md:inline">
                   liam@example.com
                 </div>
               </TableCell>
@@ -69,7 +69,7 @@ export default function TransactionsList() {
             <TableRow>
               <TableCell>
                 <div className="font-medium">Olivia Smith</div>
-                <div className="hidden text-sm text-muted-foreground md:inline">
+                <div className="hidden text-muted-foreground text-sm md:inline">
                   olivia@example.com
                 </div>
               </TableCell>
@@ -87,7 +87,7 @@ export default function TransactionsList() {
             <TableRow>
               <TableCell>
                 <div className="font-medium">Noah Williams</div>
-                <div className="hidden text-sm text-muted-foreground md:inline">
+                <div className="hidden text-muted-foreground text-sm md:inline">
                   noah@example.com
                 </div>
               </TableCell>
@@ -107,7 +107,7 @@ export default function TransactionsList() {
             <TableRow>
               <TableCell>
                 <div className="font-medium">Emma Brown</div>
-                <div className="hidden text-sm text-muted-foreground md:inline">
+                <div className="hidden text-muted-foreground text-sm md:inline">
                   emma@example.com
                 </div>
               </TableCell>
@@ -125,7 +125,7 @@ export default function TransactionsList() {
             <TableRow>
               <TableCell>
                 <div className="font-medium">Liam Johnson</div>
-                <div className="hidden text-sm text-muted-foreground md:inline">
+                <div className="hidden text-muted-foreground text-sm md:inline">
                   liam@example.com
                 </div>
               </TableCell>

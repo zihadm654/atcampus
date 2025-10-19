@@ -1,10 +1,10 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 // import { imageRemove } from "@/actions/image-remove";
 // import { deleteProduct } from "@/actions/product";
 import { DotsHorizontalIcon } from "@radix-ui/react-icons";
-import { Row } from "@tanstack/react-table";
+import type { Row } from "@tanstack/react-table";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -53,8 +53,8 @@ export function DataTableRowActions<TData>({
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button
+          className="flex size-8 p-0 data-[state=open]:bg-muted"
           variant="ghost"
-          className="data-[state=open]:bg-muted flex size-8 p-0"
         >
           <DotsHorizontalIcon className="size-4" />
           <span className="sr-only">Open menu</span>

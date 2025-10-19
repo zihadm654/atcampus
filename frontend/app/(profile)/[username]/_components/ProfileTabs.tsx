@@ -1,27 +1,23 @@
 "use client";
 
+import { BookOpen, Building2, Users2 } from "lucide-react";
 import { useState } from "react";
-import { Building2, GraduationCap, BookOpen, Users2 } from "lucide-react";
-import { UserRole } from "@/lib/validations/auth";
-import type { TabConfig, ProfilePermissions } from "@/types/profile-types";
-import { calculateProfilePermissions } from "@/lib/permissions";
-
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Icons } from "@/components/shared/icons";
-
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { calculateProfilePermissions } from "@/lib/permissions";
+import { UserRole } from "@/lib/validations/auth";
+import type { TabConfig } from "@/types/profile-types";
+import type { UserData } from "@/types/types";
+import { ClubsTab } from "./tabs/ClubsTab";
+import CoursesTab from "./tabs/CoursesTab";
+import { EventsTab } from "./tabs/EventsTab";
+import JobsTab from "./tabs/JobsTab";
+import MembersTab from "./tabs/MembersTab";
 // Import tab content components
 import OverviewTab from "./tabs/OverviewTab";
 import PostsTab from "./tabs/PostsTab";
-import CoursesTab from "./tabs/CoursesTab";
-import JobsTab from "./tabs/JobsTab";
 import ResearchTab from "./tabs/ResearchTab";
 import SchoolsTab from "./tabs/SchoolsTab";
-import AnalyticsTab from "./tabs/AnalyticsTab";
-import SettingsTab from "./tabs/SettingsTab";
-import MembersTab from "./tabs/MembersTab";
-import { ClubsTab } from "./tabs/ClubsTab";
-import { EventsTab } from "./tabs/EventsTab";
-import { UserData } from "@/types/types";
 
 // Enhanced role-based tab configuration with permissions
 const TAB_CONFIGURATIONS: Record<UserRole, TabConfig[]> = {
@@ -108,17 +104,23 @@ const TAB_CONFIGURATIONS: Record<UserRole, TabConfig[]> = {
       icon: Building2,
       roles: [UserRole.INSTITUTION],
     },
+    // {
+    //   value: "clubs",
+    //   label: "Clubs",
+    //   icon: Icons.chart,
+    //   roles: [UserRole.INSTITUTION],
+    // },
+    // {
+    //   value: "events",
+    //   label: "Events",
+    //   icon: Icons.settings,
+    //   roles: [UserRole.INSTITUTION],
+    // },
     {
-      value: "clubs",
-      label: "Clubs",
-      icon: Icons.chart,
-      roles: [UserRole.INSTITUTION],
-    },
-    {
-      value: "events",
-      label: "Events",
-      icon: Icons.settings,
-      roles: [UserRole.INSTITUTION],
+      value: "members",
+      label: "Members",
+      icon: Users2,
+      roles: [UserRole.ORGANIZATION],
     },
   ],
   ORGANIZATION: [
@@ -132,12 +134,6 @@ const TAB_CONFIGURATIONS: Record<UserRole, TabConfig[]> = {
       value: "posts",
       label: "Posts",
       icon: Icons.post,
-      roles: [UserRole.ORGANIZATION],
-    },
-    {
-      value: "members",
-      label: "Members",
-      icon: Users2,
       roles: [UserRole.ORGANIZATION],
     },
     {
@@ -188,7 +184,7 @@ const TAB_CONFIGURATIONS: Record<UserRole, TabConfig[]> = {
       value: "jobs",
       label: "Jobs",
       icon: Icons.job,
-      roles: [UserRole.ADMIN]
+      roles: [UserRole.ADMIN],
     },
     {
       value: "settings",
@@ -216,9 +212,8 @@ interface ProfileTabsProps {
 }
 
 // Helper function to get role-based tabs without permission filtering for profile viewing
-const getProfileTabs = (role: UserRole): TabConfig[] => {
-  return TAB_CONFIGURATIONS[role] || TAB_CONFIGURATIONS.STUDENT;
-};
+const getProfileTabs = (role: UserRole): TabConfig[] =>
+  TAB_CONFIGURATIONS[role] || TAB_CONFIGURATIONS.STUDENT;
 
 export default function ProfileTabs({
   user,
@@ -250,17 +245,17 @@ export default function ProfileTabs({
   };
 
   return (
-    <div className="bg-card overflow-hidden rounded-2xl shadow-sm">
-      <Tabs value={currentTab} onValueChange={handleTabChange}>
+    <div className="overflow-hidden rounded-2xl bg-card shadow-sm">
+      <Tabs onValueChange={handleTabChange} value={currentTab}>
         <div className="border-b">
-          <TabsList className="flex w-full justify-start p-0 bg-transparent h-auto">
+          <TabsList className="flex h-auto w-full justify-start bg-transparent p-0">
             {roleTabs.map((tab) => {
               const IconComponent = tab.icon;
               return (
                 <TabsTrigger
+                  className="flex items-center gap-2 rounded-none border-transparent border-b-2 px-4 py-3 transition-all data-[state=active]:border-blue-600 data-[state=active]:bg-blue-50/50 data-[state=active]:text-blue-600"
                   key={tab.value}
                   value={tab.value}
-                  className="flex items-center gap-2 rounded-none border-b-2 border-transparent px-4 py-3 transition-all data-[state=active]:border-blue-600 data-[state=active]:text-blue-600 data-[state=active]:bg-blue-50/50"
                 >
                   <IconComponent className="size-4" />
                   <span className="hidden md:block">{tab.label}</span>
@@ -271,82 +266,83 @@ export default function ProfileTabs({
         </div>
 
         {/* Tab Contents with proper permission checks and data passing */}
-        <TabsContent value="overview" className="space-y-2 p-3">
+        <TabsContent className="space-y-2 p-3" value="overview">
           <OverviewTab
-            user={user}
             courses={courses}
             jobs={jobs}
+            loading={loading?.courses || loading?.jobs}
             loggedInUserId={loggedInUserId}
             permissions={permissions}
-            loading={loading?.courses || loading?.jobs}
+            researches={researches}
+            user={user}
           />
         </TabsContent>
 
-        <TabsContent value="posts" className="mx-auto max-w-2xl p-6">
-          <PostsTab user={user} permissions={permissions} />
+        <TabsContent className="mx-auto max-w-2xl p-6" value="posts">
+          <PostsTab permissions={permissions} user={user} />
         </TabsContent>
 
-        <TabsContent value="courses" className="p-3">
+        <TabsContent className="p-3" value="courses">
           <CoursesTab
-            user={user}
             courses={courses}
             isCurrentUser={user.id === loggedInUserId}
             permissions={permissions}
+            user={user}
           />
         </TabsContent>
 
-        <TabsContent value="jobs" className="p-4">
+        <TabsContent className="p-4" value="jobs">
           <JobsTab
             jobs={jobs}
-            userRole={user.role as UserRole}
+            loading={loading?.jobs}
             loggedInUserId={loggedInUserId}
             permissions={permissions}
-            loading={loading?.jobs}
+            userRole={user.role as UserRole}
           />
         </TabsContent>
 
-        <TabsContent value="research" className="p-3">
+        <TabsContent className="p-3" value="research">
           <ResearchTab
-            researches={researches}
-            userRole={user.role as UserRole}
+            loading={loading?.researches}
             loggedInUserId={loggedInUserId}
             permissions={permissions}
-            loading={loading?.researches}
-            user={user} // Pass the user prop
+            researches={researches}
+            user={user}
+            userRole={user.role as UserRole} // Pass the user prop
           />
         </TabsContent>
 
         {/* Institution-specific tabs */}
-        <TabsContent value="schools" className="p-4">
+        <TabsContent className="p-4" value="schools">
           <SchoolsTab
-            user={user}
             isCurrentUser={user.id === loggedInUserId}
             permissions={permissions}
+            user={user}
           />
         </TabsContent>
 
         {/* Organization-specific tabs */}
-        <TabsContent value="members" className="p-3">
+        <TabsContent className="p-3" value="members">
           <MembersTab
-            user={user}
             loggedInUserId={loggedInUserId}
             permissions={permissions}
+            user={user}
           />
         </TabsContent>
 
         {/* Additional tabs for institutions */}
         <TabsContent value="clubs">
           <ClubsTab
-            username={user.username || user.id}
             isOwnProfile={user.id === loggedInUserId}
+            username={user.username || user.id}
             userRole={user.role}
           />
         </TabsContent>
 
         <TabsContent value="events">
           <EventsTab
-            username={user.username || user.id}
             isOwnProfile={user.id === loggedInUserId}
+            username={user.username || user.id}
             userRole={user.role}
           />
         </TabsContent>

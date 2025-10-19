@@ -3,9 +3,16 @@
 import { useTransition } from "react";
 import { toast } from "sonner";
 import { Button } from "../ui/button";
-import { acceptCollaborationRequest, declineCollaborationRequest } from "./collaboration-actions";
+import {
+  acceptCollaborationRequest,
+  declineCollaborationRequest,
+} from "./collaboration-actions";
 
-export function AcceptCollaborationButton({ requestId }: { requestId: string }) {
+export function AcceptCollaborationButton({
+  requestId,
+}: {
+  requestId: string;
+}) {
   const [pending, startTransition] = useTransition();
 
   const handleAccept = () => {
@@ -20,13 +27,17 @@ export function AcceptCollaborationButton({ requestId }: { requestId: string }) 
   };
 
   return (
-    <Button onClick={handleAccept} disabled={pending}>
+    <Button disabled={pending} onClick={handleAccept}>
       Accept
     </Button>
   );
 }
 
-export function DeclineCollaborationButton({ requestId }: { requestId: string }) {
+export function DeclineCollaborationButton({
+  requestId,
+}: {
+  requestId: string;
+}) {
   const [pending, startTransition] = useTransition();
 
   const handleDecline = () => {
@@ -41,7 +52,7 @@ export function DeclineCollaborationButton({ requestId }: { requestId: string })
   };
 
   return (
-    <Button variant="destructive" onClick={handleDecline} disabled={pending}>
+    <Button disabled={pending} onClick={handleDecline} variant="destructive">
       Decline
     </Button>
   );

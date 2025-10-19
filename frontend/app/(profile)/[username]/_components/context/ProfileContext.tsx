@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useReducer, ReactNode } from "react";
+import { createContext, type ReactNode, useContext, useReducer } from "react";
 import type { UserData } from "@/types/types";
 
 // Types
@@ -21,16 +21,16 @@ interface ProfileState {
 }
 
 type ProfileAction =
-  | { type: 'SET_USER'; payload: UserData }
-  | { type: 'SET_PERMISSIONS'; payload: ProfilePermissions }
-  | { type: 'TOGGLE_SECTION'; payload: string }
-  | { type: 'SET_ACTIVE_TAB'; payload: string }
-  | { type: 'SET_LOADING'; payload: boolean }
-  | { type: 'SET_ERROR'; payload: string | null }
-  | { type: 'EXPAND_SECTION'; payload: string }
-  | { type: 'COLLAPSE_SECTION'; payload: string }
-  | { type: 'EXPAND_ALL_SECTIONS'; payload: string[] }
-  | { type: 'COLLAPSE_ALL_SECTIONS' }
+  | { type: "SET_USER"; payload: UserData }
+  | { type: "SET_PERMISSIONS"; payload: ProfilePermissions }
+  | { type: "TOGGLE_SECTION"; payload: string }
+  | { type: "SET_ACTIVE_TAB"; payload: string }
+  | { type: "SET_LOADING"; payload: boolean }
+  | { type: "SET_ERROR"; payload: string | null }
+  | { type: "EXPAND_SECTION"; payload: string }
+  | { type: "COLLAPSE_SECTION"; payload: string }
+  | { type: "EXPAND_ALL_SECTIONS"; payload: string[] }
+  | { type: "COLLAPSE_ALL_SECTIONS" };
 
 interface ProfileContextType {
   state: ProfileState;
@@ -56,21 +56,24 @@ const initialState: ProfileState = {
     canViewPrivate: false,
   },
   expandedSections: new Set(),
-  activeTab: 'overview',
+  activeTab: "overview",
   loading: false,
   error: null,
 };
 
 // Reducer
-function profileReducer(state: ProfileState, action: ProfileAction): ProfileState {
+function profileReducer(
+  state: ProfileState,
+  action: ProfileAction
+): ProfileState {
   switch (action.type) {
-    case 'SET_USER':
+    case "SET_USER":
       return { ...state, user: action.payload };
 
-    case 'SET_PERMISSIONS':
+    case "SET_PERMISSIONS":
       return { ...state, permissions: action.payload };
 
-    case 'TOGGLE_SECTION': {
+    case "TOGGLE_SECTION": {
       const newExpanded = new Set(state.expandedSections);
       if (newExpanded.has(action.payload)) {
         newExpanded.delete(action.payload);
@@ -80,31 +83,31 @@ function profileReducer(state: ProfileState, action: ProfileAction): ProfileStat
       return { ...state, expandedSections: newExpanded };
     }
 
-    case 'EXPAND_SECTION': {
+    case "EXPAND_SECTION": {
       const newExpanded = new Set(state.expandedSections);
       newExpanded.add(action.payload);
       return { ...state, expandedSections: newExpanded };
     }
 
-    case 'COLLAPSE_SECTION': {
+    case "COLLAPSE_SECTION": {
       const newExpanded = new Set(state.expandedSections);
       newExpanded.delete(action.payload);
       return { ...state, expandedSections: newExpanded };
     }
 
-    case 'EXPAND_ALL_SECTIONS':
+    case "EXPAND_ALL_SECTIONS":
       return { ...state, expandedSections: new Set(action.payload) };
 
-    case 'COLLAPSE_ALL_SECTIONS':
+    case "COLLAPSE_ALL_SECTIONS":
       return { ...state, expandedSections: new Set() };
 
-    case 'SET_ACTIVE_TAB':
+    case "SET_ACTIVE_TAB":
       return { ...state, activeTab: action.payload };
 
-    case 'SET_LOADING':
+    case "SET_LOADING":
       return { ...state, loading: action.payload };
 
-    case 'SET_ERROR':
+    case "SET_ERROR":
       return { ...state, error: action.payload };
 
     default:
@@ -126,7 +129,7 @@ interface ProfileProviderProps {
 export function ProfileProvider({
   children,
   initialUser,
-  loggedInUserId
+  loggedInUserId,
 }: ProfileProviderProps) {
   const [state, dispatch] = useReducer(profileReducer, {
     ...initialState,
@@ -134,42 +137,44 @@ export function ProfileProvider({
     permissions: {
       canEdit: initialUser?.id === loggedInUserId,
       canDelete: initialUser?.id === loggedInUserId,
-      canManageAcademic: initialUser?.role === 'INSTITUTION' && initialUser?.id === loggedInUserId,
+      canManageAcademic:
+        initialUser?.role === "INSTITUTION" &&
+        initialUser?.id === loggedInUserId,
       canViewPrivate: initialUser?.id === loggedInUserId,
     },
   });
 
   // Helper functions
   const toggleSection = (sectionId: string) => {
-    dispatch({ type: 'TOGGLE_SECTION', payload: sectionId });
+    dispatch({ type: "TOGGLE_SECTION", payload: sectionId });
   };
 
   const setActiveTab = (tab: string) => {
-    dispatch({ type: 'SET_ACTIVE_TAB', payload: tab });
+    dispatch({ type: "SET_ACTIVE_TAB", payload: tab });
   };
 
   const expandSection = (sectionId: string) => {
-    dispatch({ type: 'EXPAND_SECTION', payload: sectionId });
+    dispatch({ type: "EXPAND_SECTION", payload: sectionId });
   };
 
   const collapseSection = (sectionId: string) => {
-    dispatch({ type: 'COLLAPSE_SECTION', payload: sectionId });
+    dispatch({ type: "COLLAPSE_SECTION", payload: sectionId });
   };
 
   const expandAllSections = (sectionIds: string[]) => {
-    dispatch({ type: 'EXPAND_ALL_SECTIONS', payload: sectionIds });
+    dispatch({ type: "EXPAND_ALL_SECTIONS", payload: sectionIds });
   };
 
   const collapseAllSections = () => {
-    dispatch({ type: 'COLLAPSE_ALL_SECTIONS' });
+    dispatch({ type: "COLLAPSE_ALL_SECTIONS" });
   };
 
   const setLoading = (loading: boolean) => {
-    dispatch({ type: 'SET_LOADING', payload: loading });
+    dispatch({ type: "SET_LOADING", payload: loading });
   };
 
   const setError = (error: string | null) => {
-    dispatch({ type: 'SET_ERROR', payload: error });
+    dispatch({ type: "SET_ERROR", payload: error });
   };
 
   const value: ProfileContextType = {
@@ -186,9 +191,7 @@ export function ProfileProvider({
   };
 
   return (
-    <ProfileContext.Provider value={value}>
-      {children}
-    </ProfileContext.Provider>
+    <ProfileContext.Provider value={value}>{children}</ProfileContext.Provider>
   );
 }
 
@@ -196,7 +199,7 @@ export function ProfileProvider({
 export function useProfileContext() {
   const context = useContext(ProfileContext);
   if (context === undefined) {
-    throw new Error('useProfileContext must be used within a ProfileProvider');
+    throw new Error("useProfileContext must be used within a ProfileProvider");
   }
   return context;
 }
@@ -213,7 +216,14 @@ export function useProfilePermissions() {
 }
 
 export function useProfileExpansion() {
-  const { state, toggleSection, expandSection, collapseSection, expandAllSections, collapseAllSections } = useProfileContext();
+  const {
+    state,
+    toggleSection,
+    expandSection,
+    collapseSection,
+    expandAllSections,
+    collapseAllSections,
+  } = useProfileContext();
   return {
     expandedSections: state.expandedSections,
     toggleSection,

@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { UserRole } from "@prisma/client";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { toast } from "sonner";
 
 import { admin } from "@/lib/auth-client";
@@ -52,10 +52,10 @@ export const UserRoleSelect = ({ userId, role }: UserRoleSelectProps) => {
 
   return (
     <select
-      value={role}
-      onChange={handleChange}
-      disabled={role === "ADMIN" || isPending}
       className="p-1 text-sm disabled:cursor-not-allowed disabled:opacity-50"
+      disabled={role === "ADMIN" || isPending}
+      onChange={handleChange}
+      value={role}
     >
       {Object.values(UserRole).map((item) => (
         <option className="dark:bg-accent" key={item} value={item}>

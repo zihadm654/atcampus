@@ -1,22 +1,19 @@
 "use client";
 
-import * as React from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { signInEmailAction } from "@/actions/sign-in-email.action";
-import { zodResolver } from "@hookform/resolvers/zod";
+import * as React from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-
-import { signIn } from "@/lib/auth-client";
-import { cn } from "@/lib/utils";
-import { loginSchema, TLogin } from "@/lib/validations/auth";
+import { signInEmailAction } from "@/actions/sign-in-email.action";
+import { Icons } from "@/components/shared/icons";
 import { buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Icons } from "@/components/shared/icons";
-
-import { SignInOauthButton } from "../auth/sign-in-oauth-button";
+import { signIn } from "@/lib/auth-client";
+import { cn } from "@/lib/utils";
+import { loginSchema, type TLogin } from "@/lib/validations/auth";
 
 interface UserAuthFormProps extends React.HTMLAttributes<HTMLDivElement> {
   type?: string;
@@ -44,7 +41,7 @@ export function UserAuthForm({ className, type, ...props }: UserAuthFormProps) {
     const res = await signInEmailAction(data);
     if (res.error) {
       toast.error(
-        typeof res.error === "string" ? res.error : "Registration failed",
+        typeof res.error === "string" ? res.error : "Registration failed"
       );
       setIsLoading(false);
     } else {
@@ -67,17 +64,17 @@ export function UserAuthForm({ className, type, ...props }: UserAuthFormProps) {
               Email
             </Label>
             <Input
-              id="email"
-              placeholder="name@example.com"
-              type="email"
               autoCapitalize="none"
               autoComplete="email"
               autoCorrect="off"
               disabled={isLoading || isGoogleLoading}
+              id="email"
+              placeholder="name@example.com"
+              type="email"
               {...register("email")}
             />
             {errors?.email && (
-              <p className="px-1 text-xs text-red-600">
+              <p className="px-1 text-red-600 text-xs">
                 {errors.email.message}
               </p>
             )}
@@ -88,30 +85,34 @@ export function UserAuthForm({ className, type, ...props }: UserAuthFormProps) {
                 Password
               </Label>
               <Link
-                tabIndex={-1}
+                className="text-muted-foreground text-sm italic hover:text-foreground"
                 href="/forgot-password"
-                className="text-muted-foreground hover:text-foreground text-sm italic"
+                tabIndex={-1}
               >
                 Forgot password?
               </Link>
             </div>
             <Input
-              id="password"
-              placeholder="********"
-              type="password"
               autoCapitalize="none"
               autoComplete="none"
               autoCorrect="off"
               disabled={isLoading || isGoogleLoading}
+              id="password"
+              placeholder="********"
+              type="password"
               {...register("password")}
             />
             {errors?.password && (
-              <p className="px-1 text-xs text-red-600">
+              <p className="px-1 text-red-600 text-xs">
                 {errors?.email?.message}
               </p>
             )}
           </div>
-          <button className={cn(buttonVariants())} disabled={isLoading}>
+          <button
+            className={cn(buttonVariants())}
+            disabled={isLoading}
+            type="submit"
+          >
             {isLoading && (
               <Icons.spinner className="mr-2 size-4 animate-spin" />
             )}
@@ -124,15 +125,15 @@ export function UserAuthForm({ className, type, ...props }: UserAuthFormProps) {
           <span className="w-full border-t" />
         </div>
         <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-background text-muted-foreground px-2">
+          <span className="bg-background px-2 text-muted-foreground">
             Or continue with
           </span>
         </div>
       </div>
       {/* <SignInOauthButton provider="google" /> */}
       <button
-        type="button"
         className={cn(buttonVariants({ variant: "outline" }))}
+        disabled={isLoading || isGoogleLoading}
         onClick={async () => {
           setIsGoogleLoading(true);
           await signIn.social({
@@ -141,7 +142,7 @@ export function UserAuthForm({ className, type, ...props }: UserAuthFormProps) {
             errorCallbackURL: "/login/error",
           });
         }}
-        disabled={isLoading || isGoogleLoading}
+        type="button"
       >
         {isGoogleLoading ? (
           <Icons.spinner className="mr-2 size-4 animate-spin" />

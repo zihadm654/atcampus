@@ -1,12 +1,10 @@
 "use client";
 
 import { useState } from "react";
-
-import { UserData } from "@/types/types";
-import { Button } from "@/components/ui/button";
-
-import EditProfileDialog from "./EditProfileDialog";
 import { Icons } from "@/components/shared/icons";
+import { Button } from "@/components/ui/button";
+import type { UserData } from "@/types/types";
+import EditProfileDialog from "./EditProfileDialog";
 
 interface EditProfileButtonProps {
   user: UserData;
@@ -17,16 +15,14 @@ export default function EditProfileButton({ user }: EditProfileButtonProps) {
 
   return (
     <>
-      <Button variant="outline" onClick={() => setShowDialog(true)}>
-        <span className="hidden lg:block">
-          Edit profile
-        </span>
-        <Icons.pencil className="size-4" />
+      <Button onClick={() => setShowDialog(true)} variant="outline">
+        <span className="hidden lg:block">Edit profile</span>
+        <Icons.pencil className="hidden size-4 max-md:block" />
       </Button>
       <EditProfileDialog
-        user={user}
-        open={showDialog}
         onOpenChange={setShowDialog}
+        open={showDialog}
+        user={user}
       />
     </>
   );

@@ -1,8 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { v4 as uuid } from "uuid";
-
-import { useUploadThing } from "@/lib/uploadthing";
 import { useToast } from "@/components/ui/use-toast";
+import { useUploadThing } from "@/lib/uploadthing";
 
 export interface Attachment {
   id: string;
@@ -34,15 +33,16 @@ export default function useMediaUpload() {
   const [attachments, setAttachments] = useState<Attachment[]>([]);
 
   // Clean up object URLs when attachments are removed
-  useEffect(() => {
-    return () => {
+  useEffect(
+    () => () => {
       attachments.forEach((attachment) => {
         if (attachment.preview) {
           URL.revokeObjectURL(attachment.preview);
         }
       });
-    };
-  }, [attachments]);
+    },
+    [attachments]
+  );
 
   const validateFile = useCallback((file: File) => {
     if (file.type.startsWith("image/")) {
@@ -83,7 +83,7 @@ export default function useMediaUpload() {
               `attachment_${uuid()}.${extension}`,
               {
                 type: file.type,
-              },
+              }
             );
             validFiles.push(newFile);
           }
@@ -115,7 +115,7 @@ export default function useMediaUpload() {
       },
       onUploadProgress: (progress) => {
         setAttachments((prev) =>
-          prev.map((a) => (a.isUploading ? { ...a, progress } : a)),
+          prev.map((a) => (a.isUploading ? { ...a, progress } : a))
         );
       },
       onUploadError: (error) => {
@@ -123,8 +123,8 @@ export default function useMediaUpload() {
           prev.map((a) =>
             a.isUploading
               ? { ...a, isUploading: false, error: error.message }
-              : a,
-          ),
+              : a
+          )
         );
         toast({
           variant: "destructive",
@@ -143,10 +143,10 @@ export default function useMediaUpload() {
               isUploading: false,
               progress: 100,
             };
-          }),
+          })
         );
       },
-    },
+    }
   );
 
   const handleStartUpload = useCallback(
@@ -169,7 +169,7 @@ export default function useMediaUpload() {
 
       startUpload(files);
     },
-    [attachments.length, isUploading, startUpload, toast],
+    [attachments.length, isUploading, startUpload, toast]
   );
 
   const removeAttachment = useCallback((attachmentId: string) => {
@@ -196,11 +196,11 @@ export default function useMediaUpload() {
   const retryUpload = useCallback(
     (attachmentId: string) => {
       const attachment = attachments.find((a) => a.id === attachmentId);
-      if (attachment && attachment.error) {
+      if (attachment?.error) {
         startUpload([attachment.file]);
       }
     },
-    [attachments, startUpload],
+    [attachments, startUpload]
   );
 
   return {

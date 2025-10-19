@@ -1,10 +1,12 @@
 "use client";
 
+import { useQueryClient } from "@tanstack/react-query";
+import { formatDistanceToNow } from "date-fns";
+import Link from "next/link";
 import { useState } from "react";
 import { toast } from "sonner";
-import Link from "next/link";
-import { useQueryClient } from "@tanstack/react-query";
-
+import { submitCourseForApproval } from "@/components/courses/actions";
+import { JsonToHtml } from "@/components/editor/JsonToHtml";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -15,9 +17,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { formatDistanceToNow } from "date-fns";
-import { JsonToHtml } from "@/components/editor/JsonToHtml";
-import { submitCourseForApproval } from "@/components/courses/actions";
 
 interface CourseApproval {
   id: string;
@@ -78,7 +77,9 @@ export function MyCoursesList({ courses }: MyCoursesListProps) {
 
       if (result.success) {
         toast.success("Course submitted for approval!");
-        await queryClient.invalidateQueries({ queryKey: ["instructor-courses"] });
+        await queryClient.invalidateQueries({
+          queryKey: ["instructor-courses"],
+        });
         await queryClient.invalidateQueries({ queryKey: ["course-feed"] });
       } else {
         toast.error(result.error || "Failed to submit for approval");
@@ -103,7 +104,7 @@ export function MyCoursesList({ courses }: MyCoursesListProps) {
     return (
       <Card>
         <CardContent className="flex flex-col items-center justify-center py-12">
-          <p className="text-muted-foreground text-center">
+          <p className="text-center text-muted-foreground">
             You haven't created any courses yet.
           </p>
           <Button asChild className="mt-4">
@@ -117,11 +118,11 @@ export function MyCoursesList({ courses }: MyCoursesListProps) {
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
       {courses.map((course) => (
-        <Card key={course.id} className="flex flex-col">
+        <Card className="flex flex-col" key={course.id}>
           <CardHeader className="pb-3">
             <div className="flex items-start justify-between gap-2">
-              <div className="flex-1 min-w-0">
-                <CardTitle className="text-lg line-clamp-2">
+              <div className="min-w-0 flex-1">
+                <CardTitle className="line-clamp-2 text-lg">
                   {course.title}
                 </CardTitle>
                 <CardDescription className="text-sm">
@@ -129,11 +130,11 @@ export function MyCoursesList({ courses }: MyCoursesListProps) {
                 </CardDescription>
               </div>
               <Badge
+                className="shrink-0 text-xs"
                 variant={
                   statusColors[course.status as keyof typeof statusColors] ||
                   "secondary"
                 }
-                className="text-xs shrink-0"
               >
                 {statusLabels[course.status as keyof typeof statusLabels] ||
                   course.status}
@@ -142,11 +143,11 @@ export function MyCoursesList({ courses }: MyCoursesListProps) {
           </CardHeader>
 
           <CardContent className="flex-1 pb-3">
-            <div className="text-sm text-muted-foreground line-clamp-3 mb-3">
+            <div className="mb-3 line-clamp-3 text-muted-foreground text-sm">
               <JsonToHtml json={JSON.parse(course.description)} />
             </div>
 
-            <div className="space-y-2 text-xs text-muted-foreground">
+            <div className="space-y-2 text-muted-foreground text-xs">
               <div>
                 <strong>School:</strong> {course.faculty.school.name}
               </div>
@@ -168,18 +169,21 @@ export function MyCoursesList({ courses }: MyCoursesListProps) {
               )}
             </div>
 
-            {course.approvals && course.approvals.length > 0 && course.approvals[0].comments && (
-              <div className="mt-3 p-2 bg-muted rounded-md">
-                <p className="text-xs text-muted-foreground">
-                  <strong>Review Notes:</strong> {course.approvals[0].comments}
-                </p>
-              </div>
-            )}
+            {course.approvals &&
+              course.approvals.length > 0 &&
+              course.approvals[0].comments && (
+                <div className="mt-3 rounded-md bg-muted p-2">
+                  <p className="text-muted-foreground text-xs">
+                    <strong>Review Notes:</strong>{" "}
+                    {course.approvals[0].comments}
+                  </p>
+                </div>
+              )}
           </CardContent>
 
-          <CardFooter className="pt-0 gap-2">
-            <div className="flex gap-2 w-full">
-              <Button asChild variant="outline" size="sm" className="flex-1">
+          <CardFooter className="gap-2 pt-0">
+            <div className="flex w-full gap-2">
+              <Button asChild className="flex-1" size="sm" variant="outline">
                 <Link href={`/courses/${course.id}/edit`}>Edit</Link>
               </Button>
 
@@ -187,10 +191,10 @@ export function MyCoursesList({ courses }: MyCoursesListProps) {
                 course.status === "NEEDS_REVISION" ||
                 course.status === "REJECTED") && (
                 <Button
-                  onClick={() => handleSubmitForApproval(course.id)}
-                  disabled={submittingCourses.has(course.id)}
-                  size="sm"
                   className="flex-1"
+                  disabled={submittingCourses.has(course.id)}
+                  onClick={() => handleSubmitForApproval(course.id)}
+                  size="sm"
                   variant={
                     course.status === "NEEDS_REVISION" ||
                     course.status === "REJECTED"
@@ -209,13 +213,13 @@ export function MyCoursesList({ courses }: MyCoursesListProps) {
               )}
 
               {course.status === "UNDER_REVIEW" && (
-                <Button disabled size="sm" className="flex-1">
+                <Button className="flex-1" disabled size="sm">
                   Under Review
                 </Button>
               )}
 
               {course.status === "PUBLISHED" && (
-                <Button asChild size="sm" className="flex-1">
+                <Button asChild className="flex-1" size="sm">
                   <Link href={`/courses/${course.id}`}>View Course</Link>
                 </Button>
               )}

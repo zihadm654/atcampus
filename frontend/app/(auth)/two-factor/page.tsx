@@ -1,10 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import Link from "next/link";
 import { AlertCircle, CheckCircle2 } from "lucide-react";
-
-import { authClient } from "@/lib/auth-client";
+import Link from "next/link";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -16,6 +14,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { authClient } from "@/lib/auth-client";
 
 export default function Component() {
   const [totpCode, setTotpCode] = useState("");
@@ -52,20 +51,25 @@ export default function Component() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {!success ? (
+          {success ? (
+            <div className="flex flex-col items-center justify-center space-y-2">
+              <CheckCircle2 className="h-12 w-12 text-green-500" />
+              <p className="font-semibold text-lg">Verification Successful</p>
+            </div>
+          ) : (
             <form onSubmit={handleSubmit}>
               <div className="space-y-2">
                 <Label htmlFor="totp">TOTP Code</Label>
                 <Input
                   id="totp"
-                  type="text"
                   inputMode="numeric"
-                  pattern="\d{6}"
                   maxLength={6}
-                  value={totpCode}
                   onChange={(e) => setTotpCode(e.target.value)}
+                  pattern="\d{6}"
                   placeholder="Enter 6-digit code"
                   required
+                  type="text"
+                  value={totpCode}
                 />
               </div>
               {error && (
@@ -74,20 +78,15 @@ export default function Component() {
                   <span className="text-sm">{error}</span>
                 </div>
               )}
-              <Button type="submit" className="mt-4 w-full">
+              <Button className="mt-4 w-full" type="submit">
                 Verify
               </Button>
             </form>
-          ) : (
-            <div className="flex flex-col items-center justify-center space-y-2">
-              <CheckCircle2 className="h-12 w-12 text-green-500" />
-              <p className="text-lg font-semibold">Verification Successful</p>
-            </div>
           )}
         </CardContent>
-        <CardFooter className="text-muted-foreground gap-2 text-sm">
+        <CardFooter className="gap-2 text-muted-foreground text-sm">
           <Link href="/two-factor/otp">
-            <Button variant="link" size="sm">
+            <Button size="sm" variant="link">
               Switch to Email Verification
             </Button>
           </Link>

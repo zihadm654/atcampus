@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { UserData } from "@/types/types";
+import { Icons } from "@/components/shared/icons";
 import { Button } from "@/components/ui/button";
 import {
   Tooltip,
@@ -9,8 +9,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import type { UserData } from "@/types/types";
 import SkillDialog from "./SkillDialog";
-import { Icons } from "@/components/shared/icons";
 
 interface SkillButtonProps {
   user: UserData | { id: string };
@@ -44,16 +44,16 @@ export default function SkillButton({
 
   const buttonContent = (
     <Button
-      variant={variant}
-      size={size}
-      onClick={() => setShowDialog(true)}
-      disabled={disabled}
-      className={className}
-      aria-label={tooltip}
-      aria-haspopup="dialog"
       aria-expanded={showDialog}
+      aria-haspopup="dialog"
+      aria-label={tooltip}
+      className={className}
+      disabled={disabled}
+      onClick={() => setShowDialog(true)}
+      size={size}
+      variant={variant}
     >
-      {showIcon && <Icons.add className="mr-2 h-4 w-4" aria-hidden="true" />}
+      {showIcon && <Icons.add aria-hidden="true" className="mr-2 h-4 w-4" />}
       Add Skill
     </Button>
   );
@@ -63,17 +63,17 @@ export default function SkillButton({
       <TooltipProvider delayDuration={100}>
         <Tooltip>
           <TooltipTrigger asChild>{buttonContent}</TooltipTrigger>
-          <TooltipContent side="top" align="center">
+          <TooltipContent align="center" side="top">
             <p className="text-xs">{tooltip}</p>
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
 
       <SkillDialog
+        onOpenChange={handleDialogClose}
+        open={showDialog}
         skill={null}
         user={user as UserData}
-        open={showDialog}
-        onOpenChange={handleDialogClose}
       />
     </>
   );

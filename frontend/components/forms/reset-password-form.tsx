@@ -1,13 +1,12 @@
 "use client";
 
-import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { toast } from "sonner";
-
-import { resetPassword } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { resetPassword } from "@/lib/auth-client";
 
 interface ResetPasswordFormProps {
   token: string;
@@ -55,15 +54,15 @@ export const ResetPasswordForm = ({ token }: ResetPasswordFormProps) => {
     <form className="w-full max-w-sm space-y-4" onSubmit={handleSubmit}>
       <div className="flex flex-col gap-2">
         <Label htmlFor="password">New Password</Label>
-        <Input type="password" id="password" name="password" />
+        <Input id="password" name="password" type="password" />
       </div>
 
       <div className="flex flex-col gap-2">
         <Label htmlFor="confirmPassword">Confirm Password</Label>
-        <Input type="password" id="confirmPassword" name="confirmPassword" />
+        <Input id="confirmPassword" name="confirmPassword" type="password" />
       </div>
 
-      <Button type="submit" disabled={isPending}>
+      <Button disabled={isPending} type="submit">
         Reset Password
       </Button>
     </form>

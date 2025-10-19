@@ -1,40 +1,27 @@
 "use client";
 
-import { useState } from "react";
-import Image from "next/image";
-import { useRouter } from "next/navigation";
 import {
   Edit,
-  Fingerprint,
   Laptop,
   Loader2,
   LogOut,
   LucidePhone,
-  Plus,
   QrCode,
   ShieldCheck,
   ShieldOff,
   StopCircle,
-  Trash,
   X,
 } from "lucide-react";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 import QRCode from "react-qr-code";
 import { toast } from "sonner";
 import { UAParser } from "ua-parser-js";
-
-import type { Session } from "@/types/auth-types";
-import { authClient as client, signOut, useSession } from "@/lib/auth-client";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import CopyButton from "@/components/ui/copy-button";
 import {
@@ -49,14 +36,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PasswordInput } from "@/components/ui/password-input";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { authClient as client, signOut, useSession } from "@/lib/auth-client";
+import type { Session } from "@/types/auth-types";
 
 export default function UserCard(props: {
   session: Session | null;
@@ -133,7 +114,7 @@ export default function UserCard(props: {
                         toast.success("Verification email sent successfully");
                         setEmailVerificationPending(false);
                       },
-                    },
+                    }
                   );
                 }}
                 size="sm"
@@ -153,49 +134,48 @@ export default function UserCard(props: {
           <p className="font-medium text-lg">Active Sessions</p>
           {activeSessions
             .filter((session) => session.userAgent)
-            .map((session) => {
-              return (
-                <div key={session.id}>
-                  <div className="flex items-center gap-2 font-medium text-black text-md dark:text-white">
-                    {new UAParser(session.userAgent || "").getDevice().type ===
-                      "mobile" ? (
-                      <LucidePhone />
-                    ) : (
-                      <Laptop size={16} />
-                    )}
-                    {new UAParser(session.userAgent || "").getOS().name},{" "}
-                    {new UAParser(session.userAgent || "").getBrowser().name}
-                    <button
-                      className="cursor-pointer border-muted-foreground text-red-500 text-xs underline opacity-80"
-                      onClick={async () => {
-                        setIsTerminating(session.id);
-                        const res = await client.revokeSession({
-                          token: session.token,
-                        });
+            .map((session) => (
+              <div key={session.id}>
+                <div className="flex items-center gap-2 font-medium text-black text-md dark:text-white">
+                  {new UAParser(session.userAgent || "").getDevice().type ===
+                  "mobile" ? (
+                    <LucidePhone />
+                  ) : (
+                    <Laptop size={16} />
+                  )}
+                  {new UAParser(session.userAgent || "").getOS().name},{" "}
+                  {new UAParser(session.userAgent || "").getBrowser().name}
+                  <button
+                    className="cursor-pointer border-muted-foreground text-red-500 text-xs underline opacity-80"
+                    onClick={async () => {
+                      setIsTerminating(session.id);
+                      const res = await client.revokeSession({
+                        token: session.token,
+                      });
 
-                        if (res.error) {
-                          toast.error(res.error.message);
-                        } else {
-                          toast.success("Session terminated successfully");
-                          removeActiveSession(session.id);
-                        }
-                        if (session.id === props.session?.session.id)
-                          router.refresh();
-                        setIsTerminating(undefined);
-                      }}
-                    >
-                      {isTerminating === session.id ? (
-                        <Loader2 className="animate-spin" size={15} />
-                      ) : session.id === props.session?.session.id ? (
-                        "Sign Out"
-                      ) : (
-                        "Terminate"
-                      )}
-                    </button>
-                  </div>
+                      if (res.error) {
+                        toast.error(res.error.message);
+                      } else {
+                        toast.success("Session terminated successfully");
+                        removeActiveSession(session.id);
+                      }
+                      if (session.id === props.session?.session.id)
+                        router.refresh();
+                      setIsTerminating(undefined);
+                    }}
+                    type="button"
+                  >
+                    {isTerminating === session.id ? (
+                      <Loader2 className="animate-spin" size={15} />
+                    ) : session.id === props.session?.session.id ? (
+                      "Sign Out"
+                    ) : (
+                      "Terminate"
+                    )}
+                  </button>
                 </div>
-              );
-            })}
+              </div>
+            ))}
         </div>
         <div className="flex flex-wrap items-center justify-between gap-2 border-y py-4">
           <div className="flex flex-col gap-2">
@@ -245,7 +225,7 @@ export default function UserCard(props: {
                           onClick={async () => {
                             if (twoFaPassword.length < 8) {
                               toast.error(
-                                "Password must be at least 8 characters",
+                                "Password must be at least 8 characters"
                               );
                               return;
                             }
@@ -257,7 +237,7 @@ export default function UserCard(props: {
                                 onSuccess(context) {
                                   setTwoFactorVerifyURI(context.data.totpURI);
                                 },
-                              },
+                              }
                             );
                             setTwoFaPassword("");
                           }}
@@ -567,7 +547,7 @@ function ChangePassword() {
               if (res.error) {
                 toast.error(
                   res.error.message ||
-                  "Couldn't change your password! Make sure it's correct",
+                    "Couldn't change your password! Make sure it's correct"
                 );
               } else {
                 setOpen(false);

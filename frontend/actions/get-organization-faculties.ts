@@ -1,6 +1,6 @@
-'use server';
+"use server";
 
-import { prisma } from '@/lib/db';
+import { prisma } from "@/lib/db";
 
 /**
  * Fetches all faculties for a given organization
@@ -19,8 +19,8 @@ export async function getOrganizationFaculties(organizationId: string) {
     });
 
     // Extract all faculties from all schools
-    const faculties = schools.flatMap(school =>
-      school.faculties.map(faculty => ({
+    const faculties = schools.flatMap((school) =>
+      school.faculties.map((faculty) => ({
         ...faculty,
         schoolName: school.name,
       }))
@@ -28,11 +28,12 @@ export async function getOrganizationFaculties(organizationId: string) {
 
     return { success: true, faculties };
   } catch (error) {
-    console.error('Error fetching organization faculties:', error);
+    console.error("Error fetching organization faculties:", error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'An unknown error occurred',
-      faculties: []
+      error:
+        error instanceof Error ? error.message : "An unknown error occurred",
+      faculties: [],
     };
   }
 }

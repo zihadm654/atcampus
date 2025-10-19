@@ -1,29 +1,25 @@
-import { cache } from "react";
-import { Metadata } from "next";
-import { notFound, redirect } from "next/navigation";
 import { Prisma } from "@prisma/client";
-
+import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+import { cache } from "react";
+import { prisma } from "@/lib/db";
+import { getCurrentUser } from "@/lib/session";
+import {
+  type FollowerInfo,
+  getUserDataSelect,
+  type UserData,
+} from "@/types/types";
+import { ProfileProvider } from "./_components/context/ProfileContext";
 import {
   getCourseEnrollments,
-  getProfessorCourses,
-  getResearchProjects,
-  getJobApplications,
   getCreatedJobs,
   getInstitutionCourses,
+  getJobApplications,
+  getProfessorCourses,
+  getResearchProjects,
 } from "./_components/lib/queries";
-import {
-  FollowerInfo,
-  getJobDataInclude,
-  getResearchDataInclude,
-  getUserDataSelect,
-  UserData,
-} from "@/types/types";
-import { getCurrentUser } from "@/lib/session";
-
 import ProfileHeader from "./_components/ProfileHeader";
 import ProfileTabs from "./_components/ProfileTabs";
-import { ProfileProvider } from "./_components/context/ProfileContext";
-import { prisma } from "@/lib/db";
 
 interface PageProps {
   params: Promise<{ username: string }>;
@@ -52,23 +48,24 @@ const getJobs = cache(async (user: UserData) => {
     // For organizations, fetch created jobs
     const createdJobs = await getCreatedJobs(user.id, 10);
     return createdJobs;
-  } else {
-    // For students, fetch applied jobs
-    const applications = await getJobApplications(user.id, 10);
-    // Extract jobs from applications for student view
-    return applications.map((app: any) => app.job);
   }
+  // For students, fetch applied jobs
+  const applications = await getJobApplications(user.id, 10);
+  // Extract jobs from applications for student view
+  return applications.map((app: any) => app.job);
 });
 
 const getCourses = cache(async (user: UserData) => {
   switch (user.role) {
-    case "PROFESSOR":
+    case "PROFESSOR": {
       const professorCourses = await getProfessorCourses(user.id, 10);
       return professorCourses;
-    case "INSTITUTION":
+    }
+    case "INSTITUTION": {
       const institutionCourses = await getInstitutionCourses(user.id, 10);
       return institutionCourses;
-    case "ADMIN":
+    }
+    case "ADMIN": {
       // For admin, we might want to show all courses or filter by some criteria
       // For now, let's get all courses with limit
       const adminCourses = await prisma.course.findMany({
@@ -98,10 +95,16 @@ const getCourses = cache(async (user: UserData) => {
         },
       });
       return adminCourses;
-    default:
+    }
+    default: {
       // For STUDENT and other roles, get enrolled courses
-      const enrolled = await getCourseEnrollments(user.id, 10);
-      return enrolled;
+      const enrollments = await getCourseEnrollments(user.id, 10);
+      // Transform enrollment data to extract course information
+      const enrolledCourses = enrollments.map(
+        (enrollment) => enrollment.course
+      );
+      return enrolledCourses;
+    }
   }
 });
 
@@ -149,20 +152,20 @@ export default async function Page({ params }: PageProps) {
   };
   return (
     <ProfileProvider initialUser={user} loggedInUserId={loggedInUser.id}>
-      <div className="w-full min-w-0 space-y-5 container mx-auto max-md:p-2">
+      <div className="container mx-auto w-full min-w-0 space-y-5 max-md:p-2">
         <ProfileHeader
-          user={user}
-          loggedInUserId={loggedInUser.id}
           followerInfo={followerInfo}
           isOwnProfile={user.id === loggedInUser.id}
+          loggedInUserId={loggedInUser.id}
+          user={user}
         />
         <ProfileTabs
-          user={user}
-          jobs={jobs}
-          researches={researches}
           courses={courses}
+          jobs={jobs}
           loggedInUserId={loggedInUser.id}
           loggedInUserRole={loggedInUser.role}
+          researches={researches}
+          user={user}
         />
       </div>
     </ProfileProvider>

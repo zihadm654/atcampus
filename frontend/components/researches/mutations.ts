@@ -1,13 +1,13 @@
-import { usePathname, useRouter } from "next/navigation";
 import {
-  InfiniteData,
-  QueryFilters,
+  type InfiniteData,
+  type QueryFilters,
   useMutation,
   useQueryClient,
 } from "@tanstack/react-query";
+import { usePathname, useRouter } from "next/navigation";
 import { toast } from "sonner";
 
-import { ResearchesPage } from "@/types/types";
+import type { ResearchesPage } from "@/types/types";
 
 import { deleteResearch } from "./actions";
 
@@ -33,11 +33,11 @@ export function useDeleteResearchMutation() {
             pages: oldData.pages.map((page) => ({
               nextCursor: page.nextCursor,
               researches: page.researches.filter(
-                (r) => r.id !== deletedResearch.id,
+                (r) => r.id !== deletedResearch.id
               ),
             })),
           };
-        },
+        }
       );
 
       toast.success("Research deleted");

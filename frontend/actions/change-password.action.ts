@@ -1,8 +1,8 @@
 "use server";
 
-import { auth } from "@/lib/auth";
 import { APIError } from "better-auth/api";
 import { headers } from "next/headers";
+import { auth } from "@/lib/auth";
 
 export async function changePasswordAction(formData: FormData) {
   const currentPassword = String(formData.get("currentPassword"));

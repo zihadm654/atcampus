@@ -1,16 +1,13 @@
 "use client";
 
-import { useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
-import { updateUserRole, type FormData } from "@/actions/update-user-role";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { User, UserRole } from "@prisma/client";
+import { type User, UserRole } from "@prisma/client";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { z } from "zod";
-
-import { admin, useSession } from "@/lib/auth-client";
-import { TUserRole, userRoleSchema } from "@/lib/validations/user";
+import { SectionColumns } from "@/components/dashboard/section-columns";
+import { Icons } from "@/components/shared/icons";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -27,8 +24,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { SectionColumns } from "@/components/dashboard/section-columns";
-import { Icons } from "@/components/shared/icons";
+import { admin } from "@/lib/auth-client";
+import { type TUserRole, userRoleSchema } from "@/lib/validations/user";
 
 interface UserNameFormProps {
   user: Pick<User, "id" | "role">;
@@ -47,7 +44,7 @@ export function UserRoleForm({ user }: UserNameFormProps) {
   const form = useForm<TUserRole>({
     resolver: zodResolver(userRoleSchema),
     values: {
-      role: role,
+      role,
     },
   });
   const router = useRouter();
@@ -100,8 +97,8 @@ export function UserRoleForm({ user }: UserNameFormProps) {
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)}>
         <SectionColumns
-          title="Your Role"
           description="Select the role what you want for test the app."
+          title="Your Role"
         >
           <div className="flex w-full items-center gap-2">
             <FormField
@@ -112,14 +109,14 @@ export function UserRoleForm({ user }: UserNameFormProps) {
                   <FormLabel className="sr-only">Role</FormLabel>
                   <Select
                     // TODO:(FIX) Option value not update. Use useState for the moment
+                    defaultValue={user.role}
+                    disabled={role === "INSTITUTION" || isPending}
+                    name={field.name}
                     onValueChange={(value: UserRole) => {
                       setUpdated(user.role !== value);
                       setRole(value);
                       field.onChange;
                     }}
-                    name={field.name}
-                    defaultValue={user.role}
-                    disabled={role === "INSTITUTION" || isPending}
                   >
                     <FormControl>
                       <SelectTrigger className="w-full">
@@ -139,10 +136,10 @@ export function UserRoleForm({ user }: UserNameFormProps) {
               )}
             />
             <Button
+              className="w-[67px] shrink-0 px-0 sm:w-[130px]"
+              disabled={isPending || !updated}
               type="submit"
               variant="default"
-              disabled={isPending || !updated}
-              className="w-[67px] shrink-0 px-0 sm:w-[130px]"
             >
               {isPending ? (
                 <Icons.spinner className="size-4 animate-spin" />
@@ -155,7 +152,7 @@ export function UserRoleForm({ user }: UserNameFormProps) {
             </Button>
           </div>
           <div className="flex flex-col justify-between p-1">
-            <p className="text-muted-foreground text-[13px]">
+            <p className="text-[13px] text-muted-foreground">
               Remove this field on real production
             </p>
           </div>

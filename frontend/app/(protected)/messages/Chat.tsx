@@ -1,14 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import { Loader2, WifiOff } from "lucide-react";
 import { useTheme } from "next-themes";
+import { useEffect, useState } from "react";
 import { Chat as StreamChat } from "stream-chat-react";
-
+import { Button } from "@/components/ui/button";
 import ChatChannel from "./ChatChannel";
 import ChatSidebar from "./ChatSidebar";
 import useInitializeChatClient from "./useInitializeChatClient";
-import { Button } from "@/components/ui/button";
 
 export default function Chat() {
   const chatClient = useInitializeChatClient();
@@ -21,12 +20,12 @@ export default function Chat() {
     const handleOnline = () => setIsOnline(true);
     const handleOffline = () => setIsOnline(false);
 
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
-    
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+
     return () => {
-      window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
     };
   }, []);
 
@@ -36,10 +35,10 @@ export default function Chat() {
 
   if (!isOnline) {
     return (
-      <div className="bg-card flex min-h-80 w-full flex-col items-center justify-center gap-4 rounded-2xl p-6 shadow-sm">
-        <WifiOff className="text-muted-foreground size-12" />
-        <h3 className="text-xl font-semibold">You're offline</h3>
-        <p className="text-muted-foreground text-center">
+      <div className="flex min-h-80 w-full flex-col items-center justify-center gap-4 rounded-2xl bg-card p-6 shadow-sm">
+        <WifiOff className="size-12 text-muted-foreground" />
+        <h3 className="font-semibold text-xl">You're offline</h3>
+        <p className="text-center text-muted-foreground">
           Please check your internet connection to continue chatting
         </p>
         <Button onClick={() => window.location.reload()}>
@@ -50,7 +49,7 @@ export default function Chat() {
   }
 
   return (
-    <main className="bg-card relative min-h-80 w-full overflow-hidden rounded-2xl shadow-sm">
+    <main className="relative min-h-80 w-full overflow-hidden rounded-2xl bg-card shadow-sm">
       <div className="absolute top-0 bottom-0 flex w-full">
         <StreamChat
           client={chatClient}
@@ -61,8 +60,8 @@ export default function Chat() {
           }
         >
           <ChatSidebar
-            open={sidebarOpen}
             onClose={() => setSidebarOpen(false)}
+            open={sidebarOpen}
           />
           <ChatChannel
             open={!sidebarOpen}

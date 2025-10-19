@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
-import { redirect } from "next/navigation";
-import { getCurrentUser } from "@/lib/session";
-import { constructMetadata } from "@/lib/utils";
+import { cache } from "react";
 import ResearchFeed from "@/components/feed/ResearchFeed";
 import { prisma } from "@/lib/db";
-import { cache } from "react";
+import { getCurrentUser } from "@/lib/session";
+import { constructMetadata } from "@/lib/utils";
 
 export const metadata: Metadata = constructMetadata({
   title: "Research - AtCampus",

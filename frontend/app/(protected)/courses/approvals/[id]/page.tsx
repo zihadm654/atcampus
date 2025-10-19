@@ -1,8 +1,8 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getCurrentUser } from "@/lib/session";
 import { prisma } from "@/lib/db";
+import { getCurrentUser } from "@/lib/session";
 import { CourseReviewForm } from "./_components/CourseReviewForm";
-import { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Course Approval Review",
@@ -61,7 +61,7 @@ export default async function CourseApprovalPage({ params }: PageProps) {
     },
   });
 
-  if (!approval || !approval.course) {
+  if (!approval?.course) {
     notFound();
   }
 
@@ -75,7 +75,7 @@ export default async function CourseApprovalPage({ params }: PageProps) {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">
+          <h1 className="mb-2 font-bold text-2xl text-gray-900">
             Access Denied
           </h1>
           <p className="text-gray-600">
@@ -91,57 +91,60 @@ export default async function CourseApprovalPage({ params }: PageProps) {
     approval.status === "UNDER_REVIEW";
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-4xl">
+    <div className="container mx-auto max-w-4xl px-4 py-8">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold mb-2">
-          Course Approval
-        </h1>
+        <h1 className="mb-2 font-bold text-2xl">Course Approval</h1>
         <p className="text-sm">Review course submission for approval</p>
       </div>
 
-      <CourseReviewForm approval={{
-        ...approval,
-        comments: approval.comments || undefined,
-        submittedAt: approval.submittedAt.toISOString(),
-        reviewedAt: approval.reviewedAt ? approval.reviewedAt.toISOString() : undefined,
-        course: {
-          id: approval.course.id,
-          title: approval.course.title,
-          code: approval.course.code,
-          description: approval.course.description,
-          department: approval.course.department || undefined,
-          difficulty: approval.course.difficulty || undefined,
-          credits: approval.course.credits || undefined,
-          estimatedHours: approval.course.estimatedHours || undefined,
-          year: approval.course.year || undefined,
+      <CourseReviewForm
+        approval={{
+          ...approval,
+          comments: approval.comments || undefined,
+          submittedAt: approval.submittedAt.toISOString(),
+          reviewedAt: approval.reviewedAt
+            ? approval.reviewedAt.toISOString()
+            : undefined,
+          course: {
+            id: approval.course.id,
+            title: approval.course.title,
+            code: approval.course.code,
+            description: approval.course.description,
+            department: approval.course.department || undefined,
+            difficulty: approval.course.difficulty || undefined,
+            credits: approval.course.credits || undefined,
+            estimatedHours: approval.course.estimatedHours || undefined,
+            year: approval.course.year || undefined,
 
-          objectives: approval.course.objectives || [],
-          outcomes: approval.course.outcomes || [],
+            objectives: approval.course.objectives || [],
+            outcomes: approval.course.outcomes || [],
 
-          instructor: {
-            id: approval.course.instructor.id,
-            name: approval.course.instructor.name,
-            email: approval.course.instructor.email,
-            image: approval.course.instructor.image || undefined
+            instructor: {
+              id: approval.course.instructor.id,
+              name: approval.course.instructor.name,
+              email: approval.course.instructor.email,
+              image: approval.course.instructor.image || undefined,
+            },
+            faculty: {
+              name: approval.course.faculty.name,
+              school: {
+                name: approval.course.faculty.school.name,
+                institution: {
+                  name: approval.course.faculty.school.institution.name,
+                  id: approval.course.faculty.school.institution.id,
+                },
+              },
+            },
           },
-          faculty: {
-            name: approval.course.faculty.name,
-            school: {
-              name: approval.course.faculty.school.name,
-              institution: {
-                name: approval.course.faculty.school.institution.name,
-                id: approval.course.faculty.school.institution.id
-              }
-            }
-          }
-        },
-        reviewer: {
-          id: approval.reviewer.id,
-          name: approval.reviewer.name,
-          email: approval.reviewer.email,
-          image: approval.reviewer.image || undefined
-        }
-      }} canReview={canReview} />
+          reviewer: {
+            id: approval.reviewer.id,
+            name: approval.reviewer.name,
+            email: approval.reviewer.email,
+            image: approval.reviewer.image || undefined,
+          },
+        }}
+        canReview={canReview}
+      />
     </div>
   );
 }

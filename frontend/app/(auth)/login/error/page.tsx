@@ -12,7 +12,7 @@ export default async function Page({ searchParams }: PageProps) {
       <div className="space-y-4">
         <ReturnButton href="/login" label="Login" />
 
-        <h1 className="text-3xl font-bold">Login Error</h1>
+        <h1 className="font-bold text-3xl">Login Error</h1>
       </div>
 
       <p className="text-destructive">

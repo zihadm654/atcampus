@@ -1,26 +1,25 @@
 "use client";
 
-import { ClipboardEvent, useCallback, useRef } from "react";
-import Image from "next/image";
 import Placeholder from "@tiptap/extension-placeholder";
 import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { useDropzone } from "@uploadthing/react";
-import { AlertCircle, ImageIcon, Loader2, RefreshCw, X } from "lucide-react";
+import { AlertCircle, Loader2, RefreshCw, X } from "lucide-react";
+import Image from "next/image";
+import { type ClipboardEvent, useCallback, useRef } from "react";
 import {
   generateClientDropzoneAccept,
   generatePermittedFileTypes,
 } from "uploadthing/client";
-
-import { useSession } from "@/lib/auth-client";
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
 import LoadingButton from "@/components/feed/LoadingButton";
 import UserAvatar from "@/components/UserAvatar";
+import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
+import { useSession } from "@/lib/auth-client";
+import { cn } from "@/lib/utils";
 
 import { useSubmitPostMutation } from "./mutations";
-import useMediaUpload, { Attachment } from "./useMediaUpload";
+import useMediaUpload, { type Attachment } from "./useMediaUpload";
 
 import "./styles.css";
 
@@ -51,35 +50,35 @@ function AttachmentPreview({
       >
         {isImage && attachment.preview ? (
           <Image
-            src={attachment.preview}
             alt={attachment.file.name}
             className={cn(
               "h-full w-full object-cover transition-opacity",
               attachment.isUploading && "opacity-50"
             )}
-            width={96}
             height={96}
+            src={attachment.preview}
+            width={96}
           />
         ) : isVideo ? (
-          <div className="bg-muted flex h-full w-full items-center justify-center">
-            <Icons.video className="text-muted-foreground h-8 w-8" />
+          <div className="flex h-full w-full items-center justify-center bg-muted">
+            <Icons.video className="h-8 w-8 text-muted-foreground" />
           </div>
         ) : null}
 
         {attachment.isUploading && (
-          <div className="bg-background/50 absolute inset-0 flex items-center justify-center">
+          <div className="absolute inset-0 flex items-center justify-center bg-background/50">
             <Loader2 className="h-6 w-6 animate-spin" />
           </div>
         )}
 
         {attachment.error && (
-          <div className="bg-background/50 absolute inset-0 flex flex-col items-center justify-center gap-2 p-2">
-            <AlertCircle className="text-destructive h-6 w-6" />
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-background/50 p-2">
+            <AlertCircle className="h-6 w-6 text-destructive" />
             <Button
-              variant="ghost"
-              size="sm"
               className="h-8 px-2"
               onClick={onRetry}
+              size="sm"
+              variant="ghost"
             >
               <RefreshCw className="mr-1 h-4 w-4" />
               Retry
@@ -89,16 +88,16 @@ function AttachmentPreview({
 
         {attachment.progress != null && attachment.isUploading && (
           <div className="absolute bottom-0 left-0 w-full px-2 pb-2">
-            <Progress value={attachment.progress} className="h-1" />
+            <Progress className="h-1" value={attachment.progress} />
           </div>
         )}
       </div>
 
       <Button
-        variant="ghost"
-        size="icon"
-        className="absolute -top-2 -right-2 h-6 w-6 rounded-full opacity-0 transition-opacity group-hover:opacity-100"
+        className="-top-2 -right-2 absolute h-6 w-6 rounded-full opacity-0 transition-opacity group-hover:opacity-100"
         onClick={onRemove}
+        size="icon"
+        variant="ghost"
       >
         <X className="h-4 w-4" />
       </Button>
@@ -154,13 +153,13 @@ export default function PostEditor() {
 
   editorRef.current = editor;
 
-  const getContent = useCallback(() => {
-    return (
+  const getContent = useCallback(
+    () =>
       editorRef.current?.getText({
         blockSeparator: "\n",
-      }) || ""
-    );
-  }, []);
+      }) || "",
+    []
+  );
 
   const handleSubmit = useCallback(() => {
     const content = getContent();
@@ -168,7 +167,7 @@ export default function PostEditor() {
       {
         content,
         mediaIds: attachments
-          .filter((a) => !a.isUploading && !a.error && a.mediaId)
+          .filter((a) => !(a.isUploading || a.error) && a.mediaId)
           .map((a) => a.mediaId!) as string[],
       },
       {
@@ -194,7 +193,7 @@ export default function PostEditor() {
   );
 
   return (
-    <div className="bg-card flex flex-col gap-3 rounded-2xl p-3 shadow-sm">
+    <div className="flex flex-col gap-3 rounded-2xl bg-card p-3 shadow-sm">
       <div className="flex gap-3">
         <UserAvatar
           avatarUrl={user?.image}
@@ -206,21 +205,21 @@ export default function PostEditor() {
             {...rootProps}
             className={cn(
               "relative rounded-2xl transition-colors",
-              isDragActive && "ring-primary ring-2 ring-offset-2"
+              isDragActive && "ring-2 ring-primary ring-offset-2"
             )}
           >
             <input {...getInputProps()} />
             <EditorContent
-              editor={editor}
-              onPaste={onPaste}
               className={cn(
-                "bg-background max-h-[20rem] w-full overflow-y-auto rounded-2xl px-5 py-3",
+                "max-h-[20rem] w-full overflow-y-auto rounded-2xl bg-background px-5 py-3",
                 isDragActive && "pointer-events-none opacity-50"
               )}
+              editor={editor}
+              onPaste={onPaste}
             />
             {isDragActive && (
-              <div className="bg-primary/10 absolute inset-0 flex items-center justify-center rounded-2xl">
-                <p className="text-lg font-medium">Drop files to upload</p>
+              <div className="absolute inset-0 flex items-center justify-center rounded-2xl bg-primary/10">
+                <p className="font-medium text-lg">Drop files to upload</p>
               </div>
             )}
           </div>
@@ -229,8 +228,8 @@ export default function PostEditor() {
             <div className="mt-4 flex flex-wrap gap-4">
               {attachments.map((attachment) => (
                 <AttachmentPreview
-                  key={attachment.id}
                   attachment={attachment}
+                  key={attachment.id}
                   onRemove={() => removeAttachment(attachment.id)}
                   onRetry={() => retryUpload(attachment.id)}
                 />
@@ -240,39 +239,41 @@ export default function PostEditor() {
 
           <div className="mt-2 flex items-center justify-between">
             <Button
-              type="button"
-              variant="ghost"
               className="text-muted-foreground"
+              disabled={isUploading}
               onClick={(e) =>
                 onClick?.(e as unknown as React.MouseEvent<HTMLDivElement>)
               }
-              disabled={isUploading}
+              type="button"
+              variant="ghost"
             >
-              <Icons.media className="size-5.5 text-green-500 " />
+              <Icons.media className="size-5.5 text-green-500" />
               <span>Photos</span>
             </Button>
             <Button
-              type="button"
-              variant="ghost"
               className="text-muted-foreground"
+              disabled={isUploading}
               onClick={(e) =>
                 onClick?.(e as unknown as React.MouseEvent<HTMLDivElement>)
               }
-              disabled={isUploading}
+              type="button"
+              variant="ghost"
             >
               <Icons.video className="size-6 text-red-500" />
               <span>Videos</span>
             </Button>
 
             <LoadingButton
-              onClick={handleSubmit}
-              loading={mutation.isPending}
               disabled={
-                !getContent().trim() &&
-                !attachments.some(
-                  (a) => !a.isUploading && !a.error && a.mediaId
+                !(
+                  getContent().trim() ||
+                  attachments.some(
+                    (a) => !(a.isUploading || a.error) && a.mediaId
+                  )
                 )
               }
+              loading={mutation.isPending}
+              onClick={handleSubmit}
             >
               Post
             </LoadingButton>

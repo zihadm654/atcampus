@@ -1,8 +1,7 @@
-import { NextRequest } from "next/server";
-
-import { getJobDataInclude, JobsPage } from "@/types/types";
+import type { NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/session";
+import { getJobDataInclude, type JobsPage } from "@/types/types";
 
 export async function GET(req: NextRequest) {
   try {

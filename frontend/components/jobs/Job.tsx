@@ -1,29 +1,27 @@
 "use client";
 
-import Link from "next/link";
-import { applyJob } from "@/actions/appllication";
+import { useQuery } from "@tanstack/react-query";
 import {
+  BadgeCheckIcon,
   Calendar,
   Clock,
-  MapPin,
-  ShieldCheck,
   DollarSign,
-  Users,
-  Building,
-  Clock3,
   Loader2,
+  MapPin,
+  Users,
 } from "lucide-react";
+import Link from "next/link";
+import { useOptimistic, useState, useTransition } from "react";
 import { toast } from "sonner";
-
-import { JobData } from "@/types/types";
+import { applyJob } from "@/actions/appllication";
+import { isEnrolledInCourse } from "@/actions/enrollment";
 import { useSession } from "@/lib/auth-client";
 import { formatDate, formatRelativeDate } from "@/lib/utils";
-import { useQuery } from "@tanstack/react-query";
-import { isEnrolledInCourse } from "@/actions/enrollment";
-
+import type { JobData } from "@/types/types";
 import JobMoreButton from "../jobs/JobMoreButton";
 import SaveJobButton from "../jobs/SaveJobButton";
 import { UserAvatar } from "../shared/user-avatar";
+import UserTooltip from "../UserTooltip";
 import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
 import {
@@ -34,8 +32,6 @@ import {
   CardHeader,
   CardTitle,
 } from "../ui/card";
-import UserTooltip from "../UserTooltip";
-import { useTransition, useOptimistic, useState } from "react";
 
 interface JobProps {
   job: JobData;
@@ -61,10 +57,10 @@ export default function Job({ job }: JobProps) {
     job.applications.some((application) => application.applicantId === user.id)
   );
 
-  const [optimisticApplied, setOptimisticApplied] = useOptimistic<boolean, boolean>(
-    isApplied,
-    (state, newState: boolean) => newState
-  );
+  const [optimisticApplied, setOptimisticApplied] = useOptimistic<
+    boolean,
+    boolean
+  >(isApplied, (state, newState: boolean) => newState);
 
   const handleApply = () => {
     startTransition(async () => {
@@ -72,14 +68,14 @@ export default function Job({ job }: JobProps) {
 
       try {
         const res = await applyJob(job.id);
-        if (!res.success) {
-          toast.error(res.message);
-          // Revert the optimistic update on failure
-          setOptimisticApplied(false);
-        } else {
+        if (res.success) {
           toast.success(res.message);
           // Update the local state to persist the application
           setIsApplied(true);
+        } else {
+          toast.error(res.message);
+          // Revert the optimistic update on failure
+          setOptimisticApplied(false);
         }
       } catch (error) {
         // Revert the optimistic update on error
@@ -90,14 +86,15 @@ export default function Job({ job }: JobProps) {
   };
 
   return (
-    <Card className="group relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
+    <Card className="group hover:-translate-y-1 relative overflow-hidden transition-all duration-300 hover:shadow-lg">
       {/* Match Badge */}
       {job.courseId && (
         <Badge
-          className={`absolute top-3 right-3 z-10 ${isEnrolled
-            ? "bg-green-500/90 text-white"
-            : "bg-orange-500/90 text-white"
-            }`}
+          className={`absolute top-3 right-3 z-10 ${
+            isEnrolled
+              ? "bg-green-500/90 text-white"
+              : "bg-orange-500/90 text-white"
+          }`}
         >
           {isEnrolled ? "Profile Match" : "Course Required"}
         </Badge>
@@ -108,24 +105,30 @@ export default function Job({ job }: JobProps) {
           <div className="flex items-start gap-3">
             <UserTooltip user={job.user}>
               <Link href={`/${job.user.username}`}>
-                <UserAvatar user={job.user} className="h-12 w-12" />
+                <UserAvatar className="h-12 w-12" user={job.user} />
               </Link>
             </UserTooltip>
             <div>
               <UserTooltip user={job.user}>
                 <Link
+                  className="flex items-center gap-1.5 font-semibold text-md hover:underline"
                   href={`/${job.user.username}`}
-                  className="flex items-center gap-1.5 text-md font-semibold hover:underline"
                 >
                   {job.user.name}
-                  {job.user.emailVerified && (
-                    <ShieldCheck className="size-5 text-blue-700" />
+                  {job.user.emailVerified ?? (
+                    <Badge
+                      className="bg-blue-500 text-white dark:bg-blue-600"
+                      variant="secondary"
+                    >
+                      <BadgeCheckIcon className="size-4" />
+                      Verified
+                    </Badge>
                   )}
                 </Link>
               </UserTooltip>
               <Link
+                className="text-muted-foreground text-sm hover:underline"
                 href={`/jobs/${job.id}`}
-                className="text-sm text-muted-foreground hover:underline"
               >
                 @{job.user.username} • {formatRelativeDate(job.createdAt)}
               </Link>
@@ -136,12 +139,12 @@ export default function Job({ job }: JobProps) {
       </CardHeader>
 
       <CardContent>
-        <Link href={`/jobs/${job.id}`} className="space-y-1.5">
-          <CardTitle className="text-2xl leading-tight hover:text-blue-600 transition-colors">
+        <Link className="space-y-1.5" href={`/jobs/${job.id}`}>
+          <CardTitle className="text-2xl leading-tight transition-colors hover:text-blue-600">
             {job.title}
           </CardTitle>
 
-          <CardDescription className="text-md leading-relaxed line-clamp-3">
+          <CardDescription className="line-clamp-3 text-md leading-relaxed">
             {job.summary}
           </CardDescription>
 
@@ -157,7 +160,7 @@ export default function Job({ job }: JobProps) {
             <div className="flex items-center gap-2 text-sm">
               <DollarSign className="h-4 w-4 text-muted-foreground" />
               <span className="font-medium">
-                ${job.salary.toLocaleString()}/year
+                ${job.salary.toLocaleString()}/month
               </span>
             </div>
             <div className="flex items-center gap-2 text-sm">
@@ -169,12 +172,15 @@ export default function Job({ job }: JobProps) {
           </div>
 
           <div className="flex items-center gap-2">
-            <Badge variant="secondary" className="text-sm font-medium">
+            <Badge className="font-medium text-sm" variant="secondary">
               {job.type.replace("_", " ")}
             </Badge>
-            <Badge variant="outline" className="text-sm">
+            <Badge className="text-sm" variant="outline">
               <Users className="mr-1 h-3 w-3" />
-              {(optimisticApplied || isApplied) ? job.applications.length + 1 : job.applications.length} applied
+              {optimisticApplied || isApplied
+                ? job.applications.length + 1
+                : job.applications.length}{" "}
+              applied
             </Badge>
           </div>
         </Link>
@@ -183,26 +189,31 @@ export default function Job({ job }: JobProps) {
       <CardFooter className="border-t bg-muted/30">
         <div className="flex w-full items-center justify-between">
           <SaveJobButton
-            jobId={job.id}
             initialState={{
               isSaveJobByUser: job.savedJobs.some(
                 (saveJob) => saveJob.userId === user.id
               ),
             }}
+            jobId={job.id}
           />
           <Button
-            onClick={handleApply}
-            variant={(optimisticApplied || isApplied) ? "outline" : "default"}
-            disabled={optimisticApplied || isApplied || user.role !== "STUDENT" || isPending}
             className="min-w-[120px]"
+            disabled={
+              optimisticApplied ||
+              isApplied ||
+              user.role !== "STUDENT" ||
+              isPending
+            }
+            onClick={handleApply}
             size="sm"
+            variant={optimisticApplied || isApplied ? "outline" : "default"}
           >
             {isPending ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Applying...
               </>
-            ) : (optimisticApplied || isApplied) ? (
+            ) : optimisticApplied || isApplied ? (
               "Applied ✓"
             ) : (
               "Apply Now"

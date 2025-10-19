@@ -1,10 +1,8 @@
 "use client";
 
-import React from "react";
 import { useRouter } from "next/navigation";
-import { SidebarNavItem } from "@/types";
-
-import { cn } from "@/lib/utils";
+import React from "react";
+import { Icons } from "@/components/shared/icons";
 import { Button } from "@/components/ui/button";
 import {
   CommandDialog,
@@ -14,7 +12,8 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
-import { Icons } from "@/components/shared/icons";
+import { cn } from "@/lib/utils";
+import type { SidebarNavItem } from "@/types";
 
 export function SearchCommand({ links }: { links: SidebarNavItem[] }) {
   const [open, setOpen] = React.useState(false);
@@ -39,27 +38,27 @@ export function SearchCommand({ links }: { links: SidebarNavItem[] }) {
   return (
     <>
       <Button
-        variant="outline"
         className={cn(
-          "relative h-9 w-full justify-start rounded-md bg-muted/50 text-sm font-normal text-muted-foreground shadow-none sm:pr-12 md:w-72",
+          "relative h-9 w-full justify-start rounded-md bg-muted/50 font-normal text-muted-foreground text-sm shadow-none sm:pr-12 md:w-72"
         )}
         onClick={() => setOpen(true)}
+        variant="outline"
       >
         <span className="inline-flex">
           Search
           <span className="hidden sm:inline-flex">&nbsp;documentation</span>...
         </span>
-        <kbd className="pointer-events-none absolute right-[0.3rem] top-[0.45rem] hidden h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 sm:flex">
+        <kbd className="pointer-events-none absolute top-[0.45rem] right-[0.3rem] hidden h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-medium font-mono text-[10px] opacity-100 sm:flex">
           <span className="text-xs">⌘</span>K
         </kbd>
       </Button>
 
-      <CommandDialog open={open} onOpenChange={setOpen}>
+      <CommandDialog onOpenChange={setOpen} open={open}>
         <CommandInput placeholder="Type a command or search..." />
         <CommandList>
           <CommandEmpty>No results found.</CommandEmpty>
           {links.map((section) => (
-            <CommandGroup key={section.title} heading={section.title}>
+            <CommandGroup heading={section.title} key={section.title}>
               {section.items.map((item) => {
                 const Icon = Icons[item.icon || "arrowRight"];
                 return (

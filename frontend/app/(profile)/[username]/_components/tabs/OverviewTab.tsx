@@ -1,33 +1,17 @@
-import React from "react";
-import { Fragment } from "react";
-import { Star } from "lucide-react";
-
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardAction,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Icons } from "@/components/shared/icons";
-import type {
-  ProfileUserData,
-  ProfilePermissions,
-} from "@/types/profile-types";
+import type { ProfilePermissions } from "@/types/profile-types";
 import type { UserData, UserSkillData } from "@/types/types";
-
-import SkillsSection from "../sections/SkillsSection";
-import CoursesSection from "../sections/CoursesSection";
 import ActivitySection from "../sections/ActivitySection";
+import CoursesSection from "../sections/CoursesSection";
 import InstitutionOverview from "../sections/InstitutionOverview";
 import OrganizationOverview from "../sections/OrganizationOverview";
 import ProfessorOverview from "../sections/ProfessorOverview";
+import SkillsSection from "../sections/SkillsSection";
 
 interface OverviewTabProps {
   user: UserData;
   courses: any;
   jobs: any;
+  researches: any;
   loggedInUserId: string;
   permissions: ProfilePermissions;
   loading?: boolean;
@@ -40,6 +24,7 @@ export default function OverviewTab({
   loggedInUserId,
   permissions,
   loading,
+  researches,
 }: OverviewTabProps) {
   const isOwnProfile = user.id === loggedInUserId;
 
@@ -48,44 +33,42 @@ export default function OverviewTab({
     case "INSTITUTION":
       return (
         <InstitutionOverview
-          user={user}
-          permissions={permissions}
           isOwnProfile={isOwnProfile}
+          permissions={permissions}
+          user={user}
         />
       );
 
     case "ORGANIZATION":
       return (
         <OrganizationOverview
-          user={user}
-          members={user.members || []}
-          jobs={jobs}
-          permissions={permissions}
           isOwnProfile={isOwnProfile}
+          jobs={jobs}
+          members={user.members || []}
+          permissions={permissions}
+          user={user}
         />
       );
 
     case "PROFESSOR":
       return (
         <ProfessorOverview
-          user={user}
           courses={courses}
-          research={user.research || []}
-          permissions={permissions}
           isOwnProfile={isOwnProfile}
+          permissions={permissions}
+          researches={researches || []}
+          user={user}
         />
       );
 
-    case "STUDENT":
-    case "ADMIN":
     default:
       return (
         <StudentOverview
-          user={user}
           courses={courses}
+          isOwnProfile={isOwnProfile}
           jobs={jobs}
           permissions={permissions}
-          isOwnProfile={isOwnProfile}
+          user={user}
         />
       );
   }
@@ -123,36 +106,36 @@ function StudentOverview({
     })) || [];
 
   return (
-    <Fragment>
+    <>
       <div className="grid grid-cols-2 gap-2 max-md:grid-cols-1">
         {/* Skills Section */}
         <SkillsSection
-          userSkills={userSkillsData}
-          userId={user.id}
           canEdit={permissions.canEdit}
           limit={5}
+          userId={user.id}
+          userSkills={userSkillsData}
         />
 
         {/* Courses Section */}
         <CoursesSection
-          enrollments={courses}
-          userRole={user.role}
           canEdit={permissions.canEdit}
+          enrollments={courses}
           limit={3}
+          userRole={user.role}
         />
       </div>
 
       <div className="space-y-2">
         {/* Activity Section */}
         <ActivitySection
+          canEdit={permissions.canEdit}
           jobs={jobs}
           research={user.research || []}
-          userRole={user.role}
-          userId={user.id}
-          canEdit={permissions.canEdit}
           showHeader={false}
+          userId={user.id}
+          userRole={user.role}
         />
       </div>
-    </Fragment>
+    </>
   );
 }

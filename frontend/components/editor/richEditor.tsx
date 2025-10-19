@@ -1,12 +1,11 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useEffect } from "react";
 import Link from "@tiptap/extension-link";
 import TextAlign from "@tiptap/extension-text-align";
 import Typography from "@tiptap/extension-typography";
 import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
+import { useEffect } from "react";
 
 import { MenuBar } from "./menubar";
 
@@ -50,7 +49,7 @@ export default function JobDescriptionEditor({
 
   return (
     <div className="w-full">
-      <div className="bg-card overflow-hidden rounded-lg border">
+      <div className="overflow-hidden rounded-lg border bg-card">
         <MenuBar editor={editor} />
         <EditorContent editor={editor} />
       </div>

@@ -1,14 +1,13 @@
 "use server";
 
+import { APIError } from "better-auth/api";
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { APIError } from "better-auth/api";
 
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/session";
-import streamServerClient from "@/lib/stream";
 
 export async function deleteUserAction({ userId }: { userId: string }) {
   const headersList = await headers();

@@ -22,41 +22,41 @@ export const ResetPasswordEmail = ({
   username,
   resetLink,
 }: BetterAuthResetPasswordEmailProps) => {
-  const previewText = `Reset your Better Auth password`;
+  const previewText = "Reset your Better Auth password";
   return (
     <Html>
       <Head />
       <Preview>{previewText}</Preview>
       <Tailwind>
         <Body className="mx-auto my-auto bg-white px-2 font-sans">
-          <Container className="mx-auto my-[40px] max-w-[465px] rounded border border-solid border-[#eaeaea] p-[20px]">
-            <Heading className="mx-0 my-[30px] p-0 text-center text-[24px] font-normal text-black">
+          <Container className="mx-auto my-[40px] max-w-[465px] rounded border border-[#eaeaea] border-solid p-[20px]">
+            <Heading className="mx-0 my-[30px] p-0 text-center font-normal text-[24px] text-black">
               Reset your <strong>Better Auth</strong> password
             </Heading>
-            <Text className="text-[14px] leading-[24px] text-black">
+            <Text className="text-[14px] text-black leading-[24px]">
               Hello {username},
             </Text>
-            <Text className="text-[14px] leading-[24px] text-black">
+            <Text className="text-[14px] text-black leading-[24px]">
               We received a request to reset your password for your Better Auth
               account. If you didn't make this request, you can safely ignore
               this email.
             </Text>
             <Section className="mt-[32px] mb-[32px] text-center">
               <Button
-                className="rounded bg-[#000000] px-5 py-3 text-center text-[12px] font-semibold text-white no-underline"
+                className="rounded bg-[#000000] px-5 py-3 text-center font-semibold text-[12px] text-white no-underline"
                 href={resetLink}
               >
                 Reset Password
               </Button>
             </Section>
-            <Text className="text-[14px] leading-[24px] text-black">
+            <Text className="text-[14px] text-black leading-[24px]">
               Or copy and paste this URL into your browser:{" "}
-              <Link href={resetLink} className="text-blue-600 no-underline">
+              <Link className="text-blue-600 no-underline" href={resetLink}>
                 {resetLink}
               </Link>
             </Text>
-            <Hr className="mx-0 my-[26px] w-full border border-solid border-[#eaeaea]" />
-            <Text className="text-[12px] leading-[24px] text-[#666666]">
+            <Hr className="mx-0 my-[26px] w-full border border-[#eaeaea] border-solid" />
+            <Text className="text-[#666666] text-[12px] leading-[24px]">
               If you didn't request a password reset, please ignore this email
               or contact support if you have concerns.
             </Text>
@@ -68,7 +68,7 @@ export const ResetPasswordEmail = ({
 };
 
 export function reactResetPasswordEmail(
-  props: BetterAuthResetPasswordEmailProps,
+  props: BetterAuthResetPasswordEmailProps
 ) {
   console.log(props);
   return <ResetPasswordEmail {...props} />;

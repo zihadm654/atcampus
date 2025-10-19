@@ -1,10 +1,9 @@
-import Link from "next/link";
 import { Bookmark, Briefcase, GraduationCap, Home } from "lucide-react";
-
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/session";
 import streamServerClient from "@/lib/stream";
-import { Button } from "@/components/ui/button";
 
 import MessagesButton from "./MessagesButton";
 import NotificationsButton from "./NotificationsButton";
@@ -37,10 +36,10 @@ export default async function MenuBar({ className }: MenuBarProps) {
   return (
     <div className={className}>
       <Button
-        variant="ghost"
+        asChild
         className="flex items-center justify-start gap-3"
         title="Home"
-        asChild
+        variant="ghost"
       >
         <Link href="/">
           <Home />
@@ -52,10 +51,10 @@ export default async function MenuBar({ className }: MenuBarProps) {
       />
       <MessagesButton initialState={{ unreadCount: unreadMessagesCount }} />
       <Button
-        variant="ghost"
+        asChild
         className="flex items-center justify-start gap-3"
         title="Courses"
-        asChild
+        variant="ghost"
       >
         <Link href="/courses">
           <GraduationCap />
@@ -63,10 +62,10 @@ export default async function MenuBar({ className }: MenuBarProps) {
         </Link>
       </Button>
       <Button
-        variant="ghost"
+        asChild
         className="flex items-center justify-start gap-3"
         title="Jobs"
-        asChild
+        variant="ghost"
       >
         <Link href="/jobs">
           <Briefcase />
@@ -74,10 +73,10 @@ export default async function MenuBar({ className }: MenuBarProps) {
         </Link>
       </Button>
       <Button
-        variant="ghost"
+        asChild
         className="flex items-center justify-start gap-3"
         title="Bookmarks"
-        asChild
+        variant="ghost"
       >
         <Link href="/bookmarks">
           <Bookmark />

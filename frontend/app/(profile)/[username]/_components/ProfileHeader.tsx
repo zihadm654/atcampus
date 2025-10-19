@@ -1,14 +1,12 @@
-import React from "react";
-import Image from "next/image";
 import { formatDate } from "date-fns";
-
-import { FollowerInfo, UserData } from "@/types/types";
-import { formatNumber } from "@/lib/utils";
+import Image from "next/image";
 import FollowButton from "@/components/feed/FollowButton";
 import FollowerCount from "@/components/feed/FollowerCount";
 import Linkify from "@/components/feed/Linkify";
 import { Icons } from "@/components/shared/icons";
 import UserAvatar from "@/components/UserAvatar";
+import { formatNumber } from "@/lib/utils";
+import type { FollowerInfo, UserData } from "@/types/types";
 
 import EditProfileButton from "./EditProfileButton";
 
@@ -26,15 +24,15 @@ export default function ProfileHeader({
   isOwnProfile,
 }: ProfileHeaderProps) {
   return (
-    <div className="bg-card h-fit w-full overflow-hidden rounded-2xl shadow-sm">
+    <div className="h-fit w-full overflow-hidden rounded-2xl bg-card shadow-sm">
       {/* Cover photo area with enhanced gradient */}
       <div className="relative h-56 w-full">
         {user.coverImage ? (
           <Image
-            src={user.coverImage}
             alt="Cover Image"
-            fill
             className="object-cover"
+            fill
+            src={user.coverImage}
           />
         ) : (
           <div className="h-full w-full bg-gradient-to-r from-blue-400 via-indigo-300 to-purple-400" />
@@ -43,13 +41,13 @@ export default function ProfileHeader({
         <div className="absolute inset-0 bg-black opacity-20 mix-blend-overlay" />
       </div>
 
-      <div className="relative max-md:px-2 px-6 pb-2">
+      <div className="relative px-6 pb-2 max-md:px-2">
         {/* Avatar - positioned to overlap the cover photo with enhanced styling */}
-        <div className="absolute -top-16 left-6 rounded-full shadow-lg ring-4 ring-white max-sm:-top-30">
+        <div className="-top-16 max-sm:-top-30 absolute left-6 rounded-full shadow-lg ring-4 ring-white">
           <UserAvatar
             avatarUrl={user.image}
-            size={120}
             className="rounded-full border-4 border-white"
+            size={120}
           />
         </div>
 
@@ -57,35 +55,35 @@ export default function ProfileHeader({
           {/* Name and username with enhanced styling */}
           <div className="flex items-center justify-between">
             <div className="mb-4 pl-36 max-sm:pl-3">
-              <h1 className="text-2xl font-bold">{user.name}</h1>
-              <h5 className="text-muted-foreground gap-1 ml-2">
+              <h1 className="font-bold text-2xl">{user.name}</h1>
+              <h5 className="ml-2 gap-1 text-muted-foreground">
                 <span>@{user.username}</span>
                 {isOwnProfile && (
-                  <span className="rounded-full px-2 py-0.5 text-xs text-blue-800">
+                  <span className="rounded-full px-2 py-0.5 text-blue-800 text-xs">
                     You
                   </span>
                 )}
               </h5>
             </div>
             {/* Profile actions positioned on top right */}
-              {isOwnProfile ? (
-                <EditProfileButton user={user} />
-              ) : (
-                <FollowButton userId={user.id} initialState={followerInfo} />
-              )}
+            {isOwnProfile ? (
+              <EditProfileButton user={user} />
+            ) : (
+              <FollowButton initialState={followerInfo} userId={user.id} />
+            )}
           </div>
 
           {/* Stats row with enhanced styling */}
-          <div className="mb-2 flex items-center space-between gap-6 rounded-xl p-1 pl-36 max-sm:pl-3">
+          <div className="space-between mb-2 flex items-center gap-6 rounded-xl p-1 pl-36 max-sm:pl-3">
             <div className="flex flex-col items-center">
               <span className="font-semibold text-blue-700">
                 {formatNumber(user._count.posts)}
               </span>
               <span className="text-muted-foreground text-sm">Posts</span>
             </div>
-            <div className="h-10 w-px"></div>
-            <FollowerCount userId={user.id} initialState={followerInfo} />
-            <div className="h-10 w-px"></div>
+            <div className="h-10 w-px" />
+            <FollowerCount initialState={followerInfo} userId={user.id} />
+            <div className="h-10 w-px" />
             <div className="flex flex-col items-center">
               <span className="font-semibold text-blue-700">
                 {formatDate(user.createdAt, "yyyy")}
@@ -102,7 +100,7 @@ export default function ProfileHeader({
                 <h3 className="font-medium text-muted-foreground">About</h3>
               </div>
               <Linkify>
-                <p className="overflow-hidden break-words whitespace-pre-line">
+                <p className="overflow-hidden whitespace-pre-line break-words">
                   {user.bio}
                 </p>
               </Linkify>
@@ -169,7 +167,7 @@ function AcademicInformation({ user }: AcademicInformationProps) {
                 <span className="font-medium">
                   {user.currentSemester}th Semester
                 </span>
-                <p className="text-sm text-gray-500">Current Semester</p>
+                <p className="text-gray-500 text-sm">Current Semester</p>
               </div>
             </div>
           )}
@@ -181,9 +179,9 @@ function AcademicInformation({ user }: AcademicInformationProps) {
   // Show basic institution info for other roles
   if (user.institution) {
     return (
-      <div className="mb-3 flex items-center ">
+      <div className="mb-3 flex items-center">
         <Icons.edu className="size-6 text-green-600" />
-        <span className="font-medium pl-2">{user.institution}</span>
+        <span className="pl-2 font-medium">{user.institution}</span>
       </div>
     );
   }

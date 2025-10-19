@@ -1,6 +1,6 @@
+import { EnrollmentStatus, Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { getUserDataSelect } from "@/types/types";
-import { Prisma, EnrollmentStatus } from "@prisma/client";
 
 // Optimized academic structure query
 export const getAcademicStructureInclude = () => ({
@@ -55,7 +55,11 @@ export const getAcademicStructureInclude = () => ({
 export const getCourseEnrollmentsWhere = (userId: string) => ({
   studentId: userId,
   status: {
-    in: [EnrollmentStatus.PENDING, EnrollmentStatus.ENROLLED, EnrollmentStatus.COMPLETED],
+    in: [
+      EnrollmentStatus.PENDING,
+      EnrollmentStatus.ENROLLED,
+      EnrollmentStatus.COMPLETED,
+    ],
   },
 });
 
@@ -71,7 +75,7 @@ export const getCourseEnrollmentsInclude = () => ({
       startDate: true,
       endDate: true,
       instructor: true,
-      faculty: true
+      faculty: true,
     },
   },
 });
@@ -90,7 +94,7 @@ export const getJobApplicationsInclude = (userId: string) => ({
       },
       savedJobs: {
         where: {
-          userId: userId,
+          userId,
         },
         select: {
           userId: true,
@@ -204,9 +208,9 @@ export async function getProfileData(username: string, loggedInUserId: string) {
       },
       events: true,
       clubs: true,
-    }
-  })
-  return user
+    },
+  });
+  return user;
 }
 // export type UserProfileData = Prisma.UserGetPayload<{
 //   select: ReturnType<typeOf getProfileData >;
@@ -257,7 +261,7 @@ export async function getInstitutionCourses(institutionId: string, limit = 10) {
     where: {
       faculty: {
         school: {
-          institutionId: institutionId,
+          institutionId,
         },
       },
     },
@@ -308,7 +312,7 @@ export async function getJobApplications(userId: string, limit = 10) {
 export async function getCreatedJobs(userId: string, limit = 10) {
   const jobs = await prisma.job.findMany({
     where: {
-      userId: userId,
+      userId,
     },
     include: {
       user: {
@@ -321,7 +325,7 @@ export async function getCreatedJobs(userId: string, limit = 10) {
       },
       savedJobs: {
         where: {
-          userId: userId,
+          userId,
         },
         select: {
           userId: true,
@@ -350,7 +354,7 @@ export async function getCreatedJobs(userId: string, limit = 10) {
 export async function getResearchProjects(userId: string, limit = 10) {
   const research = await prisma.research.findMany({
     where: {
-      userId: userId,
+      userId,
     },
     include: getResearchInclude(userId),
     orderBy: {

@@ -1,4 +1,6 @@
-import React from "react";
+import JobComponent from "@/components/jobs/Job";
+import ResearchComponent from "@/components/researches/Research";
+import { Icons } from "@/components/shared/icons";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -8,9 +10,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Icons } from "@/components/shared/icons";
-import JobComponent from "@/components/jobs/Job";
-import ResearchComponent from "@/components/researches/Research";
 
 interface JobApplication {
   id: string;
@@ -59,16 +58,16 @@ export default function ActivitySection({
         {/* Jobs Card */}
         <Card className="overflow-hidden rounded-xl border border-gray-100 shadow-sm transition-all hover:border-gray-200 hover:shadow">
           <CardHeader className="flex items-center justify-between pb-4">
-            <CardTitle className="flex items-center text-lg font-medium">
+            <CardTitle className="flex items-center font-medium text-lg">
               <Icons.job className="mr-2 size-5" />
               <span>Job & Activities</span>
             </CardTitle>
             <CardAction>
               <Button
-                variant="ghost"
-                size="sm"
                 className="rounded-full text-amber-600 hover:bg-amber-50 hover:text-amber-800"
                 onClick={onViewAllJobs}
+                size="sm"
+                variant="ghost"
               >
                 <span>See More</span>
                 <Icons.chevronRight className="size-5" />
@@ -78,21 +77,21 @@ export default function ActivitySection({
           <CardContent className="grid grid-cols-2 gap-2 max-md:grid-cols-1">
             {displayJobs.length > 0 ? (
               displayJobs.map((application) => (
-                <JobComponent key={application.id} job={application.job} />
+                <JobComponent job={application.job} key={application.id} />
               ))
             ) : (
-              <div className="flex flex-col items-center justify-center w-full col-span-2">
+              <div className="col-span-2 flex w-full flex-col items-center justify-center">
                 <Icons.job className="size-10 text-gray-400" />
-                <p className="text-gray-500 mt-2">
+                <p className="mt-2 text-gray-500">
                   No job activities added yet
                 </p>
                 {canEdit && (
                   <Button
-                    variant="outline"
-                    size="sm"
                     className="mt-4 rounded-full"
+                    size="sm"
+                    variant="outline"
                   >
-                    <Icons.add className="size-4 mr-1" />
+                    <Icons.add className="mr-1 size-4" />
                     Add Experience
                   </Button>
                 )}
@@ -104,15 +103,15 @@ export default function ActivitySection({
         {/* Achievements Placeholder */}
         <Card className="overflow-hidden rounded-xl border border-gray-100 shadow-sm transition-all hover:border-gray-200 hover:shadow">
           <CardHeader className="flex items-center justify-between pb-4">
-            <CardTitle className="flex items-center text-lg font-medium">
+            <CardTitle className="flex items-center font-medium text-lg">
               <Icons.star className="size-7 pr-2" />
               Achievements
             </CardTitle>
             <CardAction>
               <Button
-                variant="ghost"
-                size="sm"
                 className="rounded-full text-amber-600 hover:bg-amber-50 hover:text-amber-800"
+                size="sm"
+                variant="ghost"
               >
                 <span>See More</span>
                 <Icons.chevronRight className="size-5" />
@@ -123,7 +122,7 @@ export default function ActivitySection({
             <div className="flex h-28 items-center justify-center rounded-lg text-gray-500">
               <div className="flex flex-col items-center">
                 <Icons.star className="size-10" />
-                <p className="text-sm mt-2">No achievements yet</p>
+                <p className="mt-2 text-sm">No achievements yet</p>
               </div>
             </div>
           </CardContent>
@@ -137,23 +136,23 @@ export default function ActivitySection({
     <Card
       className={`overflow-hidden rounded-xl border border-gray-100 shadow-sm ${className}`}
     >
-      <Tabs defaultValue="jobs" className="w-full">
+      <Tabs className="w-full" defaultValue="jobs">
         <div className="border-b px-4 pt-4">
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="jobs" className="flex items-center gap-2">
+            <TabsTrigger className="flex items-center gap-2" value="jobs">
               <Icons.job className="size-4" />
               Jobs & Activities
               {hasMoreJobs && (
-                <span className="ml-1 text-xs text-gray-500">
+                <span className="ml-1 text-gray-500 text-xs">
                   ({jobs.length})
                 </span>
               )}
             </TabsTrigger>
-            <TabsTrigger value="research" className="flex items-center gap-2">
+            <TabsTrigger className="flex items-center gap-2" value="research">
               <Icons.bookMarked className="size-4" />
               Research
               {hasMoreResearch && (
-                <span className="ml-1 text-xs text-gray-500">
+                <span className="ml-1 text-gray-500 text-xs">
                   ({research.length})
                 </span>
               )}
@@ -161,24 +160,24 @@ export default function ActivitySection({
           </TabsList>
         </div>
 
-        <TabsContent value="jobs" className="p-4">
+        <TabsContent className="p-4" value="jobs">
           <div className="space-y-3">
             {displayJobs.length > 0 ? (
               <>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
                   {displayJobs.map((application) => (
-                    <JobComponent key={application.id} job={application.job} />
+                    <JobComponent job={application.job} key={application.id} />
                   ))}
                 </div>
                 {hasMoreJobs && (
                   <div className="text-center">
                     <Button
-                      variant="outline"
-                      onClick={onViewAllJobs}
                       className="rounded-full"
+                      onClick={onViewAllJobs}
+                      variant="outline"
                     >
                       View All Jobs ({jobs.length})
-                      <Icons.chevronRight className="size-4 ml-1" />
+                      <Icons.chevronRight className="ml-1 size-4" />
                     </Button>
                   </div>
                 )}
@@ -186,14 +185,14 @@ export default function ActivitySection({
             ) : (
               <div className="flex flex-col items-center py-8">
                 <Icons.job className="size-12 text-gray-400" />
-                <p className="text-gray-500 mt-2">No job activities yet</p>
+                <p className="mt-2 text-gray-500">No job activities yet</p>
                 {canEdit && (
                   <Button
-                    variant="outline"
-                    size="sm"
                     className="mt-4 rounded-full"
+                    size="sm"
+                    variant="outline"
                   >
-                    <Icons.add className="size-4 mr-1" />
+                    <Icons.add className="mr-1 size-4" />
                     Add Experience
                   </Button>
                 )}
@@ -202,11 +201,11 @@ export default function ActivitySection({
           </div>
         </TabsContent>
 
-        <TabsContent value="research" className="p-4">
+        <TabsContent className="p-4" value="research">
           <div className="space-y-3">
             {displayResearch.length > 0 ? (
               <>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
                   {displayResearch.map((item) => (
                     <ResearchComponent key={item.id} research={item as any} />
                   ))}
@@ -214,12 +213,12 @@ export default function ActivitySection({
                 {hasMoreResearch && (
                   <div className="text-center">
                     <Button
-                      variant="outline"
-                      onClick={onViewAllResearch}
                       className="rounded-full"
+                      onClick={onViewAllResearch}
+                      variant="outline"
                     >
                       View All Research ({research.length})
-                      <Icons.chevronRight className="size-4 ml-1" />
+                      <Icons.chevronRight className="ml-1 size-4" />
                     </Button>
                   </div>
                 )}
@@ -227,14 +226,14 @@ export default function ActivitySection({
             ) : (
               <div className="flex flex-col items-center py-8">
                 <Icons.bookMarked className="size-12 text-gray-400" />
-                <p className="text-gray-500 mt-2">No research projects yet</p>
+                <p className="mt-2 text-gray-500">No research projects yet</p>
                 {canEdit && (
                   <Button
-                    variant="outline"
-                    size="sm"
                     className="mt-4 rounded-full"
+                    size="sm"
+                    variant="outline"
                   >
-                    <Icons.add className="size-4 mr-1" />
+                    <Icons.add className="mr-1 size-4" />
                     Add Research
                   </Button>
                 )}

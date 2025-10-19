@@ -1,12 +1,11 @@
 "use client";
 
-import { PropsWithChildren } from "react";
-import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { HTTPError } from "ky";
-
-import { UserData } from "@/types/types";
+import Link from "next/link";
+import type { PropsWithChildren } from "react";
 import kyInstance from "@/lib/ky";
+import type { UserData } from "@/types/types";
 
 import UserTooltip from "./UserTooltip";
 
@@ -28,12 +27,12 @@ export default function UserLinkWithTooltip({
       }
       return failureCount < 3;
     },
-    staleTime: Infinity,
+    staleTime: Number.POSITIVE_INFINITY,
   });
 
   if (!data) {
     return (
-      <Link href={`/${username}`} className="text-primary hover:underline">
+      <Link className="text-primary hover:underline" href={`/${username}`}>
         {children}
       </Link>
     );
@@ -41,7 +40,7 @@ export default function UserLinkWithTooltip({
 
   return (
     <UserTooltip user={data}>
-      <Link href={`/${username}`} className="text-primary hover:underline">
+      <Link className="text-primary hover:underline" href={`/${username}`}>
         {children}
       </Link>
     </UserTooltip>

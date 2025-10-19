@@ -1,16 +1,16 @@
 "use client";
 
-import React from "react";
-import { UserData, CourseData } from "@/types/types";
+import { EnrollmentStatus } from "@prisma/client";
+import Course from "@/components/courses/Course";
+import { Icons } from "@/components/shared/icons";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { formatDate } from "@/lib/utils";
 import { UserRole } from "@/lib/validations/auth";
 import type { ProfilePermissions } from "@/types/profile-types";
-import StudentCourses from "./StudentCourses";
+import type { CourseData, UserData } from "@/types/types";
 import ProfessorCourses from "./ProfessorCourses";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { formatDate } from "@/lib/utils";
-import { Icons } from "@/components/shared/icons";
-import { EnrollmentStatus } from "@prisma/client";
+import StudentCourses from "./StudentCourses";
 
 interface CoursesTabProps {
   user: UserData;
@@ -22,14 +22,14 @@ interface CoursesTabProps {
 // Helper function to get status color
 const getStatusColor = (status: string) => {
   switch (status) {
-    case 'PUBLISHED':
-      return 'bg-green-100 text-green-800';
-    case 'DRAFT':
-      return 'bg-yellow-100 text-yellow-800';
-    case 'ARCHIVED':
-      return 'bg-gray-100 text-gray-800';
+    case "PUBLISHED":
+      return "bg-green-100 text-green-800";
+    case "DRAFT":
+      return "bg-yellow-100 text-yellow-800";
+    case "ARCHIVED":
+      return "bg-gray-100 text-gray-800";
     default:
-      return 'bg-blue-100 text-blue-800';
+      return "bg-blue-100 text-blue-800";
   }
 };
 
@@ -37,31 +37,28 @@ const getStatusColor = (status: string) => {
 const getEnrollmentStatusColor = (status: EnrollmentStatus) => {
   switch (status) {
     case EnrollmentStatus.ENROLLED:
-      return 'bg-green-100 text-green-800';
+      return "bg-green-100 text-green-800";
     case EnrollmentStatus.PENDING:
-      return 'bg-yellow-100 text-yellow-800';
+      return "bg-yellow-100 text-yellow-800";
     case EnrollmentStatus.COMPLETED:
-      return 'bg-blue-100 text-blue-800';
+      return "bg-blue-100 text-blue-800";
     case EnrollmentStatus.DROPPED:
-      return 'bg-red-100 text-red-800';
+      return "bg-red-100 text-red-800";
     default:
-      return 'bg-gray-100 text-gray-800';
+      return "bg-gray-100 text-gray-800";
   }
 };
 
 // Component to display detailed enrollment information
 const EnrollmentDetails = ({ course }: { course: CourseData }) => {
+  // Safely check if enrollments exist
   if (!course.enrollments || course.enrollments.length === 0) {
-    return (
-      <div className="text-sm text-gray-500 mt-2">
-        No enrollments yet
-      </div>
-    );
+    return <div className="mt-2 text-gray-500 text-sm">No enrollments yet</div>;
   }
 
   return (
     <div className="mt-3">
-      <div className="flex items-center text-sm text-gray-600 mb-2">
+      <div className="mb-2 flex items-center text-gray-600 text-sm">
         <Icons.users className="mr-1 h-4 w-4" />
         <span>{course.enrollments.length} enrolled students</span>
       </div>
@@ -69,10 +66,13 @@ const EnrollmentDetails = ({ course }: { course: CourseData }) => {
       {/* Show first 3 enrollments with details */}
       <div className="space-y-2">
         {course.enrollments.slice(0, 3).map((enrollment) => (
-          <div key={enrollment.id} className="flex items-center justify-between text-xs p-2 bg-gray-50 rounded">
+          <div
+            className="flex items-center justify-between rounded bg-gray-50 p-2 text-xs"
+            key={enrollment.id}
+          >
             <div>
               <div className="font-medium">
-                {enrollment.studentId || 'Unknown Student'}
+                {enrollment.studentId || "Unknown Student"}
               </div>
               {/* {enrollment.student?.username && (
                 <div className="text-gray-500">@{enrollment.student.username}</div>
@@ -83,7 +83,7 @@ const EnrollmentDetails = ({ course }: { course: CourseData }) => {
                 {enrollment.status}
               </Badge>
               {enrollment.enrolledAt && (
-                <span className="text-gray-500 mt-1">
+                <span className="mt-1 text-gray-500">
                   {formatDate(new Date(enrollment.enrolledAt), "MMM d, yyyy")}
                 </span>
               )}
@@ -92,7 +92,7 @@ const EnrollmentDetails = ({ course }: { course: CourseData }) => {
         ))}
 
         {course.enrollments.length > 3 && (
-          <div className="text-xs text-gray-500 text-center py-1">
+          <div className="py-1 text-center text-gray-500 text-xs">
             + {course.enrollments.length - 3} more enrollments
           </div>
         )}
@@ -101,7 +101,12 @@ const EnrollmentDetails = ({ course }: { course: CourseData }) => {
   );
 };
 
-export default function CoursesTab({ user, courses, isCurrentUser, permissions }: CoursesTabProps) {
+export default function CoursesTab({
+  user,
+  courses,
+  isCurrentUser,
+  permissions,
+}: CoursesTabProps) {
   const renderContent = () => {
     switch (user.role) {
       case UserRole.STUDENT:
@@ -110,7 +115,13 @@ export default function CoursesTab({ user, courses, isCurrentUser, permissions }
 
       case UserRole.PROFESSOR:
         // For professors, show created courses
-        return <ProfessorCourses courses={courses} isCurrentUser={isCurrentUser} permissions={permissions} />;
+        return (
+          <ProfessorCourses
+            courses={courses}
+            isCurrentUser={isCurrentUser}
+            permissions={permissions}
+          />
+        );
 
       case UserRole.INSTITUTION:
         // For institutions, show created courses with more detailed information
@@ -121,35 +132,15 @@ export default function CoursesTab({ user, courses, isCurrentUser, permissions }
             </CardHeader>
             <CardContent className="max-md:p-2">
               {courses && courses.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
                   {courses.map((course) => (
-                    <div key={course.id} className="border p-4 rounded-lg hover:bg-gray-50 transition-colors">
-                      <h4 className="font-semibold">{course.title}</h4>
-                      <p className="text-sm text-gray-500">{course.code}</p>
-                      {course.faculty && (
-                        <p className="text-xs text-gray-400 mt-1">{course.faculty.name}</p>
-                      )}
-                      {course.instructor && (
-                        <p className="text-xs text-gray-400 mt-1">
-                          Instructor: {course.instructor.name}
-                        </p>
-                      )}
-                      <div className="flex justify-between items-center mt-2">
-                        <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
-                          {course.enrollments?.length || 0} students
-                        </span>
-                        <span className={`text-xs px-2 py-1 rounded ${getStatusColor(course.status)}`}>
-                          {course.status?.replace('_', ' ') || 'UNKNOWN'}
-                        </span>
-                      </div>
-
-                      {/* Detailed enrollment information */}
-                      <EnrollmentDetails course={course} />
-                    </div>
+                    <Course course={course} key={course.id} />
                   ))}
                 </div>
               ) : (
-                <p className="text-gray-500">No courses created by this institution.</p>
+                <p className="text-gray-500">
+                  No courses created by this institution.
+                </p>
               )}
             </CardContent>
           </Card>
@@ -164,24 +155,31 @@ export default function CoursesTab({ user, courses, isCurrentUser, permissions }
             </CardHeader>
             <CardContent>
               {courses && courses.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
                   {courses.map((course) => (
-                    <div key={course.id} className="border p-4 rounded-lg hover:bg-gray-50 transition-colors">
+                    <div
+                      className="rounded-lg border p-4 transition-colors hover:bg-gray-50"
+                      key={course.id}
+                    >
                       <h4 className="font-semibold">{course.title}</h4>
-                      <p className="text-sm text-gray-500">{course.code}</p>
+                      <p className="text-gray-500 text-sm">{course.code}</p>
                       {course.faculty && (
-                        <p className="text-xs text-gray-400 mt-1">{course.faculty.name}</p>
+                        <p className="mt-1 text-gray-400 text-xs">
+                          {course.faculty.name}
+                        </p>
                       )}
                       {course.instructor && (
-                        <p className="text-xs text-gray-400 mt-1">
+                        <p className="mt-1 text-gray-400 text-xs">
                           Instructor: {course.instructor.name}
                         </p>
                       )}
-                      <div className="flex justify-between items-center mt-2">
-                        <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                      <div className="mt-2 flex items-center justify-between">
+                        <span className="rounded bg-blue-100 px-2 py-1 text-blue-800 text-xs">
                           {course.enrollments?.length || 0} students
                         </span>
-                        <span className={`text-xs px-2 py-1 rounded ${getStatusColor(course.status)}`}>
+                        <span
+                          className={`rounded px-2 py-1 text-xs ${getStatusColor(course.status)}`}
+                        >
                           {course.status}
                         </span>
                       </div>
@@ -202,7 +200,7 @@ export default function CoursesTab({ user, courses, isCurrentUser, permissions }
         // For other roles, show a generic message
         return (
           <Card>
-            <CardContent className="p-4 max-md:p-2 text-center text-gray-500">
+            <CardContent className="p-4 text-center text-gray-500 max-md:p-2">
               Course information is not applicable for this user role.
             </CardContent>
           </Card>

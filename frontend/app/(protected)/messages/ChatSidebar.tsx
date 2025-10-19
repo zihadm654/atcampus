@@ -1,18 +1,17 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { MailPlus, X } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
 import {
   ChannelList,
   ChannelPreviewMessenger,
-  ChannelPreviewUIComponentProps,
+  type ChannelPreviewUIComponentProps,
   useChatContext,
 } from "stream-chat-react";
-
+import { Button } from "@/components/ui/button";
 import { useSession } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
 
 import NewChatDialog from "./NewChatDialog";
 
@@ -44,25 +43,18 @@ export default function ChatSidebar({ open, onClose }: ChatSidebarProps) {
         }}
       />
     ),
-    [onClose],
+    [onClose]
   );
 
   return (
     <div
       className={cn(
         "size-full flex-col border-e md:flex md:w-72",
-        open ? "flex" : "hidden",
+        open ? "flex" : "hidden"
       )}
     >
       <MenuHeader onClose={onClose} />
       <ChannelList
-        filters={{
-          type: "messaging",
-          members: { $in: [user?.id as string] },
-        }}
-        showChannelSearch
-        options={{ state: true, presence: true, limit: 8 }}
-        sort={{ last_message_at: -1 }}
         additionalChannelSearchProps={{
           searchForChannels: true,
           searchQueryParams: {
@@ -71,7 +63,14 @@ export default function ChatSidebar({ open, onClose }: ChatSidebarProps) {
             },
           },
         }}
+        filters={{
+          type: "messaging",
+          members: { $in: [user?.id as string] },
+        }}
+        options={{ state: true, presence: true, limit: 8 }}
         Preview={ChannelPreviewCustom}
+        showChannelSearch
+        sort={{ last_message_at: -1 }}
       />
     </div>
   );
@@ -88,27 +87,27 @@ function MenuHeader({ onClose }: MenuHeaderProps) {
     <>
       <div className="flex items-center gap-3 p-2">
         <div className="h-full md:hidden">
-          <Button size="icon" variant="ghost" onClick={onClose}>
+          <Button onClick={onClose} size="icon" variant="ghost">
             <X className="size-5" />
           </Button>
         </div>
-        <h1 className="me-auto text-xl font-bold md:ms-2">Messages</h1>
+        <h1 className="me-auto font-bold text-xl md:ms-2">Messages</h1>
         <Button
-          size="icon"
-          variant="ghost"
-          title="Start new chat"
           onClick={() => setShowNewChatDialog(true)}
+          size="icon"
+          title="Start new chat"
+          variant="ghost"
         >
           <MailPlus className="size-5" />
         </Button>
       </div>
       {showNewChatDialog && (
         <NewChatDialog
-          onOpenChange={setShowNewChatDialog}
           onChatCreated={() => {
             setShowNewChatDialog(false);
             onClose();
           }}
+          onOpenChange={setShowNewChatDialog}
         />
       )}
     </>

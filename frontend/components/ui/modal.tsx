@@ -1,6 +1,6 @@
 "use client";
 
-import { Dispatch, SetStateAction } from "react";
+import type { Dispatch, SetStateAction } from "react";
 // import { useRouter } from "next/router";
 import { Drawer } from "vaul";
 
@@ -50,19 +50,19 @@ export function Modal({
   if (isMobile && !desktopOnly) {
     return (
       <Drawer.Root
-        open={setShowModal ? showModal : true}
         onOpenChange={(open) => {
           if (!open) {
             closeModal({ dragged: true });
           }
         }}
+        open={setShowModal ? showModal : true}
       >
         <Drawer.Overlay className="fixed inset-0 z-40 bg-background/80 backdrop-blur-xs" />
         <Drawer.Portal>
           <Drawer.Content
             className={cn(
               "fixed inset-x-0 bottom-0 z-50 mt-24 overflow-hidden rounded-t-[10px] border bg-background",
-              className,
+              className
             )}
           >
             <div className="sticky top-0 z-20 flex w-full items-center justify-center bg-inherit">
@@ -77,20 +77,20 @@ export function Modal({
   }
   return (
     <Dialog
-      open={setShowModal ? showModal : true}
       onOpenChange={(open) => {
         if (!open) {
           closeModal();
         }
       }}
+      open={setShowModal ? showModal : true}
     >
       <DialogContent
-        onOpenAutoFocus={(e) => e.preventDefault()}
-        onCloseAutoFocus={(e) => e.preventDefault()}
         className={cn(
           "overflow-hidden p-0 md:max-w-md md:rounded-2xl md:border",
-          className,
+          className
         )}
+        onCloseAutoFocus={(e) => e.preventDefault()}
+        onOpenAutoFocus={(e) => e.preventDefault()}
       >
         {children}
       </DialogContent>

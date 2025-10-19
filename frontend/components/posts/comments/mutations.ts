@@ -1,11 +1,11 @@
 import {
-  InfiniteData,
-  QueryKey,
+  type InfiniteData,
+  type QueryKey,
   useMutation,
   useQueryClient,
 } from "@tanstack/react-query";
 
-import { CommentsPage } from "@/types/types";
+import type { CommentsPage } from "@/types/types";
 
 import { useToast } from "../../ui/use-toast";
 import { deleteComment, submitComment } from "./actions";
@@ -39,7 +39,7 @@ export function useSubmitCommentMutation(postId: string) {
               ],
             };
           }
-        },
+        }
       );
 
       queryClient.invalidateQueries({
@@ -89,7 +89,7 @@ export function useDeleteCommentMutation() {
               comments: page.comments.filter((c) => c.id !== deletedComment.id),
             })),
           };
-        },
+        }
       );
 
       toast({

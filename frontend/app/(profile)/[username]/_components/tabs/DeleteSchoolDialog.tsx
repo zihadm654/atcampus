@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
+import { Trash2 } from "lucide-react";
+import { useState } from "react";
 import { toast } from "sonner";
-
-import { Button } from "@/components/ui/button";
+import { useDeleteSchoolMutation } from "@/app/(profile)/[username]/_components/schoolMutations";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -15,8 +15,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Trash2 } from "lucide-react";
-import { useDeleteSchoolMutation } from "@/app/(profile)/[username]/_components/schoolMutations";
+import { Button } from "@/components/ui/button";
 
 interface DeleteSchoolDialogProps {
   schoolId: string;
@@ -29,14 +28,11 @@ export default function DeleteSchoolDialog({
   const deleteSchoolMutation = useDeleteSchoolMutation();
 
   const handleDelete = () => {
-    toast.promise(
-      deleteSchoolMutation.mutateAsync(schoolId),
-      {
-        loading: "Deleting school...",
-        success: "School deleted successfully",
-        error: "Failed to delete school"
-      }
-    );
+    toast.promise(deleteSchoolMutation.mutateAsync(schoolId), {
+      loading: "Deleting school...",
+      success: "School deleted successfully",
+      error: "Failed to delete school",
+    });
 
     // Close dialog on success
     if (!deleteSchoolMutation.isError) {
@@ -45,9 +41,9 @@ export default function DeleteSchoolDialog({
   };
 
   return (
-    <AlertDialog open={open} onOpenChange={setOpen}>
+    <AlertDialog onOpenChange={setOpen} open={open}>
       <AlertDialogTrigger asChild>
-        <Button variant="destructive" size="sm">
+        <Button size="sm" variant="destructive">
           <Trash2 className="mr-2 h-4 w-4" /> Delete
         </Button>
       </AlertDialogTrigger>
@@ -61,7 +57,10 @@ export default function DeleteSchoolDialog({
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction onClick={handleDelete} disabled={deleteSchoolMutation.isPending}>
+          <AlertDialogAction
+            disabled={deleteSchoolMutation.isPending}
+            onClick={handleDelete}
+          >
             {deleteSchoolMutation.isPending ? "Deleting..." : "Delete"}
           </AlertDialogAction>
         </AlertDialogFooter>

@@ -1,6 +1,80 @@
 {
-  "$schema": "https://biomejs.dev/schemas/2.1.2/schema.json",
-  "extends": [
-    "ultracite"
-  ]
+  "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
+  "files": {
+    "ignoreUnknown": false,
+    "includes": [
+      "**",
+      "!**/.next",
+      "!**/dist",
+      "!**/.turbo",
+      "!**/node_modules",
+      "!**/app/globals.css",
+      "!**/components/ui"
+    ]
+  },
+  "linter": {
+    "rules": {
+      "style": {
+        "useBlockStatements": "off",
+        "noMagicNumbers": "off",
+        "noEnum": "off",
+        "useTemplate": "off",
+        "useFilenamingConvention": "off",
+        "noNestedTernary": "off",
+        "noParameterAssign": "off",
+        "noNonNullAssertion": "off"
+      },
+      "nursery": {
+        "useConsistentTypeDefinitions": "off",
+        "noShadow": "off",
+        "noUnusedExpressions": "off",
+        "useMaxParams": "off",
+        "useImageSize": "off"
+      },
+      "complexity": {
+        "noExcessiveCognitiveComplexity": "off",
+        "noBannedTypes": "off",
+        "useLiteralKeys": "off",
+        "noForEach": "off"
+      },
+      "suspicious": {
+        "noConsole": "off",
+        "noEvolvingTypes": "off",
+        "noImplicitAnyLet": "off",
+        "noExplicitAny": "off",
+        "useAwait": "off",
+        "noShadowRestrictedNames": "off",
+        "noArrayIndexKey": "off",
+        "noAlert": "off",
+        "noAssignInExpressions": "off",
+        "noEmptyBlockStatements": "off"
+      },
+      "correctness": {
+        "noUnusedVariables": "off",
+        "noUnusedFunctionParameters": "off",
+        "useExhaustiveDependencies": "off",
+        "noNestedComponentDefinitions": "off",
+        "useHookAtTopLevel": "off",
+        "useParseIntRadix": "off",
+        "noUnknownFunction": "off"
+      },
+      "performance": {
+        "noDelete": "off",
+        "useTopLevelRegex": "off",
+        "noNamespaceImport": "off",
+        "noImgElement": "off"
+      },
+      "a11y": {
+        "noAutofocus": "off",
+        "noNoninteractiveElementInteractions": "off",
+        "noSvgWithoutTitle": "off",
+        "noLabelWithoutControl": "off",
+        "useKeyWithClickEvents": "off",
+        "noStaticElementInteractions": "off",
+        "useKeyWithMouseEvents": "off",
+        "useMediaCaption": "off"
+      }
+    }
+  },
+  "extends": ["ultracite"]
 }

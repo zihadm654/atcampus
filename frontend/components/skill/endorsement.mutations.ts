@@ -14,14 +14,19 @@ export function useEndorseSkillMutation() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ userSkillId, skillId }: { userSkillId: string; skillId: string }) =>
-      endorseSkill(userSkillId, skillId),
+    mutationFn: ({
+      userSkillId,
+      skillId,
+    }: {
+      userSkillId: string;
+      skillId: string;
+    }) => endorseSkill(userSkillId, skillId),
     onSuccess: (_, variables) => {
       // Invalidate the endorsements query to refetch
       queryClient.invalidateQueries({
         queryKey: ["skillEndorsements", variables.userSkillId],
       });
-      
+
       toast({
         description: "Skill endorsed successfully!",
       });
@@ -30,7 +35,8 @@ export function useEndorseSkillMutation() {
       console.error(error);
       toast({
         variant: "destructive",
-        description: error instanceof Error ? error.message : "Failed to endorse skill",
+        description:
+          error instanceof Error ? error.message : "Failed to endorse skill",
       });
     },
   });
@@ -50,7 +56,7 @@ export function useRemoveEndorsementMutation() {
       queryClient.invalidateQueries({
         queryKey: ["skillEndorsements", userSkillId],
       });
-      
+
       toast({
         description: "Endorsement removed successfully!",
       });
@@ -59,7 +65,10 @@ export function useRemoveEndorsementMutation() {
       console.error(error);
       toast({
         variant: "destructive",
-        description: error instanceof Error ? error.message : "Failed to remove endorsement",
+        description:
+          error instanceof Error
+            ? error.message
+            : "Failed to remove endorsement",
       });
     },
   });

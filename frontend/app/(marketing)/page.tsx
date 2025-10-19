@@ -1,9 +1,8 @@
 import { Suspense } from "react";
-
-import { constructMetadata } from "@/lib/utils";
 import ForYouFeed from "@/components/feed/ForYouFeed";
 import PostEditor from "@/components/posts/editor/PostEditor";
 import { SkeletonSection } from "@/components/shared/section-skeleton";
+import { constructMetadata } from "@/lib/utils";
 
 export const metadata = constructMetadata({
   title: "Home - AtCampus",

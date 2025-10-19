@@ -1,8 +1,7 @@
 import { redirect } from "next/navigation";
-import React from "react";
+import { CreateCourseForm } from "@/components/forms/create-course";
 import { getCurrentUser } from "@/lib/session";
 import { constructMetadata } from "@/lib/utils";
-import { CreateCourseForm } from "@/components/forms/create-course";
 
 export const metadata = constructMetadata({
   title: "Create Job - AtCampus",

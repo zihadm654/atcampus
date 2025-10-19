@@ -1,13 +1,13 @@
-import { usePathname, useRouter } from "next/navigation";
 import {
-  InfiniteData,
-  QueryFilters,
+  type InfiniteData,
+  type QueryFilters,
   useMutation,
   useQueryClient,
 } from "@tanstack/react-query";
+import { usePathname, useRouter } from "next/navigation";
 import { toast } from "sonner";
 
-import { PostsPage } from "@/types/types";
+import type { PostsPage } from "@/types/types";
 
 import { deletePost } from "./actions";
 
@@ -36,7 +36,7 @@ export function useDeletePostMutation() {
               posts: page.posts.filter((p) => p.id !== deletedPost.id),
             })),
           };
-        },
+        }
       );
 
       toast.success("Post deleted");

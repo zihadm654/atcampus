@@ -1,21 +1,19 @@
-import { Suspense } from 'react';
-import { unstable_cache } from 'next/cache';
-import Link from 'next/link';
-import { Loader2 } from 'lucide-react';
-
-import { getUserDataSelect } from '@/types/types';
-import { prisma } from '@/lib/db';
-import { getCurrentUser } from '@/lib/session';
-import { formatNumber } from '@/lib/utils';
-
-import UserTooltip from '../UserTooltip';
-import FollowButton from './FollowButton';
-import UserAvatar from '../UserAvatar';
+import { Loader2 } from "lucide-react";
+import { unstable_cache } from "next/cache";
+import Link from "next/link";
+import { Suspense } from "react";
+import { prisma } from "@/lib/db";
+import { getCurrentUser } from "@/lib/session";
+import { formatNumber } from "@/lib/utils";
+import { getUserDataSelect } from "@/types/types";
+import UserAvatar from "../UserAvatar";
+import UserTooltip from "../UserTooltip";
+import FollowButton from "./FollowButton";
 
 export default function TrendsSidebar() {
   return (
-    <div className='sticky top-[4.5rem] hidden h-fit w-72 flex-none space-y-5 md:block lg:w-80'>
-      <Suspense fallback={<Loader2 className='mx-auto animate-spin' />}>
+    <div className="sticky top-[4.5rem] hidden h-fit w-72 flex-none space-y-5 md:block lg:w-80">
+      <Suspense fallback={<Loader2 className="mx-auto animate-spin" />}>
         <WhoToFollow />
         <TrendingTopics />
       </Suspense>
@@ -44,38 +42,38 @@ async function WhoToFollow() {
   });
 
   return (
-    <div className='bg-card space-y-5 rounded-2xl p-5 shadow-sm'>
-      <div className='text-xl font-bold'>Who to follow</div>
+    <div className="space-y-5 rounded-2xl bg-card p-5 shadow-sm">
+      <div className="font-bold text-xl">Who to follow</div>
       {usersToFollow.map((user) => (
-        <div key={user.id} className='flex items-center justify-between gap-3'>
+        <div className="flex items-center justify-between gap-3" key={user.id}>
           <UserTooltip user={user}>
             <Link
+              className="flex items-center gap-3"
               href={`/${user.username}`}
-              className='flex items-center gap-3'
             >
               <UserAvatar
                 avatarUrl={user.image}
-                className='hidden sm:inline'
+                className="hidden sm:inline"
                 size={40}
               />
               <div>
-                <p className='line-clamp-1 font-semibold break-all hover:underline'>
+                <p className="line-clamp-1 break-all font-semibold hover:underline">
                   {user.name}
                 </p>
-                <p className='text-muted-foreground line-clamp-1 break-all'>
+                <p className="line-clamp-1 break-all text-muted-foreground">
                   @{user.username}
                 </p>
               </div>
             </Link>
           </UserTooltip>
           <FollowButton
-            userId={user.id}
             initialState={{
               followers: user._count.followers,
               isFollowedByUser: user.followers.some(
                 ({ followerId }) => followerId === user.id
               ),
             }}
+            userId={user.id}
           />
         </div>
       ))}
@@ -91,16 +89,16 @@ const getTrendingTopics = unstable_cache(
           $project: {
             hashtags: {
               $regexFindAll: {
-                input: '$content',
-                regex: '#[a-zA-Z0-9_]+',
+                input: "$content",
+                regex: "#[a-zA-Z0-9_]+",
               },
             },
           },
         },
-        { $unwind: '$hashtags' },
+        { $unwind: "$hashtags" },
         {
           $group: {
-            _id: { $toLower: '$hashtags.match' },
+            _id: { $toLower: "$hashtags.match" },
             count: { $sum: 1 },
           },
         },
@@ -109,8 +107,8 @@ const getTrendingTopics = unstable_cache(
         {
           $project: {
             _id: 0,
-            hashtag: '$_id',
-            count: '$count',
+            hashtag: "$_id",
+            count: "$count",
           },
         },
       ],
@@ -121,7 +119,7 @@ const getTrendingTopics = unstable_cache(
       count: Number(row.count),
     }));
   },
-  ['trending_topics'],
+  ["trending_topics"],
   {
     revalidate: 3 * 60 * 60,
   }
@@ -131,21 +129,21 @@ async function TrendingTopics() {
   const trendingTopics = await getTrendingTopics();
 
   return (
-    <div className='bg-card space-y-5 rounded-2xl p-5 shadow-sm'>
-      <div className='text-xl font-bold'>Trending topics</div>
+    <div className="space-y-5 rounded-2xl bg-card p-5 shadow-sm">
+      <div className="font-bold text-xl">Trending topics</div>
       {trendingTopics.map(({ hashtag, count }) => {
-        const title = hashtag.split('#')[1];
+        const title = hashtag.split("#")[1];
 
         return (
-          <Link key={title} href={`/hashtag/${title}`} className='block'>
+          <Link className="block" href={`/hashtag/${title}`} key={title}>
             <p
-              className='line-clamp-1 font-semibold break-all hover:underline'
+              className="line-clamp-1 break-all font-semibold hover:underline"
               title={hashtag}
             >
               {hashtag}
             </p>
-            <p className='text-muted-foreground text-sm'>
-              {formatNumber(count)} {count === 1 ? 'post' : 'posts'}
+            <p className="text-muted-foreground text-sm">
+              {formatNumber(count)} {count === 1 ? "post" : "posts"}
             </p>
           </Link>
         );

@@ -1,11 +1,10 @@
+import { Briefcase } from "lucide-react";
 import type { Metadata } from "next";
-import { redirect } from "next/navigation";
-
+import { cache } from "react";
+import JobFeed from "@/components/feed/JobFeed";
+import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/session";
 import { constructMetadata } from "@/lib/utils";
-import JobFeed from "@/components/feed/JobFeed";
-import { cache } from "react";
-import { prisma } from "@/lib/db";
 import { getJobDataInclude } from "@/types/types";
 
 export const metadata: Metadata = constructMetadata({
@@ -64,7 +63,17 @@ export default async function JobsPage() {
 
   return (
     <div className="flex w-full flex-col gap-6">
-      <JobFeed user={user} initialData={initialJobsData} />
+      <div>
+        <div className="flex items-center gap-3">
+          <Briefcase className="h-8 w-8" />
+          <h1 className="font-bold text-3xl">Find Your Dream Job</h1>
+        </div>
+        <p className="max-w-2xl">
+          Discover exciting opportunities to gain practical experience and
+          advance your career
+        </p>
+      </div>
+      <JobFeed initialData={initialJobsData} user={user} />
     </div>
   );
 }

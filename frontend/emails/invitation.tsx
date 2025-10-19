@@ -40,19 +40,19 @@ export const InviteUserEmail = ({
       <Preview>{previewText}</Preview>
       <Tailwind>
         <Body className="mx-auto my-auto bg-white px-2 font-sans">
-          <Container className="mx-auto my-[40px] max-w-[465px] rounded border border-solid border-[#eaeaea] p-[20px]">
-            <Heading className="mx-0 my-[30px] p-0 text-center text-[24px] font-normal text-black">
+          <Container className="mx-auto my-[40px] max-w-[465px] rounded border border-[#eaeaea] border-solid p-[20px]">
+            <Heading className="mx-0 my-[30px] p-0 text-center font-normal text-[24px] text-black">
               Join <strong>{invitedByUsername}</strong> on{" "}
               <strong>Better Auth.</strong>
             </Heading>
-            <Text className="text-[14px] leading-[24px] text-black">
+            <Text className="text-[14px] text-black leading-[24px]">
               Hello there,
             </Text>
-            <Text className="text-[14px] leading-[24px] text-black">
+            <Text className="text-[14px] text-black leading-[24px]">
               <strong>{invitedByUsername}</strong> (
               <Link
-                href={`mailto:${invitedByEmail}`}
                 className="text-blue-600 no-underline"
+                href={`mailto:${invitedByEmail}`}
               >
                 {invitedByEmail}
               </Link>
@@ -65,10 +65,10 @@ export const InviteUserEmail = ({
                   <Column align="left">
                     <Img
                       className="rounded-full"
+                      fetchPriority="high"
+                      height="64"
                       src={teamImage}
                       width="64"
-                      height="64"
-                      fetchPriority="high"
                     />
                   </Column>
                 </Row>
@@ -76,20 +76,20 @@ export const InviteUserEmail = ({
             </Section>
             <Section className="mt-[32px] mb-[32px] text-center">
               <Button
-                className="rounded bg-[#000000] px-5 py-3 text-center text-[12px] font-semibold text-white no-underline"
+                className="rounded bg-[#000000] px-5 py-3 text-center font-semibold text-[12px] text-white no-underline"
                 href={inviteLink}
               >
                 Join the team
               </Button>
             </Section>
-            <Text className="text-[14px] leading-[24px] text-black">
+            <Text className="text-[14px] text-black leading-[24px]">
               or copy and paste this URL into your browser:{" "}
-              <Link href={inviteLink} className="text-blue-600 no-underline">
+              <Link className="text-blue-600 no-underline" href={inviteLink}>
                 {inviteLink}
               </Link>
             </Text>
-            <Hr className="mx-0 my-[26px] w-full border border-solid border-[#eaeaea]" />
-            <Text className="text-[12px] leading-[24px] text-[#666666]">
+            <Hr className="mx-0 my-[26px] w-full border border-[#eaeaea] border-solid" />
+            <Text className="text-[#666666] text-[12px] leading-[24px]">
               This invitation was intended for{" "}
               <span className="text-black">{username}</span>. If you were not
               expecting this invitation, you can ignore this email.

@@ -1,10 +1,10 @@
-import { getUserDataSelect } from "@/types/types";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/session";
+import { getUserDataSelect } from "@/types/types";
 
 export async function GET(
   req: Request,
-  { params }: { params: Promise<{ username: string }> },
+  { params }: { params: Promise<{ username: string }> }
 ) {
   const { username } = await params;
   try {

@@ -1,13 +1,12 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-
-import { auth } from "@/lib/auth";
-import { getCurrentUser } from "@/lib/session";
-import { constructMetadata } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
 import AccountSwitcher from "@/components/auth/account-switch";
 import { DeleteAccountSection } from "@/components/dashboard/delete-account";
 import { DashboardHeader } from "@/components/dashboard/header";
+import { Button } from "@/components/ui/button";
+import { auth } from "@/lib/auth";
+import { getCurrentUser } from "@/lib/session";
+import { constructMetadata } from "@/lib/utils";
 
 import UserCard from "../_components/user-card";
 
@@ -49,9 +48,9 @@ export default async function SettingsPage() {
         heading="Settings"
         text="Manage account and website settings."
       />
-      <h2 className="text-2xl font-bold">Permissions</h2>
+      <h2 className="font-bold text-2xl">Permissions</h2>
 
-      <div className="flex items-center space-x-4 flex-wrap max-md:space-y-2">
+      <div className="flex flex-wrap items-center space-x-4 max-md:space-y-2">
         <Button size="sm">MANAGE OWN POSTS</Button>
         <Button disabled={!FULL_POST_ACCESS.success} size="sm">
           MANAGE ALL POSTS

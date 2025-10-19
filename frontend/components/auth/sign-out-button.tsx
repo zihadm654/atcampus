@@ -1,12 +1,11 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { LogOut } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { toast } from "sonner";
-
-import { signOut } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
+import { signOut } from "@/lib/auth-client";
 
 export const SignOutButton = () => {
   const [isPending, setIsPending] = useState(false);
@@ -34,10 +33,10 @@ export const SignOutButton = () => {
 
   return (
     <Button
+      disabled={isPending}
       onClick={handleClick}
       size="sm"
       variant="destructive"
-      disabled={isPending}
     >
       <LogOut className="size-4" />
       Sign out

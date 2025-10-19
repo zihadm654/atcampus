@@ -1,9 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-
-import { UserSkillData } from "@/types/types";
 import { useSession } from "@/lib/auth-client";
+import type { UserSkillData } from "@/types/types";
 
 import { getSkillEndorsements } from "./endorsement.actions";
 import UserSkillCard from "./UserSkillCard";
@@ -61,22 +60,22 @@ export default function UserSkillList({
 
   if (skills.length === 0) {
     return (
-      <div className="text-muted-foreground py-6 text-center">
+      <div className="py-6 text-center text-muted-foreground">
         No skills added yet
       </div>
     );
   }
 
   return (
-    <div className="space-y-1 grid grid-cols-2 max-md:grid-cols-1 gap-1 overflow-y-scroll max-h-48">
+    <div className="grid max-h-48 grid-cols-2 gap-1 space-y-1 overflow-y-scroll max-md:grid-cols-1">
       {skills.map((skill) => (
         <UserSkillCard
+          canEdit={canEdit}
+          currentUserEndorsements={endorsedSkillIds}
           key={skill.id}
+          onSkillUpdated={onSkillUpdated}
           skill={skill}
           userId={userId}
-          currentUserEndorsements={endorsedSkillIds}
-          canEdit={canEdit}
-          onSkillUpdated={onSkillUpdated}
         />
       ))}
     </div>

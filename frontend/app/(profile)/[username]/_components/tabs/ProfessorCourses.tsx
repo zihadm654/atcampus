@@ -1,13 +1,12 @@
 "use client";
 
-import React from "react";
-import { CourseData } from "@/types/types";
-import type { ProfilePermissions } from "@/types/profile-types";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Icons } from "@/components/shared/icons";
 import { useRouter } from "next/navigation";
-import { formatDate } from "@/lib/utils";
+import Course from "@/components/courses/Course";
+import { Icons } from "@/components/shared/icons";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import type { ProfilePermissions } from "@/types/profile-types";
+import type { CourseData } from "@/types/types";
 
 interface ProfessorCoursesProps {
   courses: CourseData[];
@@ -29,8 +28,8 @@ export default function ProfessorCourses({
         <CardTitle>My Courses</CardTitle>
         {canCreateCourses && (
           <Button
-            onClick={() => router.push("/courses/createCourse")}
             className="cursor-pointer"
+            onClick={() => router.push("/courses/createCourse")}
             variant="default"
           >
             <Icons.add className="mr-2 h-4 w-4" />
@@ -38,53 +37,17 @@ export default function ProfessorCourses({
           </Button>
         )}
       </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
+      <CardContent className="max-md:p-2">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
           {courses && courses.length > 0 ? (
-            courses.map((course) => (
-              <div
-                key={course.id}
-                className="border p-4 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
-                onClick={() => router.push(`/courses/${course.id}`)}
-              >
-                <div className="flex justify-between items-start">
-                  <div>
-                    <h4 className="font-semibold text-lg">{course.title}</h4>
-                    <p className="text-sm text-gray-500">{course.code}</p>
-                    {course.faculty && (
-                      <p className="text-xs text-gray-400 mt-1">{course.faculty.name}</p>
-                    )}
-                  </div>
-                  <div className="text-right">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${course.status === 'PUBLISHED'
-                      ? 'bg-green-100 text-green-800'
-                      : course.status === 'DRAFT'
-                        ? 'bg-yellow-100 text-yellow-800'
-                        : 'bg-blue-100 text-blue-800'
-                      }`}>
-                      {course.status?.replace('_', ' ') || 'UNKNOWN'}
-                    </span>
-                  </div>
-                </div>
-                <div className="flex justify-between items-center mt-3">
-                  <div className="flex items-center text-sm text-gray-500">
-                    <Icons.users className="mr-1 h-4 w-4" />
-                    <span>{course.enrollments?.length || 0} students enrolled</span>
-                  </div>
-                  <div className="flex items-center text-sm text-gray-500">
-                    <Icons.calendar className="mr-1 h-4 w-4" />
-                    {course.startDate && (
-                      <span>Starts {formatDate(new Date(course.startDate), "MMM d, yyyy")}</span>
-                    )}
-                  </div>
-                </div>
-              </div>
-            ))
+            courses.map((course) => <Course course={course} key={course.id} />)
           ) : (
-            <div className="text-center py-8">
+            <div className="col-span-full py-8 text-center">
               <Icons.bookOpen className="mx-auto h-12 w-12 text-gray-400" />
-              <h3 className="mt-2 text-sm font-medium text-gray-900">No courses created</h3>
-              <p className="mt-1 text-sm text-gray-500">
+              <h3 className="mt-2 font-medium text-gray-900 text-sm">
+                No courses created
+              </h3>
+              <p className="mt-1 text-gray-500 text-sm">
                 You haven't created any courses yet.
               </p>
               {isCurrentUser && (

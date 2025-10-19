@@ -1,8 +1,8 @@
 "use server";
 
-import { getPostDataInclude } from "@/types/types";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/session";
+import { getPostDataInclude } from "@/types/types";
 
 export async function deletePost(id: string) {
   const user = await getCurrentUser();

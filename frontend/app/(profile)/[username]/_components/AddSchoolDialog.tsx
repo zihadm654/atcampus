@@ -1,11 +1,11 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
+import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-
+import * as z from "zod";
+import { useCreateSchoolMutation } from "@/app/(profile)/[username]/_components/schoolMutations";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -16,17 +16,23 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 import {
   Form,
+  FormControl,
   FormField,
   FormItem,
   FormLabel,
-  FormControl,
   FormMessage,
 } from "@/components/ui/form";
-import { useCreateSchoolMutation } from "@/app/(profile)/[username]/_components/schoolMutations";
-import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { coursesData } from "@/config/course";
 
 export const addSchoolSchema = z.object({
@@ -88,7 +94,7 @@ export default function AddSchoolDialog() {
   }, [open, form]);
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog onOpenChange={setOpen} open={open}>
       <DialogTrigger asChild>
         <Button>Add School</Button>
       </DialogTrigger>
@@ -100,7 +106,7 @@ export default function AddSchoolDialog() {
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <form className="space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
             <FormField
               control={form.control}
               name="name"
@@ -109,9 +115,9 @@ export default function AddSchoolDialog() {
                   <FormLabel>School Name</FormLabel>
                   <FormControl>
                     <Select
-                      value={field.value}
-                      onValueChange={field.onChange}
                       defaultValue={field.value}
+                      onValueChange={field.onChange}
+                      value={field.value}
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="Select a school" />
@@ -158,10 +164,7 @@ export default function AddSchoolDialog() {
                 <FormItem>
                   <FormLabel>School Description</FormLabel>
                   <FormControl>
-                    <Input
-                      placeholder="e.g. School description"
-                      {...field}
-                    />
+                    <Input placeholder="e.g. School description" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -185,16 +188,13 @@ export default function AddSchoolDialog() {
             />
             <DialogFooter>
               <Button
+                onClick={() => setOpen(false)}
                 type="button"
                 variant="outline"
-                onClick={() => setOpen(false)}
               >
                 Cancel
               </Button>
-              <Button
-                type="submit"
-                disabled={createSchoolMutation.isPending}
-              >
+              <Button disabled={createSchoolMutation.isPending} type="submit">
                 {createSchoolMutation.isPending ? "Saving..." : "Save changes"}
               </Button>
             </DialogFooter>

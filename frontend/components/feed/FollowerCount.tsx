@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { FollowerInfo } from '@/types/types';
-import { formatNumber } from '@/lib/utils';
-import useFollowerInfo from '@/hooks/useFollowerInfo';
+import useFollowerInfo from "@/hooks/useFollowerInfo";
+import { formatNumber } from "@/lib/utils";
+import type { FollowerInfo } from "@/types/types";
 
 interface FollowerCountProps {
   userId: string;
@@ -16,8 +16,8 @@ export default function FollowerCount({
   const { data } = useFollowerInfo(userId, initialState);
 
   return (
-    <span className='flex items-center flex-col text-muted-foreground'>
-      <span className='font-semibold text-blue-700'>
+    <span className="flex flex-col items-center text-muted-foreground">
+      <span className="font-semibold text-blue-700">
         {formatNumber(data.followers)}
       </span>
       Followers
