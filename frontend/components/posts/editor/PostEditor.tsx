@@ -262,7 +262,7 @@ export default function PostEditor() {
               <Icons.video className="size-6 text-red-500" />
               <span>Videos</span>
             </Button>
-
+            
             <LoadingButton
               disabled={
                 !(

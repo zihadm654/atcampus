@@ -124,8 +124,8 @@ export default async function CoursesPage() {
               variant="secondary"
             >
               <Link href="/courses/approvals">
-                <span className="hidden lg:block">Course Approvals</span>
-                <Icons.home className="hidden size-5 lg:block" />
+                <span className="hidden lg:block">Approvals</span>
+                <Icons.home className="hidden size-5 max-md:block" />
               </Link>
             </Button>
           )}

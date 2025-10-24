@@ -1,7 +1,6 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -29,7 +28,6 @@ interface EditFacultyDialogProps {
 }
 
 export default function EditFacultyDialog({ faculty }: EditFacultyDialogProps) {
-  const [open, setOpen] = useState(false);
   const updateFacultyMutation = useUpdateFacultyMutation();
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -50,7 +48,6 @@ export default function EditFacultyDialog({ faculty }: EditFacultyDialogProps) {
       {
         onSuccess: () => {
           toast.success("Faculty updated successfully");
-          setOpen(false);
         },
         onError: (error) => {
           toast.error(error.message || "Failed to update faculty");
@@ -91,7 +88,6 @@ export default function EditFacultyDialog({ faculty }: EditFacultyDialogProps) {
         <DialogFooter>
           <DialogClose asChild>
             <Button
-              onClick={() => setOpen(false)}
               type="button"
               variant="outline"
             >

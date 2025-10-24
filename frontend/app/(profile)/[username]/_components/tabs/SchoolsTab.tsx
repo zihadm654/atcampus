@@ -77,6 +77,7 @@ const SchoolManagement = ({
   const [showNewDialog, setShowNewDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showEditFaculty, setShowEditFaculty] = useState(false);
+  const [selectedFaculty, setSelectedFaculty] = useState<Faculty | null>(null); // Add state for selected faculty
   const deleteSchoolMutation = useDeleteSchoolMutation();
   const deleteFacultyMutation = useDeleteFacultyMutation();
 
@@ -174,10 +175,9 @@ const SchoolManagement = ({
       </CardHeader>
       <CardContent className="grid grid-cols-1 gap-3 max-md:px-4">
         {school.faculties.map((faculty) => (
-          <>
+          <div key={faculty.id}>
             <div
               className="flex items-center justify-between gap-1"
-              key={faculty.id}
             >
               <h4>{faculty.name}</h4>
               {canManageAcademic && (
@@ -196,7 +196,14 @@ const SchoolManagement = ({
                     <DropdownMenuSeparator />
                     <DropdownMenuGroup>
                       <DropdownMenuItem
-                        onSelect={() => setShowEditFaculty(true)}
+                        onSelect={() => {
+                          setSelectedFaculty({
+                            ...faculty,
+                            schoolId: school.id,
+                            description: faculty.description || undefined,
+                          });
+                          setShowEditFaculty(true);
+                        }}
                       >
                         Edit Faculty
                       </DropdownMenuItem>
@@ -220,25 +227,24 @@ const SchoolManagement = ({
               )}
             </div>
             <p className="text-gray-500">{faculty.description}</p>
-            <Dialog onOpenChange={setShowEditFaculty} open={showEditFaculty}>
-              <DialogContent className="sm:max-w-[425px]">
-                <DialogHeader>
-                  <DialogTitle>Edit Faculty</DialogTitle>
-                  <DialogDescription>
-                    Edit Faculty Information
-                  </DialogDescription>
-                </DialogHeader>
-                <EditFacultyDialog
-                  faculty={{
-                    ...faculty,
-                    schoolId: school.id,
-                    description: faculty.description || undefined,
-                  }}
-                />
-              </DialogContent>
-            </Dialog>
-          </>
+          </div>
         ))}
+        {/* Move the Dialog outside the map loop and use selectedFaculty */}
+        <Dialog onOpenChange={setShowEditFaculty} open={showEditFaculty}>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle>Edit Faculty</DialogTitle>
+              <DialogDescription>
+                Edit Faculty Information
+              </DialogDescription>
+            </DialogHeader>
+            {selectedFaculty && (
+              <EditFacultyDialog
+                faculty={{ ...selectedFaculty, schoolId: school.id, description: selectedFaculty.description || undefined }}
+              />
+            )}
+          </DialogContent>
+        </Dialog>
       </CardContent>
     </Card>
   );

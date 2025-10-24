@@ -81,9 +81,9 @@ export function OrganizationCard(props: {
     useState<ExtendedActiveOrganization | null>(
       props.activeOrganization
         ? {
-            ...props.activeOrganization,
-            members: props.activeOrganization.members as ExtendedMember[],
-          }
+          ...props.activeOrganization,
+          members: props.activeOrganization.members as ExtendedMember[],
+        }
         : null
     );
   const [isRevoking, setIsRevoking] = useState<string[]>([]);
@@ -100,7 +100,7 @@ export function OrganizationCard(props: {
   const session = data || props.session;
 
   const currentMember = optimisticOrg?.members.find(
-    (member) => member.userId === session?.user.id
+    (member) => member?.userId === session?.user.id
   );
 
   // Fetch faculties when organization changes
@@ -441,7 +441,7 @@ function CreateOrganizationDialog({ currentMember }) {
   const [avatarPreviewUrl, setAvatarPreviewUrl] = useState<string>("");
 
   // Defensive: handle undefined currentMember and currentMember.user
-  const userImage = currentMember.user ? currentMember.user.image : undefined;
+  const userImage = currentMember?.user?.image;
 
   useEffect(() => {
     if (!isSlugEdited) {
@@ -456,6 +456,7 @@ function CreateOrganizationDialog({ currentMember }) {
       setAvatarPreviewUrl(url);
       return () => URL.revokeObjectURL(url);
     }
+    // Use the userImage variable which is already safely accessed
     if (userImage) {
       setAvatarPreviewUrl(userImage);
     } else {

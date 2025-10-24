@@ -18,6 +18,7 @@ export default function LoadingButton({
     <Button
       className={cn("flex items-center gap-2", className)}
       disabled={loading || disabled}
+      variant="outline"
       {...props}
     >
       {loading && <Loader2 className="size-5 animate-spin" />}
