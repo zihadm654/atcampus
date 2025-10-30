@@ -5,12 +5,12 @@ import { useSession } from "@/lib/auth-client";
 import kyInstance from "@/lib/ky";
 
 export default function useInitializeChatClient() {
+  const [chatClient, setChatClient] = useState<StreamChat | null>(null);
   const { data: session } = useSession();
   if (!session) {
     return null;
   }
   const user = session.user;
-  const [chatClient, setChatClient] = useState<StreamChat | null>(null);
 
   useEffect(() => {
     const client = StreamChat.getInstance(process.env.NEXT_PUBLIC_STREAM_KEY!);

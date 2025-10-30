@@ -1,8 +1,8 @@
 "use server";
 
 import { APIError } from "better-auth/api";
-
 import { auth, type ErrorCode } from "@/lib/auth";
+import streamServerClient from "@/lib/stream";
 import { generateUsername } from "@/lib/utils";
 import { registerSchema, type TRegister } from "@/lib/validations/auth";
 
@@ -35,12 +35,12 @@ export async function signUpEmailAction(data: TRegister) {
     });
 
     // If we have a userId in the response, register with Stream
-    // if (res?.user.id) {
-    //   await streamServerClient.upsertUser({
-    //     id: res.user.id,
-    //     name: res.user.name,
-    //   });
-    // }
+    if (res?.user.id) {
+      await streamServerClient.upsertUser({
+        id: res.user.id,
+        name: res.user.name,
+      });
+    }
 
     return {
       res,

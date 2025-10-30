@@ -159,8 +159,8 @@ export default async function Page({ params }: PageProps) {
   }
   const user = await getUser(username, loggedInUser.id);
   const school = await getSchool(schoolId);
-  
-  if (!user || !school) {
+
+  if (!(user && school)) {
     return notFound();
   }
 

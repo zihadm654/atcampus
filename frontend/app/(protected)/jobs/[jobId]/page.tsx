@@ -10,7 +10,7 @@ import {
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { cache } from "react";
+import { cache, Suspense } from "react";
 import { isEnrolledInCourse } from "@/actions/enrollment";
 import { JsonToHtml } from "@/components/editor/JsonToHtml";
 import JobCourse from "@/components/jobs/JobCourse";
@@ -113,7 +113,7 @@ export default async function JobPage({ params }: PageProps) {
     <div className="w-full">
       {/* Header with gradient background */}
       <div
-        className={`grid ${user.id !== job.userId ? "grid-cols-2" : "grid-cols-1"} gap-2 max-md:grid-cols-1`}
+        className={`grid ${user.id !== job.userId && user.role === "STUDENT" ? "grid-cols-2" : "grid-cols-1"} gap-2 max-md:grid-cols-1`}
       >
         <Card className="flex flex-col gap-3">
           <CardHeader className="flex items-center justify-between">
@@ -189,7 +189,7 @@ export default async function JobPage({ params }: PageProps) {
             <Client job={job} user={user} />
           </CardFooter>
         </Card>
-        {user.id !== job.user.id && (
+        {user.id !== job.user.id && user.role === "STUDENT" && (
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-3">
@@ -218,26 +218,12 @@ export default async function JobPage({ params }: PageProps) {
               </CardTitle>
             </CardHeader>
             <CardContent className="max-h-48 overflow-auto">
-              {/* <div className="flex flex-col gap-2">
-                <Badge>
-                  {job.jobCourses[0]?.courseId && isEnrolled
-                    ? "Profile Match"
-                    : "Profile Not Matched"}
-                </Badge>
-                {user.role === "STUDENT" && (
-                  // We'll implement the actual skill match fetching on the client side
-                  <div className="text-muted-foreground text-sm">
-                    Skill match will be calculated...
-                  </div>
-                )}
-              </div> */}
-              {/* Add job match components for students */}
-              {user.role === "STUDENT" && (
-                <div className="mt-4 space-y-4">
+              <div className="mt-4 space-y-4">
+                <Suspense fallback={<div>Loading...</div>}>
                   <JobMatchScore jobId={job.id} />
                   <MissingSkills jobId={job.id} />
-                </div>
-              )}
+                </Suspense>
+              </div>
             </CardContent>
           </Card>
         )}
@@ -298,6 +284,12 @@ export default async function JobPage({ params }: PageProps) {
             <div className="space-y-2">
               <JobSkills jobId={job.id} />
               {user.role === "STUDENT" && <StudentSkillMatch jobId={job.id} />}
+              <h4 className="mb-4 flex items-center gap-2 font-semibold text-lg">
+                <span className="rounded-full bg-green-100 p-1.5 text-green-700">
+                  <Icons.post className="size-5" />
+                </span>
+                Required Courses
+              </h4>
               <div className="grid grid-cols-2 gap-2 max-md:grid-cols-1">
                 {/* Display associated course if it exists */}
                 {job.jobCourses[0]?.courseId && (

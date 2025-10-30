@@ -8,6 +8,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/session";
+// import streamServerClient from "@/lib/stream";
 
 export async function deleteUserAction({ userId }: { userId: string }) {
   const headersList = await headers();
@@ -22,7 +23,7 @@ export async function deleteUserAction({ userId }: { userId: string }) {
         },
       }),
       // streamServerClient.deleteUser({
-      //   id: userId,
+      // id: userId,
       // }),
     ]);
     if (session.id === userId) {

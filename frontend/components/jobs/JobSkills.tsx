@@ -56,7 +56,11 @@ export default function JobSkills({ jobId }: JobSkillsProps) {
       <CardContent>
         <div className="flex flex-wrap gap-2">
           {job.skills.map((skill: string, index: number) => (
-            <Badge key={`${skill}-${index}`} variant="secondary">
+            <Badge
+              className="text-sm"
+              key={`${skill}-${index}`}
+              variant="secondary"
+            >
               {skill}
             </Badge>
           ))}

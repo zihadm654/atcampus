@@ -254,13 +254,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
                 </span>
                 Topics Covered
               </h2>
-              <ul className="mb-6 list-inside list-disc space-y-1">
-                {objectives.map((item, index) => (
-                  <li className="text-muted-foreground" key={index}>
-                    {item}
-                  </li>
-                ))}
-              </ul>
+              <p>{course.objectives}</p>
             </div>
           </TabsContent>
           <TabsContent className="space-y-3 p-3" value="skill">

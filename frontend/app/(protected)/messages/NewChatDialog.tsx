@@ -27,19 +27,18 @@ export default function NewChatDialog({
   onOpenChange,
   onChatCreated,
 }: NewChatDialogProps) {
+  const [searchInput, setSearchInput] = useState("");
+  const searchInputDebounced = useDebounce(searchInput, 500);
+  const [selectedUsers, setSelectedUsers] = useState<UserResponse[]>([]);
   const { client, setActiveChannel } = useChatContext();
-  const { toast } = useToast();
   const { data: session } = useSession();
   const loggedInUser = session?.user;
+  const { toast } = useToast();
 
   if (!loggedInUser) {
     console.error("User not logged in");
     return null;
   }
-
-  const [searchInput, setSearchInput] = useState("");
-  const searchInputDebounced = useDebounce(searchInput, 500);
-  const [selectedUsers, setSelectedUsers] = useState<UserResponse[]>([]);
   const { data, isFetching, isError, isSuccess } = useQuery({
     queryKey: ["stream-users", searchInputDebounced],
     queryFn: async () => {

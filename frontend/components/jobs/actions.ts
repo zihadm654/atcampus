@@ -102,7 +102,7 @@ export async function createJob(values: TJob) {
     }
 
     revalidatePath("/jobs");
-    revalidateTag("jobs","max");
+    revalidateTag("jobs", "max");
 
     return { success: true, data: job };
   } catch (error) {
@@ -186,7 +186,7 @@ export async function updateJob(values: TJob, jobId: string) {
 
     revalidatePath(`/jobs/${jobId}`);
     revalidatePath("/jobs");
-    revalidateTag("jobs","max");
+    revalidateTag("jobs", "max");
 
     return { success: true, data: jobId };
   } catch (error) {
