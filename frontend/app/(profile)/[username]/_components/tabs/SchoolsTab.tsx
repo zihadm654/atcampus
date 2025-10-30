@@ -176,9 +176,7 @@ const SchoolManagement = ({
       <CardContent className="grid grid-cols-1 gap-3 max-md:px-4">
         {school.faculties.map((faculty) => (
           <div key={faculty.id}>
-            <div
-              className="flex items-center justify-between gap-1"
-            >
+            <div className="flex items-center justify-between gap-1">
               <h4>{faculty.name}</h4>
               {canManageAcademic && (
                 <DropdownMenu modal={false}>
@@ -234,13 +232,15 @@ const SchoolManagement = ({
           <DialogContent className="sm:max-w-[425px]">
             <DialogHeader>
               <DialogTitle>Edit Faculty</DialogTitle>
-              <DialogDescription>
-                Edit Faculty Information
-              </DialogDescription>
+              <DialogDescription>Edit Faculty Information</DialogDescription>
             </DialogHeader>
             {selectedFaculty && (
               <EditFacultyDialog
-                faculty={{ ...selectedFaculty, schoolId: school.id, description: selectedFaculty.description || undefined }}
+                faculty={{
+                  ...selectedFaculty,
+                  schoolId: school.id,
+                  description: selectedFaculty.description || undefined,
+                }}
               />
             )}
           </DialogContent>

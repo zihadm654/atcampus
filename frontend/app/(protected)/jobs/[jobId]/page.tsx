@@ -13,8 +13,14 @@ import { notFound } from "next/navigation";
 import { cache } from "react";
 import { isEnrolledInCourse } from "@/actions/enrollment";
 import { JsonToHtml } from "@/components/editor/JsonToHtml";
+import JobCourse from "@/components/jobs/JobCourse";
+// Add the JobMatchScore component
+import JobMatchScore from "@/components/jobs/JobMatchScore";
 import JobMoreButton from "@/components/jobs/JobMoreButton";
+import JobSkills from "@/components/jobs/JobSkills";
+import MissingSkills from "@/components/jobs/MissingSkills";
 import SaveJobButton from "@/components/jobs/SaveJobButton";
+import StudentSkillMatch from "@/components/jobs/StudentSkillMatch";
 import { Icons } from "@/components/shared/icons";
 import { UserAvatar } from "@/components/shared/user-avatar";
 import UserTooltip from "@/components/UserTooltip";
@@ -49,6 +55,7 @@ const getJob = cache(async (jobId: string, loggedInUserId: string) => {
 
   return job;
 });
+
 const getUser = cache(async (loggedInUserId: string) => {
   const user = await prisma.user.findFirst({
     where: {
@@ -78,6 +85,7 @@ export async function generateMetadata({
     title: `${job.user.displayUsername}: ${job.description.slice(0, 50)}...`,
   });
 }
+
 export default async function JobPage({ params }: PageProps) {
   const { jobId } = await params;
   const user = await getCurrentUser();
@@ -89,9 +97,13 @@ export default async function JobPage({ params }: PageProps) {
       </p>
     );
   }
+
   const currentUser = await getUser(user.id);
   const job = await getJob(jobId, user.id);
-  const isEnrolled = await isEnrolledInCourse(job?.courseId || "");
+  const isEnrolled = await isEnrolledInCourse(
+    job?.jobCourses[0]?.courseId || ""
+  );
+
   // If job not found, return 404
   if (!job) {
     notFound();
@@ -100,7 +112,9 @@ export default async function JobPage({ params }: PageProps) {
   return (
     <div className="w-full">
       {/* Header with gradient background */}
-      <div className="grid grid-cols-2 gap-2 max-md:grid-cols-1">
+      <div
+        className={`grid ${user.id !== job.userId ? "grid-cols-2" : "grid-cols-1"} gap-2 max-md:grid-cols-1`}
+      >
         <Card className="flex flex-col gap-3">
           <CardHeader className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -175,41 +189,58 @@ export default async function JobPage({ params }: PageProps) {
             <Client job={job} user={user} />
           </CardFooter>
         </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-3">
-              <UserTooltip user={currentUser}>
-                <Link href={`/${currentUser.username}`}>
-                  <UserAvatar user={currentUser} />
-                </Link>
-              </UserTooltip>
-              <UserTooltip user={currentUser}>
-                <Link
-                  className="flex items-center gap-1 font-medium text-md hover:underline"
-                  href={`/${user.username}`}
-                >
-                  {user.name}
-                  {user.emailVerified ?? (
-                    <Badge
-                      className="bg-blue-500 text-white dark:bg-blue-600"
-                      variant="secondary"
-                    >
-                      <BadgeCheckIcon className="size-4" />
-                      Verified
-                    </Badge>
-                  )}
-                </Link>
-              </UserTooltip>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Badge>
-              {job.courseId && isEnrolled
-                ? "Profile Match"
-                : "Profile Not Matched"}
-            </Badge>
-          </CardContent>
-        </Card>
+        {user.id !== job.user.id && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-3">
+                <UserTooltip user={currentUser}>
+                  <Link href={`/${currentUser.username}`}>
+                    <UserAvatar user={currentUser} />
+                  </Link>
+                </UserTooltip>
+                <UserTooltip user={currentUser}>
+                  <Link
+                    className="flex items-center gap-1 font-medium text-md hover:underline"
+                    href={`/${user.username}`}
+                  >
+                    {user.name}
+                    {user.emailVerified ?? (
+                      <Badge
+                        className="bg-blue-500 text-white dark:bg-blue-600"
+                        variant="secondary"
+                      >
+                        <BadgeCheckIcon className="size-4" />
+                        Verified
+                      </Badge>
+                    )}
+                  </Link>
+                </UserTooltip>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="max-h-48 overflow-auto">
+              {/* <div className="flex flex-col gap-2">
+                <Badge>
+                  {job.jobCourses[0]?.courseId && isEnrolled
+                    ? "Profile Match"
+                    : "Profile Not Matched"}
+                </Badge>
+                {user.role === "STUDENT" && (
+                  // We'll implement the actual skill match fetching on the client side
+                  <div className="text-muted-foreground text-sm">
+                    Skill match will be calculated...
+                  </div>
+                )}
+              </div> */}
+              {/* Add job match components for students */}
+              {user.role === "STUDENT" && (
+                <div className="mt-4 space-y-4">
+                  <JobMatchScore jobId={job.id} />
+                  <MissingSkills jobId={job.id} />
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
       </div>
       <div className="mt-3 overflow-hidden rounded-2xl bg-card shadow-sm">
         <Tabs defaultValue="summary">
@@ -229,13 +260,13 @@ export default async function JobPage({ params }: PageProps) {
                 <Icons.post className="size-5" />
                 <span className="hidden lg:block">Description</span>
               </TabsTrigger>
-              {/* <TabsTrigger
+              <TabsTrigger
                 className="flex-1 rounded-xl py-4 transition-all data-[state=active]:border-blue-600 data-[state=active]:text-blue-600"
-                value="qualifications"
+                value="academics"
               >
-                <Icons.post className="size-5" />
-                <span className="hidden lg:block">Qualifications</span>
-              </TabsTrigger> */}
+                <Icons.skill className="size-5" />
+                <span className="hidden lg:block">Academics</span>
+              </TabsTrigger>
             </TabsList>
           </div>
           <TabsContent className="p-2" value="summary">
@@ -263,23 +294,17 @@ export default async function JobPage({ params }: PageProps) {
               <JsonToHtml json={JSON.parse(job.description)} />
             </div>
           </TabsContent>
-          <TabsContent className="p-2" value="qualifications">
-            {/* <div className="bg-card rounded-xl border p-6 shadow-sm">
-            <h2 className="mb-4 flex items-center gap-2 text-xl font-semibold">
-              <span className="rounded-full bg-purple-100 p-1.5 text-purple-700">
-                <GraduationCap className="h-5 w-5" />
-              </span>
-              Qualifications
-            </h2>
-            <ul className="text-muted-foreground space-y-3">
-              {job.qualifications.map((item, index) => (
-                <li key={index} className="flex items-start gap-2">
-                  <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-purple-500"></span>
-                  <span>{item}</span>
-                </li>
-              ))}
-            </ul>
-          </div> */}
+          <TabsContent className="p-2" value="academics">
+            <div className="space-y-2">
+              <JobSkills jobId={job.id} />
+              {user.role === "STUDENT" && <StudentSkillMatch jobId={job.id} />}
+              <div className="grid grid-cols-2 gap-2 max-md:grid-cols-1">
+                {/* Display associated course if it exists */}
+                {job.jobCourses[0]?.courseId && (
+                  <JobCourse courseId={job.jobCourses[0].courseId} />
+                )}
+              </div>
+            </div>
           </TabsContent>
         </Tabs>
       </div>

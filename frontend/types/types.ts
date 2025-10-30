@@ -162,7 +162,7 @@ export function getJobDataInclude(loggedInUserId: string) {
         userId: true,
       },
     },
-    course: true,
+    jobCourses: true,
     applications: {
       // Add this new field
       where: {

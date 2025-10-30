@@ -4,7 +4,8 @@ import {
   BookOpen,
   GraduationCap,
   Mail,
-  MapPin,
+  Phone,
+  School,
   Users,
 } from "lucide-react";
 import type { Metadata } from "next";
@@ -107,7 +108,6 @@ const getFaculty = cache(async (facultyId: string) => {
               institution: true,
               phone: true,
               currentSemester: true,
-              graduationYear: true,
             },
           },
         },
@@ -304,15 +304,23 @@ export default async function Page({ params }: PageProps) {
             </div>
             {userData.phone && (
               <div className="flex items-center gap-2 text-muted-foreground text-sm">
-                <MapPin className="h-4 w-4" />
+                <Phone className="h-4 w-4" />
                 <span>{userData.phone}</span>
               </div>
             )}
-            {userData.bio && (
-              <div className="text-muted-foreground text-sm">
-                <span>{userData.bio}</span>
+            {userData.instituteId && (
+              <div className="flex items-center gap-2 text-muted-foreground text-sm">
+                <School className="h-4 w-4" />
+                <span>{userData.institution}</span>
               </div>
             )}
+            {userData.currentSemester && (
+              <div className="flex items-center gap-2 text-muted-foreground text-sm">
+                <BookOpen className="h-4 w-4" />
+                <span>Semester {userData.currentSemester}</span>
+              </div>
+            )}
+            {/* Remove graduationYear since it doesn't exist in the User model */}
           </div>
 
           {/* Academic Information for Professors */}
@@ -326,14 +334,7 @@ export default async function Page({ params }: PageProps) {
                   </span>
                 </div>
               )}
-              {userData.graduationYear && (
-                <div className="flex items-center gap-2 text-sm">
-                  <Award className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-muted-foreground">
-                    Graduated {userData.graduationYear}
-                  </span>
-                </div>
-              )}
+              {/* Remove graduationYear since it doesn't exist in the User model */}
             </div>
           )}
         </CardContent>

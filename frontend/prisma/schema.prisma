@@ -87,7 +87,6 @@ enum MediaType {
 enum SkillLevel {
   BEGINNER
   INTERMEDIATE
-  ADVANCED
   EXPERT
 }
 
@@ -247,7 +246,6 @@ model User {
 
   // Academic info
   currentSemester Int?
-  graduationYear  Int?
 
   // System fields
   role             UserRole   @default(STUDENT)
@@ -459,18 +457,16 @@ model Faculty {
 
 // Production-grade course model with comprehensive features
 model Course {
-  id          String  @id @default(cuid()) @map("_id")
-  code        String  @db.String // Enforce length limit
-  title       String  @db.String
-  description String  @db.String
-  department  String?
-  credits     Int?    @default(3)
+  id          String @id @default(cuid()) @map("_id")
+  code        String @db.String // Enforce length limit
+  title       String @db.String
+  description String @db.String
+  credits     Int?   @default(3)
   maxStudents Int?
-  minStudents Int?    @default(1)
+  minStudents Int?   @default(1)
 
   // Course metadata
-  objectives     String[] @default([])
-  outcomes       String[] @default([])
+  objectives     String
   keywords       String[] @default([]) // For search
   difficulty     String?  @default("BEGINNER") // BEGINNER, INTERMEDIATE, ADVANCED
   estimatedHours Int? // Total course hours
@@ -516,7 +512,10 @@ model Course {
   instructorCourses CourseInstructor[]
   approvals         CourseApproval[]
   notifications     Notification[]
-  jobs              Job[]
+
+  // Course skills relationships
+  courseSkills CourseSkill[]
+  jobCourses   JobCourse[]
 
   @@unique([code, facultyId, isDeleted]) // Prevent duplicate active courses
   @@index([facultyId, status, isDeleted])
@@ -669,7 +668,19 @@ model AuditLog {
   @@map("audit_logs")
 }
 
-// Removed - functionality consolidated into CourseApproval model
+model JobCourse {
+  id String @id @default(cuid()) @map("_id")
+
+  jobId String
+  job   Job    @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  courseId String
+  course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@unique([jobId, courseId])
+  @@index([jobId])
+  @@index([courseId])
+}
 
 // ============================================================================
 // SOCIAL & CONTENT MODELS
@@ -799,16 +810,13 @@ model Media {
 // ============================================================================
 
 model Job {
-  id       String  @id @default(cuid()) @map("_id")
-  userId   String
-  user     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  courseId String?
-  course   Course? @relation(fields: [courseId], references: [id])
+  id     String @id @default(cuid()) @map("_id")
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  title        String
-  description  String
-  summary      String?
-  requirements String[]
+  title       String
+  description String
+  summary     String?
 
   // Job details
   type            JobType         @default(FULL_TIME)
@@ -822,6 +830,9 @@ model Job {
   startDate DateTime?
   endDate   DateTime
 
+  // Skills - simplified approach
+  skills String[]
+
   isActive Boolean @default(true)
 
   createdAt DateTime @default(now()) @map(name: "created_at")
@@ -831,10 +842,13 @@ model Job {
   savedJobs     SavedJob[]
   notifications Notification[]
 
+  // Associated courses
+  jobCourses JobCourse[]
+
   @@index([userId, isActive])
   @@index([type, experienceLevel])
   @@index([endDate, isActive])
-  @@index([courseId])
+  @@index([startDate])
   @@map(name: "jobs")
 }
 
@@ -946,27 +960,37 @@ model SavedResearch {
 // SKILLS & PROFESSIONAL PROFILE MODELS
 // ============================================================================
 
+// Enhanced Skill model with better categorization
 model Skill {
-  id       String  @id @default(cuid()) @map("_id")
-  name     String  @unique
-  category String?
+  id          String  @id @default(cuid()) @map("_id")
+  name        String  @unique
+  description String?
+  category    String?
+
+  // Skill metadata
+  isVerified Boolean  @default(false)
+  tags       String[] @default([]) // For better searchability
 
   createdAt DateTime @default(now()) @map(name: "created_at")
   updatedAt DateTime @updatedAt @map(name: "updated_at")
 
+  // Direct relationships - no need to go through UserSkill
   userSkills        UserSkill[]
+  courseSkills      CourseSkill[] // Direct relationship
   skillEndorsements SkillEndorsement[]
 
   @@index([category])
+  @@index([tags]) // For text search
   @@map(name: "skills")
 }
 
+// Update UserSkill model to reference Skill directly
 model UserSkill {
   id      String @id @default(cuid()) @map("_id")
   userId  String
   user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   skillId String
-  skill   Skill  @relation(fields: [skillId], references: [id], onDelete: Cascade)
+  skill   Skill  @relation(fields: [skillId], references: [id], onDelete: Cascade) // Direct reference
 
   title             String
   level             SkillLevel
@@ -984,6 +1008,34 @@ model UserSkill {
   @@map(name: "user_skills")
 }
 
+// Update CourseSkill to reference Skill directly
+model CourseSkill {
+  id       String @id @default(cuid()) @map("_id")
+  courseId String
+  course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  skillId  String
+  skill    Skill  @relation(fields: [skillId], references: [id], onDelete: Cascade) // Direct reference
+
+  // Additional metadata for this association
+  importance  CourseSkillImportance @default(REQUIRED)
+  description String?
+
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
+
+  @@unique([courseId, skillId])
+  @@index([courseId])
+  @@index([skillId])
+  @@map(name: "course_skills")
+}
+
+// Add new enums for skill association metadata
+enum CourseSkillImportance {
+  REQUIRED
+  RECOMMENDED
+  OPTIONAL
+}
+
 model SkillEndorsement {
   id          String    @id @default(cuid()) @map("_id")
   userSkillId String
@@ -991,7 +1043,7 @@ model SkillEndorsement {
   endorserId  String
   endorser    User      @relation(fields: [endorserId], references: [id], onDelete: Cascade)
   skillId     String
-  skill       Skill     @relation(fields: [skillId], references: [id], onDelete: Cascade)
+  skill       Skill     @relation(fields: [skillId], references: [id], onDelete: Cascade) // Direct reference
 
   createdAt DateTime @default(now())
 

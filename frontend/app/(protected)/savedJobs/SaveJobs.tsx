@@ -57,7 +57,15 @@ export default function SaveJobs() {
       onBottomReached={() => hasNextPage && !isFetching && fetchNextPage()}
     >
       {jobs.map((job) => (
-        <Job job={job} key={job.id} />
+        <div key={job.id}>
+          {job ? (
+            <Job job={job} />
+          ) : (
+            <div className="rounded-lg border p-4 text-muted-foreground text-sm">
+              Job data not available
+            </div>
+          )}
+        </div>
       ))}
       {isFetchingNextPage && <Loader2 className="mx-auto my-3 animate-spin" />}
     </InfiniteScrollContainer>

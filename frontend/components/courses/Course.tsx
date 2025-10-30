@@ -67,18 +67,18 @@ export default function Course({ course }: { course: CourseData }) {
       <CardHeader>
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
-            <UserTooltip user={course.instructor}>
-              <Link href={`/${course.instructor.username}`}>
-                <UserAvatar user={course.instructor} />
+            <UserTooltip user={course?.instructor}>
+              <Link href={`/${course?.instructor?.username}`}>
+                <UserAvatar user={course?.instructor} />
               </Link>
             </UserTooltip>
             <div>
-              <UserTooltip user={course.instructor}>
+              <UserTooltip user={course?.instructor}>
                 <Link
                   className="font-semibold hover:underline"
-                  href={`/${course.instructor.username}`}
+                  href={`/${course?.instructor?.username}`}
                 >
-                  {course.instructor.name || course.instructor.username}
+                  {course?.instructor?.name || course?.instructor?.username}
                 </Link>
               </UserTooltip>
               <div className="flex items-center gap-2 text-muted-foreground text-sm">

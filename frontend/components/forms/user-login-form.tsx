@@ -8,7 +8,7 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { signInEmailAction } from "@/actions/sign-in-email.action";
 import { Icons } from "@/components/shared/icons";
-import { buttonVariants } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { signIn } from "@/lib/auth-client";
@@ -108,8 +108,8 @@ export function UserAuthForm({ className, type, ...props }: UserAuthFormProps) {
               </p>
             )}
           </div>
-          <button
-            className={cn(buttonVariants())}
+          <Button
+            className={cn(buttonVariants({ variant: "default" }))}
             disabled={isLoading}
             type="submit"
           >
@@ -117,7 +117,7 @@ export function UserAuthForm({ className, type, ...props }: UserAuthFormProps) {
               <Icons.spinner className="mr-2 size-4 animate-spin" />
             )}
             {type === "register" ? "Sign Up with Email" : "Sign In with Email"}
-          </button>
+          </Button>
         </div>
       </form>
       <div className="relative">
@@ -131,7 +131,7 @@ export function UserAuthForm({ className, type, ...props }: UserAuthFormProps) {
         </div>
       </div>
       {/* <SignInOauthButton provider="google" /> */}
-      <button
+      <Button
         className={cn(buttonVariants({ variant: "outline" }))}
         disabled={isLoading || isGoogleLoading}
         onClick={async () => {
@@ -150,7 +150,7 @@ export function UserAuthForm({ className, type, ...props }: UserAuthFormProps) {
           <Icons.google className="mr-2 size-4" />
         )}{" "}
         Google
-      </button>
+      </Button>
     </div>
   );
 }

@@ -1,5 +1,17 @@
+import { ArrowLeft } from "lucide-react";
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
+import { JsonToHtml } from "@/components/editor/JsonToHtml";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/session";
 import { CourseReviewForm } from "./_components/CourseReviewForm";
@@ -12,6 +24,22 @@ export const metadata: Metadata = {
 interface PageProps {
   params: Promise<{ id: string }>;
 }
+
+// Helper function to get status color
+const getStatusColor = (status: string) => {
+  switch (status) {
+    case "UNDER_REVIEW":
+      return "default";
+    case "PUBLISHED":
+      return "success";
+    case "REJECTED":
+      return "destructive";
+    case "NEEDS_REVISION":
+      return "destructive";
+    default:
+      return "secondary";
+  }
+};
 
 export default async function CourseApprovalPage({ params }: PageProps) {
   const { id } = await params;
@@ -90,61 +118,164 @@ export default async function CourseApprovalPage({ params }: PageProps) {
     approval.reviewerId === currentUser.id &&
     approval.status === "UNDER_REVIEW";
 
+  // Parse objectives from string to array
+  let objectives: string[] = [];
+  if (typeof approval.course.objectives === "string") {
+    try {
+      // Try to parse as JSON array first
+      const parsed = JSON.parse(approval.course.objectives);
+      if (Array.isArray(parsed)) {
+        objectives = parsed.filter(
+          (item): item is string => typeof item === "string"
+        );
+      } else {
+        // If it's not an array, treat as comma-separated string
+        objectives = approval.course.objectives
+          .split(",")
+          .map((item) => item.trim())
+          .filter((item) => item.length > 0);
+      }
+    } catch (e) {
+      // If parsing fails, treat as comma-separated string
+      objectives = approval.course.objectives
+        .split(",")
+        .map((item) => item.trim())
+        .filter((item) => item.length > 0);
+    }
+  }
+
+  // Create a properly typed approval object that matches CourseReviewForm interface
+  const approvalWithFixedTypes = {
+    ...approval,
+    comments: approval.comments !== null ? approval.comments : undefined,
+    course: {
+      ...approval.course,
+      objectives,
+      year: approval.course.year ?? undefined, // Convert null to undefined
+      credits: approval.course.credits ?? undefined, // Convert null to undefined
+      difficulty: approval.course.difficulty ?? undefined, // Convert null to undefined
+      estimatedHours: approval.course.estimatedHours ?? undefined, // Convert null to undefined
+      instructor: {
+        ...approval.course.instructor,
+        image: approval.course.instructor.image ?? undefined, // Convert null to undefined
+      },
+      faculty: {
+        ...approval.course.faculty,
+        school: {
+          ...approval.course.faculty.school,
+          institution: {
+            ...approval.course.faculty.school.institution,
+            image:
+              approval.course.faculty.school.institution.image ?? undefined, // Convert null to undefined
+          },
+        },
+      },
+    },
+    reviewer: {
+      ...approval.reviewer,
+      image: approval.reviewer.image ?? undefined, // Convert null to undefined
+    },
+  };
+
   return (
-    <div className="container mx-auto max-w-4xl px-4 py-8">
-      <div className="mb-6">
-        <h1 className="mb-2 font-bold text-2xl">Course Approval</h1>
-        <p className="text-sm">Review course submission for approval</p>
+    <div className="container mx-auto py-8">
+      <div className="mb-6 flex items-center justify-between">
+        <div>
+          <h1 className="font-bold text-3xl">Course Approval</h1>
+          <p className="text-muted-foreground">
+            Review and approve course submissions
+          </p>
+        </div>
+        <Button asChild variant="outline">
+          <Link href="/courses/approvals">
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back to Approvals
+          </Link>
+        </Button>
       </div>
 
-      <CourseReviewForm
-        approval={{
-          ...approval,
-          comments: approval.comments || undefined,
-          submittedAt: approval.submittedAt.toISOString(),
-          reviewedAt: approval.reviewedAt
-            ? approval.reviewedAt.toISOString()
-            : undefined,
-          course: {
-            id: approval.course.id,
-            title: approval.course.title,
-            code: approval.course.code,
-            description: approval.course.description,
-            department: approval.course.department || undefined,
-            difficulty: approval.course.difficulty || undefined,
-            credits: approval.course.credits || undefined,
-            estimatedHours: approval.course.estimatedHours || undefined,
-            year: approval.course.year || undefined,
+      <div className="grid gap-6 lg:grid-cols-3">
+        {/* Course Details */}
+        <div className="space-y-6 lg:col-span-2">
+          <Card>
+            <CardHeader>
+              <div className="flex items-start justify-between">
+                <div>
+                  <CardTitle className="text-2xl">
+                    {approval.course.title}
+                  </CardTitle>
+                  <CardDescription className="mt-2 text-base">
+                    {approval.course.code} • {approval.course.faculty.name}
+                  </CardDescription>
+                </div>
+                <div className="flex flex-col gap-2">
+                  <Badge
+                    className="text-sm"
+                    variant={getStatusColor(approval.status) as any}
+                  >
+                    {approval.status.replace("_", " ")}
+                  </Badge>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div>
+                  <p className="font-medium text-sm">Instructor</p>
+                  <p className="text-muted-foreground text-sm">
+                    {approval.course.instructor.name}
+                  </p>
+                </div>
+                <div>
+                  <p className="font-medium text-sm">Institution</p>
+                  <p className="text-muted-foreground text-sm">
+                    {approval.course.faculty.school.institution.name}
+                  </p>
+                </div>
+                {/* Remove department and year since they don't exist in the model */}
+              </div>
+              <div>
+                <h4 className="font-medium text-sm">Description</h4>
+                <p className="text-muted-foreground text-sm">
+                  <JsonToHtml json={JSON.parse(approval.course.description)} />
+                </p>
+              </div>
+              <div>
+                <p className="font-medium text-sm">Objectives</p>
+                <ul className="list-inside list-disc text-muted-foreground text-sm">
+                  {objectives.map((obj, index) => (
+                    <li key={index}>{obj}</li>
+                  ))}
+                </ul>
+              </div>
+              {/* Remove outcomes section since it doesn't exist in the model */}
+            </CardContent>
+          </Card>
 
-            objectives: approval.course.objectives || [],
-            outcomes: approval.course.outcomes || [],
+          {approval.comments && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Previous Reviewer Comments</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground text-sm">
+                  {approval.comments}
+                </p>
+              </CardContent>
+            </Card>
+          )}
+        </div>
 
-            instructor: {
-              id: approval.course.instructor.id,
-              name: approval.course.instructor.name,
-              email: approval.course.instructor.email,
-              image: approval.course.instructor.image || undefined,
-            },
-            faculty: {
-              name: approval.course.faculty.name,
-              school: {
-                name: approval.course.faculty.school.name,
-                institution: {
-                  name: approval.course.faculty.school.institution.name,
-                  id: approval.course.faculty.school.institution.id,
-                },
-              },
-            },
-          },
-          reviewer: {
-            id: approval.reviewer.id,
-            name: approval.reviewer.name,
-            email: approval.reviewer.email,
-            image: approval.reviewer.image || undefined,
-          },
-        }}
-        canReview={canReview}
-      />
+        {/* Review Form - Only show if user can review */}
+        {canReview && (
+          <div className="lg:col-span-1">
+            <CourseReviewForm
+              approval={approvalWithFixedTypes}
+              canReview={canReview}
+            />
+          </div>
+        )}
+      </div>
     </div>
   );
 }

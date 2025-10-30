@@ -29,12 +29,12 @@ interface ResearchProps {
 }
 
 export default function Research({ research }: ResearchProps) {
+  const [isPending, startTransition] = useTransition();
   const { data: session } = useSession();
   const user = session?.user;
   if (!user) {
     return null;
   }
-  const [isPending, startTransition] = useTransition();
 
   // Safely check if user is a collaborator
   const isCollaborator = research.collaborators?.some

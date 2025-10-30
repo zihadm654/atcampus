@@ -87,10 +87,7 @@ export default function EditFacultyDialog({ faculty }: EditFacultyDialogProps) {
         />
         <DialogFooter>
           <DialogClose asChild>
-            <Button
-              type="button"
-              variant="outline"
-            >
+            <Button type="button" variant="outline">
               Cancel
             </Button>
           </DialogClose>

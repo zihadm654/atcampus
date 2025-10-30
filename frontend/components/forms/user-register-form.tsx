@@ -378,7 +378,10 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
             )}
             {currentStep < 2 && (
               <Button
-                className={cn(buttonVariants({ variant: "ghost" }), "self-end")}
+                className={cn(
+                  buttonVariants({ variant: "outline" }),
+                  "self-end"
+                )}
                 disabled={isLoading || (currentStep === 1 && !role)}
                 onClick={nextStep}
                 type="button"
@@ -411,7 +414,7 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
           </span>
         </div>
       </div>
-      <button
+      <Button
         className={cn(buttonVariants({ variant: "outline" }))}
         disabled={isLoading || isGoogleLoading}
         onClick={async () => {
@@ -430,7 +433,7 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
           <Icons.google className="mr-2 size-4" />
         )}{" "}
         Google
-      </button>
+      </Button>
     </div>
   );
 }

@@ -81,9 +81,9 @@ export function OrganizationCard(props: {
     useState<ExtendedActiveOrganization | null>(
       props.activeOrganization
         ? {
-          ...props.activeOrganization,
-          members: props.activeOrganization.members as ExtendedMember[],
-        }
+            ...props.activeOrganization,
+            members: props.activeOrganization.members as ExtendedMember[],
+          }
         : null
     );
   const [isRevoking, setIsRevoking] = useState<string[]>([]);

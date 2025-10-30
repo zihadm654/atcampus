@@ -45,17 +45,17 @@ interface CourseApproval {
   reviewerId: string;
   status: string;
   comments: string | undefined;
-  submittedAt: string;
-  reviewedAt: string | undefined;
+  submittedAt: Date;
+  reviewedAt: Date | null;
   course: {
     id: string;
     title: string;
     code: string;
     description: string;
     department?: string;
-    difficulty?: string;
-    credits?: number;
-    estimatedHours?: number;
+    difficulty?: string | null;
+    credits?: number | null;
+    estimatedHours?: number | null;
 
     objectives?: string[];
     outcomes?: string[];
@@ -213,14 +213,6 @@ export function CourseReviewForm({
               <ul className="list-inside list-disc text-muted-foreground text-sm">
                 {approval.course.objectives?.map((obj, index) => (
                   <li key={index}>{obj}</li>
-                ))}
-              </ul>
-            </div>
-            <div>
-              <p className="font-medium text-sm">Outcomes</p>
-              <ul className="list-inside list-disc text-muted-foreground text-sm">
-                {approval.course.outcomes?.map((out, index) => (
-                  <li key={index}>{out}</li>
                 ))}
               </ul>
             </div>

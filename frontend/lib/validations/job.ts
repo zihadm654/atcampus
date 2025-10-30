@@ -17,11 +17,10 @@ export const jobSchema = z.object({
   experienceLevel: z.nativeEnum(ExperienceLevel),
   duration: z.coerce.number().optional(),
   salary: z.coerce.number().min(1, "required"),
-  requirements: z.array(
-    z.string().max(1000, "Must be at most 1000 characters")
-  ),
   endDate: z.date(),
   courseId: z.string().optional(),
+  // Skills are now stored directly as an array of strings
+  skills: z.array(z.string()).optional(),
 });
 
 export type TJob = z.infer<typeof jobSchema>;

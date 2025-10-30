@@ -141,7 +141,7 @@ export async function generateMetadata({
   if (!loggedInUser) throw new Error("User not logged in");
 
   const user = await getUser(username, loggedInUser.id);
-  if (!user) return {};
+  if (!user) return { title: "User not found" };
   return {
     title: `${schoolId} (@${user.username})`,
   };
@@ -159,8 +159,8 @@ export default async function Page({ params }: PageProps) {
   }
   const user = await getUser(username, loggedInUser.id);
   const school = await getSchool(schoolId);
-  if (!user) return {};
-  if (!school) {
+  
+  if (!user || !school) {
     return notFound();
   }
 

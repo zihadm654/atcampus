@@ -27,11 +27,12 @@ export const courseSchema = z.object({
 
   // Enhanced fields for approval workflow
   objectives: z
-    .array(z.string().max(500, "Objective must be at most 500 characters"))
+    .string()
+    .max(500, "Objective must be at most 500 characters")
     .optional(),
-  outcomes: z
-    .array(z.string().max(500, "Outcome must be at most 500 characters"))
-    .optional(),
+
+  // Skills field for course skills
+  skills: z.array(z.string()).optional(),
 });
 
 export type TCourse = z.infer<typeof courseSchema>;

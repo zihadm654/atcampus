@@ -165,7 +165,15 @@ export default function JobFeed({ user, initialData }: Props) {
               }
             >
               {jobs.map((job) => (
-                <Job job={job} key={job.id} />
+                <div key={job.id}>
+                  {job ? (
+                    <Job job={job} />
+                  ) : (
+                    <div className="rounded-lg border p-4 text-muted-foreground text-sm">
+                      Job data not available
+                    </div>
+                  )}
+                </div>
               ))}
               {isFetchingNextPage && (
                 <div className="col-span-full flex justify-center py-8">

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { cache } from "react";
 import CourseMoreButton from "@/components/courses/CourseMoreButton";
+import CourseSkills from "@/components/courses/CourseSkills";
 import EnrollButton from "@/components/courses/EnrollButton";
 import { JsonToHtml } from "@/components/editor/JsonToHtml";
 import { Icons } from "@/components/shared/icons";
@@ -80,6 +81,32 @@ export default async function CoursePage({ params }: CoursePageProps) {
 
   if (!course) {
     notFound();
+  }
+
+  // Parse objectives from string to array
+  let objectives: string[] = [];
+  if (typeof course.objectives === "string") {
+    try {
+      // Try to parse as JSON array first
+      const parsed = JSON.parse(course.objectives);
+      if (Array.isArray(parsed)) {
+        objectives = parsed.filter(
+          (item): item is string => typeof item === "string"
+        );
+      } else {
+        // If it's not an array, treat as comma-separated string
+        objectives = course.objectives
+          .split(",")
+          .map((item) => item.trim())
+          .filter((item) => item.length > 0);
+      }
+    } catch (e) {
+      // If parsing fails, treat as comma-separated string
+      objectives = course.objectives
+        .split(",")
+        .map((item) => item.trim())
+        .filter((item) => item.length > 0);
+    }
   }
 
   return (
@@ -199,13 +226,13 @@ export default async function CoursePage({ params }: CoursePageProps) {
                 <Icons.bookOpen className="size-5" />
                 <span className="hidden lg:block">Learning Materials</span>
               </TabsTrigger>
-              {/* <TabsTrigger
+              <TabsTrigger
                 className="flex-1 rounded-xl py-4 transition-all data-[state=active]:border-blue-600 data-[state=active]:text-blue-600"
                 value="skill"
               >
                 <Icons.post className="size-5" />
                 <span className="hidden lg:block">Skill Overview</span>
-              </TabsTrigger> */}
+              </TabsTrigger>
             </TabsList>
           </div>
           <TabsContent className="space-y-3 p-3" value="outline">
@@ -228,28 +255,16 @@ export default async function CoursePage({ params }: CoursePageProps) {
                 Topics Covered
               </h2>
               <ul className="mb-6 list-inside list-disc space-y-1">
-                {course.objectives.map((item) => (
-                  <li className="text-muted-foreground" key={item}>
+                {objectives.map((item, index) => (
+                  <li className="text-muted-foreground" key={index}>
                     {item}
                   </li>
                 ))}
               </ul>
             </div>
-            <div className="rounded-xl border bg-card p-6 shadow-sm">
-              <h2 className="mb-4 flex items-center gap-2 font-semibold text-xl">
-                <span className="rounded-full bg-purple-100 p-1.5 text-purple-700">
-                  <GraduationCap className="h-5 w-5" />
-                </span>
-                Learning Outcomes
-              </h2>
-              <ul className="mb-6 list-inside list-disc space-y-1">
-                {course.outcomes.map((item) => (
-                  <li className="text-muted-foreground" key={item}>
-                    {item}
-                  </li>
-                ))}
-              </ul>
-            </div>
+          </TabsContent>
+          <TabsContent className="space-y-3 p-3" value="skill">
+            <CourseSkills courseId={course.id} />
           </TabsContent>
         </Tabs>
       </div>

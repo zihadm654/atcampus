@@ -86,7 +86,15 @@ export default function JobsTab({
               <CardContent className="grid grid-cols-1 gap-2 md:grid-cols-2 lg:grid-cols-3">
                 {jobs && jobs.length > 0 ? (
                   jobs.map((job: JobData) => (
-                    <JobComponent job={job} key={job.id} />
+                    <div key={job.id}>
+                      {job ? (
+                        <JobComponent job={job} />
+                      ) : (
+                        <div className="rounded-lg border p-4 text-muted-foreground text-sm">
+                          Job data not available
+                        </div>
+                      )}
+                    </div>
                   ))
                 ) : (
                   <div className="col-span-full flex flex-col items-center py-8">
@@ -126,7 +134,15 @@ export default function JobsTab({
               <CardContent className="grid grid-cols-1 gap-2 md:grid-cols-2 lg:grid-cols-3">
                 {jobs && jobs.length > 0 ? (
                   jobs.map((job: JobData) => (
-                    <JobComponent job={job} key={job.id} />
+                    <div key={job.id}>
+                      {job ? (
+                        <JobComponent job={job} />
+                      ) : (
+                        <div className="rounded-lg border p-4 text-muted-foreground text-sm">
+                          Job data not available
+                        </div>
+                      )}
+                    </div>
                   ))
                 ) : (
                   <div className="col-span-full flex flex-col items-center py-8">
@@ -176,7 +192,15 @@ export default function JobsTab({
               <CardContent className="grid grid-cols-1 gap-2 md:grid-cols-2 lg:grid-cols-3">
                 {jobs && jobs.length > 0 ? (
                   jobs.map((job: JobData) => (
-                    <JobComponent job={job} key={job.id} />
+                    <div key={job.id}>
+                      {job ? (
+                        <JobComponent job={job} />
+                      ) : (
+                        <div className="rounded-lg border p-4 text-muted-foreground text-sm">
+                          Job data not available
+                        </div>
+                      )}
+                    </div>
                   ))
                 ) : (
                   <div className="col-span-full flex flex-col items-center py-8">

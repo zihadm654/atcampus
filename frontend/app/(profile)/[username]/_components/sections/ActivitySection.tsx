@@ -48,8 +48,8 @@ export default function ActivitySection({
 }: ActivitySectionProps) {
   const displayJobs = limit ? jobs?.slice(0, limit) : jobs;
   const displayResearch = limit ? research.slice(0, limit) : research;
-  const hasMoreJobs = limit && jobs.length > limit;
-  const hasMoreResearch = limit && research.length > limit;
+  const hasMoreJobs = limit && jobs && jobs.length > limit;
+  const hasMoreResearch = limit && research && research.length > limit;
 
   if (!showHeader) {
     // Simplified view for overview
@@ -75,9 +75,17 @@ export default function ActivitySection({
             </CardAction>
           </CardHeader>
           <CardContent className="grid grid-cols-2 gap-2 max-md:grid-cols-1">
-            {displayJobs.length > 0 ? (
+            {displayJobs && displayJobs.length > 0 ? (
               displayJobs.map((application) => (
-                <JobComponent job={application.job} key={application.id} />
+                <div key={application.id}>
+                  {application.job ? (
+                    <JobComponent job={application.job} />
+                  ) : (
+                    <div className="p-4 text-muted-foreground text-sm">
+                      Job data not available
+                    </div>
+                  )}
+                </div>
               ))
             ) : (
               <div className="col-span-2 flex w-full flex-col items-center justify-center">
@@ -142,7 +150,7 @@ export default function ActivitySection({
             <TabsTrigger className="flex items-center gap-2" value="jobs">
               <Icons.job className="size-4" />
               Jobs & Activities
-              {hasMoreJobs && (
+              {hasMoreJobs && jobs && (
                 <span className="ml-1 text-gray-500 text-xs">
                   ({jobs.length})
                 </span>
@@ -151,7 +159,7 @@ export default function ActivitySection({
             <TabsTrigger className="flex items-center gap-2" value="research">
               <Icons.bookMarked className="size-4" />
               Research
-              {hasMoreResearch && (
+              {hasMoreResearch && research && (
                 <span className="ml-1 text-gray-500 text-xs">
                   ({research.length})
                 </span>
@@ -162,11 +170,19 @@ export default function ActivitySection({
 
         <TabsContent className="p-4" value="jobs">
           <div className="space-y-3">
-            {displayJobs.length > 0 ? (
+            {displayJobs && displayJobs.length > 0 ? (
               <>
                 <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
                   {displayJobs.map((application) => (
-                    <JobComponent job={application.job} key={application.id} />
+                    <div key={application.id}>
+                      {application.job ? (
+                        <JobComponent job={application.job} />
+                      ) : (
+                        <div className="rounded-lg border p-4 text-muted-foreground text-sm">
+                          Job data not available
+                        </div>
+                      )}
+                    </div>
                   ))}
                 </div>
                 {hasMoreJobs && (
@@ -203,7 +219,7 @@ export default function ActivitySection({
 
         <TabsContent className="p-4" value="research">
           <div className="space-y-3">
-            {displayResearch.length > 0 ? (
+            {displayResearch && displayResearch.length > 0 ? (
               <>
                 <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
                   {displayResearch.map((item) => (

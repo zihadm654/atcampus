@@ -1,7 +1,6 @@
 "use server";
 
-import type { ExperienceLevel, JobType } from "@prisma/client";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/session";
 import { jobSchema, type TJob } from "@/lib/validations/job";
@@ -51,19 +50,59 @@ export async function createJob(values: TJob) {
     const validatedFields = jobSchema.safeParse(values);
 
     if (!validatedFields.success) {
-      throw new Error(validatedFields.error.message);
+      const errors = validatedFields.error.flatten().fieldErrors;
+      console.log("Validation errors:", errors);
+      return {
+        error: "Invalid fields",
+        details: errors,
+      };
     }
 
-    const data = {
-      ...validatedFields.data,
-      userId: user.id,
-      experienceLevel: validatedFields.data?.experienceLevel as ExperienceLevel,
-      type: validatedFields.data.type as JobType,
-      courseId: validatedFields.data.courseId || undefined,
-    };
-    const job = await prisma.job.create({ data });
+    const {
+      title,
+      description,
+      summary,
+      weeklyHours,
+      location,
+      type,
+      experienceLevel,
+      duration,
+      salary,
+      endDate,
+      courseId,
+      skills,
+    } = validatedFields.data;
+
+    // Create the job with skills stored directly
+    const job = await prisma.job.create({
+      data: {
+        title,
+        description,
+        summary,
+        weeklyHours,
+        location,
+        type,
+        experienceLevel,
+        duration,
+        salary,
+        endDate,
+        skills: skills || [],
+        userId: user.id,
+      },
+    });
+
+    // Associate course if provided
+    if (courseId) {
+      await prisma.jobCourse.create({
+        data: {
+          jobId: job.id,
+          courseId,
+        },
+      });
+    }
 
     revalidatePath("/jobs");
+    revalidateTag("jobs","max");
 
     return { success: true, data: job };
   } catch (error) {
@@ -71,6 +110,7 @@ export async function createJob(values: TJob) {
     return { success: false, error: (error as Error).message };
   }
 }
+
 export async function updateJob(values: TJob, jobId: string) {
   try {
     const user = await getCurrentUser();
@@ -82,23 +122,73 @@ export async function updateJob(values: TJob, jobId: string) {
     const validatedFields = jobSchema.safeParse(values);
 
     if (!validatedFields.success) {
-      throw new Error(validatedFields.error.message);
+      const errors = validatedFields.error.flatten().fieldErrors;
+      console.log("Validation errors:", errors);
+      return {
+        error: "Invalid fields",
+        details: errors,
+      };
     }
 
-    const data = {
-      ...validatedFields.data,
-      userId: user.id,
-      type: validatedFields.data.type as JobType,
-      courseId: validatedFields.data.courseId || undefined,
-    };
+    const {
+      title,
+      description,
+      summary,
+      weeklyHours,
+      location,
+      type,
+      experienceLevel,
+      duration,
+      salary,
+      endDate,
+      courseId,
+      skills,
+    } = validatedFields.data;
+
+    // Update the job with skills stored directly
     const job = await prisma.job.update({
-      where: { id: jobId },
-      data,
+      where: {
+        id: jobId,
+        userId: user.id,
+      },
+      data: {
+        title,
+        description,
+        summary,
+        weeklyHours,
+        location,
+        type,
+        experienceLevel,
+        duration,
+        salary,
+        endDate,
+        skills: skills || [],
+      },
     });
 
-    revalidatePath("/jobs");
+    // Update course association if provided
+    if (courseId) {
+      // Delete existing job course associations
+      await prisma.jobCourse.deleteMany({
+        where: {
+          jobId,
+        },
+      });
 
-    return { success: true, data: job };
+      // Create new job course association
+      await prisma.jobCourse.create({
+        data: {
+          jobId,
+          courseId,
+        },
+      });
+    }
+
+    revalidatePath(`/jobs/${jobId}`);
+    revalidatePath("/jobs");
+    revalidateTag("jobs","max");
+
+    return { success: true, data: jobId };
   } catch (error) {
     console.error(error);
     return { success: false, error: (error as Error).message };

@@ -2,6 +2,7 @@
 
 import { CourseStatus } from "@prisma/client";
 import { revalidatePath } from "next/cache";
+import { updateCourseSkills } from "@/actions/job-matches";
 import { auditCourseAction } from "@/lib/audit";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/session";
@@ -223,6 +224,9 @@ export async function createCourse(values: TCourse) {
       throw new Error("Unauthorized");
     }
 
+    // Extract skills from values before validation
+    const { skills, objectives, ...courseData } = values;
+
     const validatedFields = courseSchema.safeParse(values);
 
     if (!validatedFields.success) {
@@ -280,13 +284,21 @@ export async function createCourse(values: TCourse) {
       // Professors create courses with the selected status
       const course = await prisma.course.create({
         data: {
-          ...validatedFields.data,
+          ...courseData,
+          objectives: Array.isArray(objectives)
+            ? JSON.stringify(objectives)
+            : objectives || "[]",
           status: validatedFields.data.status as CourseStatus,
           difficulty: validatedFields.data.difficulty || undefined,
           instructorId: user.id,
         },
         include: getCourseDataInclude(user.id),
       });
+
+      // Update course skills
+      if (skills && skills.length > 0) {
+        await updateCourseSkills(course.id, skills);
+      }
 
       await auditCourseAction(
         "CREATE",
@@ -345,13 +357,21 @@ export async function createCourse(values: TCourse) {
       // Institution admins can create published courses directly
       const course = await prisma.course.create({
         data: {
-          ...validatedFields.data,
+          ...courseData,
+          objectives: Array.isArray(objectives)
+            ? JSON.stringify(objectives)
+            : objectives || "[]",
           instructorId: user.id,
           status:
             (validatedFields.data.status as CourseStatus) || CourseStatus.DRAFT,
         },
         include: getCourseDataInclude(user.id),
       });
+
+      // Update course skills
+      if (skills && skills.length > 0) {
+        await updateCourseSkills(course.id, skills);
+      }
 
       await auditCourseAction(
         "CREATE",
@@ -554,6 +574,9 @@ export async function updateCourse(values: TCourse, courseId: string) {
       throw new Error("Unauthorized");
     }
 
+    // Extract skills from values before validation
+    const { skills, objectives, ...courseData } = values;
+
     const validatedFields = courseSchema.safeParse(values);
 
     if (!validatedFields.success) {
@@ -619,7 +642,10 @@ export async function updateCourse(values: TCourse, courseId: string) {
 
     // For professors, ensure they can't change the status to published or approved directly
     const updateData: any = {
-      ...validatedFields.data,
+      ...courseData,
+      objectives: Array.isArray(objectives)
+        ? JSON.stringify(objectives)
+        : objectives || "[]",
       status:
         user.role === "PROFESSOR" &&
         existingCourse.status === CourseStatus.PUBLISHED
@@ -633,6 +659,11 @@ export async function updateCourse(values: TCourse, courseId: string) {
       },
       data: updateData,
     });
+
+    // Update course skills
+    if (skills && skills.length > 0) {
+      await updateCourseSkills(courseId, skills);
+    }
 
     revalidatePath("/courses");
 

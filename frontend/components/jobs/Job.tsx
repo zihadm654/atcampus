@@ -33,6 +33,38 @@ import {
   CardTitle,
 } from "../ui/card";
 
+// Add this component for the skill match display
+function SkillMatchBadge({ matchData }: { matchData: any }) {
+  // Extract match percentages
+  const skillMatchPercentage = matchData?.skillMatchPercentage || 0;
+  const courseMatchPercentage = matchData?.courseMatchPercentage || 0;
+  const overallMatchPercentage = matchData?.matchPercentage || 0;
+
+  // Determine color based on overall match
+  let bgColor = "bg-red-500";
+  const textColor = "text-white";
+
+  if (overallMatchPercentage >= 80) {
+    bgColor = "bg-green-500";
+  } else if (overallMatchPercentage >= 60) {
+    bgColor = "bg-yellow-500";
+  } else if (overallMatchPercentage >= 40) {
+    bgColor = "bg-orange-500";
+  }
+
+  return (
+    <div className="flex flex-col gap-1">
+      <Badge className={`${bgColor} ${textColor}`}>
+        Match: {Math.round(overallMatchPercentage)}%
+      </Badge>
+      <div className="text-muted-foreground text-xs">
+        Skills: {Math.round(skillMatchPercentage)}% | Courses:{" "}
+        {Math.round(courseMatchPercentage)}%
+      </div>
+    </div>
+  );
+}
+
 interface JobProps {
   job: JobData;
 }
@@ -46,10 +78,24 @@ export default function Job({ job }: JobProps) {
 
   const [isPending, startTransition] = useTransition();
 
+  // Fetch job match for students
+  const { data: matchData, isLoading: isMatchLoading } = useQuery({
+    queryKey: ["job-match", job.id],
+    queryFn: async () => {
+      const response = await fetch(`/api/job-matches?jobId=${job.id}`);
+      if (!response.ok) {
+        throw new Error("Failed to fetch job match");
+      }
+      return response.json();
+    },
+    enabled: user.role === "STUDENT",
+    staleTime: 1000 * 60 * 5, // 5 minutes
+  });
+
   const { data: isEnrolled } = useQuery({
-    queryKey: ["enrolled", job.courseId],
-    queryFn: () => isEnrolledInCourse(job.courseId || ""),
-    enabled: !!job.courseId && user.role === "STUDENT",
+    queryKey: ["enrolled", job.jobCourses[0]?.courseId],
+    queryFn: () => isEnrolledInCourse(job.jobCourses[0]?.courseId || ""),
+    enabled: !!job.jobCourses[0]?.courseId && user.role === "STUDENT",
   });
 
   // Use a local state to track application status
@@ -88,7 +134,7 @@ export default function Job({ job }: JobProps) {
   return (
     <Card className="group hover:-translate-y-1 relative overflow-hidden transition-all duration-300 hover:shadow-lg">
       {/* Match Badge */}
-      {job.courseId && (
+      {job.jobCourses[0]?.courseId && (
         <Badge
           className={`absolute top-3 right-3 z-10 ${
             isEnrolled
@@ -171,7 +217,7 @@ export default function Job({ job }: JobProps) {
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <Badge className="font-medium text-sm" variant="secondary">
               {job.type.replace("_", " ")}
             </Badge>
@@ -182,6 +228,16 @@ export default function Job({ job }: JobProps) {
                 : job.applications.length}{" "}
               applied
             </Badge>
+            {/* Display skill match for students */}
+            {user.role === "STUDENT" && (
+              <div className="mt-2">
+                {isMatchLoading ? (
+                  <Badge variant="secondary">Calculating...</Badge>
+                ) : matchData ? (
+                  <SkillMatchBadge matchData={matchData} />
+                ) : null}
+              </div>
+            )}
           </div>
         </Link>
       </CardContent>
