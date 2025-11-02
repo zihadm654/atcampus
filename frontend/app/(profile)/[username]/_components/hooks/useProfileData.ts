@@ -158,7 +158,7 @@ export function useAcademicMutations() {
 
       return { previousData };
     },
-    onError: (err, variables, context) => {
+    onError: (_err, variables, context) => {
       // Rollback on error
       if (context?.previousData) {
         queryClient.setQueryData(
@@ -167,7 +167,7 @@ export function useAcademicMutations() {
         );
       }
     },
-    onSettled: (data, error, variables) => {
+    onSettled: (_data, _error, variables) => {
       // Refetch to sync with server
       queryClient.invalidateQueries({
         queryKey: ["school-details", variables.schoolId],

@@ -10,7 +10,7 @@ import { columns } from "./_components/columns";
 export default function AdminDashboard() {
   const [isLoading, setIsLoading] = useState<string | undefined>();
 
-  const { data: users, isLoading: isUsersLoading } = useQuery({
+  const { data: users } = useQuery({
     queryKey: ["users"],
     queryFn: async () => {
       const data = await admin.listUsers(

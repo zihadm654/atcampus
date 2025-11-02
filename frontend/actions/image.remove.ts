@@ -36,7 +36,7 @@ export const imgRemove = async (imageKey: string) => {
       success: true,
       status: 401,
     };
-  } catch (error) {
+  } catch (_error) {
     return { success: false };
   }
 };

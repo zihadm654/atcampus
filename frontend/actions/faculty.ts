@@ -46,7 +46,7 @@ export async function addFaculty(formData: FormData) {
         schoolId: validatedFields.data.schoolId,
       },
     });
-  } catch (error) {
+  } catch (_error) {
     return {
       error: "Failed to create faculty",
     };
@@ -84,7 +84,7 @@ export async function editFaculty(formData: FormData) {
         name: validatedFields.data.name,
       },
     });
-  } catch (error) {
+  } catch (_error) {
     return {
       error: "Failed to update faculty",
     };
@@ -132,7 +132,7 @@ export async function deleteFaculty(formData: FormData) {
         id,
       },
     });
-  } catch (error) {
+  } catch (_error) {
     return {
       error: "Failed to delete faculty",
     };

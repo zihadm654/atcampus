@@ -25,6 +25,11 @@ const Client = ({ job, user }: any) => {
     }
   };
 
+  // Check if current user has applied
+  const hasApplied = job.applications?.some(
+    (application) => application.applicantId === user.id
+  );
+
   return (
     <div className="flex flex-col gap-2">
       {user.role === "STUDENT" && (
@@ -37,19 +42,11 @@ const Client = ({ job, user }: any) => {
         </div>
       )}
       <Button
-        disabled={
-          job.applications?.some(
-            (application) => application.applicantId === user.id
-          ) || user.role !== "STUDENT"
-        }
+        disabled={hasApplied || user.role !== "STUDENT"}
         onClick={handleApply}
         variant="default"
       >
-        {job.applications?.some(
-          (application) => application.applicantId === user.id
-        )
-          ? "Already Applied"
-          : "Apply Now"}
+        {hasApplied ? "Already Applied" : "Apply Now"}
       </Button>
     </div>
   );

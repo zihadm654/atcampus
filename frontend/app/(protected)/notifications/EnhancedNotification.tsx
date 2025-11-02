@@ -23,77 +23,110 @@ export default function EnhancedNotification({
 }: NotificationProps) {
   const notificationTypeMap: Record<
     NotificationType,
-    { message: string; icon: JSX.Element; href: string; color?: string }
+    {
+      message: string;
+      icon: JSX.Element;
+      href: string;
+      color?: string;
+      title: string;
+    }
   > = {
     FOLLOW: {
-      message: `${notification.issuer.displayUsername} followed you`,
+      title: notification.title || "New Follower",
+      message:
+        notification.message ||
+        `${notification.issuer.displayUsername} followed you`,
       icon: <User2 className="size-7 text-primary" />,
       href: `/${notification.issuer.username}`,
       color: "text-blue-500",
     },
     COMMENT: {
-      message: `${notification.issuer.displayUsername} commented on your post`,
+      title: notification.title || "New Comment",
+      message:
+        notification.message ||
+        `${notification.issuer.displayUsername} commented on your post`,
       icon: <MessageCircle className="size-7 fill-primary text-primary" />,
       href: `/posts/${notification.postId}`,
       color: "text-green-500",
     },
     LIKE: {
-      message: `${notification.issuer.displayUsername} liked your post`,
+      title: notification.title || "New Like",
+      message:
+        notification.message ||
+        `${notification.issuer.displayUsername} liked your post`,
       icon: <Heart className="size-7 fill-red-500 text-red-500" />,
       href: `/posts/${notification.postId}`,
       color: "text-red-500",
     },
     POST: {
-      message: `${notification.issuer.displayUsername} mentioned you in a post`,
+      title: notification.title || "Mention",
+      message:
+        notification.message ||
+        `${notification.issuer.displayUsername} mentioned you in a post`,
       icon: <Bell className="size-7 fill-purple-500 text-purple-500" />,
       href: `/posts/${notification.postId}`,
       color: "text-purple-500",
     },
     JOB_APPLICATION: {
-      message: `${notification.issuer.displayUsername} applied to your job posting`,
+      title: notification.title || "Job Application",
+      message:
+        notification.message ||
+        `${notification.issuer.displayUsername} applied to your job posting`,
       icon: <Briefcase className="size-7 fill-blue-500 text-blue-500" />,
       href: `/jobs/${notification.jobId}`,
       color: "text-blue-500",
     },
     COURSE_ENROLLMENT: {
-      message: `${notification.issuer.displayUsername} enrolled in your course`,
+      title: notification.title || "Course Enrollment",
+      message:
+        notification.message ||
+        `${notification.issuer.displayUsername} enrolled in your course`,
       icon: <BookOpen className="size-7 fill-green-500 text-green-500" />,
       href: `/courses/${notification.courseId}`,
       color: "text-green-500",
     },
     RESEARCH_COLLABORATION: {
-      message: `${notification.issuer.displayUsername} wants to collaborate on research`,
+      title: notification.title || "Research Collaboration",
+      message:
+        notification.message ||
+        `${notification.issuer.displayUsername} wants to collaborate on research`,
       icon: <Award className="size-7 fill-yellow-500 text-yellow-500" />,
       href: `/researches/${notification.researchId}`,
       color: "text-yellow-500",
     },
     SYSTEM_ANNOUNCEMENT: {
-      message: "System announcement",
+      title: notification.title || "System Announcement",
+      message: notification.message || "System announcement",
       icon: <Bell className="size-7 fill-orange-500 text-orange-500" />,
       href: "/notifications/system",
       color: "text-orange-500",
     },
     PROFESSOR_INVITATION: {
-      message: "You have been invited to join as a professor",
+      title: notification.title || "Professor Invitation",
+      message:
+        notification.message || "You have been invited to join as a professor",
       icon: <Award className="size-7 fill-purple-500 text-purple-500" />,
       href: "/profile/invitations",
       color: "text-purple-500",
     },
     COURSE_APPROVAL_REQUEST: {
-      message: "Course approval request pending",
+      title: notification.title || "Course Approval Request",
+      message: notification.message || "Course approval request pending",
       icon: <BookOpen className="size-7 fill-orange-500 text-orange-500" />,
       href: "/dashboard/admin/courses",
       color: "text-orange-500",
     },
     COURSE_APPROVAL_RESULT: {
-      message: "Course approval result available",
+      title: notification.title || "Course Approval Result",
+      message: notification.message || "Course approval result available",
       icon: <Award className="size-7 fill-green-500 text-green-500" />,
       href: "/courses/my-courses",
       color: "text-green-500",
     },
   };
 
-  const { message, icon, href, color } = notificationTypeMap[notification.type];
+  const { title, message, icon, href, color } =
+    notificationTypeMap[notification.type];
 
   return (
     <Link className="block" href={href}>
@@ -119,6 +152,7 @@ export default function EnhancedNotification({
             </span>
           </div>
 
+          <h3 className="font-semibold text-md">{title}</h3>
           <p className="mb-2 text-muted-foreground text-sm">{message}</p>
 
           {notification.post && (
@@ -133,9 +167,17 @@ export default function EnhancedNotification({
             </div>
           )}
 
-          {notification.courseId && (
+          {notification.course && (
             <div className="rounded-lg bg-muted/50 p-3 text-muted-foreground text-sm">
-              <p className="font-medium">Course Update</p>
+              <p className="font-medium">
+                {notification.course.title} ({notification.course.code})
+              </p>
+            </div>
+          )}
+
+          {notification.research && (
+            <div className="rounded-lg bg-muted/50 p-3 text-muted-foreground text-sm">
+              <p className="font-medium">{notification.research.title}</p>
             </div>
           )}
 

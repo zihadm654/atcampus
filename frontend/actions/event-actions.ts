@@ -370,9 +370,8 @@ export async function joinEventAction(
     }
 
     // Create or update registration
-    let registration;
     if (existingRegistration) {
-      registration = await prisma.eventAttendee.update({
+      await prisma.eventAttendee.update({
         where: { id: existingRegistration.id },
         data: {
           status: AttendanceStatus.REGISTERED,
@@ -381,7 +380,7 @@ export async function joinEventAction(
         },
       });
     } else {
-      registration = await prisma.eventAttendee.create({
+      await prisma.eventAttendee.create({
         data: {
           userId: user.id,
           eventId: validatedData.eventId,
@@ -394,12 +393,7 @@ export async function joinEventAction(
     // Check if event is near capacity and send notification to creator
     const newAttendeeCount = attendeeCount + 1;
     if (event.maxAttendees && newAttendeeCount >= event.maxAttendees * 0.9) {
-      await notifyEventCapacityReached(
-        event.id,
-        event.name || "Event",
-        newAttendeeCount,
-        event.maxAttendees
-      );
+      await notifyEventCapacityReached(event.id);
     }
 
     revalidatePath("/events");

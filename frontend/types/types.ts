@@ -19,11 +19,17 @@ export function getUserDataSelect(loggedInUserId: string) {
     displayUsername: true,
     createdAt: true,
     userSkills: {
+      where: {
+        isDeleted: false, // Only fetch non-deleted skills
+      },
       include: {
         skill: {
           select: {
+            id: true,
             name: true,
             category: true,
+            difficulty: true,
+            yearsOfExperience: true,
           },
         },
         _count: {
@@ -32,9 +38,7 @@ export function getUserDataSelect(loggedInUserId: string) {
           },
         },
       },
-      orderBy: {
-        yearsOfExperience: Prisma.SortOrder.desc,
-      },
+
       take: 10, // Limit for performance
     },
     applications: true,
@@ -91,17 +95,17 @@ export function getUserDataSelect(loggedInUserId: string) {
     },
   } satisfies Prisma.UserSelect;
 }
+
 export function getUserSkillDataSelect() {
   return {
     id: true,
-    title: true,
-    level: true,
-    yearsOfExperience: true,
     skillId: true,
     skill: {
       select: {
         name: true,
         category: true,
+        difficulty: true,
+        yearsOfExperience: true,
       },
     },
     _count: {
@@ -149,6 +153,7 @@ export function getPostDataInclude(loggedInUserId: string) {
     },
   } satisfies Prisma.PostInclude;
 }
+
 export function getJobDataInclude(loggedInUserId: string) {
   return {
     user: {
@@ -179,6 +184,7 @@ export function getJobDataInclude(loggedInUserId: string) {
     },
   } satisfies Prisma.JobInclude;
 }
+
 export function getCourseDataInclude(loggedInUserId: string) {
   return {
     instructor: {
@@ -206,6 +212,7 @@ export function getCourseDataInclude(loggedInUserId: string) {
     },
   } satisfies Prisma.CourseInclude;
 }
+
 export function getResearchDataInclude(loggedInUserId: string) {
   return {
     user: {
@@ -282,12 +289,15 @@ export function getCommentDataInclude(loggedInUserId: string) {
     },
   } satisfies Prisma.CommentInclude;
 }
+
 export function getSkillDataInclude() {
   return {
     skill: {
       select: {
         name: true,
         category: true,
+        difficulty: true,
+        yearsOfExperience: true,
       },
     },
     _count: {
@@ -322,6 +332,20 @@ export const notificationsInclude = {
   },
   job: {
     select: {
+      id: true,
+      title: true,
+    },
+  },
+  course: {
+    select: {
+      id: true,
+      title: true,
+      code: true,
+      enrollments: true,
+    },
+  },
+  research: {
+    select: {
       title: true,
     },
   },
@@ -349,6 +373,7 @@ export interface LikeInfo {
 export interface BookmarkInfo {
   isBookmarkedByUser: boolean;
 }
+
 export interface SaveJobInfo {
   isSaveJobByUser: boolean;
 }

@@ -4,7 +4,7 @@ import { getCurrentUser } from "@/lib/session";
 import { getJobDataInclude } from "@/types/types";
 
 export async function GET(
-  request: Request,
+  _request: Request,
   { params }: { params: Promise<{ jobId: string }> }
 ) {
   try {

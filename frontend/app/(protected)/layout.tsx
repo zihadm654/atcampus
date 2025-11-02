@@ -14,7 +14,7 @@ export default async function Dashboard({ children }: ProtectedLayoutProps) {
 
   if (!user) {
     // Redirect to login, preserving the current path as the destination
-    const loginUrl = new URL("/login", process.env.NEXT_PUBLIC_APP_URL);
+    // const loginUrl = new URL("/login", process.env.NEXT_PUBLIC_APP_URL);
     // In server components, we can't access the current path directly
     // The middleware should handle this redirect with the 'from' parameter
     redirect("/login");

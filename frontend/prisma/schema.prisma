@@ -471,6 +471,12 @@ model Course {
   difficulty     String?  @default("BEGINNER") // BEGINNER, INTERMEDIATE, ADVANCED
   estimatedHours Int? // Total course hours
 
+  // Skills - simplified approach
+  skills String[]
+
+  // Enhanced skill relationship for better querying
+  courseSkills CourseSkill[]
+
   // Scheduling
   startDate DateTime?
   endDate   DateTime?
@@ -513,9 +519,8 @@ model Course {
   approvals         CourseApproval[]
   notifications     Notification[]
 
-  // Course skills relationships
-  courseSkills CourseSkill[]
-  jobCourses   JobCourse[]
+  // Associated jobs
+  jobCourses JobCourse[]
 
   @@unique([code, facultyId, isDeleted]) // Prevent duplicate active courses
   @@index([facultyId, status, isDeleted])
@@ -833,6 +838,9 @@ model Job {
   // Skills - simplified approach
   skills String[]
 
+  // Enhanced skill relationship for better querying
+  jobSkills JobSkill[]
+
   isActive Boolean @default(true)
 
   createdAt DateTime @default(now()) @map(name: "created_at")
@@ -960,82 +968,66 @@ model SavedResearch {
 // SKILLS & PROFESSIONAL PROFILE MODELS
 // ============================================================================
 
-// Enhanced Skill model with better categorization
+// Unified Skill model with enhanced categorization and optimization
 model Skill {
-  id          String  @id @default(cuid()) @map("_id")
-  name        String  @unique
-  description String?
-  category    String?
+  id                String  @id @default(cuid()) @map("_id")
+  name              String  @unique
+  description       String?
+  category          String?
+  subcategory       String?
+  yearsOfExperience Int     @default(0)
 
-  // Skill metadata
-  isVerified Boolean  @default(false)
-  tags       String[] @default([]) // For better searchability
+  // Skill metadata for better organization and search
+  isVerified     Boolean    @default(false)
+  tags           String[]   @default([])
+  difficulty     SkillLevel // BEGINNER, INTERMEDIATE, EXPERT
+  estimatedHours Int? // Estimated learning time
 
   createdAt DateTime @default(now()) @map(name: "created_at")
   updatedAt DateTime @updatedAt @map(name: "updated_at")
 
-  // Direct relationships - no need to go through UserSkill
+  // Direct relationships for efficient querying
   userSkills        UserSkill[]
-  courseSkills      CourseSkill[] // Direct relationship
   skillEndorsements SkillEndorsement[]
+  courseSkills      CourseSkill[]
+  jobSkills         JobSkill[]
 
+  @@index([yearsOfExperience])
   @@index([category])
-  @@index([tags]) // For text search
+  @@index([subcategory])
+  @@index([tags])
+  @@index([isVerified])
+  @@index([difficulty])
   @@map(name: "skills")
 }
 
-// Update UserSkill model to reference Skill directly
+// Optimized UserSkill model with direct skill reference and enhanced tracking
 model UserSkill {
   id      String @id @default(cuid()) @map("_id")
   userId  String
   user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   skillId String
-  skill   Skill  @relation(fields: [skillId], references: [id], onDelete: Cascade) // Direct reference
+  skill   Skill  @relation(fields: [skillId], references: [id], onDelete: Cascade)
 
-  title             String
-  level             SkillLevel
-  yearsOfExperience Int        @default(0)
-  description       String?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  endorsements SkillEndorsement[]
-
-  @@unique([userId, skillId])
-  @@index([userId])
-  @@index([skillId, level])
-  @@map(name: "user_skills")
-}
-
-// Update CourseSkill to reference Skill directly
-model CourseSkill {
-  id       String @id @default(cuid()) @map("_id")
-  courseId String
-  course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  skillId  String
-  skill    Skill  @relation(fields: [skillId], references: [id], onDelete: Cascade) // Direct reference
-
-  // Additional metadata for this association
-  importance  CourseSkillImportance @default(REQUIRED)
-  description String?
+  // Soft delete fields
+  deletedAt DateTime?
+  isDeleted Boolean   @default(false)
 
   createdAt DateTime @default(now()) @map(name: "created_at")
   updatedAt DateTime @updatedAt @map(name: "updated_at")
 
-  @@unique([courseId, skillId])
-  @@index([courseId])
+  // Relationships for endorsements and usage tracking
+  endorsements SkillEndorsement[]
+
+  @@unique([userId, skillId, isDeleted])
+  @@index([userId])
   @@index([skillId])
-  @@map(name: "course_skills")
+  @@index([createdAt])
+  @@index([isDeleted])
+  @@map(name: "user_skills")
 }
 
-// Add new enums for skill association metadata
-enum CourseSkillImportance {
-  REQUIRED
-  RECOMMENDED
-  OPTIONAL
-}
-
+// Enhanced SkillEndorsement model with additional context
 model SkillEndorsement {
   id          String    @id @default(cuid()) @map("_id")
   userSkillId String
@@ -1043,13 +1035,88 @@ model SkillEndorsement {
   endorserId  String
   endorser    User      @relation(fields: [endorserId], references: [id], onDelete: Cascade)
   skillId     String
-  skill       Skill     @relation(fields: [skillId], references: [id], onDelete: Cascade) // Direct reference
+  skill       Skill     @relation(fields: [skillId], references: [id], onDelete: Cascade)
 
-  createdAt DateTime @default(now())
+  // Endorsement details
+  comment String?
+  rating  Int? // 1-5 rating
+
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
 
   @@unique([userSkillId, endorserId])
   @@index([endorserId])
+  @@index([skillId])
+  @@index([rating])
+  @@index([createdAt])
   @@map(name: "skill_endorsements")
+}
+
+// ============================================================================
+// SKILL RELATIONSHIP MODELS
+// ============================================================================
+
+// NOTE: CourseSkill and JobSkill share common structure:
+// - importanceLevel (REQUIRED, PREFERRED, BONUS)
+// - weight (0.0 - 1.0 for skill importance)
+// Consider abstracting to a base model in future iterations
+
+// Junction table for Course-Skill relationships with metadata
+model CourseSkill {
+  id       String @id @default(cuid()) @map("_id")
+  courseId String
+  course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  skillId  String
+  skill    Skill  @relation(fields: [skillId], references: [id], onDelete: Cascade)
+
+  // Relationship metadata
+  importanceLevel String? // REQUIRED, PREFERRED, BONUS
+  weight          Float? // 0.0 - 1.0 for skill importance in course
+
+  // Soft delete fields
+  deletedAt DateTime?
+  isDeleted Boolean   @default(false)
+
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
+
+  @@unique([courseId, skillId, isDeleted])
+  @@index([skillId])
+  @@index([importanceLevel])
+  @@index([courseId])
+  @@index([weight])
+  @@index([isDeleted])
+  @@map(name: "course_skills")
+}
+
+// Junction table for Job-Skill relationships with metadata
+model JobSkill {
+  id      String @id @default(cuid()) @map("_id")
+  jobId   String
+  job     Job    @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  skillId String
+  skill   Skill  @relation(fields: [skillId], references: [id], onDelete: Cascade)
+
+  // Relationship metadata
+  importanceLevel String? // REQUIRED, PREFERRED, BONUS
+  weight          Float? // 0.0 - 1.0 for skill importance in job
+  yearsRequired   Int? // Minimum years of experience required
+
+  // Soft delete fields
+  deletedAt DateTime?
+  isDeleted Boolean   @default(false)
+
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
+
+  @@unique([jobId, skillId, isDeleted])
+  @@index([skillId])
+  @@index([importanceLevel])
+  @@index([jobId])
+  @@index([weight])
+  @@index([yearsRequired])
+  @@index([isDeleted])
+  @@map(name: "job_skills")
 }
 
 model Education {

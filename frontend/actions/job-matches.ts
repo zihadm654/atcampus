@@ -32,24 +32,20 @@ export async function getJobMatch(jobId: string) {
 }
 
 // Function to update course skills when creating/updating a course
-export async function updateCourseSkills(courseId: string, skillIds: string[]) {
+export async function updateCourseSkills(
+  courseId: string,
+  skillNames: string[]
+) {
   try {
-    // Delete existing course skills
-    await prisma.courseSkill.deleteMany({
+    // Update course skills directly in the course model
+    await prisma.course.update({
       where: {
-        courseId,
+        id: courseId,
+      },
+      data: {
+        skills: skillNames,
       },
     });
-
-    // Create new course skills
-    if (skillIds.length > 0) {
-      await prisma.courseSkill.createMany({
-        data: skillIds.map((skillId) => ({
-          courseId,
-          skillId,
-        })),
-      });
-    }
 
     return { success: true };
   } catch (error) {

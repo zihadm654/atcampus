@@ -1,8 +1,9 @@
 "use server";
 
-import { ApplicationStatus, NotificationType } from "@prisma/client";
+import type { ApplicationStatus } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
+import { notifyJobApplication } from "@/lib/services/notification-service";
 import { getCurrentUser } from "@/lib/session";
 
 export const applyJob = async (jobId: string) => {
@@ -33,24 +34,18 @@ export const applyJob = async (jobId: string) => {
       return { success: false, message: "You cannot apply to your own job." };
     }
 
-    // Use a transaction to create application and notification atomically
-    await prisma.$transaction(async (tx) => {
-      await tx.application.create({
-        data: {
-          applicantId: user.id,
-          jobId,
-          status: ApplicationStatus.PENDING,
-        },
-      });
-      await tx.notification.create({
-        data: {
-          issuerId: user.id,
-          recipientId: job.userId,
-          type: NotificationType.JOB_APPLICATION, // Use a specific type for job applications
-          // Optionally add more fields (jobId, message, etc.)
-        },
-      });
+    // Create the application
+    await prisma.application.create({
+      data: {
+        applicantId: user.id,
+        jobId,
+        status: "PENDING" as ApplicationStatus,
+      },
     });
+
+    // Notify the job creator about the new application
+    await notifyJobApplication(jobId, user.id, job.userId);
+
     revalidatePath("/jobs");
     return {
       success: true,

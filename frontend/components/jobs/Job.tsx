@@ -90,12 +90,14 @@ export default function Job({ job }: JobProps) {
     },
     enabled: user.role === "STUDENT",
     staleTime: 1000 * 60 * 5, // 5 minutes
+    refetchOnMount: true,
+    refetchOnWindowFocus: false,
   });
 
   const { data: isEnrolled } = useQuery({
-    queryKey: ["enrolled", job.jobCourses[0]?.courseId],
-    queryFn: () => isEnrolledInCourse(job.jobCourses[0]?.courseId || ""),
-    enabled: !!job.jobCourses[0]?.courseId && user.role === "STUDENT",
+    queryKey: ["enrolled", job?.jobCourses?.[0]?.courseId],
+    queryFn: () => isEnrolledInCourse(job?.jobCourses?.[0]?.courseId || ""),
+    enabled: !!job?.jobCourses?.[0]?.courseId && user.role === "STUDENT",
   });
 
   // Use a local state to track application status
@@ -134,7 +136,7 @@ export default function Job({ job }: JobProps) {
   return (
     <Card className="group hover:-translate-y-1 relative overflow-hidden transition-all duration-300 hover:shadow-lg">
       {/* Match Badge */}
-      {job.jobCourses[0]?.courseId && (
+      {job?.jobCourses?.[0]?.courseId && (
         <Badge
           className={`absolute top-3 right-3 z-10 ${
             isEnrolled
@@ -146,7 +148,7 @@ export default function Job({ job }: JobProps) {
         </Badge>
       )}
 
-      <CardHeader className="pb-3">
+      <CardHeader>
         <div className="flex items-start justify-between">
           <div className="flex items-start gap-3">
             <UserTooltip user={job.user}>
@@ -224,8 +226,8 @@ export default function Job({ job }: JobProps) {
             <Badge className="text-sm" variant="outline">
               <Users className="mr-1 h-3 w-3" />
               {optimisticApplied || isApplied
-                ? job.applications.length + 1
-                : job.applications.length}{" "}
+                ? job._count.applications + 1
+                : job._count.applications}{" "}
               applied
             </Badge>
             {/* Display skill match for students */}

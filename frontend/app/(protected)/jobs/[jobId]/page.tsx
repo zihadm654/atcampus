@@ -100,8 +100,8 @@ export default async function JobPage({ params }: PageProps) {
 
   const currentUser = await getUser(user.id);
   const job = await getJob(jobId, user.id);
-  const isEnrolled = await isEnrolledInCourse(
-    job?.jobCourses[0]?.courseId || ""
+  const _isEnrolled = await isEnrolledInCourse(
+    job?.jobCourses?.[0]?.courseId || ""
   );
 
   // If job not found, return 404
@@ -109,11 +109,14 @@ export default async function JobPage({ params }: PageProps) {
     notFound();
   }
 
+  // Check if the current user is a student viewing someone else's job
+  const isStudentViewing = user.role === "STUDENT" && user.id !== job.userId;
+
   return (
     <div className="w-full">
       {/* Header with gradient background */}
       <div
-        className={`grid ${user.id !== job.userId && user.role === "STUDENT" ? "grid-cols-2" : "grid-cols-1"} gap-2 max-md:grid-cols-1`}
+        className={`grid ${isStudentViewing ? "grid-cols-2" : "grid-cols-1"} gap-2 max-md:grid-cols-1`}
       >
         <Card className="flex flex-col gap-3">
           <CardHeader className="flex items-center justify-between">
@@ -129,7 +132,7 @@ export default async function JobPage({ params }: PageProps) {
                   href={`/${job.user.username}`}
                 >
                   {job.user.name}
-                  {job.user.emailVerified ?? (
+                  {job.user.emailVerified && (
                     <Badge
                       className="bg-blue-500 text-white dark:bg-blue-600"
                       variant="secondary"
@@ -189,7 +192,7 @@ export default async function JobPage({ params }: PageProps) {
             <Client job={job} user={user} />
           </CardFooter>
         </Card>
-        {user.id !== job.user.id && user.role === "STUDENT" && (
+        {isStudentViewing && (
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-3">
@@ -201,10 +204,10 @@ export default async function JobPage({ params }: PageProps) {
                 <UserTooltip user={currentUser}>
                   <Link
                     className="flex items-center gap-1 font-medium text-md hover:underline"
-                    href={`/${user.username}`}
+                    href={`/${currentUser.username}`}
                   >
-                    {user.name}
-                    {user.emailVerified ?? (
+                    {currentUser.name}
+                    {currentUser.emailVerified && (
                       <Badge
                         className="bg-blue-500 text-white dark:bg-blue-600"
                         variant="secondary"
@@ -218,10 +221,26 @@ export default async function JobPage({ params }: PageProps) {
               </CardTitle>
             </CardHeader>
             <CardContent className="max-h-48 overflow-auto">
-              <div className="mt-4 space-y-4">
-                <Suspense fallback={<div>Loading...</div>}>
-                  <JobMatchScore jobId={job.id} />
-                  <MissingSkills jobId={job.id} />
+              <div className="space-y-4">
+                <Suspense
+                  fallback={
+                    <div className="space-y-4">
+                      <div className="h-32 animate-pulse rounded bg-gray-200" />
+                      <div className="h-32 animate-pulse rounded bg-gray-200" />
+                    </div>
+                  }
+                >
+                  <Suspense
+                    fallback={
+                      <div className="space-y-4">
+                        <div className="h-32 animate-pulse rounded bg-gray-200" />
+                        <div className="h-32 animate-pulse rounded bg-gray-200" />
+                      </div>
+                    }
+                  >
+                    <JobMatchScore jobId={job.id} />
+                    <MissingSkills jobId={job.id} />
+                  </Suspense>
                 </Suspense>
               </div>
             </CardContent>
@@ -292,7 +311,7 @@ export default async function JobPage({ params }: PageProps) {
               </h4>
               <div className="grid grid-cols-2 gap-2 max-md:grid-cols-1">
                 {/* Display associated course if it exists */}
-                {job.jobCourses[0]?.courseId && (
+                {job.jobCourses?.[0]?.courseId && (
                   <JobCourse courseId={job.jobCourses[0].courseId} />
                 )}
               </div>

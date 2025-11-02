@@ -18,14 +18,11 @@ interface ResearchTabProps {
 
 export default function ResearchTab({
   researches,
-  userRole,
   loggedInUserId,
   permissions,
   loading = false,
-  user,
 }: ResearchTabProps) {
   const canEdit = loggedInUserId && permissions.canEdit;
-  const isOwnProfile = user ? loggedInUserId === user.id : false;
   const router = useRouter();
 
   // Show loading skeleton if data is loading

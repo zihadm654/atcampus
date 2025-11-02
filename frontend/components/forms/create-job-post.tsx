@@ -41,10 +41,6 @@ import {
 } from "../ui/select";
 import { Textarea } from "../ui/textarea";
 
-interface SkillOption extends Option {
-  id: string;
-}
-
 interface CreateJobFormProps {
   user?: User;
   job?: Job & {
@@ -88,7 +84,7 @@ const SKILL_OPTIONS: Option[] = [
   { label: "UI/UX Design", value: "ui-ux" },
 ];
 
-export function CreateJobForm({ user, job }: CreateJobFormProps) {
+export function CreateJobForm({ job }: CreateJobFormProps) {
   const router = useRouter();
   const [pending, setPending] = useState(false);
   const form = useForm<TJob>({

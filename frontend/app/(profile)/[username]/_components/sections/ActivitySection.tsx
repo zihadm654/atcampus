@@ -37,8 +37,6 @@ interface ActivitySectionProps {
 export default function ActivitySection({
   jobs,
   research,
-  userRole,
-  userId,
   limit,
   canEdit,
   showHeader = true,

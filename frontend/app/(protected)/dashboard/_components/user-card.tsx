@@ -44,7 +44,7 @@ export default function UserCard(props: {
   activeSessions: Session["session"][];
 }) {
   const router = useRouter();
-  const { data, isPending } = useSession();
+  const { data } = useSession();
   const session = data || props.session;
   const [isTerminating, setIsTerminating] = useState<string>();
   const [isPendingTwoFa, setIsPendingTwoFa] = useState<boolean>(false);
@@ -103,7 +103,7 @@ export default function UserCard(props: {
                       email: session?.user.email || "",
                     },
                     {
-                      onRequest(context) {
+                      onRequest(_context) {
                         setEmailVerificationPending(true);
                       },
                       onError(context) {
@@ -322,7 +322,7 @@ export default function UserCard(props: {
                         }
                         setIsPendingTwoFa(true);
                         if (session?.user.twoFactorEnabled) {
-                          const res = await client.twoFactor.disable({
+                          await client.twoFactor.disable({
                             password: twoFaPassword,
                             fetchOptions: {
                               onError(context) {
@@ -355,7 +355,7 @@ export default function UserCard(props: {
                             });
                             return;
                           }
-                          const res = await client.twoFactor.enable({
+                          await client.twoFactor.enable({
                             password: twoFaPassword,
                             fetchOptions: {
                               onError(context) {
@@ -571,7 +571,7 @@ function ChangePassword() {
 }
 
 function EditUserDialog() {
-  const { data, isPending, error } = useSession();
+  const { data } = useSession();
   const [name, setName] = useState<string>();
   const router = useRouter();
   const [image, setImage] = useState<File | null>(null);

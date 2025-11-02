@@ -8,85 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
-// Hierarchical skill categories inspired by Fiverr structure
-type Subcategory = { value: string; label: string };
-type Category = { label: string; subcategories: Subcategory[] };
-
-const skillCategories: Category[] = [
-  {
-    label: "Graphics & Design",
-    subcategories: [
-      { value: "logo-design", label: "Logo Design" },
-      { value: "illustration", label: "Illustration" },
-      { value: "web-design", label: "Web Design" },
-      { value: "product-packaging", label: "Product Packaging" },
-    ],
-  },
-  {
-    label: "Digital Marketing",
-    subcategories: [
-      { value: "social-media-marketing", label: "Social Media Marketing" },
-      { value: "seo", label: "SEO" },
-      { value: "content-marketing", label: "Content Marketing" },
-      { value: "email-marketing", label: "Email Marketing" },
-    ],
-  },
-  {
-    label: "Writing & Translation",
-    subcategories: [
-      { value: "articles-blog-posts", label: "Articles & Blog Posts" },
-      { value: "copywriting", label: "Copywriting" },
-      { value: "translation", label: "Translation" },
-      { value: "proofreading-editing", label: "Proofreading & Editing" },
-    ],
-  },
-  {
-    label: "Video & Animation",
-    subcategories: [
-      { value: "animated-explainers", label: "Animated Explainers" },
-      { value: "logo-animation", label: "Logo Animation" },
-      { value: "video-editing", label: "Video Editing" },
-      { value: "visual-effects", label: "Visual Effects" },
-    ],
-  },
-  {
-    label: "Music & Audio",
-    subcategories: [
-      { value: "voice-over", label: "Voice Over" },
-      { value: "music-production", label: "Music Production" },
-      { value: "sound-design", label: "Sound Design" },
-      { value: "songwriting", label: "Songwriting" },
-    ],
-  },
-  {
-    label: "Programming & Tech",
-    subcategories: [
-      { value: "web-programming", label: "Web Programming" },
-      { value: "mobile-apps", label: "Mobile Apps" },
-      { value: "wordpress", label: "WordPress" },
-      { value: "data-analysis", label: "Data Analysis" },
-    ],
-  },
-  {
-    label: "Business",
-    subcategories: [
-      { value: "virtual-assistant", label: "Virtual Assistant" },
-      { value: "market-research", label: "Market Research" },
-      { value: "business-plans", label: "Business Plans" },
-      { value: "project-management", label: "Project Management" },
-    ],
-  },
-  {
-    label: "Lifestyle",
-    subcategories: [
-      { value: "online-tutoring", label: "Online Tutoring" },
-      { value: "gaming", label: "Gaming" },
-      { value: "astrology-tarot", label: "Astrology & Tarot" },
-      { value: "fitness-lessons", label: "Fitness Lessons" },
-    ],
-  },
-];
+import { SKILL_CATEGORIES } from "@/config/skills";
 
 interface SkillCategorySelectProps {
   value?: string;
@@ -102,10 +24,11 @@ export default function SkillCategorySelect({
 
   useEffect(() => {
     if (value) {
-      for (const category of skillCategories) {
-        const sub = category.subcategories.find((s) => s.value === value);
+      // Find the category that contains this skill
+      for (const category of SKILL_CATEGORIES) {
+        const sub = category.skills.find((s) => s.value === value);
         if (sub) {
-          setSelectedCategory(category.label);
+          setSelectedCategory(category.id);
           setSelectedSkill(sub.value);
           break;
         }
@@ -113,8 +36,8 @@ export default function SkillCategorySelect({
     }
   }, [value]);
 
-  const handleCategoryChange = (categoryLabel: string) => {
-    setSelectedCategory(categoryLabel);
+  const handleCategoryChange = (categoryId: string) => {
+    setSelectedCategory(categoryId);
     setSelectedSkill("");
     onChange(""); // Reset if category changes
   };
@@ -124,9 +47,10 @@ export default function SkillCategorySelect({
     onChange(skillValue);
   };
 
-  const currentSubcategories =
-    skillCategories.find((cat) => cat.label === selectedCategory)
-      ?.subcategories || [];
+  const currentCategory = SKILL_CATEGORIES.find(
+    (cat) => cat.id === selectedCategory
+  );
+  const currentSkills = currentCategory?.skills || [];
 
   return (
     <div className="space-y-4">
@@ -137,9 +61,9 @@ export default function SkillCategorySelect({
             <SelectValue placeholder="-- Select a Category --" />
           </SelectTrigger>
           <SelectContent>
-            {skillCategories.map((category) => (
-              <SelectItem key={category.label} value={category.label}>
-                {category.label}
+            {SKILL_CATEGORIES.map((category) => (
+              <SelectItem key={category.id} value={category.id}>
+                {category.name}
               </SelectItem>
             ))}
           </SelectContent>
@@ -154,9 +78,9 @@ export default function SkillCategorySelect({
               <SelectValue placeholder="-- Select a Skill --" />
             </SelectTrigger>
             <SelectContent>
-              {currentSubcategories.map((sub) => (
-                <SelectItem key={sub.value} value={sub.value}>
-                  {sub.label}
+              {currentSkills.map((skill) => (
+                <SelectItem key={skill.value} value={skill.value}>
+                  {skill.label}
                 </SelectItem>
               ))}
             </SelectContent>

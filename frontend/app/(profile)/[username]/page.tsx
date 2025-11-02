@@ -1,7 +1,7 @@
 import { Prisma } from "@prisma/client";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { cache } from "react";
+import { cache, Suspense } from "react";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/session";
 import {
@@ -159,14 +159,16 @@ export default async function Page({ params }: PageProps) {
           loggedInUserId={loggedInUser.id}
           user={user}
         />
-        <ProfileTabs
-          courses={courses}
-          jobs={jobs}
-          loggedInUserId={loggedInUser.id}
-          loggedInUserRole={loggedInUser.role}
-          researches={researches}
-          user={user}
-        />
+        <Suspense fallback={<div>Loading...</div>}>
+          <ProfileTabs
+            courses={courses}
+            jobs={jobs}
+            loggedInUserId={loggedInUser.id}
+            loggedInUserRole={loggedInUser.role}
+            researches={researches}
+            user={user}
+          />
+        </Suspense>
       </div>
     </ProfileProvider>
   );

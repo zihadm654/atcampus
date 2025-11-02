@@ -2,6 +2,7 @@ import { CourseStatus } from "@prisma/client";
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
+import { notifyCourseApprovalResult } from "@/lib/services/notification-service";
 import { getCurrentUser } from "@/lib/session";
 
 type RouteParams = {
@@ -9,7 +10,7 @@ type RouteParams = {
 };
 
 // GET /api/course-approvals/[id] - Get specific course approval
-export async function GET(req: NextRequest, { params }: RouteParams) {
+export async function GET(_req: NextRequest, { params }: RouteParams) {
   try {
     const { id } = await params;
     const currentUser = await getCurrentUser();
@@ -244,17 +245,14 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
         data: { status: courseStatus },
       });
 
-      // Notify course creator
-      await tx.notification.create({
-        data: {
-          recipientId: approval.course?.instructorId || "",
-          issuerId: currentUser.id,
-          type: "COURSE_APPROVAL_RESULT",
-          title: `Course ${decision}`,
-          message: `Your course "${approval.course?.title}" has been ${decision}`,
-          courseId: approval.courseId,
-        },
-      });
+      // Notify course creator using the notification service
+      await notifyCourseApprovalResult(
+        approval.courseId,
+        approval.course?.instructorId || "",
+        currentUser.id,
+        decision,
+        comments
+      );
 
       return { updatedApproval, updatedCourse };
     });

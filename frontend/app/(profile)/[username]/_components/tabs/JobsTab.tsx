@@ -6,12 +6,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { UserRole } from "@/lib/validations/auth";
 import type { JobData } from "@/types/types";
 
-interface JobApplication {
-  id: string;
-  job: JobData;
-  applicantId?: string;
-}
-
 interface JobsTabProps {
   jobs: any;
   userRole: UserRole;

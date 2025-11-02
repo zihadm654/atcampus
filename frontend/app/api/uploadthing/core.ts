@@ -18,7 +18,7 @@ const allowedImageTypes = [
 ];
 
 const allowedVideoTypes = ["video/mp4", "video/webm", "video/quicktime"];
-const allowedPdfTypes = ["application/pdf"];
+// const allowedPdfTypes = ["application/pdf"];
 
 // Allowed cover image types (reuse image types for now)
 const allowedCoverImageTypes = allowedImageTypes;
@@ -97,7 +97,7 @@ export const ourFileRouter = {
         ]);
 
         return { avatarUrl: newAvatarUrl };
-      } catch (error) {
+      } catch (_error) {
         await cleanupFailedUpload(file.ufsUrl); // Update cleanup to use ufsUrl
         throw new UploadThingError("Failed to update avatar");
       }
@@ -152,7 +152,7 @@ export const ourFileRouter = {
         });
 
         return { coverImageUrl: newCoverUrl };
-      } catch (error) {
+      } catch (_error) {
         await cleanupFailedUpload(file.ufsUrl);
         throw new UploadThingError("Failed to update cover image");
       }
@@ -191,7 +191,7 @@ export const ourFileRouter = {
         });
 
         return { mediaId: media.id };
-      } catch (error) {
+      } catch (_error) {
         await cleanupFailedUpload(file.url);
         throw new UploadThingError("Failed to create media record");
       }
@@ -249,7 +249,7 @@ export const ourFileRouter = {
         });
 
         return { mediaId: media.id };
-      } catch (error) {
+      } catch (_error) {
         await cleanupFailedUpload(file.ufsUrl); // Update cleanup to use ufsUrl
         throw new UploadThingError("Failed to create media record");
       }

@@ -30,7 +30,7 @@ interface UserButtonProps {
 }
 
 export default function UserButton({ className }: UserButtonProps) {
-  const [isPending, setIsPending] = useState(false);
+  const [_isPending, setIsPending] = useState(false);
   const router = useRouter();
   const { data: session } = useSession();
   const user = session?.user;

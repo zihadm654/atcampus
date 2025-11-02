@@ -19,7 +19,6 @@ interface ProfileHeaderProps {
 
 export default function ProfileHeader({
   user,
-  loggedInUserId,
   followerInfo,
   isOwnProfile,
 }: ProfileHeaderProps) {

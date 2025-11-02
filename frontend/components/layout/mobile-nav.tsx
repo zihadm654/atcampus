@@ -18,10 +18,6 @@ export function NavMobile() {
   // const selectedLayout = useSelectedLayoutSegment();
   // const documentation = selectedLayout === "docs";
 
-  const configMap = {
-    // docs: docsConfig.mainNav,
-  };
-
   const links = marketingConfig.mainNav;
 
   // prevent body scroll when modal is open

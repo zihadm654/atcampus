@@ -28,18 +28,18 @@ export function DataTableRowActions<TData>({
   const router = useRouter();
 
   //delete product and image
-  const handleDeleteListing = async (id: string, images: string[]) => {
-    const getImageKey = (src: string) =>
-      src.substring(src.lastIndexOf("/") + 1);
+  const handleDeleteListing = async (_id: string, _images: string[]) => {
+    // const getImageKey = (src: string) =>
+    // src.substring(src.lastIndexOf("/") + 1);
     try {
       // Delete all associated images first
-      for (const image of images) {
-        const imageKey = getImageKey(image);
-        // const res = await imageRemove(imageKey);
-        // if (res.success) {
-        //   toast.success(`Image ${imageKey} removed successfully`);
-        // }
-      }
+      // for (const image of images) {
+      //   // const imageKey = getImageKey(image);
+      //   // const res = await imageRemove(imageKey);
+      //   // if (res.success) {
+      //   //   toast.success(`Image ${imageKey} removed successfully`);
+      //   // }
+      // }
 
       // Delete the product after all images are removed
       // await deleteProduct(id);

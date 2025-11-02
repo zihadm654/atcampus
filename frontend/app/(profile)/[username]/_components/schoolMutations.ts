@@ -129,7 +129,7 @@ export function useCreateFacultyMutation() {
       });
       toast({ description: "Faculty created successfully" });
     },
-    onError: (error: Error, variables, context) => {
+    onError: (error: Error, _variables, context) => {
       // Rollback to the previous value
       if (context?.previousSchools) {
         queryClient.setQueryData(["user-schools"], context.previousSchools);

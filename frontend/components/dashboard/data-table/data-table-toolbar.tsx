@@ -38,7 +38,6 @@ interface DataTableToolbarProps<TData> {
 
 export function DataTableToolbar<TData>({
   table,
-  link,
   isLoading,
   setIsLoading,
 }: DataTableToolbarProps<TData>) {

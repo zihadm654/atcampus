@@ -135,7 +135,7 @@ export default async function CourseApprovalPage({ params }: PageProps) {
           .map((item) => item.trim())
           .filter((item) => item.length > 0);
       }
-    } catch (e) {
+    } catch (_e) {
       // If parsing fails, treat as comma-separated string
       objectives = approval.course.objectives
         .split(",")

@@ -73,7 +73,7 @@ export default function AccountSwitcher({ sessions }: { sessions: Session[] }) {
               {Array.isArray(sessions) &&
                 sessions
                   .filter((s) => s.user.id !== currentUser?.user.id)
-                  .map((u, i) => (
+                  .map((u) => (
                     <CommandItem
                       className="text-sm"
                       key={u.user.id}

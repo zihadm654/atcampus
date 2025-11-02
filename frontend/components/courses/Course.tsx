@@ -42,6 +42,7 @@ export default function Course({ course }: { course: CourseData }) {
   if (!user) {
     return null;
   }
+  if (!course) return null;
 
   const handleEnroll = () => {
     startTransition(async () => {
@@ -56,7 +57,7 @@ export default function Course({ course }: { course: CourseData }) {
           setOptimisticEnrolled(false);
           toast.error(res.message);
         }
-      } catch (error) {
+      } catch (_error) {
         setOptimisticEnrolled(false);
         toast.error("Failed to enroll in course");
       }

@@ -1,15 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { useSession } from "@/lib/auth-client";
-import type { UserSkillData } from "@/types/types";
-
-import { getSkillEndorsements } from "./endorsement.actions";
-import UserSkillCard from "./UserSkillCard";
+import type { UserData, UserSkillData } from "@/types/types";
+import SkillManager from "./SkillManager";
 
 interface UserSkillListProps {
   skills: UserSkillData[];
   userId: string;
+  currentUser: UserData;
   canEdit?: boolean;
   onSkillUpdated?: () => void;
 }
@@ -17,67 +15,25 @@ interface UserSkillListProps {
 export default function UserSkillList({
   skills,
   userId,
+  currentUser,
   canEdit,
   onSkillUpdated,
 }: UserSkillListProps) {
   const { data: session } = useSession();
-  const [endorsedSkillIds, setEndorsedSkillIds] = useState<string[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const currentUserId = session?.user?.id;
 
-  // Fetch current user's endorsements
-  useEffect(() => {
-    const fetchEndorsements = async () => {
-      if (!session?.user?.id || session.user.id === userId) {
-        setIsLoading(false);
-        return;
-      }
-
-      try {
-        // Get all endorsements for each skill
-        const endorsedIds: string[] = [];
-
-        for (const skill of skills) {
-          const endorsements = await getSkillEndorsements(skill.id);
-          const hasEndorsed = endorsements.some(
-            (e) => e.endorserId === session.user?.id
-          );
-
-          if (hasEndorsed) {
-            endorsedIds.push(skill.id);
-          }
-        }
-
-        setEndorsedSkillIds(endorsedIds);
-      } catch (error) {
-        console.error("Error fetching endorsements:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchEndorsements();
-  }, [skills, session?.user?.id, userId]);
-
-  if (skills.length === 0) {
-    return (
-      <div className="py-6 text-center text-muted-foreground">
-        No skills added yet
-      </div>
-    );
-  }
+  // Get endorsements for current user
+  const currentUserEndorsements = skills
+    .filter(
+      (skill) => skill._count?.endorsements && skill._count.endorsements > 0
+    )
+    .map((skill) => skill.id);
 
   return (
-    <div className="grid max-h-48 grid-cols-2 gap-1 space-y-1 overflow-y-scroll max-md:grid-cols-1">
-      {skills.map((skill) => (
-        <UserSkillCard
-          canEdit={canEdit}
-          currentUserEndorsements={endorsedSkillIds}
-          key={skill.id}
-          onSkillUpdated={onSkillUpdated}
-          skill={skill}
-          userId={userId}
-        />
-      ))}
-    </div>
+    <SkillManager
+      currentUser={currentUser}
+      currentUserEndorsements={currentUserEndorsements}
+      userId={userId}
+    />
   );
 }

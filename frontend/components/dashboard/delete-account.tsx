@@ -14,7 +14,7 @@ interface DeleteUserButtonProps {
 export function DeleteAccountSection({ userId }: DeleteUserButtonProps) {
   const { setShowDeleteAccountModal, DeleteAccountModal } =
     useDeleteAccountModal();
-  const [isPending, setIsPending] = useState(false);
+  const [isPending, _setIsPending] = useState(false);
 
   // async function handleClick() {
   //   setIsPending(true);

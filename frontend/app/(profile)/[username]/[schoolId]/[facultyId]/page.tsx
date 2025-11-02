@@ -184,7 +184,7 @@ const getFaculty = cache(async (facultyId: string) => {
 export async function generateMetadata({
   params,
 }: PageProps): Promise<Metadata> {
-  const { username, schoolId, facultyId } = await params;
+  const { username, schoolId } = await params;
 
   const loggedInUser = await getCurrentUser();
 
@@ -196,7 +196,7 @@ export async function generateMetadata({
   };
 }
 export default async function Page({ params }: PageProps) {
-  const { username, facultyId, schoolId } = await params;
+  const { username, facultyId } = await params;
   const loggedInUser = await getCurrentUser();
 
   if (!loggedInUser) {

@@ -1,9 +1,9 @@
 import { prisma } from "@/lib/db";
+import { notifyLike } from "@/lib/services/notification-service";
 import { getCurrentUser } from "@/lib/session";
-import type { LikeInfo } from "@/types/types";
 
 export async function GET(
-  req: Request,
+  _req: Request,
   { params }: { params: Promise<{ postId: string }> }
 ) {
   const { postId } = await params;
@@ -37,7 +37,7 @@ export async function GET(
       return Response.json({ error: "Post not found" }, { status: 404 });
     }
 
-    const data: LikeInfo = {
+    const data = {
       likes: post._count.likes,
       isLikedByUser: !!post.likes.length,
     };
@@ -50,7 +50,7 @@ export async function GET(
 }
 
 export async function POST(
-  req: Request,
+  _req: Request,
   { params }: { params: Promise<{ postId: string }> }
 ) {
   const { postId } = await params;
@@ -84,26 +84,17 @@ export async function POST(
       return Response.json({ message: "Already liked" }, { status: 200 });
     }
 
-    await prisma.$transaction([
-      prisma.like.create({
-        data: {
-          userId: loggedInUser.id,
-          postId,
-        },
-      }),
-      ...(loggedInUser.id !== post.userId
-        ? [
-            prisma.notification.create({
-              data: {
-                issuerId: loggedInUser.id,
-                recipientId: post.userId,
-                postId,
-                type: "LIKE",
-              },
-            }),
-          ]
-        : []),
-    ]);
+    await prisma.like.create({
+      data: {
+        userId: loggedInUser.id,
+        postId,
+      },
+    });
+
+    // Notify the post owner about the like (if it's not their own post)
+    if (loggedInUser.id !== post.userId) {
+      await notifyLike(postId, loggedInUser.id, post.userId);
+    }
 
     return Response.json({ message: "Liked successfully" }, { status: 200 });
   } catch (error) {
@@ -113,7 +104,7 @@ export async function POST(
 }
 
 export async function DELETE(
-  req: Request,
+  _req: Request,
   { params }: { params: Promise<{ postId: string }> }
 ) {
   const { postId } = await params;
@@ -147,21 +138,11 @@ export async function DELETE(
       return Response.json({ message: "Like not found" }, { status: 404 });
     }
 
-    await prisma.$transaction([
-      prisma.like.delete({
-        where: {
-          id: like.id,
-        },
-      }),
-      prisma.notification.deleteMany({
-        where: {
-          issuerId: loggedInUser.id,
-          recipientId: post.userId,
-          postId,
-          type: "LIKE",
-        },
-      }),
-    ]);
+    await prisma.like.delete({
+      where: {
+        id: like.id,
+      },
+    });
 
     return Response.json({ message: "Unliked successfully" }, { status: 200 });
   } catch (error) {

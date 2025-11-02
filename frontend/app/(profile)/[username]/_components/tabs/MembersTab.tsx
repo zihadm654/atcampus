@@ -11,14 +11,7 @@ interface MembersTabProps {
   loading?: boolean;
 }
 
-export default function MembersTab({
-  user,
-  loggedInUserId,
-  permissions,
-  loading = false,
-}: MembersTabProps) {
-  const canEdit = permissions.canViewPrivate || loggedInUserId === user.id;
-
+export default function MembersTab({ user, loading = false }: MembersTabProps) {
   // Show loading skeleton if data is loading
   if (loading) {
     return (

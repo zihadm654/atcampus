@@ -421,9 +421,8 @@ export async function joinClubAction(
     }
 
     // Create or update membership
-    let membership;
     if (existingMembership) {
-      membership = await prisma.clubMember.update({
+      await prisma.clubMember.update({
         where: { id: existingMembership.id },
         data: {
           isActive: true,
@@ -432,7 +431,7 @@ export async function joinClubAction(
         },
       });
     } else {
-      membership = await prisma.clubMember.create({
+      await prisma.clubMember.create({
         data: {
           userId: user.id,
           clubId: validatedData.clubId,
@@ -443,7 +442,7 @@ export async function joinClubAction(
     }
 
     // Send notification to club creator and admins
-    await notifyClubMemberJoined(club.id, user.id, user.name);
+    await notifyClubMemberJoined(club.id, user.id);
 
     revalidatePath("/clubs");
     revalidatePath("/profile/[username]");

@@ -68,7 +68,7 @@ export default function Research({ research }: ResearchProps) {
           setOptimisticRequested(false);
           toast.error(res.message);
         }
-      } catch (error) {
+      } catch (_error) {
         setOptimisticRequested(false);
         toast.error("Failed to send collaboration request");
       }

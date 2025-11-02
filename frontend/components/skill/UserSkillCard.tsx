@@ -1,7 +1,7 @@
 "use client";
 
 import { SkillLevel } from "@prisma/client";
-import { Clock, Edit } from "lucide-react";
+import { Clock, Edit, Star } from "lucide-react";
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -39,15 +39,25 @@ export default function UserSkillCard({
   const [showEditDialog, setShowEditDialog] = useState(false);
   const { data: session } = useSession();
   const isEndorsed = currentUserEndorsements.includes(skill.id);
+  const isOwnProfile = session?.user?.id === userId;
+
+  // Get the skill name from the skill relationship
+  const skillName = skill.skill?.name || "Unknown Skill";
+
+  // Get the skill level from the skill relationship
+  const skillLevel = skill.skill?.difficulty || SkillLevel.BEGINNER;
+
+  // Get years of experience from the skill relationship
+  const yearsOfExperience = skill.skill?.yearsOfExperience || 0;
 
   return (
     <>
-      <Card className="transition-all hover:shadow-md">
-        <CardContent className="p-2">
+      <Card className="group transition-all hover:shadow-md">
+        <CardContent className="p-3">
           <div className="flex items-start justify-between">
             <div className="flex-1 space-y-2">
-              <div className="flex items-center gap-1">
-                <h3 className="font-medium text-lg">{skill.title}</h3>
+              <div className="flex items-start gap-2">
+                <h3 className="truncate font-medium text-lg">{skillName}</h3>
                 <SkillEndorsementButton
                   isEndorsed={isEndorsed}
                   skill={skill}
@@ -57,17 +67,27 @@ export default function UserSkillCard({
 
               <div className="flex flex-wrap gap-1">
                 <Badge
-                  className={skillLevelColors[skill.level]}
+                  className={skillLevelColors[skillLevel]}
                   variant="secondary"
                 >
-                  {skill.level.charAt(0) + skill.level.slice(1).toLowerCase()}
+                  {skillLevel?.charAt(0) + skillLevel?.slice(1).toLowerCase()}
                 </Badge>
 
-                {skill.yearsOfExperience > 0 && (
+                {yearsOfExperience > 0 && (
                   <Badge className="flex items-center gap-1" variant="outline">
                     <Clock className="h-3 w-3" />
-                    {skill.yearsOfExperience}{" "}
-                    {skill.yearsOfExperience === 1 ? "year" : "years"}
+                    {yearsOfExperience}{" "}
+                    {yearsOfExperience === 1 ? "year" : "years"}
+                  </Badge>
+                )}
+
+                {skill._count?.endorsements > 0 && (
+                  <Badge
+                    className="flex items-center gap-1 bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"
+                    variant="secondary"
+                  >
+                    <Star className="h-3 w-3" />
+                    {skill._count.endorsements}
                   </Badge>
                 )}
               </div>
@@ -78,15 +98,15 @@ export default function UserSkillCard({
             </div>
 
             {canEdit && (
-              <div className="ml-2 flex gap-1">
+              <div className="ml-2 flex gap-1 opacity-0 transition-opacity group-hover:opacity-100">
                 <Button
-                  className="h-7 w-7 p-0 opacity-60 transition-opacity hover:opacity-100"
+                  className="h-8 w-8 p-0"
                   onClick={() => setShowEditDialog(true)}
                   size="sm"
                   title="Edit skill"
                   variant="ghost"
                 >
-                  <Edit className="h-3.5 w-3.5" />
+                  <Edit className="h-4 w-4" />
                 </Button>
               </div>
             )}

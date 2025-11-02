@@ -56,7 +56,7 @@ export default async function JobsPage() {
   const user = await getCurrentUser();
   if (!user) throw new Error("Unauthorized");
 
-  const [appliedJobs, initialJobsData] = await Promise.all([
+  const [_appliedJobs, initialJobsData] = await Promise.all([
     getAppliedJobs(user.id),
     getInitialJobs(user.id),
   ]);

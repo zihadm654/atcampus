@@ -46,7 +46,7 @@ export default function FollowButton({
 
       return { previousState };
     },
-    onError(error, variables, context) {
+    onError(error, _variables, context) {
       queryClient.setQueryData(queryKey, context?.previousState);
       console.error(error);
       toast({

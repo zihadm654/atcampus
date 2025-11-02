@@ -35,7 +35,7 @@ export function UserAccountNav() {
   const { data: session } = useSession();
   const user = session?.user;
 
-  const [isPending, setIsPending] = useState(false);
+  const [_isPending, setIsPending] = useState(false);
 
   async function handleClick() {
     await signOut({

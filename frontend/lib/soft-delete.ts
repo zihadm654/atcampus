@@ -13,7 +13,7 @@ export async function softDelete(
   id: string,
   options: SoftDeleteOptions = {}
 ) {
-  const { reason, userId, metadata } = options;
+  const { reason, metadata } = options;
 
   // Get the current record for audit trail
   const currentRecord = await model.findUnique({ where: { id } });
@@ -55,7 +55,7 @@ export async function restoreSoftDeleted(
   id: string,
   options: SoftDeleteOptions = {}
 ) {
-  const { reason, userId, metadata } = options;
+  const { reason, metadata } = options;
 
   const currentRecord = await model.findUnique({ where: { id } });
 

@@ -113,7 +113,7 @@ export function EventsTab({
       if (result.success && result.data) {
         setEvents(result.data);
       }
-    } catch (error) {
+    } catch (_error) {
       toast({
         title: "Error",
         description: "Failed to fetch events",
@@ -159,7 +159,7 @@ export function EventsTab({
           variant: "destructive",
         });
       }
-    } catch (error) {
+    } catch (_error) {
       toast({
         title: "Error",
         description: "Failed to join event",
@@ -185,7 +185,7 @@ export function EventsTab({
           variant: "destructive",
         });
       }
-    } catch (error) {
+    } catch (_error) {
       toast({
         title: "Error",
         description: "Failed to leave event",
@@ -216,7 +216,7 @@ export function EventsTab({
       });
       setShowCreateDialog(false);
       fetchEvents();
-    } catch (error) {
+    } catch (_error) {
       toast({
         title: "Error",
         description: "Failed to create event",
@@ -238,7 +238,7 @@ export function EventsTab({
       setShowEditDialog(false);
       setEditingEvent(null);
       fetchEvents();
-    } catch (error) {
+    } catch (_error) {
       toast({
         title: "Error",
         description: "Failed to update event",
@@ -247,7 +247,7 @@ export function EventsTab({
     }
   };
 
-  const handleDeleteEvent = async (eventId: string) => {
+  const handleDeleteEvent = async (_eventId: string) => {
     if (!confirm("Are you sure you want to delete this event?")) return;
 
     try {
@@ -259,7 +259,7 @@ export function EventsTab({
       });
       fetchEvents();
       fetchUserEvents();
-    } catch (error) {
+    } catch (_error) {
       toast({
         title: "Error",
         description: "Failed to delete event",

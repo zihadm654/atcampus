@@ -1,4 +1,4 @@
-import type { User as BetterAuthUser } from "better-auth";
+import type { User } from "better-auth";
 import type { auth } from "@/lib/auth";
 import type { authClient } from "@/lib/auth-client";
 
@@ -17,7 +17,7 @@ export interface CustomUserProperties {
 }
 
 // Extended user type that combines better-auth User with our custom properties
-export type ExtendedUser = BetterAuthUser & CustomUserProperties;
+export type ExtendedUser = User & CustomUserProperties;
 
 // Session user type with all properties
 export interface SessionUser extends ExtendedUser {

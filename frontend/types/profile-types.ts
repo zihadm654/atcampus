@@ -17,6 +17,7 @@ export interface ProfilePermissions {
 export interface ExtendedSchool {
   id: string;
   name: string;
+  shortName?: string;
   slug: string;
   description?: string;
   logo?: string;
@@ -245,12 +246,12 @@ export interface ProfileUserData {
 
 export interface UserSkill {
   id: string;
-  title: string;
-  level: SkillLevel;
-  yearsOfExperience?: number;
   skillId: string;
-  skill?: {
+  skill: {
+    name: string;
     category?: string;
+    difficulty: SkillLevel;
+    yearsOfExperience: number;
   };
   _count?: {
     endorsements: number;
@@ -287,7 +288,7 @@ export interface TabConfig {
 }
 
 // Prisma select queries for profile data
-export function getProfileUserDataSelect(loggedInUserId: string) {
+export function getProfileUserDataSelect(_loggedInUserId: string) {
   return {
     id: true,
     username: true,
@@ -308,7 +309,10 @@ export function getProfileUserDataSelect(loggedInUserId: string) {
       include: {
         skill: {
           select: {
+            name: true,
             category: true,
+            difficulty: true,
+            yearsOfExperience: true,
           },
         },
         _count: {

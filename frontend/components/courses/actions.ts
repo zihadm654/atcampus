@@ -5,6 +5,10 @@ import { revalidatePath } from "next/cache";
 import { updateCourseSkills } from "@/actions/job-matches";
 import { auditCourseAction } from "@/lib/audit";
 import { prisma } from "@/lib/db";
+import {
+  notifyCourseApprovalRequest,
+  notifyCourseApprovalResult,
+} from "@/lib/services/notification-service";
 import { getCurrentUser } from "@/lib/session";
 import { courseSchema, type TCourse } from "@/lib/validations/course";
 import { getCourseDataInclude } from "@/types/types";
@@ -148,17 +152,12 @@ export async function submitCourseForApproval(courseId: string) {
         },
       });
 
-      // Notify institution admin
-      await tx.notification.create({
-        data: {
-          recipientId: institutionReviewer.userId,
-          issuerId: user.id,
-          type: "COURSE_APPROVAL_REQUEST",
-          title: "Course Approval Request",
-          message: `Professor ${user.name} has submitted "${course.title}" for approval`,
-          courseId,
-        },
-      });
+      // Notify institution admin using the notification service
+      await notifyCourseApprovalRequest(
+        courseId,
+        user.id,
+        institutionReviewer.userId
+      );
 
       return { updatedCourse, approval };
     });
@@ -530,17 +529,14 @@ export async function reviewCourse(
         },
       });
 
-      // Notify course instructor
-      await tx.notification.create({
-        data: {
-          recipientId: course.instructorId,
-          issuerId: user.id,
-          type: "COURSE_APPROVAL_RESULT",
-          title: "Course Review Complete",
-          message: `Your course "${course.title}" has been ${decision.toLowerCase()}${comments ? ": " + comments : ""}`,
-          courseId,
-        },
-      });
+      // Notify course instructor using the notification service
+      await notifyCourseApprovalResult(
+        courseId,
+        course.instructorId,
+        user.id,
+        decision,
+        comments
+      );
 
       return { course: updatedCourse, approval: updatedApproval };
     });
@@ -615,7 +611,7 @@ export async function updateCourse(values: TCourse, courseId: string) {
       throw new Error("Faculty does not belong to the selected school");
     }
 
-    // Verify user owns the course or is an admin
+    // Verify user owns the course or has admin permissions
     const existingCourse = await prisma.course.findFirst({
       where: {
         id: courseId,

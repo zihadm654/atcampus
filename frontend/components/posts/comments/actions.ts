@@ -1,6 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/db";
+import { notifyComment } from "@/lib/services/notification-service";
 import { getCurrentUser } from "@/lib/session";
 import { createCommentSchema } from "@/lib/validations/validation";
 import { getCommentDataInclude, type PostData } from "@/types/types";
@@ -18,28 +19,19 @@ export async function submitComment({
 
   const { content: contentValidated } = createCommentSchema.parse({ content });
 
-  const [newComment] = await prisma.$transaction([
-    prisma.comment.create({
-      data: {
-        content: contentValidated,
-        postId: post.id,
-        userId: user.id,
-      },
-      include: getCommentDataInclude(user.id),
-    }),
-    ...(post.user.id !== user.id
-      ? [
-          prisma.notification.create({
-            data: {
-              issuerId: user.id,
-              recipientId: post.user.id,
-              postId: post.id,
-              type: "COMMENT",
-            },
-          }),
-        ]
-      : []),
-  ]);
+  const newComment = await prisma.comment.create({
+    data: {
+      content: contentValidated,
+      postId: post.id,
+      userId: user.id,
+    },
+    include: getCommentDataInclude(user.id),
+  });
+
+  // Notify the post owner about the new comment (if it's not their own post)
+  if (post.user.id !== user.id) {
+    await notifyComment(post.id, user.id, post.user.id);
+  }
 
   return newComment;
 }

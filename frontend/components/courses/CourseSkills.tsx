@@ -4,15 +4,9 @@ import { useQuery } from "@tanstack/react-query";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-interface CourseSkill {
+interface Course {
   id: string;
-  courseId: string;
-  skillId: string;
-  skill: {
-    id: string;
-    name: string;
-    category: string | null;
-  };
+  skills: string[];
 }
 
 interface CourseSkillsProps {
@@ -20,12 +14,12 @@ interface CourseSkillsProps {
 }
 
 export default function CourseSkills({ courseId }: CourseSkillsProps) {
-  const { data: courseSkills, isLoading } = useQuery({
-    queryKey: ["course-skills", courseId],
+  const { data: course, isLoading } = useQuery<Course>({
+    queryKey: ["course", courseId],
     queryFn: async () => {
-      const response = await fetch(`/api/courses/${courseId}/skills`);
+      const response = await fetch(`/api/courses/${courseId}`);
       if (!response.ok) {
-        throw new Error("Failed to fetch course skills");
+        throw new Error("Failed to fetch course");
       }
       return response.json();
     },
@@ -50,7 +44,7 @@ export default function CourseSkills({ courseId }: CourseSkillsProps) {
     );
   }
 
-  if (!courseSkills || courseSkills.length === 0) {
+  if (!course?.skills || course.skills.length === 0) {
     return null;
   }
 
@@ -61,9 +55,9 @@ export default function CourseSkills({ courseId }: CourseSkillsProps) {
       </CardHeader>
       <CardContent>
         <div className="flex flex-wrap gap-2">
-          {courseSkills.map((courseSkill: CourseSkill) => (
-            <Badge key={courseSkill.id} variant="secondary">
-              {courseSkill.skill.name}
+          {course.skills.map((skill: string, index: number) => (
+            <Badge key={`${skill}-${index}`} variant="secondary">
+              {skill}
             </Badge>
           ))}
         </div>

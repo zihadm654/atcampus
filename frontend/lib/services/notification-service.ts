@@ -9,6 +9,8 @@ export interface CreateNotificationData {
   jobId?: string;
   courseId?: string;
   researchId?: string;
+  invitationId?: string;
+  title?: string;
   message?: string;
 }
 
@@ -24,6 +26,8 @@ export async function createNotification(
       jobId: data.jobId,
       courseId: data.courseId,
       researchId: data.researchId,
+      invitationId: data.invitationId,
+      title: data.title,
       message: data.message,
       read: false,
     },
@@ -64,6 +68,22 @@ export async function createNotification(
               id: true,
               title: true,
               code: true,
+            },
+          }
+        : false,
+      research: data.researchId
+        ? {
+            select: {
+              id: true,
+              title: true,
+            },
+          }
+        : false,
+      invitation: data.invitationId
+        ? {
+            select: {
+              id: true,
+              email: true,
             },
           }
         : false,
@@ -154,7 +174,18 @@ export async function getUserNotifications(
           code: true,
         },
       },
-      // Note: club and event relations are not available in Notification model
+      research: {
+        select: {
+          id: true,
+          title: true,
+        },
+      },
+      invitation: {
+        select: {
+          id: true,
+          email: true,
+        },
+      },
     },
     orderBy: { createdAt: "desc" },
     take: limit + 1,
@@ -174,12 +205,237 @@ export async function getUserNotifications(
   };
 }
 
-// Club-specific notification helpers
-export async function notifyClubMemberJoined(
-  clubId: string,
-  memberId: string,
-  userId: string
+// Specific notification creators for different actions
+
+// Course enrollment notification
+export async function notifyCourseEnrollment(
+  courseId: string,
+  studentId: string,
+  instructorId: string
 ) {
+  const course = await prisma.course.findUnique({
+    where: { id: courseId },
+    select: {
+      title: true,
+      code: true,
+    },
+  });
+
+  if (!course) return;
+
+  await createNotification({
+    type: NotificationType.COURSE_ENROLLMENT,
+    recipientId: instructorId,
+    issuerId: studentId,
+    courseId,
+    title: "New Course Enrollment",
+    message: `A student has enrolled in your course "${course.title}" (${course.code})`,
+  });
+}
+
+// Job application notification
+export async function notifyJobApplication(
+  jobId: string,
+  applicantId: string,
+  employerId: string
+) {
+  const job = await prisma.job.findUnique({
+    where: { id: jobId },
+    select: {
+      title: true,
+    },
+  });
+
+  if (!job) return;
+
+  await createNotification({
+    type: NotificationType.JOB_APPLICATION,
+    recipientId: employerId,
+    issuerId: applicantId,
+    jobId,
+    title: "New Job Application",
+    message: `You have a new application for "${job.title}"`,
+  });
+}
+
+// Research collaboration request notification
+export async function notifyResearchCollaboration(
+  researchId: string,
+  requesterId: string,
+  recipientId: string
+) {
+  const research = await prisma.research.findUnique({
+    where: { id: researchId },
+    select: {
+      title: true,
+    },
+  });
+
+  if (!research) return;
+
+  await createNotification({
+    type: NotificationType.RESEARCH_COLLABORATION,
+    recipientId,
+    issuerId: requesterId,
+    researchId,
+    title: "Research Collaboration Request",
+    message: `Someone wants to collaborate with you on "${research.title}"`,
+  });
+}
+
+// Course approval request notification
+export async function notifyCourseApprovalRequest(
+  courseId: string,
+  instructorId: string,
+  reviewerId: string
+) {
+  const course = await prisma.course.findUnique({
+    where: { id: courseId },
+    select: {
+      title: true,
+      code: true,
+    },
+  });
+
+  const instructor = await prisma.user.findUnique({
+    where: { id: instructorId },
+    select: {
+      name: true,
+    },
+  });
+
+  if (!(course && instructor)) return;
+
+  await createNotification({
+    type: NotificationType.COURSE_APPROVAL_REQUEST,
+    recipientId: reviewerId,
+    issuerId: instructorId,
+    courseId,
+    title: "Course Approval Request",
+    message: `${instructor.name} has submitted "${course.title}" (${course.code}) for approval`,
+  });
+}
+
+// Course approval result notification
+export async function notifyCourseApprovalResult(
+  courseId: string,
+  instructorId: string,
+  reviewerId: string,
+  decision: string,
+  comments?: string
+) {
+  const course = await prisma.course.findUnique({
+    where: { id: courseId },
+    select: {
+      title: true,
+      code: true,
+    },
+  });
+
+  const reviewer = await prisma.user.findUnique({
+    where: { id: reviewerId },
+    select: {
+      name: true,
+    },
+  });
+
+  if (!(course && reviewer)) return;
+
+  await createNotification({
+    type: NotificationType.COURSE_APPROVAL_RESULT,
+    recipientId: instructorId,
+    issuerId: reviewerId,
+    courseId,
+    title: `Course ${decision}`,
+    message: `${reviewer.name} has ${decision.toLowerCase()} your course "${course.title}" (${course.code})${comments ? `. Comments: ${comments}` : ""}`,
+  });
+}
+
+// Professor invitation notification
+export async function notifyProfessorInvitation(
+  invitationId: string,
+  senderId: string,
+  recipientEmail: string
+) {
+  await createNotification({
+    type: NotificationType.PROFESSOR_INVITATION,
+    recipientId: recipientEmail, // This might need to be handled differently
+    issuerId: senderId,
+    invitationId,
+    title: "Professor Invitation",
+    message: "You have been invited to join as a professor",
+  });
+}
+
+// Comment notification
+export async function notifyComment(
+  postId: string,
+  commenterId: string,
+  postOwnerId: string
+) {
+  // Don't notify if user is commenting on their own post
+  if (commenterId === postOwnerId) return;
+
+  const post = await prisma.post.findUnique({
+    where: { id: postId },
+    select: {
+      content: true,
+    },
+  });
+
+  if (!post) return;
+
+  await createNotification({
+    type: NotificationType.COMMENT,
+    recipientId: postOwnerId,
+    issuerId: commenterId,
+    postId,
+    title: "New Comment",
+    message: "Someone commented on your post",
+  });
+}
+
+// Like notification
+export async function notifyLike(
+  postId: string,
+  likerId: string,
+  postOwnerId: string
+) {
+  // Don't notify if user is liking their own post
+  if (likerId === postOwnerId) return;
+
+  await createNotification({
+    type: NotificationType.LIKE,
+    recipientId: postOwnerId,
+    issuerId: likerId,
+    postId,
+    title: "New Like",
+    message: "Someone liked your post",
+  });
+}
+
+// Follow notification
+export async function notifyFollow(followerId: string, followingId: string) {
+  const follower = await prisma.user.findUnique({
+    where: { id: followerId },
+    select: {
+      name: true,
+    },
+  });
+
+  if (!follower) return;
+
+  await createNotification({
+    type: NotificationType.FOLLOW,
+    recipientId: followingId,
+    issuerId: followerId,
+    title: "New Follower",
+    message: `${follower.name} is now following you`,
+  });
+}
+
+// Club-specific notification helpers
+export async function notifyClubMemberJoined(clubId: string, userId: string) {
   const club = await prisma.club.findUnique({
     where: { id: clubId },
     select: {
@@ -196,6 +452,7 @@ export async function notifyClubMemberJoined(
       type: NotificationType.SYSTEM_ANNOUNCEMENT,
       recipientId: advisor.userId,
       issuerId: userId,
+      title: "New Club Member",
       message: `New member joined ${club.name}`,
     })
   );
@@ -232,6 +489,7 @@ export async function notifyClubEventCreated(
       type: NotificationType.SYSTEM_ANNOUNCEMENT,
       recipientId: member.userId,
       issuerId: userId,
+      title: "New Club Event",
       message: `New event "${event.name}" created in ${club.name}`,
     })
   );
@@ -252,16 +510,12 @@ export async function notifyEventReminder(eventId: string, userId: string) {
     type: NotificationType.SYSTEM_ANNOUNCEMENT,
     recipientId: userId,
     issuerId: event.creatorId || "system",
+    title: "Event Reminder",
     message: `Reminder: ${event.name} starts soon`,
   });
 }
 
-export async function notifyEventCapacityReached(
-  eventId: string,
-  name: string,
-  newAttendeeCount: number,
-  maxAttendees: number
-) {
+export async function notifyEventCapacityReached(eventId: string) {
   const event = await prisma.event.findUnique({
     where: { id: eventId },
     select: { name: true, creatorId: true, maxAttendees: true },
@@ -273,6 +527,7 @@ export async function notifyEventCapacityReached(
     type: NotificationType.SYSTEM_ANNOUNCEMENT,
     recipientId: event.creatorId,
     issuerId: "system",
+    title: "Event Capacity Reached",
     message: `Event "${event.name}" has reached maximum capacity`,
   });
 }

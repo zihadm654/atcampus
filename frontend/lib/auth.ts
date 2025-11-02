@@ -261,11 +261,7 @@ const options = {
       },
       organizationHooks: {
         // Before creating an invitation
-        beforeCreateInvitation: async ({
-          invitation,
-          inviter,
-          organization,
-        }) => {
+        beforeCreateInvitation: async ({ invitation }) => {
           // Custom validation or expiration logic
           const customExpiration = new Date(
             Date.now() + 1000 * 60 * 60 * 24 * 7
@@ -337,12 +333,7 @@ const options = {
         },
 
         // After accepting an invitation
-        afterAcceptInvitation: async ({
-          invitation,
-          member,
-          user,
-          organization,
-        }: any) => {
+        afterAcceptInvitation: async ({ invitation }: any) => {
           // Update invitation status
           // Fix: only update if invitation exists
           if (invitation?.id) {

@@ -56,18 +56,9 @@ export default function SchoolCard({
   school,
   expanded,
   onToggle,
-  expandedFaculties,
-  onToggleFaculty,
   canEdit,
   onEdit,
   onDelete,
-  onDeleteFaculty,
-  onAddFaculty,
-  onEditFaculty,
-  onAddCourse,
-  onEditCourse,
-  onDeleteCourse,
-  onViewCourseDetails,
 }: SchoolCardProps) {
   const facultiesCount = school.faculties?.length || 0;
   const coursesCount =

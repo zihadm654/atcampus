@@ -26,7 +26,6 @@ import {
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -41,13 +40,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
+import { SKILL_CATEGORIES } from "@/config/skills";
 import {
   type TUserSkillSchema,
   userSkillSchema,
 } from "@/lib/validations/validation";
 import type { UserData, UserSkillData } from "@/types/types";
 import { useDeleteSkillMutation, useSkillMutation } from "./mutations";
-import SkillCategorySelect from "./SkillCategorySelect";
 import { SkillSearchInput } from "./SkillSearchInput";
 
 interface SkillDialogProps {
@@ -65,14 +64,16 @@ export default function SkillDialog({
 }: SkillDialogProps) {
   const { toast } = useToast();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [selectedSkill, setSelectedSkill] = useState("");
 
   const form = useForm<TUserSkillSchema>({
     resolver: zodResolver(userSkillSchema),
     defaultValues: {
-      title: skill?.title || "",
+      name: skill?.skill?.name || "",
       category: skill?.skill?.category || "",
-      level: skill?.level || "BEGINNER",
-      yearsOfExperience: skill?.yearsOfExperience || 0,
+      difficulty: skill?.skill?.difficulty || "BEGINNER",
+      yearsOfExperience: skill?.skill?.yearsOfExperience || 0,
     },
   });
 
@@ -82,32 +83,78 @@ export default function SkillDialog({
   // Reset form when dialog opens/closes or skill changes
   useEffect(() => {
     if (open) {
+      const skillName = skill?.skill?.name || "";
+      const skillCategory = skill?.skill?.category || "";
+      const skillLevel = skill?.skill?.difficulty || "BEGINNER";
+      const yearsOfExperience = skill?.skill?.yearsOfExperience || 0;
+
       form.reset({
-        title: skill?.title || "",
-        category: skill?.skill?.category || "",
-        level: skill?.level || "BEGINNER",
-        yearsOfExperience: skill?.yearsOfExperience || 0,
+        name: skillName,
+        category: skillCategory,
+        difficulty: skillLevel,
+        yearsOfExperience,
       });
+
+      // Set initial category and skill state
+      if (skillName && skillCategory) {
+        // Find category by skill name
+        for (const category of SKILL_CATEGORIES) {
+          const foundSkill = category.skills.find((s) => s.label === skillName);
+          if (foundSkill) {
+            setSelectedCategory(category.id);
+            setSelectedSkill(foundSkill.value);
+            break;
+          }
+        }
+      } else {
+        setSelectedCategory("");
+        setSelectedSkill("");
+      }
     }
   }, [open, skill, form]);
 
   const handleClose = (success = false) => {
     form.reset();
+    setSelectedCategory("");
+    setSelectedSkill("");
     onOpenChange(false, success);
   };
 
   async function onSubmit(values: TUserSkillSchema) {
     try {
+      // If no category is selected but we have a name, try to find a category
+      let categoryValue = values.category;
+      if (!categoryValue && values.name) {
+        // Try to find category from predefined skills
+        for (const category of SKILL_CATEGORIES) {
+          const foundSkill = category.skills.find(
+            (s) => s.label === values.name
+          );
+          if (foundSkill) {
+            categoryValue = category.name;
+            break;
+          }
+        }
+      }
+
+      // Map the form values to match the expected API structure
+      const apiValues = {
+        name: values.name,
+        category: categoryValue || "",
+        difficulty: values.difficulty,
+        yearsOfExperience: values.yearsOfExperience,
+      };
+
       await mutation.mutateAsync({
         id: skill?.id,
-        values,
+        values: apiValues,
       });
 
       toast({
         title: skill ? "Skill updated" : "Skill added",
         description: skill
-          ? `"${values.title}" has been updated successfully.`
-          : `"${values.title}" has been added to your profile.`,
+          ? `"${values.name}" has been updated successfully.`
+          : `"${values.name}" has been added to your profile.`,
       });
 
       handleClose(true);
@@ -117,16 +164,16 @@ export default function SkillDialog({
 
       // Handle specific validation errors
       if (message.includes("already have a skill")) {
-        form.setError("title", {
+        form.setError("name", {
           message: "You already have this skill in your profile",
         });
       } else if (message.includes("must be at least")) {
         const field = message.includes("Skill name")
-          ? "title"
+          ? "name"
           : message.includes("Category")
             ? "category"
             : message.includes("Years")
-              ? "yearsOfExperience"
+              ? "difficulty"
               : "root";
         form.setError(field as any, { message });
       } else {
@@ -146,7 +193,7 @@ export default function SkillDialog({
       await deleteMutation.mutateAsync(skill.id);
       toast({
         title: "Skill deleted",
-        description: `"${skill.title}" has been removed from your profile.`,
+        description: `"${skill.skill?.name}" has been removed from your profile.`,
       });
       setShowDeleteDialog(false);
       handleClose(true);
@@ -173,6 +220,41 @@ export default function SkillDialog({
     }
   };
 
+  const handleCategoryChange = (categoryId: string) => {
+    setSelectedCategory(categoryId);
+    setSelectedSkill("");
+
+    // Reset the name field when category changes
+    form.setValue("name", "");
+    form.clearErrors("name");
+  };
+
+  const handleSkillChange = (skillValue: string) => {
+    setSelectedSkill(skillValue);
+
+    // Find the skill label and update the form
+    const category = SKILL_CATEGORIES.find(
+      (cat) => cat.id === selectedCategory
+    );
+    if (category) {
+      const skill = category.skills.find((s) => s.value === skillValue);
+      if (skill) {
+        form.setValue("name", skill.label);
+        // Set category if not already set
+        if (!form.getValues("category")) {
+          form.setValue("category", category.name);
+        }
+        form.clearErrors("name");
+      }
+    }
+  };
+
+  const currentCategory = SKILL_CATEGORIES.find(
+    (cat) => cat.id === selectedCategory
+  );
+  const currentSkills = currentCategory?.skills || [];
+
+  // Check if any mutation is in progress
   const isSubmitting = mutation.isPending || deleteMutation.isPending;
 
   return (
@@ -211,57 +293,92 @@ export default function SkillDialog({
           <Form {...form}>
             <form className="space-y-6" onSubmit={form.handleSubmit(onSubmit)}>
               <div className="space-y-4">
-                <FormField
-                  control={form.control}
-                  name="title"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="flex items-center font-semibold">
-                        <Icons.skill className="mr-2 h-4 w-4" />
-                        Skill Name
-                        <span className="ml-1 text-red-500">*</span>
-                      </FormLabel>
-                      <FormControl>
-                        <SkillSearchInput
-                          defaultValue={field.value}
-                          onChange={field.onChange}
-                          // placeholder="e.g., React, Python, Design"
-                          // disabled={isSubmitting}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                {/* Category Selection */}
+                <div>
+                  <label className="flex items-center font-semibold text-sm">
+                    <Icons.calendar className="mr-2 h-4 w-4" />
+                    Category
+                  </label>
+                  <Select
+                    onValueChange={handleCategoryChange}
+                    value={selectedCategory}
+                  >
+                    <SelectTrigger className="border-gray-200 focus:border-blue-500 focus:ring-blue-500">
+                      <SelectValue placeholder="-- Select a Category --" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {SKILL_CATEGORIES.map((category) => (
+                        <SelectItem key={category.id} value={category.id}>
+                          {category.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <p className="mt-1 text-gray-600 text-sm">
+                    Choose a category that best describes your skill
+                  </p>
+                </div>
 
-                <FormField
-                  control={form.control}
-                  name="category"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="flex items-center font-semibold">
-                        <Icons.calendar className="mr-2 h-4 w-4" />
-                        Category
-                      </FormLabel>
-                      <FormControl>
-                        <SkillCategorySelect
-                          onChange={field.onChange}
-                          value={field.value}
-                          // disabled={isSubmitting}
-                        />
-                      </FormControl>
-                      <FormDescription className="text-gray-600 text-sm">
-                        Choose a category that best describes your skill
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                {/* Skill Selection */}
+                {selectedCategory && (
+                  <div>
+                    <label className="flex items-center font-semibold text-sm">
+                      <Icons.skill className="mr-2 h-4 w-4" />
+                      Skill
+                      <span className="ml-1 text-red-500">*</span>
+                    </label>
+                    <Select
+                      onValueChange={handleSkillChange}
+                      value={selectedSkill}
+                    >
+                      <SelectTrigger className="border-gray-200 focus:border-blue-500 focus:ring-blue-500">
+                        <SelectValue placeholder="-- Select a Skill --" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {currentSkills.map((skill) => (
+                          <SelectItem key={skill.value} value={skill.value}>
+                            {skill.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+
+                {/* Manual Skill Input (when no category selected or custom skill) */}
+                {!selectedCategory && (
+                  <FormField
+                    control={form.control}
+                    name="name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="flex items-center font-semibold">
+                          <Icons.skill className="mr-2 h-4 w-4" />
+                          Skill Name
+                          <span className="ml-1 text-red-500">*</span>
+                        </FormLabel>
+                        <FormControl>
+                          <SkillSearchInput
+                            defaultValue={field.value}
+                            onChange={(value) => {
+                              field.onChange(value);
+                              // Clear category error when user starts typing
+                              if (form.formState.errors.category) {
+                                form.clearErrors("category");
+                              }
+                            }}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                )}
 
                 <div className="grid grid-cols-2 gap-4">
                   <FormField
                     control={form.control}
-                    name="level"
+                    name="difficulty"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel className="flex items-center font-semibold">
@@ -281,25 +398,19 @@ export default function SkillDialog({
                           <SelectContent>
                             <SelectItem value="BEGINNER">
                               <span className="flex items-center">
-                                <Icons.spinner className="mr-2 h-3 w-3 text-green-500" />
+                                <div className="mr-2 h-3 w-3 rounded-full bg-green-500" />
                                 Beginner
                               </span>
                             </SelectItem>
                             <SelectItem value="INTERMEDIATE">
                               <span className="flex items-center">
-                                <Icons.spinner className="mr-2 h-3 w-3 text-yellow-500" />
+                                <div className="mr-2 h-3 w-3 rounded-full bg-yellow-500" />
                                 Intermediate
-                              </span>
-                            </SelectItem>
-                            <SelectItem value="ADVANCED">
-                              <span className="flex items-center">
-                                <Icons.spinner className="mr-2 h-3 w-3 text-orange-500" />
-                                Advanced
                               </span>
                             </SelectItem>
                             <SelectItem value="EXPERT">
                               <span className="flex items-center">
-                                <Icons.spinner className="mr-2 h-3 w-3 text-red-500" />
+                                <div className="mr-2 h-3 w-3 rounded-full bg-red-500" />
                                 Expert
                               </span>
                             </SelectItem>
@@ -377,7 +488,7 @@ export default function SkillDialog({
                 <LoadingButton
                   className="bg-blue-600 text-white transition-colors hover:bg-blue-700"
                   disabled={isSubmitting}
-                  loading={mutation.isPending}
+                  loading={isSubmitting}
                   type="submit"
                 >
                   {skill ? "Update Skill" : "Add Skill"}
@@ -393,8 +504,8 @@ export default function SkillDialog({
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Skill</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete "{skill?.title}"? This action
-              cannot be undone.
+              Are you sure you want to delete "{skill?.skill?.name}"? This
+              action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

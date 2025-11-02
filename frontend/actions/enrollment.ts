@@ -1,8 +1,9 @@
 "use server";
 
-import { EnrollmentStatus, NotificationType } from "@prisma/client";
+import type { EnrollmentStatus } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
+import { notifyCourseEnrollment } from "@/lib/services/notification-service";
 import { getCurrentUser } from "@/lib/session";
 
 export const enrollCourse = async (courseId: string) => {
@@ -42,23 +43,16 @@ export const enrollCourse = async (courseId: string) => {
     }
 
     // Use a transaction to create enrollment and notification atomically
-    await prisma.$transaction(async (tx) => {
-      await tx.enrollment.create({
-        data: {
-          courseId,
-          studentId: user.id,
-          status: EnrollmentStatus.ENROLLED,
-        },
-      });
-      await tx.notification.create({
-        data: {
-          issuerId: user.id,
-          recipientId: course.instructorId,
-          type: NotificationType.COURSE_ENROLLMENT, // Custom type for course enrollments
-          // Optionally add more fields (courseId, message, etc.)
-        },
-      });
+    await prisma.enrollment.create({
+      data: {
+        courseId,
+        studentId: user.id,
+        status: "ENROLLED" as EnrollmentStatus,
+      },
     });
+
+    // Notify the instructor about the new enrollment
+    await notifyCourseEnrollment(courseId, user.id, course.instructorId);
 
     revalidatePath("/courses");
     return {
@@ -104,5 +98,5 @@ export async function isEnrolledInCourse(courseId: string) {
     },
   });
 
-  return !!enrollment && enrollment.status === EnrollmentStatus.ENROLLED;
+  return !!enrollment && enrollment.status === ("ENROLLED" as EnrollmentStatus);
 }

@@ -52,7 +52,7 @@ export async function addSchool(values: z.infer<typeof addSchoolSchema>) {
         institutionId: user.id,
       },
     });
-  } catch (error) {
+  } catch (_error) {
     return {
       error: "Failed to create school",
     };
@@ -92,7 +92,7 @@ export async function editSchool(formData: FormData) {
         name: validatedFields.data.name,
       },
     });
-  } catch (error) {
+  } catch (_error) {
     return {
       error: "Failed to update school",
     };
@@ -131,7 +131,7 @@ export async function deleteSchool(schoolId: string) {
         institutionId: user.id,
       },
     });
-  } catch (error) {
+  } catch (_error) {
     return {
       error: "Failed to delete school",
     };

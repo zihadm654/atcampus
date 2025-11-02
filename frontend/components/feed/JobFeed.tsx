@@ -17,7 +17,7 @@ interface Props {
   initialData?: JobsPage;
 }
 
-export default function JobFeed({ user, initialData }: Props) {
+export default function JobFeed({ user }: Props) {
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false);
   const debouncedSearchQuery = useDebounce(searchQuery, 300);

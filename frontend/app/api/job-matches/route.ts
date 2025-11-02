@@ -35,7 +35,7 @@ export async function GET(request: Request) {
   }
 }
 
-async function calculateMatch(studentId: string, jobId: string) {
+async function _calculateMatch(studentId: string, jobId: string) {
   try {
     // Get job details (skills and courses)
     const job = await prisma.job.findUnique({

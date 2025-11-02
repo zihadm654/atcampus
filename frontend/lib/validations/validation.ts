@@ -48,21 +48,24 @@ export const createCommentSchema = z.object({
 });
 
 export const userSkillSchema = z.object({
-  title: requiredString
+  name: requiredString
     .min(2, "Skill name must be at least 2 characters")
     .max(100, "Skill name must be at most 100 characters")
     .regex(
       /^[a-zA-Z0-9\s\-_&+()#@]+$/,
       "Skill name can only contain letters, numbers, spaces, and common symbols"
     ),
-  category: requiredString
+  category: z
+    .string()
     .min(2, "Category must be at least 2 characters")
     .max(50, "Category must be at most 50 characters")
     .regex(
       /^[a-zA-Z\s\-_&]+$/,
       "Category can only contain letters, spaces, and hyphens"
-    ),
-  level: nativeEnum(SkillLevel),
+    )
+    .optional()
+    .or(z.literal("")),
+  difficulty: nativeEnum(SkillLevel),
   yearsOfExperience: z.coerce
     .number()
     .min(0, "Years of experience must be at least 0")

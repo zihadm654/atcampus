@@ -80,7 +80,7 @@ export async function POST(req: NextRequest) {
     });
 
     // 5. Update invitation reminder counts and send reminders
-    const pendingInvitations = await prisma.invitation.findMany({
+    await prisma.invitation.findMany({
       where: {
         status: "PENDING",
         expiresAt: {

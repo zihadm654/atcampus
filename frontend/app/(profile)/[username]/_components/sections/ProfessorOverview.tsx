@@ -27,11 +27,9 @@ interface ProfessorOverviewProps {
 }
 
 export default function ProfessorOverview({
-  user,
   courses,
   researches,
   permissions,
-  isOwnProfile,
 }: ProfessorOverviewProps) {
   return (
     <div className="grid grid-cols-1 gap-4">

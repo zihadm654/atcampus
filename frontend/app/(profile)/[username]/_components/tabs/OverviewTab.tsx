@@ -23,7 +23,6 @@ export default function OverviewTab({
   jobs,
   loggedInUserId,
   permissions,
-  loading,
   researches,
 }: OverviewTabProps) {
   const isOwnProfile = user.id === loggedInUserId;
@@ -80,7 +79,6 @@ function StudentOverview({
   courses,
   jobs,
   permissions,
-  isOwnProfile,
 }: {
   user: UserData;
   courses: any[];
@@ -92,13 +90,12 @@ function StudentOverview({
   const userSkillsData: UserSkillData[] =
     user.userSkills?.map((skill) => ({
       id: skill.id,
-      title: skill.title,
-      level: skill.level,
-      yearsOfExperience: skill.yearsOfExperience ?? 0,
       skillId: skill.skillId,
       skill: {
-        name: skill.title,
+        name: skill.skill?.name,
         category: skill.skill?.category || null,
+        yearsOfExperience: skill.skill?.yearsOfExperience || 0,
+        difficulty: skill.skill?.difficulty || "BEGINNER",
       },
       _count: {
         endorsements: skill._count?.endorsements || 0,
@@ -112,6 +109,7 @@ function StudentOverview({
         <SkillsSection
           canEdit={permissions.canEdit}
           limit={5}
+          user={user}
           userId={user.id}
           userSkills={userSkillsData}
         />

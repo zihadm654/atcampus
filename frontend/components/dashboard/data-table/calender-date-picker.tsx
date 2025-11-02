@@ -295,7 +295,7 @@ export const CalendarDatePicker = ({
     setHighlightedPart(null);
   };
 
-  const handleWheel = (event: React.WheelEvent, part: string) => {
+  const handleWheel = (event: React.WheelEvent, _part: string) => {
     event.preventDefault();
     setSelectedRange(null);
     if (highlightedPart === "firstDay") {

@@ -16,30 +16,29 @@ export async function addSkill(values: TUserSkillSchema) {
 
   // Find or create the skill
   const skill = await prisma.skill.upsert({
-    where: { name: validatedValues.title },
+    where: { name: validatedValues.name },
     update: {
       category: validatedValues.category || null,
     },
     create: {
-      name: validatedValues.title,
+      name: validatedValues.name,
       category: validatedValues.category || null,
+      difficulty: validatedValues.difficulty, // Use the skill level as difficulty
+      yearsOfExperience: validatedValues.yearsOfExperience, // Store years of experience in the skill model
     },
   });
 
-  // Check if a user skill with the exact same details already exists
+  // Check if a user skill with the exact same details already exists (excluding deleted skills)
   const existingUserSkill = await prisma.userSkill.findFirst({
     where: {
       userId: user.id,
       skillId: skill.id,
-      level: validatedValues.level,
-      yearsOfExperience: validatedValues.yearsOfExperience,
+      isDeleted: false, // Only check non-deleted skills
     },
   });
 
   if (existingUserSkill) {
-    throw new Error(
-      "User already has this skill with the same level and years of experience."
-    );
+    throw new Error("User already has this skill.");
   }
 
   // Create a new user skill
@@ -47,9 +46,7 @@ export async function addSkill(values: TUserSkillSchema) {
     data: {
       userId: user.id,
       skillId: skill.id,
-      title: validatedValues.title,
-      level: validatedValues.level,
-      yearsOfExperience: validatedValues.yearsOfExperience,
+      // Note: yearsOfExperience is now stored in the Skill model, not UserSkill
     },
     include: {
       skill: true,
@@ -72,24 +69,25 @@ export async function updateSkill(id: string, values: TUserSkillSchema) {
 
   // Find or create the skill
   const skill = await prisma.skill.upsert({
-    where: { name: validatedValues.title },
+    where: { name: validatedValues.name },
     update: {
       category: validatedValues.category || null,
+      yearsOfExperience: validatedValues.yearsOfExperience, // Update years of experience in the skill model
     },
     create: {
-      name: validatedValues.title,
+      name: validatedValues.name,
       category: validatedValues.category || null,
+      difficulty: validatedValues.difficulty, // Use the skill level as difficulty
+      yearsOfExperience: validatedValues.yearsOfExperience, // Store years of experience in the skill model
     },
   });
 
   // Update the user skill
   const updatedUserSkill = await prisma.userSkill.update({
-    where: { id },
+    where: { id, isDeleted: false },
     data: {
       skillId: skill.id,
-      title: validatedValues.title,
-      level: validatedValues.level,
-      yearsOfExperience: validatedValues.yearsOfExperience,
+      // Note: yearsOfExperience is now stored in the Skill model, not UserSkill
     },
     include: {
       skill: true,
@@ -110,8 +108,17 @@ export async function deleteSkill(id: string) {
 
   // Check if the skill belongs to the user
   const userSkill = await prisma.userSkill.findUnique({
-    where: { id },
-    select: { userId: true, title: true },
+    where: { id, isDeleted: false },
+    include: {
+      skill: true,
+      endorsements: {
+        where: {
+          userSkill: {
+            isDeleted: false,
+          },
+        },
+      },
+    },
   });
 
   if (!userSkill) {
@@ -122,9 +129,22 @@ export async function deleteSkill(id: string) {
     throw new Error("Unauthorized to delete this skill");
   }
 
-  await prisma.userSkill.delete({
-    where: { id },
-  });
+  // Check if there are endorsements - if so, we soft delete instead
+  if (userSkill.endorsements.length > 0) {
+    // Soft delete the user skill
+    await prisma.userSkill.update({
+      where: { id },
+      data: {
+        isDeleted: true,
+        deletedAt: new Date(),
+      },
+    });
+  } else {
+    // Hard delete if no endorsements
+    await prisma.userSkill.delete({
+      where: { id },
+    });
+  }
 
-  return { id, title: userSkill.title };
+  return { id, title: userSkill.skill.name };
 }

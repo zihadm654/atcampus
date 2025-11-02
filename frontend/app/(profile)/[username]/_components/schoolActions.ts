@@ -421,10 +421,7 @@ export async function getFacultyMembers(facultyId: string) {
   }
 }
 
-export async function removeProfessorFromFaculty(
-  memberId: string,
-  facultyId: string
-) {
+export async function removeProfessorFromFaculty(memberId: string) {
   try {
     const user = await getCurrentUser();
     if (!user || user.role !== "INSTITUTION") {

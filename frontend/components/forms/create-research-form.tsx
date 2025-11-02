@@ -18,7 +18,7 @@ import { cn } from "@/lib/utils";
 import { researchSchema, type TResearch } from "@/lib/validations/research";
 
 import { createResearch } from "../researches/actions";
-import { useSubmitPostMutation } from "../researches/editor/mutations";
+// import { useSubmitPostMutation } from "../researches/editor/mutations";
 import useMediaUpload, {
   type Attachment,
 } from "../researches/editor/useMediaUpload";
@@ -127,7 +127,7 @@ export function CreateResearchForm({ user }: CreateJobFormProps) {
   });
   const queryClient = useQueryClient();
 
-  const mutation = useSubmitPostMutation();
+  // const mutation = useSubmitPostMutation();
 
   const {
     startUpload,
@@ -154,7 +154,7 @@ export function CreateResearchForm({ user }: CreateJobFormProps) {
     disabled: isUploading,
   });
 
-  const { onClick, ...rootProps } = getRootProps();
+  const { onClick, ..._rootProps } = getRootProps();
 
   async function onSubmit(values: TResearch) {
     try {

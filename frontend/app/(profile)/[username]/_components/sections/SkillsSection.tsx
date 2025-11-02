@@ -13,25 +13,12 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import type { UserSkillData } from "@/types/types";
-
-interface UserSkill {
-  id: string;
-  title: string;
-  level: string;
-  yearsOfExperience?: number;
-  skill: {
-    name: string;
-    category: string | null;
-  };
-  _count: {
-    endorsements: number;
-  };
-}
+import type { UserData, UserSkillData } from "@/types/types";
 
 interface SkillsSectionProps {
-  userSkills: UserSkill[];
+  userSkills: any;
   userId: string;
+  user: UserData;
   canEdit: boolean;
   limit?: number;
   showHeader?: boolean;
@@ -203,6 +190,7 @@ function SkillsEmpty({
 export default function SkillsSection({
   userSkills,
   userId,
+  user,
   canEdit,
   limit,
   showHeader = true,
@@ -219,6 +207,12 @@ export default function SkillsSection({
       ...skill,
       _count: { endorsements: skill._count?.endorsements || 0 },
       skillId: skill.id,
+      skill: {
+        name: skill.skill.name,
+        category: skill.skill.category,
+        yearsOfExperience: skill.yearsOfExperience || 0,
+        difficulty: skill.difficulty || "BEGINNER",
+      },
     })) as UserSkillData[];
   }, [userSkills, limit, showAll]);
 
@@ -287,6 +281,7 @@ export default function SkillsSection({
         <div className="space-y-2">
           <UserSkillList
             canEdit={canEdit}
+            currentUser={user}
             onSkillUpdated={onSkillsUpdate}
             skills={displaySkills}
             userId={userId}

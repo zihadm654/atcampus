@@ -88,7 +88,7 @@ export function OrganizationCard(props: {
     );
   const [isRevoking, setIsRevoking] = useState<string[]>([]);
   const [faculties, setFaculties] = useState<Faculty[]>([]);
-  const [loadingFaculties, setLoadingFaculties] = useState(false);
+  const [_loadingFaculties, setLoadingFaculties] = useState(false);
   const assignFacultyMutation = useAssignFacultyToMemberMutation();
   const inviteVariants = {
     hidden: { opacity: 0, height: 0 },
@@ -565,7 +565,7 @@ function InviteMemberDialog({
   const [open, setOpen] = useState(false);
   const [email, setEmail] = useState("");
   const [role, setRole] = useState("member");
-  const [loading, setLoading] = useState(false);
+  const [loading, _setLoading] = useState(false);
   return (
     <Dialog onOpenChange={setOpen} open={open}>
       <DialogTrigger asChild>

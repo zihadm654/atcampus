@@ -31,7 +31,7 @@ export function ApplicationStatusSelect({
           title: "Success",
           description: "Status updated successfully.",
         });
-      } catch (error) {
+      } catch (_error) {
         toast({ title: "Error", description: "Failed to update status." });
       }
     });

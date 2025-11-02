@@ -2,6 +2,7 @@ import { CourseStatus } from "@prisma/client";
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
+import { notifyCourseApprovalRequest } from "@/lib/services/notification-service";
 import { getCurrentUser } from "@/lib/session";
 import { excludeDeleted } from "@/lib/soft-delete";
 
@@ -271,17 +272,12 @@ export async function POST(req: NextRequest) {
         },
       });
 
-      // Notify the reviewer
-      await tx.notification.create({
-        data: {
-          recipientId: institutionAdmin.userId,
-          issuerId: currentUser.id,
-          type: "COURSE_APPROVAL_REQUEST",
-          title: "New Course Approval Request",
-          message: `${currentUser.name} has submitted "${course.title}" for approval`,
-          courseId,
-        },
-      });
+      // Notify the reviewer using the notification service
+      await notifyCourseApprovalRequest(
+        courseId,
+        currentUser.id,
+        institutionAdmin.userId
+      );
 
       return { updatedCourse, approval };
     });

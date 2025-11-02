@@ -3,28 +3,21 @@ import { Icons } from "@/components/shared/icons";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 
-interface ExtendedFaculty {
-  id: string;
-  name: string;
-  description?: string;
-  courses?: any[];
-  _count?: { courses: number; members: number };
-}
+// interface ExtendedFaculty {
+//   id: string;
+//   name: string;
+//   description?: string;
+//   courses?: any[];
+//   _count?: { courses: number; members: number };
+// }
 
-interface ExtendedSchool {
-  id: string;
-  name: string;
-  description?: string;
-  faculties?: ExtendedFaculty[];
-  _count?: { faculties: number };
-}
-
-interface ExtendedOrganization {
-  id: string;
-  name: string;
-  schools: ExtendedSchool[];
-  _count?: { schools: number; members: number };
-}
+// interface ExtendedSchool {
+//   id: string;
+//   name: string;
+//   description?: string;
+//   faculties?: ExtendedFaculty[];
+//   _count?: { faculties: number };
+// }
 
 interface AnalyticsTabProps {
   user: any;

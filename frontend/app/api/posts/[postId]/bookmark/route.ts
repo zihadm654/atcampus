@@ -3,7 +3,7 @@ import { getCurrentUser } from "@/lib/session";
 import type { BookmarkInfo } from "@/types/types";
 
 export async function GET(
-  req: Request,
+  _req: Request,
   { params }: { params: Promise<{ postId: string }> }
 ) {
   const { postId } = await params;
@@ -35,7 +35,7 @@ export async function GET(
 }
 
 export async function POST(
-  req: Request,
+  _req: Request,
   { params }: { params: Promise<{ postId: string }> }
 ) {
   const { postId } = await params;
@@ -68,7 +68,7 @@ export async function POST(
 }
 
 export async function DELETE(
-  req: Request,
+  _req: Request,
   { params }: { params: Promise<{ postId: string }> }
 ) {
   const { postId } = await params;

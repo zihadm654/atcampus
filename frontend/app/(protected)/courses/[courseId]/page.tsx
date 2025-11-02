@@ -34,6 +34,7 @@ export async function generateMetadata({
   params,
 }: CoursePageProps): Promise<Metadata> {
   // In a real implementation, fetch course data from API/database
+  console.log(params);
   return constructMetadata({
     title: "Course Details - AtCampus",
     description: "View detailed information about this course.",
@@ -84,25 +85,25 @@ export default async function CoursePage({ params }: CoursePageProps) {
   }
 
   // Parse objectives from string to array
-  let objectives: string[] = [];
+  let _objectives: string[] = [];
   if (typeof course.objectives === "string") {
     try {
       // Try to parse as JSON array first
       const parsed = JSON.parse(course.objectives);
       if (Array.isArray(parsed)) {
-        objectives = parsed.filter(
+        _objectives = parsed.filter(
           (item): item is string => typeof item === "string"
         );
       } else {
         // If it's not an array, treat as comma-separated string
-        objectives = course.objectives
+        _objectives = course.objectives
           .split(",")
           .map((item) => item.trim())
           .filter((item) => item.length > 0);
       }
-    } catch (e) {
+    } catch (_e) {
       // If parsing fails, treat as comma-separated string
-      objectives = course.objectives
+      _objectives = course.objectives
         .split(",")
         .map((item) => item.trim())
         .filter((item) => item.length > 0);
@@ -115,7 +116,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
         <Card className="flex flex-col gap-3">
           <CardHeader className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <UserTooltip user={course.instructor}>
+              <UserTooltip user={course?.instructor}>
                 <Link href={`/${course.instructor.username}`}>
                   <UserAvatar className="size-10" user={course.instructor} />
                 </Link>
@@ -183,9 +184,9 @@ export default async function CoursePage({ params }: CoursePageProps) {
           <CardHeader>
             <CardTitle className="flex items-center gap-3">
               <UserTooltip user={currentUser}>
-                <Link href={`/${currentUser.username}`}>
-                  <UserAvatar user={currentUser} />
-                </Link>
+                {/* <Link href={`/${currentUser.username}`}> */}
+                <UserAvatar user={currentUser} />
+                {/* </Link> */}
               </UserTooltip>
               <UserTooltip user={currentUser}>
                 <Link
@@ -252,7 +253,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
                 <span className="rounded-full bg-purple-100 p-1.5 text-purple-700">
                   <GraduationCap className="h-5 w-5" />
                 </span>
-                Topics Covered
+                Course Objectives
               </h2>
               <p>{course.objectives}</p>
             </div>

@@ -4,7 +4,6 @@ import { ReturnButton } from "@/components/auth/return-button";
 import { SignOutButton } from "@/components/auth/sign-out-button";
 import { DashboardHeader } from "@/components/dashboard/header";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
 import {
   Table,
   TableBody,
@@ -17,7 +16,6 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/session";
 import { constructMetadata } from "@/lib/utils";
-
 import { ApplicationStatusSelect } from "./_components/ApplicationStatusSelect";
 import { OrganizationCard } from "./_components/organization-card";
 
@@ -68,7 +66,7 @@ export default async function DashboardPage() {
           <ReturnButton href="/" label="Home" />
           <div className="flex items-center gap-2">
             {user?.role === "ADMIN" && (
-              <Button asChild size="sm">
+              <Button asChild size="sm" variant="default">
                 <Link href="/admin">Admin Dashboard</Link>
               </Button>
             )}
@@ -76,42 +74,43 @@ export default async function DashboardPage() {
             <SignOutButton />
           </div>
         </div>
+        <h2 className="text-2xl">Job Applicants</h2>
         {user?.role === "ORGANIZATION" && (
-          <>
-            <Label className="text-2xl">Job Applicants</Label>
-            <Table className="my-3 rounded-lg border p-2 max-md:p-1">
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Id</TableHead>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Institution</TableHead>
-                  <TableHead>Job Title</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Seamster</TableHead>
+          <Table className="my-3 rounded-lg border p-2 max-md:p-1">
+            <TableHeader>
+              <TableRow>
+                <TableHead>Job Title</TableHead>
+                <TableHead>Id</TableHead>
+                <TableHead>Candidate</TableHead>
+                <TableHead>College/University</TableHead>
+                <TableHead>Email</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Seamster</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {applications.map((application) => (
+                <TableRow key={application.id}>
+                  <TableCell>{application.job.title}</TableCell>
+                  <TableCell>{application.applicant.instituteId}</TableCell>
+                  <TableCell>{application.applicant.name}</TableCell>
+                  <TableCell>{application.applicant.institution}</TableCell>
+                  <TableCell>{application.applicant.email}</TableCell>
+                  <TableCell>
+                    <ApplicationStatusSelect
+                      applicationId={application.id}
+                      currentStatus={application.status}
+                    />
+                  </TableCell>
+                  <TableCell>
+                    {application.applicant.currentSemester || 1}
+                  </TableCell>
                 </TableRow>
-              </TableHeader>
-              <TableBody>
-                {applications.map((application) => (
-                  <TableRow key={application.id}>
-                    <TableCell>{application.id}</TableCell>
-                    <TableCell>{application.job.title}</TableCell>
-                    <TableCell>{application.applicant.name}</TableCell>
-                    <TableCell>{application.applicant.institution}</TableCell>
-                    <TableCell>
-                      <ApplicationStatusSelect
-                        applicationId={application.id}
-                        currentStatus={application.status}
-                      />
-                    </TableCell>
-                    <TableCell>
-                      {application.applicant.currentSemester}
-                    </TableCell>
-                  </TableRow>
-                ))}
-                <TableRow />
-              </TableBody>
-            </Table>
-          </>
+              ))}
+              <TableRow />
+            </TableBody>
+          </Table>
+          // <DataTable data={applications as any} columns={columns}/>
         )}
         {user?.role === "INSTITUTION" && (
           <OrganizationCard

@@ -14,7 +14,6 @@ interface AssignFacultyParams {
 export async function assignFacultyToMember({
   memberId,
   facultyId,
-  organizationId,
 }: AssignFacultyParams) {
   const response = await fetch(`/api/members/${memberId}/faculty`, {
     method: "PUT",
@@ -62,10 +61,10 @@ export function useAssignFacultyToMemberMutation() {
       // Return a context object with the snapshotted value
       return { previousOrg };
     },
-    onSuccess: (updatedMember) => {
+    onSuccess: (_updatedMember) => {
       toast({ description: "Faculty assigned successfully" });
     },
-    onError: (err, variables, context) => {
+    onError: (_err, _variables, context) => {
       // Rollback to the previous value
       if (context?.previousOrg) {
         queryClient.setQueryData(["organization"], context.previousOrg);

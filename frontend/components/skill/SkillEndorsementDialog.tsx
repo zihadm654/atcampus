@@ -46,7 +46,7 @@ export default function SkillEndorsementDialog({
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Endorsements for {skill.title}</DialogTitle>
+          <DialogTitle>Endorsements for {skill.skill.name}</DialogTitle>
         </DialogHeader>
         <div className="max-h-[60vh] overflow-y-auto">
           {isLoading ? (

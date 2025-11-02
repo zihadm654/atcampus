@@ -1,3 +1,4 @@
+import Course from "@/components/courses/Course";
 import { Icons } from "@/components/shared/icons";
 import { Button } from "@/components/ui/button";
 import {
@@ -7,27 +8,18 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import type { CourseData } from "@/types/types";
 
 interface CourseEnrollment {
   id: string;
   status: string;
   grade?: string;
-  course: {
-    id: string;
-    title: string;
-    code: string;
-    credits: number | null;
-    faculty: {
-      name: string;
-    };
-    instructor: {
-      name: string;
-    };
-  };
+  course: CourseData;
 }
 
 interface CoursesSectionProps {
-  enrollments: CourseEnrollment[];
+  // enrollments can be either CourseEnrollment[] or DirectCourseData[]
+  enrollments: CourseEnrollment[] | CourseData[];
   userRole: string;
   canEdit: boolean;
   limit?: number;
@@ -45,21 +37,22 @@ export default function CoursesSection({
   className = "",
   onViewAll,
 }: CoursesSectionProps) {
-  const displayCourses = limit ? enrollments.slice(0, limit) : enrollments;
-  const hasMoreCourses = limit && enrollments.length > limit;
+  // Check if we have CourseEnrollment objects or direct CourseData objects
+  const isEnrollmentFormat =
+    enrollments.length > 0 && "course" in (enrollments[0] as any);
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "ENROLLED":
-        return "bg-green-100 text-green-700";
-      case "COMPLETED":
-        return "bg-blue-100 text-blue-700";
-      case "PENDING":
-        return "bg-yellow-100 text-yellow-700";
-      default:
-        return "bg-gray-100 text-gray-700";
-    }
-  };
+  // Extract courses from either format
+  const coursesToDisplay = isEnrollmentFormat
+    ? (enrollments as CourseEnrollment[]).map((enrollment) => enrollment.course)
+    : (enrollments as CourseData[]);
+
+  const displayCourses = limit
+    ? coursesToDisplay.slice(0, limit)
+    : coursesToDisplay;
+  const hasMoreCourses = limit && coursesToDisplay.length > limit;
+
+  // Check if enrollments is null or undefined
+  if (!enrollments) return null;
 
   return (
     <Card
@@ -72,7 +65,7 @@ export default function CoursesSection({
             {userRole === "PROFESSOR" ? "Teaching" : "Courses"}
             {hasMoreCourses && (
               <span className="ml-2 text-gray-500 text-sm">
-                (+{enrollments.length - limit} more)
+                (+{coursesToDisplay.length - limit} more)
               </span>
             )}
           </CardTitle>
@@ -91,35 +84,10 @@ export default function CoursesSection({
       )}
       <CardContent className={showHeader ? "pt-1" : ""}>
         {displayCourses.length > 0 ? (
-          <div className="max-h-40 overflow-y-auto">
-            <div className="space-y-2">
-              {displayCourses.map((enrollment) => (
-                <div
-                  className="rounded-md border p-2 transition-colors hover:border-gray-100"
-                  key={enrollment.id}
-                >
-                  <div className="font-medium text-sm">
-                    {enrollment.course.title} ({enrollment.course.code})
-                  </div>
-                  <div className="text-gray-500 text-xs">
-                    {enrollment.course.faculty.name} •{" "}
-                    {enrollment.course.credits || 0} credits
-                  </div>
-                  <div className="mt-1 flex items-center gap-2">
-                    <span
-                      className={`rounded-full px-2 py-0.5 text-xs ${getStatusColor(enrollment.status)}`}
-                    >
-                      {enrollment.status.toLowerCase()}
-                    </span>
-                    {enrollment.grade && (
-                      <span className="rounded-full bg-purple-100 px-2 py-0.5 text-purple-700 text-xs">
-                        Grade: {enrollment.grade}
-                      </span>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
+          <div className="grid max-h-48 grid-cols-1 gap-4 overflow-y-auto">
+            {displayCourses.map((course) => (
+              <Course course={course} key={course?.id} />
+            ))}
           </div>
         ) : (
           <div className="flex h-28 items-center justify-center rounded-lg text-gray-500">

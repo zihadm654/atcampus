@@ -52,7 +52,7 @@ export default function SaveResearchButton({
 
       return { previousState };
     },
-    onError(error, variables, context) {
+    onError(error, _variables, context) {
       queryClient.setQueryData(queryKey, context?.previousState);
       console.error(error);
       toast.error("Something went wrong. Please try again.");

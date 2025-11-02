@@ -117,7 +117,7 @@ export function ClubsTab({ username, isOwnProfile, userRole }: ClubsTabProps) {
       if (result.success && result.data) {
         setClubs(result.data);
       }
-    } catch (error) {
+    } catch (_error) {
       toast({
         title: "Error",
         description: "Failed to fetch clubs",
@@ -163,7 +163,7 @@ export function ClubsTab({ username, isOwnProfile, userRole }: ClubsTabProps) {
           variant: "destructive",
         });
       }
-    } catch (error) {
+    } catch (_error) {
       toast({
         title: "Error",
         description: "Failed to join club",
@@ -189,7 +189,7 @@ export function ClubsTab({ username, isOwnProfile, userRole }: ClubsTabProps) {
           variant: "destructive",
         });
       }
-    } catch (error) {
+    } catch (_error) {
       toast({
         title: "Error",
         description: "Failed to leave club",
@@ -220,7 +220,7 @@ export function ClubsTab({ username, isOwnProfile, userRole }: ClubsTabProps) {
       });
       setShowCreateDialog(false);
       fetchClubs();
-    } catch (error) {
+    } catch (_error) {
       toast({
         title: "Error",
         description: "Failed to create club",
@@ -242,7 +242,7 @@ export function ClubsTab({ username, isOwnProfile, userRole }: ClubsTabProps) {
       setShowEditDialog(false);
       setEditingClub(null);
       fetchClubs();
-    } catch (error) {
+    } catch (_error) {
       toast({
         title: "Error",
         description: "Failed to update club",
@@ -251,7 +251,7 @@ export function ClubsTab({ username, isOwnProfile, userRole }: ClubsTabProps) {
     }
   };
 
-  const handleDeleteClub = async (clubId: string) => {
+  const handleDeleteClub = async (_clubId: string) => {
     if (!confirm("Are you sure you want to delete this club?")) return;
 
     try {
@@ -263,7 +263,7 @@ export function ClubsTab({ username, isOwnProfile, userRole }: ClubsTabProps) {
       });
       fetchClubs();
       fetchUserClubs();
-    } catch (error) {
+    } catch (_error) {
       toast({
         title: "Error",
         description: "Failed to delete club",

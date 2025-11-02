@@ -15,7 +15,7 @@ import { toast } from "sonner";
 import { updateCourseSkills } from "@/actions/job-matches";
 import { createCourse, updateCourse } from "@/components/courses/actions";
 import JobDescriptionEditor from "@/components/editor/richEditor";
-import { coursesData } from "@/config/course";
+import { type Course as ConfigCourse, coursesData } from "@/config/course";
 import { courseSchema, type TCourse } from "@/lib/validations/course";
 import { Button } from "../ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
@@ -39,10 +39,6 @@ import {
   SelectValue,
 } from "../ui/select";
 import { Textarea } from "../ui/textarea";
-
-interface SkillOption extends Option {
-  id: string;
-}
 
 interface CreateCourseFormProps {
   user?: User;
@@ -75,31 +71,9 @@ interface FacultyData {
   isActive: boolean;
 }
 
-// Define type for course data from config
-interface ConfigCourse {
-  code: string;
-  name: string;
-  skills: string[];
-}
-
-interface ConfigFaculty {
-  name: string;
-  courses: ConfigCourse[];
-}
-
-interface ConfigSchool {
-  name: string;
-  faculties: ConfigFaculty[];
-}
-
 export function CreateCourseForm({ user, course }: CreateCourseFormProps) {
   const router = useRouter();
   const [pending, setPending] = useState(false);
-  const [skillOptions, setSkillOptions] = useState<SkillOption[]>([]);
-  const [courseSpecificSkills, setCourseSpecificSkills] = useState<
-    SkillOption[]
-  >([]);
-  const [showCourseSkills, setShowCourseSkills] = useState(false);
   const queryClient = useQueryClient();
 
   const form = useForm<TCourse>({
@@ -117,7 +91,7 @@ export function CreateCourseForm({ user, course }: CreateCourseFormProps) {
           objectives: course.objectives || "",
           // Remove outcomes since it doesn't exist in the model
           status: course.status || CourseStatus.DRAFT,
-          skills: [], // Initialize skills as empty array
+          skills: course.skills || [], // Initialize with existing course skills if editing
         }
       : {
           title: "",
@@ -135,36 +109,8 @@ export function CreateCourseForm({ user, course }: CreateCourseFormProps) {
         },
   });
 
-  // Fetch skills with TanStack Query
-  const { data: skillsData, isLoading: isLoadingSkills } = useQuery({
-    queryKey: ["skills"],
-    queryFn: async () => {
-      const response = await fetch("/api/skills");
-      if (!response.ok) {
-        throw new Error("Failed to fetch skills");
-      }
-      return response.json();
-    },
-  });
-
-  // Update skill options when skills data changes
-  useEffect(() => {
-    if (skillsData) {
-      const options = skillsData.map((skill) => ({
-        id: skill.id,
-        label: skill.name,
-        value: skill.id,
-      }));
-      setSkillOptions(options);
-    }
-  }, [skillsData]);
-
   // Fetch schools with TanStack Query
-  const {
-    data: schoolsData,
-    isLoading: loadingSchools,
-    error: schoolsError,
-  } = useQuery({
+  const { data: schoolsData, isLoading: loadingSchools } = useQuery({
     queryKey: ["user-schools-faculties"],
     queryFn: async () => {
       const response = await fetch("/api/user-schools-faculties");
@@ -179,7 +125,6 @@ export function CreateCourseForm({ user, course }: CreateCourseFormProps) {
   // Get faculties for selected school
   const selectedSchoolId = form.watch("schoolId");
   const selectedFacultyId = form.watch("facultyId");
-  const selectedCourseCode = form.watch("code");
 
   const selectedSchool = schoolsData?.find(
     (school: SchoolData) => school.id === selectedSchoolId
@@ -193,83 +138,38 @@ export function CreateCourseForm({ user, course }: CreateCourseFormProps) {
 
   // Find courses from config that match the selected faculty
   const [availableCourses, setAvailableCourses] = useState<ConfigCourse[]>([]);
+  const [facultySkillOptions, setFacultySkillOptions] = useState<Option[]>([]);
 
   useEffect(() => {
     if (selectedFaculty) {
-      // Find matching faculty in coursesData
+      // Find matching faculty in coursesData using exact name match
       const matchingFaculty = coursesData.schools
         .flatMap((school) => school.faculties)
-        .find(
-          (faculty) =>
-            faculty.name
-              .toLowerCase()
-              .includes(selectedFaculty.name.toLowerCase()) ||
-            selectedFaculty.name
-              .toLowerCase()
-              .includes(faculty.name.toLowerCase())
-        );
+        .find((faculty) => faculty.name === selectedFaculty.name);
 
       if (matchingFaculty) {
         setAvailableCourses(matchingFaculty.courses);
+
+        // Set faculty skills as options if they exist
+        if (matchingFaculty.skills && matchingFaculty.skills.length > 0) {
+          const skillOptions = matchingFaculty.skills.map((skill) => ({
+            label: skill,
+            value: skill,
+          }));
+          setFacultySkillOptions(skillOptions);
+        } else {
+          // No skills defined for this faculty
+          setFacultySkillOptions([]);
+        }
       } else {
         setAvailableCourses([]);
+        setFacultySkillOptions([]);
       }
     } else {
       setAvailableCourses([]);
+      setFacultySkillOptions([]);
     }
   }, [selectedFaculty]);
-
-  // When a course code is selected, find the corresponding skills
-  useEffect(() => {
-    if (selectedCourseCode && availableCourses.length > 0) {
-      const selectedCourse = availableCourses.find(
-        (course) => course.code === selectedCourseCode
-      );
-
-      if (selectedCourse?.skills && selectedCourse.skills.length > 0) {
-        // Convert course skills to skill options format
-        const courseSkills = selectedCourse.skills.map((skill, index) => ({
-          id: `course-skill-${index}`,
-          label: skill,
-          value: skill,
-        }));
-        setCourseSpecificSkills(courseSkills);
-        setShowCourseSkills(true);
-      } else {
-        setShowCourseSkills(false);
-      }
-    } else {
-      setShowCourseSkills(false);
-    }
-  }, [selectedCourseCode, availableCourses]);
-
-  // Auto-select first school if only one exists
-  useEffect(() => {
-    if (
-      schoolsData &&
-      schoolsData.length === 1 &&
-      !form.getValues("schoolId")
-    ) {
-      form.setValue("schoolId", schoolsData[0].id);
-    }
-  }, [schoolsData, form]);
-
-  // Reset faculty when school changes
-  useEffect(() => {
-    if (selectedSchoolId) {
-      form.setValue("facultyId", "");
-      // Reset course title and code when faculty changes
-      form.setValue("title", "");
-      form.setValue("code", "");
-    }
-  }, [selectedSchoolId, form]);
-
-  // Show error toast if there's an error fetching schools
-  useEffect(() => {
-    if (schoolsError) {
-      toast.error("Failed to load schools. Please try again.");
-    }
-  }, [schoolsError]);
 
   // Auto-fill course code and title when a course is selected
   const handleCourseSelect = (courseCode: string) => {
@@ -279,22 +179,6 @@ export function CreateCourseForm({ user, course }: CreateCourseFormProps) {
     if (selectedCourse) {
       form.setValue("title", selectedCourse.name);
       form.setValue("code", courseCode);
-    }
-  };
-
-  // Function to add course-specific skills to the skills selection
-  const addCourseSkills = () => {
-    if (courseSpecificSkills.length > 0) {
-      const currentSkills = form.getValues("skills") || [];
-      const courseSkillIds = courseSpecificSkills.map((skill) => skill.value);
-
-      // Add course skills to current skills, avoiding duplicates
-      // Fixed ES5 compatibility by using Array.from instead of spread operator on Set
-      const updatedSkills = Array.from(
-        new Set(currentSkills.concat(courseSkillIds))
-      );
-      form.setValue("skills", updatedSkills);
-      toast.success(`Added ${courseSpecificSkills.length} skills from course`);
     }
   };
 
@@ -679,67 +563,39 @@ export function CreateCourseForm({ user, course }: CreateCourseFormProps) {
                   <FormLabel>Teachable Skills</FormLabel>
                   <FormControl>
                     <MultipleSelector
-                      defaultOptions={skillOptions}
                       emptyIndicator={
                         <p className="text-center text-gray-600 text-lg leading-10 dark:text-gray-400">
-                          {isLoadingSkills
-                            ? "Loading skills..."
-                            : "No skills found."}
+                          {selectedFaculty
+                            ? "No skills found for this faculty."
+                            : "Select a faculty to view available skills."}
                         </p>
                       }
-                      onChange={(selectedOptions: SkillOption[]) =>
+                      onChange={(selectedOptions: Option[]) =>
                         field.onChange(
                           selectedOptions.map((option) => option.value)
                         )
                       }
+                      options={facultySkillOptions}
                       placeholder="Select skills this course teaches..."
-                      value={skillOptions.filter((option) =>
-                        field.value?.includes(option.value)
-                      )}
+                      value={
+                        field.value?.map((value: string) => ({
+                          label: value,
+                          value,
+                        })) || []
+                      }
                     />
                   </FormControl>
                   <FormDescription>
-                    Select the skills that students will acquire by completing
-                    this course
+                    {selectedFaculty && facultySkillOptions.length > 0
+                      ? "Select the skills that students will acquire by completing this course. Search and select skills from the faculty list."
+                      : "Select a faculty to view and select skills."}
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
             />
 
-            {/* Display course-specific skills when available */}
-            {showCourseSkills && (
-              <div className="rounded-md border border-gray-200 p-4">
-                <div className="mb-2 flex items-center justify-between">
-                  <h3 className="font-medium">
-                    Skills for {selectedCourseCode}
-                  </h3>
-                  <Button
-                    onClick={addCourseSkills}
-                    size="sm"
-                    type="button"
-                    variant="outline"
-                  >
-                    Add All Skills
-                  </Button>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {courseSpecificSkills.map((skill) => (
-                    <span
-                      className="rounded-md bg-secondary px-2 py-1 text-sm"
-                      key={skill.id}
-                    >
-                      {skill.label}
-                    </span>
-                  ))}
-                </div>
-                <p className="mt-2 text-muted-foreground text-sm">
-                  These are predefined skills for this course. Click "Add All
-                  Skills" to include them.
-                </p>
-              </div>
-            )}
-
+            {/* Display faculty skills when available */}
             <FormField
               control={form.control}
               name="description"

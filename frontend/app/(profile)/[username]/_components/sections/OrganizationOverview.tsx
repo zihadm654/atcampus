@@ -15,7 +15,6 @@ interface OrganizationOverviewProps {
 export default function OrganizationOverview({
   user,
   members,
-  jobs,
   permissions,
   isOwnProfile,
 }: OrganizationOverviewProps) {

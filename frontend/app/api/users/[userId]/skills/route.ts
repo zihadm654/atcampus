@@ -1,29 +1,41 @@
-import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { getCurrentUser } from "@/lib/session";
 
 export async function GET(
-  request: Request,
+  req: Request,
   { params }: { params: Promise<{ userId: string }> }
 ) {
   try {
-    const { userId } = await params;
+    const currentUser = await getCurrentUser();
 
-    if (!userId) {
-      return new NextResponse("User ID is required", { status: 400 });
+    if (!currentUser) {
+      return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const { userId } = await params;
+
+    // Fetch user skills with endorsements count, excluding deleted skills
     const userSkills = await prisma.userSkill.findMany({
       where: {
         userId,
+        isDeleted: false, // Only fetch non-deleted skills
       },
       include: {
         skill: true,
+        _count: {
+          select: {
+            endorsements: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
       },
     });
 
-    return NextResponse.json(userSkills);
+    return Response.json(userSkills);
   } catch (error) {
     console.error("Error fetching user skills:", error);
-    return new NextResponse("Internal Server Error", { status: 500 });
+    return Response.json({ error: "Internal server error" }, { status: 500 });
   }
 }

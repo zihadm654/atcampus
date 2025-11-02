@@ -61,7 +61,7 @@ export async function updateSkill(id: string, data: TUserSkillSchema) {
     // Check for duplicate skill title (case-insensitive)
     const duplicateSkill = await prisma.skill.findFirst({
       where: {
-        name: { equals: validatedData.title, mode: "insensitive" },
+        name: { equals: validatedData.name, mode: "insensitive" },
         userSkills: {
           some: {
             userId: session.user.id,
@@ -77,18 +77,21 @@ export async function updateSkill(id: string, data: TUserSkillSchema) {
 
     // Create or update the skill
     const skill = await prisma.skill.upsert({
-      where: { name: validatedData.title },
+      where: { name: validatedData.name },
       update: { category: validatedData.category },
-      create: { name: validatedData.title, category: validatedData.category },
+      create: {
+        name: validatedData.name,
+        category: validatedData.category,
+        difficulty: validatedData.difficulty,
+        yearsOfExperience: validatedData.yearsOfExperience,
+      },
     });
 
     // Update the user's skill
     const userSkill = await prisma.userSkill.update({
       where: { id },
       data: {
-        level: validatedData.level,
-        yearsOfExperience: validatedData.yearsOfExperience,
-        skillId: skill.id,
+        skill: { connect: { id: skill.id } },
       },
       include: {
         skill: true,
@@ -118,7 +121,7 @@ export async function deleteSkill(id: string) {
     // Check if user owns this skill
     const existingSkill = await prisma.userSkill.findUnique({
       where: { id },
-      select: { userId: true, title: true },
+      select: { userId: true },
     });
 
     if (!existingSkill) {
@@ -136,7 +139,7 @@ export async function deleteSkill(id: string) {
 
     if (endorsementCount > 0) {
       throw new Error(
-        `Cannot delete skill "${existingSkill.title}" as it has ${endorsementCount} endorsement${endorsementCount > 1 ? "s" : ""}`
+        `Cannot delete skill "${existingSkill.userId}" as it has ${endorsementCount} endorsement${endorsementCount > 1 ? "s" : ""}`
       );
     }
 

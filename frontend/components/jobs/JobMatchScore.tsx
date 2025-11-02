@@ -1,21 +1,40 @@
 "use client";
 
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { useJobMatch } from "@/hooks/use-job-match";
 
 interface JobMatchScoreProps {
   jobId: string;
 }
 
 export default function JobMatchScore({ jobId }: JobMatchScoreProps) {
-  const { data: matchData, isLoading, error } = useJobMatch(jobId);
+  const {
+    data: matchData,
+    isLoading,
+    error,
+    isFetching,
+  } = useQuery({
+    queryKey: ["job-match", jobId],
+    queryFn: async () => {
+      const response = await fetch(`/api/job-matches?jobId=${jobId}`);
+      if (!response.ok) {
+        throw new Error("Failed to fetch job match");
+      }
+      return response.json();
+    },
+    enabled: !!jobId,
+    staleTime: 1000 * 60 * 5, // 5 minutes
+    refetchOnMount: true,
+    refetchOnWindowFocus: false,
+  });
 
-  if (isLoading) {
+  // Show loading state
+  if (isLoading || isFetching) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Skill Match</CardTitle>
+          <CardTitle>Job Match Score</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="h-4 animate-pulse rounded bg-gray-200" />
@@ -24,8 +43,20 @@ export default function JobMatchScore({ jobId }: JobMatchScoreProps) {
     );
   }
 
+  // Show error or no data state
   if (error || !matchData?.success) {
-    return null;
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Job Match Score</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-muted-foreground text-sm">
+            {error ? "Error loading match data" : "No match data available"}
+          </p>
+        </CardContent>
+      </Card>
+    );
   }
 
   const match = matchData.match;

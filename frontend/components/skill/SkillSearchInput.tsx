@@ -15,32 +15,8 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { ALL_SKILLS } from "@/config/skills";
 import { cn } from "@/lib/utils";
-
-// This will be replaced with actual data from the backend
-const skills = [
-  { value: "react", label: "React" },
-  { value: "nextjs", label: "Next.js" },
-  { value: "typescript", label: "TypeScript" },
-  { value: "javascript", label: "JavaScript" },
-  { value: "python", label: "Python" },
-  { value: "java", label: "Java" },
-  { value: "csharp", label: "C#" },
-  { value: "golang", label: "Golang" },
-  { value: "nodejs", label: "Node.js" },
-  { value: "express", label: "Express" },
-  { value: "mongodb", label: "MongoDB" },
-  { value: "postgresql", label: "PostgreSQL" },
-  { value: "mysql", label: "MySQL" },
-  { value: "docker", label: "Docker" },
-  { value: "kubernetes", label: "Kubernetes" },
-  { value: "aws", label: "AWS" },
-  { value: "azure", label: "Azure" },
-  { value: "gcp", label: "GCP" },
-  { value: "figma", label: "Figma" },
-  { value: "photoshop", label: "Photoshop" },
-  { value: "illustrator", label: "Illustrator" },
-];
 
 interface SkillSearchInputProps {
   onChange: (value: string) => void;
@@ -58,39 +34,59 @@ export function SkillSearchInput({
     onChange(value);
   }, [value, onChange]);
 
+  // Filter skills based on current value for better search experience
+  const filteredSkills = React.useMemo(() => {
+    if (!value) return ALL_SKILLS;
+
+    const normalizedQuery = value.toLowerCase().trim();
+    return ALL_SKILLS.filter(
+      (skill) =>
+        skill.label.toLowerCase().includes(normalizedQuery) ||
+        skill.value.toLowerCase().includes(normalizedQuery)
+    );
+  }, [value]);
+
   return (
     <Popover onOpenChange={setOpen} open={open}>
       <PopoverTrigger asChild>
         <Button
           aria-expanded={open}
-          className="w-[200px] justify-between"
+          className="w-full justify-between"
           role="combobox"
           variant="outline"
         >
           {value
-            ? skills.find((skill) => skill.value === value)?.label
+            ? ALL_SKILLS.find((skill) => skill.value === value)?.label || value
             : "Search skill..."}
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[200px] p-0">
+      <PopoverContent className="w-full p-0">
         <Command>
-          <CommandInput placeholder="Search skill..." />
+          <CommandInput
+            onValueChange={(inputValue) => {
+              setValue(inputValue);
+            }}
+            placeholder="Search skill..."
+          />
           <CommandEmpty>No skill found.</CommandEmpty>
           <CommandGroup>
-            {skills.map((skill) => (
+            {filteredSkills.map((skill) => (
               <CommandItem
                 key={skill.value}
                 onSelect={(currentValue) => {
-                  setValue(currentValue === value ? "" : currentValue);
+                  setValue(currentValue);
                   setOpen(false);
+                  onChange(currentValue);
                 }}
-                value={skill.value}
+                value={skill.label}
               >
                 <Check
                   className={cn(
                     "mr-2 h-4 w-4",
-                    value === skill.value ? "opacity-100" : "opacity-0"
+                    value === skill.value || value === skill.label
+                      ? "opacity-100"
+                      : "opacity-0"
                   )}
                 />
                 {skill.label}

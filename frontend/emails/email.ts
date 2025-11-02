@@ -46,7 +46,7 @@ export const sendVerificationRequest = async ({
     }
 
     // console.log(data)
-  } catch (error) {
+  } catch (_error) {
     throw new Error("Failed to send verification email.");
   }
 };
