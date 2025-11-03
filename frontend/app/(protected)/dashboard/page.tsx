@@ -74,42 +74,44 @@ export default async function DashboardPage() {
             <SignOutButton />
           </div>
         </div>
-        <h2 className="text-2xl">Job Applicants</h2>
         {user?.role === "ORGANIZATION" && (
-          <Table className="my-3 rounded-lg border p-2 max-md:p-1">
-            <TableHeader>
-              <TableRow>
-                <TableHead>Job Title</TableHead>
-                <TableHead>Id</TableHead>
-                <TableHead>Candidate</TableHead>
-                <TableHead>College/University</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Seamster</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {applications.map((application) => (
-                <TableRow key={application.id}>
-                  <TableCell>{application.job.title}</TableCell>
-                  <TableCell>{application.applicant.instituteId}</TableCell>
-                  <TableCell>{application.applicant.name}</TableCell>
-                  <TableCell>{application.applicant.institution}</TableCell>
-                  <TableCell>{application.applicant.email}</TableCell>
-                  <TableCell>
-                    <ApplicationStatusSelect
-                      applicationId={application.id}
-                      currentStatus={application.status}
-                    />
-                  </TableCell>
-                  <TableCell>
-                    {application.applicant.currentSemester || 1}
-                  </TableCell>
+          <>
+            <h2 className="text-2xl">Job Applicants</h2>
+            <Table className="my-3 rounded-lg border p-2 max-md:p-1">
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Job Title</TableHead>
+                  <TableHead>Id</TableHead>
+                  <TableHead>Candidate</TableHead>
+                  <TableHead>College/University</TableHead>
+                  <TableHead>Email</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Seamster</TableHead>
                 </TableRow>
-              ))}
-              <TableRow />
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {applications.map((application) => (
+                  <TableRow key={application.id}>
+                    <TableCell>{application.job.title}</TableCell>
+                    <TableCell>{application.applicant.instituteId}</TableCell>
+                    <TableCell>{application.applicant.name}</TableCell>
+                    <TableCell>{application.applicant.institution}</TableCell>
+                    <TableCell>{application.applicant.email}</TableCell>
+                    <TableCell>
+                      <ApplicationStatusSelect
+                        applicationId={application.id}
+                        currentStatus={application.status}
+                      />
+                    </TableCell>
+                    <TableCell>
+                      {application.applicant.currentSemester || 1}
+                    </TableCell>
+                  </TableRow>
+                ))}
+                <TableRow />
+              </TableBody>
+            </Table>
+          </>
           // <DataTable data={applications as any} columns={columns}/>
         )}
         {user?.role === "INSTITUTION" && (

@@ -34,7 +34,6 @@ export async function generateMetadata({
   params,
 }: CoursePageProps): Promise<Metadata> {
   // In a real implementation, fetch course data from API/database
-  console.log(params);
   return constructMetadata({
     title: "Course Details - AtCampus",
     description: "View detailed information about this course.",
@@ -84,38 +83,12 @@ export default async function CoursePage({ params }: CoursePageProps) {
     notFound();
   }
 
-  // Parse objectives from string to array
-  let _objectives: string[] = [];
-  if (typeof course.objectives === "string") {
-    try {
-      // Try to parse as JSON array first
-      const parsed = JSON.parse(course.objectives);
-      if (Array.isArray(parsed)) {
-        _objectives = parsed.filter(
-          (item): item is string => typeof item === "string"
-        );
-      } else {
-        // If it's not an array, treat as comma-separated string
-        _objectives = course.objectives
-          .split(",")
-          .map((item) => item.trim())
-          .filter((item) => item.length > 0);
-      }
-    } catch (_e) {
-      // If parsing fails, treat as comma-separated string
-      _objectives = course.objectives
-        .split(",")
-        .map((item) => item.trim())
-        .filter((item) => item.length > 0);
-    }
-  }
-
   return (
     <div className="w-full">
-      <div className="grid grid-cols-2 gap-2 max-md:grid-cols-1">
+      <div>
         <Card className="flex flex-col gap-3">
           <CardHeader className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
+            <CardTitle className="flex items-center gap-3">
               <UserTooltip user={course?.instructor}>
                 <Link href={`/${course.instructor.username}`}>
                   <UserAvatar className="size-10" user={course.instructor} />
@@ -145,7 +118,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
               >
                 {formatRelativeDate(course.createdAt)}
               </Link>
-            </div>
+            </CardTitle>
             {course.instructor?.id === user.id && (
               <CourseMoreButton course={course} />
             )}
@@ -175,38 +148,15 @@ export default async function CoursePage({ params }: CoursePageProps) {
             <Badge className="w-fit" variant="secondary">
               Credits: {course.credits}
             </Badge>
+            <div className="flex items-center gap-2 mt-3">
+              <h1>Faculty:</h1>
+              <UserAvatar user={course.instructor} />
+              <h3>{course.instructor.name}</h3>
+            </div>
           </CardContent>
           <CardFooter className="flex justify-between gap-5">
             <EnrollButton courseId={course.id} />
           </CardFooter>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-3">
-              <UserTooltip user={currentUser}>
-                {/* <Link href={`/${currentUser.username}`}> */}
-                <UserAvatar user={currentUser} />
-                {/* </Link> */}
-              </UserTooltip>
-              <UserTooltip user={currentUser}>
-                <Link
-                  className="flex items-center gap-1 font-medium text-md hover:underline"
-                  href={`/${user.username}`}
-                >
-                  {user.name}
-                  {user.emailVerified ?? (
-                    <Badge
-                      className="bg-blue-500 text-white dark:bg-blue-600"
-                      variant="secondary"
-                    >
-                      <BadgeCheckIcon className="size-4" />
-                      Verified
-                    </Badge>
-                  )}
-                </Link>
-              </UserTooltip>
-            </CardTitle>
-          </CardHeader>
         </Card>
       </div>
       <div className="mt-3 overflow-hidden rounded-2xl bg-card shadow-sm">

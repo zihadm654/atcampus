@@ -232,7 +232,7 @@ export async function createCourse(values: TCourse) {
       throw new Error(validatedFields.error.message);
     }
 
-    const { facultyId, schoolId, status } = validatedFields.data;
+    const { facultyId, schoolId, status, code } = validatedFields.data;
 
     // Verify faculty exists and get institution info
     const faculty = await prisma.faculty.findUnique({
@@ -264,6 +264,19 @@ export async function createCourse(values: TCourse) {
       throw new Error("Faculty does not belong to the selected school");
     }
 
+    // Check if a course with the same code already exists in this faculty
+    const existingCourse = await prisma.course.findFirst({
+      where: {
+        code,
+        facultyId,
+        isDeleted: false, // Only check non-deleted courses
+      },
+    });
+
+    if (existingCourse) {
+      throw new Error(`A course with code "${code}" already exists in this faculty. Please use a different course code.`);
+    }
+
     if (user.role === "PROFESSOR") {
       // Verify professor belongs to the faculty
       const professorMember = await prisma.member.findFirst({
@@ -284,9 +297,7 @@ export async function createCourse(values: TCourse) {
       const course = await prisma.course.create({
         data: {
           ...courseData,
-          objectives: Array.isArray(objectives)
-            ? JSON.stringify(objectives)
-            : objectives || "[]",
+          objectives: objectives || "",
           status: validatedFields.data.status as CourseStatus,
           difficulty: validatedFields.data.difficulty || undefined,
           instructorId: user.id,
@@ -357,9 +368,7 @@ export async function createCourse(values: TCourse) {
       const course = await prisma.course.create({
         data: {
           ...courseData,
-          objectives: Array.isArray(objectives)
-            ? JSON.stringify(objectives)
-            : objectives || "[]",
+          objectives: objectives || "",
           instructorId: user.id,
           status:
             (validatedFields.data.status as CourseStatus) || CourseStatus.DRAFT,
@@ -579,7 +588,7 @@ export async function updateCourse(values: TCourse, courseId: string) {
       throw new Error(validatedFields.error.message);
     }
 
-    const { facultyId, schoolId } = validatedFields.data;
+    const { facultyId, schoolId, code } = validatedFields.data;
 
     // Verify faculty exists and get institution info
     const faculty = await prisma.faculty.findUnique({
@@ -636,6 +645,22 @@ export async function updateCourse(values: TCourse, courseId: string) {
       );
     }
 
+    // Check if user is trying to change the course code and if the new code already exists in this faculty
+    if (existingCourse.code !== code) {
+      const duplicateCourse = await prisma.course.findFirst({
+        where: {
+          code,
+          facultyId,
+          isDeleted: false, // Only check non-deleted courses
+          NOT: { id: courseId }, // Exclude the current course
+        },
+      });
+
+      if (duplicateCourse) {
+        throw new Error(`A course with code "${code}" already exists in this faculty. Please use a different course code.`);
+      }
+    }
+
     // For professors, ensure they can't change the status to published or approved directly
     const updateData: any = {
       ...courseData,
@@ -644,7 +669,7 @@ export async function updateCourse(values: TCourse, courseId: string) {
         : objectives || "[]",
       status:
         user.role === "PROFESSOR" &&
-        existingCourse.status === CourseStatus.PUBLISHED
+          existingCourse.status === CourseStatus.PUBLISHED
           ? existingCourse.status
           : validatedFields.data.status,
     };

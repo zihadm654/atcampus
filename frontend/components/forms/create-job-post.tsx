@@ -96,7 +96,7 @@ export function CreateJobForm({ job }: CreateJobFormProps) {
           experienceLevel: job.experienceLevel as ExperienceLevel,
           endDate: new Date(job.endDate),
           duration: job.duration || undefined,
-          courseId: job.jobCourses?.[0]?.courseId || undefined,
+          courseIds: job.jobCourses?.map(jc => jc.courseId) || [],
           summary: job.summary || "", // Convert null to empty string
           skills: job.skills || [],
         }
@@ -110,7 +110,7 @@ export function CreateJobForm({ job }: CreateJobFormProps) {
           experienceLevel: ExperienceLevel.ENTRY_LEVEL,
           salary: 0,
           endDate: new Date(),
-          courseId: "",
+          courseIds: [],
           skills: [],
         },
   });
@@ -120,6 +120,15 @@ export function CreateJobForm({ job }: CreateJobFormProps) {
     queryKey: ["instructor-courses"],
     queryFn: getCourses,
   });
+
+  // Update the form when courses data loads and we're editing an existing job
+  useEffect(() => {
+    if (courses && job && job.jobCourses) {
+      // Make sure the courseIds in the form match the job's jobCourses
+      const courseIds = job.jobCourses.map(jc => jc.courseId);
+      form.setValue("courseIds", courseIds);
+    }
+  }, [courses, job, form]);
 
   async function onSubmit(values: TJob) {
     if (job) {
@@ -294,39 +303,35 @@ export function CreateJobForm({ job }: CreateJobFormProps) {
             <div className="grid gap-6 md:grid-cols-2">
               <FormField
                 control={form.control}
-                name="courseId"
+                name="courseIds"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Associated Course (Optional)</FormLabel>
-                    <Select
-                      defaultValue={field.value}
-                      disabled={isLoadingCourses}
-                      onValueChange={field.onChange}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue
-                            placeholder={
-                              isLoadingCourses
-                                ? "Loading courses..."
-                                : "Select associated course"
-                            }
-                          />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {courses?.map((course) => (
-                          <SelectItem key={course.id} value={course.id}>
-                            {course.title} ({course.code})
-                          </SelectItem>
-                        ))}
-                        {!(isLoadingCourses || courses?.length) && (
-                          <SelectItem disabled value="empty">
-                            No courses available
-                          </SelectItem>
-                        )}
-                      </SelectContent>
-                    </Select>
+                    <FormLabel>Associated Courses (Optional)</FormLabel>
+                    <FormControl>
+                      <MultipleSelector
+                        defaultOptions={isLoadingCourses ? [] : courses?.map(course => ({
+                          label: `${course.title} (${course.code})`,
+                          value: course.id
+                        })) || []}
+                        emptyIndicator={
+                          <p className="text-center text-gray-600 text-lg leading-10 dark:text-gray-400">
+                            {isLoadingCourses ? "Loading courses..." : "No courses found."}
+                          </p>
+                        }
+                        onChange={(selectedOptions: Option[]) =>
+                          field.onChange(
+                            selectedOptions.map((option) => option.value)
+                          )
+                        }
+                        placeholder={isLoadingCourses ? "Loading courses..." : "Select associated courses..."}
+                        value={courses && field.value ? 
+                          field.value.map(id => {
+                            const course = courses.find(c => c.id === id);
+                            return course ? { label: `${course.title} (${course.code})`, value: course.id } : null;
+                          }).filter(Boolean) as Option[] : []
+                        }
+                      />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -476,7 +481,7 @@ export function CreateJobForm({ job }: CreateJobFormProps) {
             </div>
           </CardContent>
         </Card>
-        <Button className="w-full" disabled={pending} type="submit">
+        <Button variant="default" className="w-full" disabled={pending} type="submit">
           {pending ? "Submitting..." : "Continue"}
         </Button>
       </form>

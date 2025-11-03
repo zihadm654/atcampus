@@ -94,11 +94,24 @@ export default function Job({ job }: JobProps) {
     refetchOnWindowFocus: false,
   });
 
-  const { data: isEnrolled } = useQuery({
-    queryKey: ["enrolled", job?.jobCourses?.[0]?.courseId],
-    queryFn: () => isEnrolledInCourse(job?.jobCourses?.[0]?.courseId || ""),
-    enabled: !!job?.jobCourses?.[0]?.courseId && user.role === "STUDENT",
+  // Check enrollment for all job courses
+  const { data: enrolledCourses } = useQuery({
+    queryKey: ["enrolled", job?.jobCourses?.map(jc => jc.courseId)],
+    queryFn: async () => {
+      if (!job?.jobCourses || job.jobCourses.length === 0) return [];
+      const enrollmentChecks = await Promise.all(
+        job.jobCourses.map(async (jobCourse) => ({
+          courseId: jobCourse.courseId,
+          isEnrolled: await isEnrolledInCourse(jobCourse.courseId)
+        }))
+      );
+      return enrollmentChecks;
+    },
+    enabled: !!job?.jobCourses && job.jobCourses.length > 0 && user.role === "STUDENT",
   });
+
+  // Determine if user is enrolled in any of the required courses
+  const isEnrolled = enrolledCourses?.some(ec => ec.isEnrolled) || false;
 
   // Use a local state to track application status
   const [isApplied, setIsApplied] = useState<boolean>(
@@ -136,7 +149,7 @@ export default function Job({ job }: JobProps) {
   return (
     <Card className="group hover:-translate-y-1 relative overflow-hidden transition-all duration-300 hover:shadow-lg">
       {/* Match Badge */}
-      {job?.jobCourses?.[0]?.courseId && (
+      {job?.jobCourses && job.jobCourses.length > 0 && (
         <Badge
           className={`absolute top-3 right-3 z-10 ${
             isEnrolled

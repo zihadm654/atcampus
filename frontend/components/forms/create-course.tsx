@@ -200,7 +200,12 @@ export function CreateCourseForm({ user, course }: CreateCourseFormProps) {
         router.push("/courses");
       } catch (error) {
         console.error(error);
-        toast.error("Something went wrong. Please try again.");
+        // Check if it's a Prisma unique constraint error
+        if (error instanceof Error && error.message.includes("already exists")) {
+          toast.error(error.message);
+        } else {
+          toast.error("Something went wrong. Please try again.");
+        }
       } finally {
         setPending(false);
       }
@@ -226,7 +231,12 @@ export function CreateCourseForm({ user, course }: CreateCourseFormProps) {
         }
       } catch (error) {
         console.error(error);
-        toast.error("Something went wrong. Please try again.");
+        // Check if it's a Prisma unique constraint error
+        if (error instanceof Error && error.message.includes("already exists")) {
+          toast.error(error.message);
+        } else {
+          toast.error("Something went wrong. Please try again.");
+        }
       } finally {
         setPending(false);
       }

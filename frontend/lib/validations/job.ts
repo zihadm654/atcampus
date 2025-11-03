@@ -18,7 +18,7 @@ export const jobSchema = z.object({
   duration: z.coerce.number().optional(),
   salary: z.coerce.number().min(1, "required"),
   endDate: z.date(),
-  courseId: z.string().optional(),
+  courseIds: z.array(z.string()).optional(),
   // Skills are now stored directly as an array of strings
   skills: z.array(z.string()).optional(),
 });

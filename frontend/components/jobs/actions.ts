@@ -69,7 +69,7 @@ export async function createJob(values: TJob) {
       duration,
       salary,
       endDate,
-      courseId,
+      courseIds,
       skills,
     } = validatedFields.data;
 
@@ -91,13 +91,21 @@ export async function createJob(values: TJob) {
       },
     });
 
-    // Associate course if provided
-    if (courseId) {
-      await prisma.jobCourse.create({
-        data: {
+    // Associate courses if provided
+    if (courseIds && courseIds.length > 0) {
+      // Delete existing job course associations
+      await prisma.jobCourse.deleteMany({
+        where: {
+          jobId: job.id,
+        },
+      });
+
+      // Create new job course associations
+      await prisma.jobCourse.createMany({
+        data: courseIds.map(courseId => ({
           jobId: job.id,
           courseId,
-        },
+        })),
       });
     }
 
@@ -141,7 +149,7 @@ export async function updateJob(values: TJob, jobId: string) {
       duration,
       salary,
       endDate,
-      courseId,
+      courseIds,
       skills,
     } = validatedFields.data;
 
@@ -166,8 +174,8 @@ export async function updateJob(values: TJob, jobId: string) {
       },
     });
 
-    // Update course association if provided
-    if (courseId) {
+    // Update course associations if provided
+    if (courseIds && courseIds.length > 0) {
       // Delete existing job course associations
       await prisma.jobCourse.deleteMany({
         where: {
@@ -175,11 +183,18 @@ export async function updateJob(values: TJob, jobId: string) {
         },
       });
 
-      // Create new job course association
-      await prisma.jobCourse.create({
-        data: {
+      // Create new job course associations
+      await prisma.jobCourse.createMany({
+        data: courseIds.map(courseId => ({
           jobId,
           courseId,
+        })),
+      });
+    } else if (courseIds) {
+      // If courseIds is an empty array, delete all existing associations
+      await prisma.jobCourse.deleteMany({
+        where: {
+          jobId,
         },
       });
     }

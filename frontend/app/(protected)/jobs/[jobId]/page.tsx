@@ -310,10 +310,10 @@ export default async function JobPage({ params }: PageProps) {
                 Required Courses
               </h4>
               <div className="grid grid-cols-2 gap-2 max-md:grid-cols-1">
-                {/* Display associated course if it exists */}
-                {job.jobCourses?.[0]?.courseId && (
-                  <JobCourse courseId={job.jobCourses[0].courseId} />
-                )}
+                {/* Display all associated courses */}
+                {job.jobCourses?.map((jobCourse) => (
+                  <JobCourse key={jobCourse.courseId} courseId={jobCourse.courseId} />
+                ))}
               </div>
             </div>
           </TabsContent>

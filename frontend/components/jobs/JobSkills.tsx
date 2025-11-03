@@ -29,7 +29,7 @@ export default function JobSkills({ jobId }: JobSkillsProps) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Required Skills</CardTitle>
+          <CardTitle>Skills</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex flex-wrap gap-2">
@@ -51,7 +51,7 @@ export default function JobSkills({ jobId }: JobSkillsProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Required Skills</CardTitle>
+        <CardTitle>Skills</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="flex flex-wrap gap-2">
