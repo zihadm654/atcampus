@@ -19,7 +19,8 @@ export default function JobMatchScore({ jobId }: JobMatchScoreProps) {
     queryFn: async () => {
       const response = await fetch(`/api/job-matches?jobId=${jobId}`);
       if (!response.ok) {
-        throw new Error("Failed to fetch job match");
+        const errorText = await response.text();
+        throw new Error(errorText || "Failed to fetch job match");
       }
       return response.json();
     },
@@ -27,6 +28,8 @@ export default function JobMatchScore({ jobId }: JobMatchScoreProps) {
     staleTime: 1000 * 60 * 5, // 5 minutes
     refetchOnMount: true,
     refetchOnWindowFocus: false,
+    retry: 2, // Retry failed requests up to 2 times
+    retryDelay: 1000, // Wait 1 second between retries
   });
 
   // Show loading state
@@ -44,7 +47,7 @@ export default function JobMatchScore({ jobId }: JobMatchScoreProps) {
   }
 
   // Show error or no data state
-  if (error || !matchData?.success) {
+  if (error || !matchData) {
     return (
       <Card>
         <CardHeader>
@@ -52,17 +55,16 @@ export default function JobMatchScore({ jobId }: JobMatchScoreProps) {
         </CardHeader>
         <CardContent>
           <p className="text-muted-foreground text-sm">
-            {error ? "Error loading match data" : "No match data available"}
+            {error ? `Error: ${error.message}` : "No match data available"}
           </p>
         </CardContent>
       </Card>
     );
   }
 
-  const match = matchData.match;
-  const overallPercentage = Math.round(match.matchPercentage);
-  const skillPercentage = Math.round(match.skillMatchPercentage);
-  const coursePercentage = Math.round(match.courseMatchPercentage);
+  const overallPercentage = Math.round(matchData.matchPercentage || 0);
+  const skillPercentage = Math.round(matchData.skillMatchPercentage || 0);
+  const coursePercentage = Math.round(matchData.courseMatchPercentage || 0);
 
   // Determine color based on overall match
   let progressColor = "bg-red-500";
@@ -100,7 +102,7 @@ export default function JobMatchScore({ jobId }: JobMatchScoreProps) {
               </div>
               <Progress className="h-2" value={skillPercentage} />
               <div className="mt-1 text-muted-foreground text-xs">
-                {match.matchedSkills} of {match.requiredSkills} skills matched
+                {matchData.matchedSkills || 0} of {matchData.requiredSkills || 0} skills matched
               </div>
             </div>
             <div>
@@ -110,7 +112,7 @@ export default function JobMatchScore({ jobId }: JobMatchScoreProps) {
               </div>
               <Progress className="h-2" value={coursePercentage} />
               <div className="mt-1 text-muted-foreground text-xs">
-                {match.matchedCourses} of {match.requiredCourses} courses
+                {matchData.matchedCourses || 0} of {matchData.requiredCourses || 0} courses
                 matched
               </div>
             </div>

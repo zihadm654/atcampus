@@ -12,6 +12,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/session";
@@ -75,44 +77,114 @@ export default async function DashboardPage() {
           </div>
         </div>
         {user?.role === "ORGANIZATION" && (
-          <>
-            <h2 className="text-2xl">Job Applicants</h2>
-            <Table className="my-3 rounded-lg border p-2 max-md:p-1">
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Job Title</TableHead>
-                  <TableHead>Id</TableHead>
-                  <TableHead>Candidate</TableHead>
-                  <TableHead>College/University</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Seamster</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {applications.map((application) => (
-                  <TableRow key={application.id}>
-                    <TableCell>{application.job.title}</TableCell>
-                    <TableCell>{application.applicant.instituteId}</TableCell>
-                    <TableCell>{application.applicant.name}</TableCell>
-                    <TableCell>{application.applicant.institution}</TableCell>
-                    <TableCell>{application.applicant.email}</TableCell>
-                    <TableCell>
-                      <ApplicationStatusSelect
-                        applicationId={application.id}
-                        currentStatus={application.status}
-                      />
-                    </TableCell>
-                    <TableCell>
-                      {application.applicant.currentSemester || 1}
-                    </TableCell>
-                  </TableRow>
-                ))}
-                <TableRow />
-              </TableBody>
-            </Table>
-          </>
-          // <DataTable data={applications as any} columns={columns}/>
+          <Card className="border-border shadow-sm">
+            <CardHeader className="border-b border-border bg-muted/50 px-6 py-4">
+              <CardTitle className="flex items-center justify-between">
+                <span className="text-xl font-semibold">Job Applicants</span>
+                <Badge className="bg-blue-500 text-white hover:bg-blue-600">
+                  {applications.length} Applicants
+                </Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-0">
+              <div className="overflow-x-auto">
+                <Table className="w-full">
+                  <TableHeader className="bg-muted/30">
+                    <TableRow>
+                      <TableHead className="whitespace-nowrap px-4 py-3 text-left font-medium">
+                        Job Title
+                      </TableHead>
+                      <TableHead className="whitespace-nowrap px-4 py-3 text-left font-medium">
+                        ID
+                      </TableHead>
+                      <TableHead className="whitespace-nowrap px-4 py-3 text-left font-medium">
+                        Candidate
+                      </TableHead>
+                      <TableHead className="whitespace-nowrap px-4 py-3 text-left font-medium">
+                        Institution
+                      </TableHead>
+                      <TableHead className="whitespace-nowrap px-4 py-3 text-left font-medium">
+                        Email
+                      </TableHead>
+                      <TableHead className="whitespace-nowrap px-4 py-3 text-left font-medium">
+                        Status
+                      </TableHead>
+                      <TableHead className="whitespace-nowrap px-4 py-3 text-left font-medium">
+                        Semester
+                      </TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {applications.length > 0 ? (
+                      applications.map((application) => (
+                        <TableRow
+                          key={application.id}
+                          className="border-b border-border transition-colors hover:bg-muted/50"
+                        >
+                          <TableCell className="px-4 py-3">
+                            <div className="font-medium">
+                              {application.job.title}
+                            </div>
+                          </TableCell>
+                          <TableCell className="px-4 py-3">
+                            <Badge variant="outline" className="font-mono">
+                              {application.applicant.instituteId}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="px-4 py-3">
+                            <div className="flex items-center gap-2">
+                              <div className="flex size-8 items-center justify-center rounded-full bg-primary/10 text-primary">
+                                {application.applicant.name.charAt(0)}
+                              </div>
+                              <span className="font-medium">
+                                {application.applicant.name}
+                              </span>
+                            </div>
+                          </TableCell>
+                          <TableCell className="px-4 py-3">
+                            <div className="max-w-[200px] truncate text-muted-foreground">
+                              {application.applicant.institution}
+                            </div>
+                          </TableCell>
+                          <TableCell className="px-4 py-3">
+                            <a
+                              href={`mailto:${application.applicant.email}`}
+                              className="text-primary hover:underline"
+                            >
+                              {application.applicant.email}
+                            </a>
+                          </TableCell>
+                          <TableCell className="px-4 py-3">
+                            <ApplicationStatusSelect
+                              applicationId={application.id}
+                              currentStatus={application.status}
+                            />
+                          </TableCell>
+                          <TableCell className="px-4 py-3">
+                            <Badge
+                              variant="secondary"
+                              className="bg-secondary/80"
+                            >
+                              {application.applicant.currentSemester || 1}
+                            </Badge>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    ) : (
+                      <TableRow>
+                        <TableCell
+                          colSpan={7}
+                          className="py-8 text-center text-muted-foreground"
+                        >
+                          No job applicants found
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+            </CardContent>
+          </Card>
         )}
         {user?.role === "INSTITUTION" && (
           <OrganizationCard

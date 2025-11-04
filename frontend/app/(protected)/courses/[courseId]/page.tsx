@@ -33,10 +33,22 @@ interface CoursePageProps {
 export async function generateMetadata({
   params,
 }: CoursePageProps): Promise<Metadata> {
-  // In a real implementation, fetch course data from API/database
+  const { courseId } = await params;
+  const user = await getCurrentUser();
+
+  if (!user) {
+    throw new Error("User not found");
+  }
+  const currentUser = await getUser(user.id);
+  const course = await getCourse(courseId, user.id);
+
+  if (!course) {
+    notFound();
+  }
+
   return constructMetadata({
-    title: "Course Details - AtCampus",
-    description: "View detailed information about this course.",
+    title: `${course.title} - AtCampus`,
+    description: `${course.description}`,
   });
 }
 const getCourse = cache(async (courseId: string, loggedInUserId: string) => {

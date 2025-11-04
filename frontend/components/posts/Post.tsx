@@ -102,16 +102,69 @@ interface MediaPreviewsProps {
 }
 
 function MediaPreviews({ attachments }: MediaPreviewsProps) {
+  // For single media, show full width
+  if (attachments.length === 1) {
+    return (
+      <div className="overflow-hidden rounded-2xl">
+        <MediaPreview media={attachments[0]} />
+      </div>
+    );
+  }
+
+  // For two media, show side by side
+  if (attachments.length === 2) {
+    return (
+      <div className="grid grid-cols-2 gap-2">
+        {attachments.map((m) => (
+          <div key={m.id} className="overflow-hidden rounded-2xl">
+            <MediaPreview media={m} />
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  // For three media, show in a balanced layout
+  if (attachments.length === 3) {
+    return (
+      <div className="grid grid-cols-2 gap-2">
+        <div className="row-span-2 overflow-hidden rounded-2xl">
+          <MediaPreview media={attachments[0]} />
+        </div>
+        <div className="flex flex-col gap-2">
+          <div className="overflow-hidden rounded-2xl">
+            <MediaPreview media={attachments[1]} />
+          </div>
+          <div className="overflow-hidden rounded-2xl">
+            <MediaPreview media={attachments[2]} />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // For four or more media, show grid with count overlay
   return (
-    <div
-      className={cn(
-        "flex flex-col gap-3",
-        attachments.length > 1 && "sm:grid sm:grid-cols-2"
-      )}
-    >
-      {attachments.map((m) => (
-        <MediaPreview key={m.id} media={m} />
-      ))}
+    <div className="grid grid-cols-2 gap-2">
+      <div className="overflow-hidden rounded-2xl">
+        <MediaPreview media={attachments[0]} />
+      </div>
+      <div className="overflow-hidden rounded-2xl">
+        <MediaPreview media={attachments[1]} />
+      </div>
+      <div className="overflow-hidden rounded-2xl">
+        <MediaPreview media={attachments[2]} />
+      </div>
+      <div className="relative overflow-hidden rounded-2xl">
+        <MediaPreview media={attachments[3]} />
+        {attachments.length > 4 && (
+          <div className="absolute inset-0 flex items-center justify-center bg-black/50">
+            <div className="rounded-full bg-white/20 px-4 py-2 backdrop-blur-sm">
+              <span className="text-lg font-bold text-white">+{attachments.length - 4}</span>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -123,30 +176,46 @@ interface MediaPreviewProps {
 function MediaPreview({ media }: MediaPreviewProps) {
   if (media.type === "IMAGE") {
     return (
-      <BlurImage
-        alt="Attachment"
-        className="mx-auto size-fit max-h-[25rem] rounded-2xl"
-        height={500}
-        src={media.url}
-        width={800}
-      />
-    );
-  }
-
-  if (media.type === "VIDEO") {
-    return (
-      <div>
-        <video
-          className="mx-auto size-fit max-h-[25rem] rounded-2xl"
-          controls
-          src={media?.url}
-          title="Video"
+      <div className="relative h-0 w-full bg-gray-100 pb-[100%]">
+        <BlurImage
+          alt="Attachment"
+          className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 hover:scale-105"
+          height={500}
+          src={media.url}
+          width={500}
         />
       </div>
     );
   }
 
-  return <p className="text-destructive">Unsupported media type</p>;
+  if (media.type === "VIDEO") {
+    return (
+      <div className="relative h-0 w-full bg-gray-100 pb-[100%]">
+        <video
+          className="absolute inset-0 h-full w-full object-cover"
+          src={media?.url}
+          title="Video"
+        />
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/80 backdrop-blur-sm transition-transform hover:scale-110">
+            <svg
+              className="h-5 w-5 text-black"
+              fill="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path d="M8 5v14l11-7z" />
+            </svg>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex h-0 w-full items-center justify-center bg-gray-100 pb-[100%]">
+      <p className="text-destructive">Unsupported media type</p>
+    </div>
+  );
 }
 
 interface CommentButtonProps {

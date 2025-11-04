@@ -59,7 +59,7 @@ export async function submitCourseForApproval(courseId: string) {
 
     if (!professorMember) {
       throw new Error(
-        "You must be a professor in this faculty to submit courses for approval"
+        "You must be a professor in this faculty to submit courses for approval",
       );
     }
 
@@ -85,7 +85,7 @@ export async function submitCourseForApproval(courseId: string) {
         // If there's no existing approval record, we can proceed to create one
       } else {
         throw new Error(
-          "Only draft, rejected, or courses needing revision can be submitted for approval"
+          "Only draft, rejected, or courses needing revision can be submitted for approval",
         );
       }
     } else {
@@ -107,7 +107,7 @@ export async function submitCourseForApproval(courseId: string) {
 
     if (!institutionUserId) {
       throw new Error(
-        "The course's school is not associated with an institution user."
+        "The course's school is not associated with an institution user.",
       );
     }
 
@@ -127,7 +127,7 @@ export async function submitCourseForApproval(courseId: string) {
 
     if (!institutionReviewer) {
       throw new Error(
-        "No institution administrator available. Please contact your institution."
+        "No institution administrator available. Please contact your institution.",
       );
     }
 
@@ -156,7 +156,7 @@ export async function submitCourseForApproval(courseId: string) {
       await notifyCourseApprovalRequest(
         courseId,
         user.id,
-        institutionReviewer.userId
+        institutionReviewer.userId,
       );
 
       return { updatedCourse, approval };
@@ -169,7 +169,7 @@ export async function submitCourseForApproval(courseId: string) {
       { status: course.status },
       { status: CourseStatus.UNDER_REVIEW },
       "Course submitted for approval",
-      { reviewerId: institutionReviewer.userId }
+      { reviewerId: institutionReviewer.userId },
     );
 
     return { success: true, data: result };
@@ -205,6 +205,9 @@ export async function deleteCourse(id: string) {
 
 export async function getCourses() {
   const courses = await prisma.course.findMany({
+    where: {
+      status: CourseStatus.PUBLISHED,
+    },
     orderBy: {
       createdAt: "desc",
     },
@@ -274,7 +277,9 @@ export async function createCourse(values: TCourse) {
     });
 
     if (existingCourse) {
-      throw new Error(`A course with code "${code}" already exists in this faculty. Please use a different course code.`);
+      throw new Error(
+        `A course with code "${code}" already exists in this faculty. Please use a different course code.`,
+      );
     }
 
     if (user.role === "PROFESSOR") {
@@ -289,7 +294,7 @@ export async function createCourse(values: TCourse) {
 
       if (!professorMember) {
         throw new Error(
-          "You must be a professor in the selected faculty to create courses"
+          "You must be a professor in the selected faculty to create courses",
         );
       }
 
@@ -315,7 +320,7 @@ export async function createCourse(values: TCourse) {
         course.id,
         {},
         { status: validatedFields.data.status },
-        "Course created"
+        "Course created",
       );
 
       // If the intention is to submit for approval immediately
@@ -360,7 +365,7 @@ export async function createCourse(values: TCourse) {
 
       if (!isInstitutionAdmin) {
         throw new Error(
-          "You must be an administrator of this institution to create courses"
+          "You must be an administrator of this institution to create courses",
         );
       }
 
@@ -386,7 +391,7 @@ export async function createCourse(values: TCourse) {
         course.id,
         {},
         { status: validatedFields.data.status },
-        "Course created and published by institution admin"
+        "Course created and published by institution admin",
       );
 
       revalidatePath("/courses");
@@ -397,7 +402,7 @@ export async function createCourse(values: TCourse) {
       };
     }
     throw new Error(
-      "Only professors and institution administrators can create courses"
+      "Only professors and institution administrators can create courses",
     );
   } catch (error) {
     console.error(error);
@@ -435,7 +440,7 @@ export async function getInstructorCourses() {
 export async function reviewCourse(
   courseId: string,
   decision: CourseStatus,
-  comments?: string
+  comments?: string,
 ) {
   try {
     const user = await getCurrentUser();
@@ -477,7 +482,7 @@ export async function reviewCourse(
 
     if (!institutionId) {
       throw new Error(
-        "The course's school is not associated with an organization."
+        "The course's school is not associated with an organization.",
       );
     }
 
@@ -491,7 +496,7 @@ export async function reviewCourse(
 
     if (!isInstitutionAdmin) {
       throw new Error(
-        "You must be an administrator of this institution to review courses"
+        "You must be an administrator of this institution to review courses",
       );
     }
 
@@ -544,7 +549,7 @@ export async function reviewCourse(
         course.instructorId,
         user.id,
         decision,
-        comments
+        comments,
       );
 
       return { course: updatedCourse, approval: updatedApproval };
@@ -560,7 +565,7 @@ export async function reviewCourse(
       courseId,
       { status: CourseStatus.UNDER_REVIEW },
       { status: newStatus },
-      `Course ${decision.toLowerCase()}${comments ? ": " + comments : ""}`
+      `Course ${decision.toLowerCase()}${comments ? ": " + comments : ""}`,
     );
 
     revalidatePath("/courses");
@@ -641,7 +646,7 @@ export async function updateCourse(values: TCourse, courseId: string) {
 
     if (!existingCourse) {
       throw new Error(
-        "Course not found or you don't have permission to edit it"
+        "Course not found or you don't have permission to edit it",
       );
     }
 
@@ -657,7 +662,9 @@ export async function updateCourse(values: TCourse, courseId: string) {
       });
 
       if (duplicateCourse) {
-        throw new Error(`A course with code "${code}" already exists in this faculty. Please use a different course code.`);
+        throw new Error(
+          `A course with code "${code}" already exists in this faculty. Please use a different course code.`,
+        );
       }
     }
 
@@ -669,7 +676,7 @@ export async function updateCourse(values: TCourse, courseId: string) {
         : objectives || "[]",
       status:
         user.role === "PROFESSOR" &&
-          existingCourse.status === CourseStatus.PUBLISHED
+        existingCourse.status === CourseStatus.PUBLISHED
           ? existingCourse.status
           : validatedFields.data.status,
     };

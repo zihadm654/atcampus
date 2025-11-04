@@ -28,7 +28,20 @@ export async function GET(request: Request) {
     // Calculate match in real-time
     const match = await calculateJobMatch(user.id, jobId);
 
-    return NextResponse.json(match);
+    // Ensure all required fields are present
+    const response = {
+      skillMatchPercentage: match.skillMatchPercentage || 0,
+      courseMatchPercentage: match.courseMatchPercentage || 0,
+      matchPercentage: match.matchPercentage || 0,
+      requiredSkills: match.requiredSkills || 0,
+      matchedSkills: match.matchedSkills || 0,
+      requiredCourses: match.requiredCourses || 0,
+      matchedCourses: match.matchedCourses || 0,
+      missingSkills: match.missingSkills || [],
+      missingCourses: match.missingCourses || [],
+    };
+
+    return NextResponse.json(response);
   } catch (error) {
     console.error("Error calculating job match:", error);
     return new NextResponse("Internal Server Error", { status: 500 });

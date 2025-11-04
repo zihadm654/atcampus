@@ -3,7 +3,7 @@ import type { SidebarNavItem } from "@/types";
 
 export const sidebarLinks: SidebarNavItem[] = [
   {
-    title: "MENU",
+    title: "Your Activity",
     items: [
       {
         href: "/admin",
@@ -13,7 +13,7 @@ export const sidebarLinks: SidebarNavItem[] = [
       },
       { href: "/", icon: "home", title: "Feed" },
       {
-        href: "/courses",
+        href: "/courses/my-courses",
         icon: "bookOpen",
         title: "Courses",
         // authorizeOnly: UserRole.STUDENT,
@@ -27,7 +27,7 @@ export const sidebarLinks: SidebarNavItem[] = [
     ],
   },
   {
-    title: "OTHERS",
+    title: "Saved",
     items: [
       { href: "/bookmarks", icon: "package", title: "Settings" },
       { href: "/saveJob", icon: "billing", title: "Saved Jobs" },
@@ -43,44 +43,36 @@ export const sidebarLinks: SidebarNavItem[] = [
 ];
 export const menubar: SidebarNavItem[] = [
   {
-    title: "MENU",
+    title: "Your Activity",
     items: [
       {
         href: "/connections",
         icon: "users",
         title: "Connections",
       },
-      // { href: "/", icon: "home", title: "Feed" },
       {
-        href: "/courses",
+        href: "/courses/my-courses",
         icon: "bookOpen",
         title: "Courses",
       },
       {
-        href: "/jobs",
+        href: "/jobs/myJobs",
         icon: "job",
         title: "Jobs",
       },
       {
-        href: "/researches",
+        href: "/researches/myResearches",
         icon: "research",
         title: "Researches",
       },
     ],
   },
   {
-    title: "Later",
+    title: "Saved",
     items: [
       { href: "/bookmarks", icon: "bookmark", title: "Saved Post" },
       { href: "/savedJobs", icon: "bookMarked", title: "Saved Job" },
       { href: "/savedResearches", icon: "research", title: "Saved Research" },
-      // {
-      //   href: "#",
-      //   icon: "messages",
-      //   title: "Support",
-      // authorizeOnly: UserRole.USER,
-      //   disabled: true,
-      // },
     ],
   },
 ];

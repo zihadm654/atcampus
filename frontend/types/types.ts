@@ -91,6 +91,7 @@ export function getUserDataSelect(loggedInUserId: string) {
         posts: true,
         research: true,
         followers: true,
+        following: true
       },
     },
   } satisfies Prisma.UserSelect;

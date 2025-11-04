@@ -46,7 +46,8 @@ export async function generateMetadata({
   const research = await getResearch(researchId, user.id);
 
   return constructMetadata({
-    title: `${research.user.displayUsername}: ${research.description.slice(0, 50)}...`,
+    title: `${research.title}`,
+    description: `${research.description}`
   });
 }
 export default async function ResearchPage({ params }: PageProps) {

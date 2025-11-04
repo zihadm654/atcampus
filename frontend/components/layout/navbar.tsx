@@ -31,7 +31,7 @@ export function NavBar({
   initialMessageCount,
 }: NavBarProps) {
   const scrolled = useScroll(75);
-  const { data: session } = useSession();
+  const { data: session,isPending,error } = useSession();
 
   const links = marketingConfig.mainNav;
   const path = usePathname();
@@ -98,7 +98,7 @@ export function NavBar({
               />
               <UserAccountNav />
             </>
-          ) : session ? (
+          ) : isPending ? (
             <Skeleton className="hidden h-9 w-28 rounded-full lg:flex" />
           ) : (
             <>

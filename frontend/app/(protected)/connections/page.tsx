@@ -1,11 +1,12 @@
 import Link from "next/link";
 import FollowButton from "@/components/feed/FollowButton";
-import BlurImage from "@/components/shared/blur-image";
 import UserTooltip from "@/components/UserTooltip";
-import { Card, CardContent, CardFooter, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/session";
 import { getUserDataSelect } from "@/types/types";
+import UserAvatar from "@/components/UserAvatar";
 
 async function Connections() {
   const user = await getCurrentUser();
@@ -23,41 +24,85 @@ async function Connections() {
     },
     select: getUserDataSelect(user.id),
   });
-  // console.log(connections, "connections"); // You might want to keep or remove this for debugging
+
+  if (connections.length === 0) {
+    return (
+      <div className="flex w-full flex-col items-center justify-center rounded-2xl bg-card p-12 shadow-sm">
+        <div className="mb-4 text-5xl">👥</div>
+        <h2 className="mb-2 text-center font-bold text-2xl">No Connections Yet</h2>
+        <p className="mb-6 text-center text-muted-foreground">
+          You're not following anyone yet. Start connecting with others!
+        </p>
+        <Button asChild>
+          <Link href="/search">Find People to Follow</Link>
+        </Button>
+      </div>
+    );
+  }
+
   return (
-    <div className="w-full space-y-5 rounded-2xl p-2 px-4 shadow-sm">
-      <h1 className="font-bold text-xl">Following</h1> {/* Updated Title */}
-      <div className="grid grid-cols-3 gap-4 rounded-2xl max-md:grid-cols-2">
-        {connections?.map(
-          (
-            connectionUser // Renamed user to connectionUser for clarity
-          ) => (
-            <Card className="pt-0" key={connectionUser.id}>
-              <BlurImage
-                alt={connectionUser.name}
-                className="h-40 w-full object-contain"
-                height={50}
-                src={connectionUser.image || "/_static/avatars/shadcn.jpeg"}
-                width={50}
-              />
-              <CardContent className="max-md:px-3">
-                <UserTooltip user={connectionUser}>
-                  <Link
-                    className="flex items-center gap-3"
-                    href={`/${connectionUser.username}`}
-                  >
-                    <CardTitle>
-                      <p className="font-semibold hover:underline">
-                        {connectionUser.name}
-                      </p>
-                      <p className="text-muted-foreground">
-                        @{connectionUser.username}
-                      </p>
-                    </CardTitle>
-                  </Link>
-                </UserTooltip>
-              </CardContent>
-              <CardFooter>
+    <div className="w-full space-y-6">
+      <div className="flex items-center justify-between">
+        <h1 className="font-bold text-2xl">Following</h1>
+        <p className="text-muted-foreground">
+          {connections.length} connection{connections.length !== 1 ? "s" : ""}
+        </p>
+      </div>
+      
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {connections?.map((connectionUser) => (
+          <Card 
+            className="overflow-hidden transition-all duration-300 hover:shadow-lg" 
+            key={connectionUser.id}
+          >
+            {/* Profile Picture as Main Visual Element */}
+            <div className="flex justify-center p-2">
+              <UserTooltip user={connectionUser}>
+                <Link href={`/${connectionUser.username}`}>
+                  <div className="relative">
+                    <UserAvatar 
+                      avatarUrl={connectionUser.image}
+                      className="size-24 rounded-full ring-4 ring-primary/10 transition-transform duration-300 hover:scale-105"
+                      size={96}
+                    />
+                    <div className="absolute inset-0 rounded-full ring-1 ring-inset ring-black/5" />
+                  </div>
+                </Link>
+              </UserTooltip>
+            </div>
+            
+            {/* User Information */}
+            <CardContent className="p-2 text-center">
+              <UserTooltip user={connectionUser}>
+                <Link href={`/${connectionUser.username}`}>
+                  <h3 className="font-bold text-xl truncate hover:underline">
+                    {connectionUser.name}
+                  </h3>
+                </Link>
+              </UserTooltip>
+              <p className="text-muted-foreground mb-3 truncate">
+                @{connectionUser.username}
+              </p>
+              
+              {/* User Stats */}
+              <div className="flex justify-center gap-3 text-sm">
+                <div className="text-center">
+                  <p className="font-bold text-foreground">
+                    {connectionUser._count.followers}
+                  </p>
+                  <p className="text-muted-foreground">Followers</p>
+                </div>
+                <div className="text-center">
+                  <p className="font-bold text-foreground">
+                    {connectionUser._count.following}
+                  </p>
+                  <p className="text-muted-foreground">Following</p>
+                </div>
+              </div>
+            </CardContent>
+            
+            {/* Follow Button */}
+            <CardFooter className="p-1 flex items-center justify-center gap-2">
                 <FollowButton
                   initialState={{
                     followers: connectionUser._count.followers,
@@ -67,10 +112,9 @@ async function Connections() {
                   }}
                   userId={connectionUser.id}
                 />
-              </CardFooter>
-            </Card>
-          )
-        )}
+            </CardFooter>
+          </Card>
+        ))}
       </div>
     </div>
   );

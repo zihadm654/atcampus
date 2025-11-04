@@ -19,7 +19,8 @@ export default function MissingSkills({ jobId }: MissingSkillsProps) {
     queryFn: async () => {
       const response = await fetch(`/api/job-matches?jobId=${jobId}`);
       if (!response.ok) {
-        throw new Error("Failed to fetch job match");
+        const errorText = await response.text();
+        throw new Error(errorText || "Failed to fetch job match");
       }
       return response.json();
     },
@@ -27,6 +28,8 @@ export default function MissingSkills({ jobId }: MissingSkillsProps) {
     staleTime: 1000 * 60 * 5, // 5 minutes
     refetchOnMount: true,
     refetchOnWindowFocus: false,
+    retry: 2, // Retry failed requests up to 2 times
+    retryDelay: 1000, // Wait 1 second between retries
   });
 
   // Show loading state
@@ -58,7 +61,7 @@ export default function MissingSkills({ jobId }: MissingSkillsProps) {
         </CardHeader>
         <CardContent>
           <p className="text-muted-foreground text-sm">
-            Error loading skills data
+            Error: {error.message}
           </p>
         </CardContent>
       </Card>
@@ -66,7 +69,7 @@ export default function MissingSkills({ jobId }: MissingSkillsProps) {
   }
 
   // Show no data state
-  if (!matchData?.success) {
+  if (!matchData) {
     return (
       <Card>
         <CardHeader>
@@ -81,8 +84,8 @@ export default function MissingSkills({ jobId }: MissingSkillsProps) {
     );
   }
 
-  const missingSkills = matchData.match.missingSkills || [];
-  const missingCourses = matchData.match.missingCourses || [];
+  const missingSkills = matchData.missingSkills || [];
+  const missingCourses = matchData.missingCourses || [];
 
   // If no missing skills or courses, show a message instead of hiding the component
   if (missingSkills.length === 0 && missingCourses.length === 0) {

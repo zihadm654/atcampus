@@ -194,7 +194,7 @@ export default async function CourseApprovalPage({ params }: PageProps) {
         </Button>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-3">
+      <div className="grid gap-4 lg:grid-cols-2">
         {/* Course Details */}
         <div className="space-y-6 lg:col-span-2">
           <Card>
@@ -232,7 +232,6 @@ export default async function CourseApprovalPage({ params }: PageProps) {
                     {approval.course.faculty.school.institution.name}
                   </p>
                 </div>
-                {/* Remove department and year since they don't exist in the model */}
               </div>
               <div>
                 <h4 className="font-medium text-sm">Description</h4>

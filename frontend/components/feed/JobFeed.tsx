@@ -41,10 +41,7 @@ export default function JobFeed({ user }: Props) {
         })
         .json<JobsPage>(),
     initialPageParam: null as string | null,
-    getNextPageParam: (lastPage) => lastPage.nextCursor,
-    // initialData: initialData
-    //   ? { pages: [initialData], pageParams: [null] }
-    //   : undefined,
+    getNextPageParam: (lastPage) => lastPage.nextCursor
   });
 
   // Update searching state when debounced query changes

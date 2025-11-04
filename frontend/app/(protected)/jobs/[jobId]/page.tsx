@@ -82,7 +82,8 @@ export async function generateMetadata({
   const job = await getJob(jobId, user.id);
 
   return constructMetadata({
-    title: `${job.user.displayUsername}: ${job.description.slice(0, 50)}...`,
+    title: `${job.title}`,
+    description: `${job.description}`,
   });
 }
 
@@ -230,17 +231,8 @@ export default async function JobPage({ params }: PageProps) {
                     </div>
                   }
                 >
-                  <Suspense
-                    fallback={
-                      <div className="space-y-4">
-                        <div className="h-32 animate-pulse rounded bg-gray-200" />
-                        <div className="h-32 animate-pulse rounded bg-gray-200" />
-                      </div>
-                    }
-                  >
-                    <JobMatchScore jobId={job.id} />
-                    <MissingSkills jobId={job.id} />
-                  </Suspense>
+                  <JobMatchScore jobId={job.id} />
+                  <MissingSkills jobId={job.id} />
                 </Suspense>
               </div>
             </CardContent>

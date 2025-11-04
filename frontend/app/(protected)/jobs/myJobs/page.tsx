@@ -1,14 +1,14 @@
 import { Briefcase } from "lucide-react";
 import type { Metadata } from "next";
 import { cache } from "react";
-import JobFeed from "@/components/feed/JobFeed";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/session";
 import { constructMetadata } from "@/lib/utils";
 import { getJobDataInclude } from "@/types/types";
+import MyJobs from "./myJobs";
 
 export const metadata: Metadata = constructMetadata({
-  title: "Jobs - AtCampus",
+  title: "My-Jobs - AtCampus",
   description:
     "Find and apply for jobs to gain practical experience.",
 });
@@ -62,18 +62,11 @@ export default async function JobsPage() {
   ]);
 
   return (
-    <div className="flex w-full flex-col gap-6">
-      <div>
-        <div className="flex items-center gap-3">
-          <Briefcase className="h-8 w-8" />
-          <h1 className="font-bold text-3xl">Find Your Dream Job</h1>
-        </div>
-        <p className="max-w-2xl">
-          Discover exciting opportunities to gain practical experience and
-          advance your career
-        </p>
-      </div>
-      <JobFeed initialData={initialJobsData} user={user} />
-    </div>
+   <div className="w-full min-w-0 space-y-5">
+         <div className="rounded-2xl bg-card p-5 shadow-sm">
+           <h1 className="text-center font-bold text-2xl">My Jobs</h1>
+         </div>
+         <MyJobs />
+       </div>
   );
 }
