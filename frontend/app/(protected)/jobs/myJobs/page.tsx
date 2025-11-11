@@ -1,4 +1,3 @@
-import { Briefcase } from "lucide-react";
 import type { Metadata } from "next";
 import { cache } from "react";
 import { prisma } from "@/lib/db";
@@ -9,8 +8,7 @@ import MyJobs from "./myJobs";
 
 export const metadata: Metadata = constructMetadata({
   title: "My-Jobs - AtCampus",
-  description:
-    "Find and apply for jobs to gain practical experience.",
+  description: "Find and apply for jobs to gain practical experience.",
 });
 
 const getAppliedJobs = cache(async (userId: string) => {
@@ -62,11 +60,11 @@ export default async function JobsPage() {
   ]);
 
   return (
-   <div className="w-full min-w-0 space-y-5">
-         <div className="rounded-2xl bg-card p-5 shadow-sm">
-           <h1 className="text-center font-bold text-2xl">My Jobs</h1>
-         </div>
-         <MyJobs />
-       </div>
+    <div className="w-full min-w-0 space-y-5">
+      <div className="rounded-2xl bg-card p-5 shadow-sm">
+        <h1 className="text-center font-bold text-2xl">My Jobs</h1>
+      </div>
+      <MyJobs />
+    </div>
   );
 }

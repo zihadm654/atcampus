@@ -66,7 +66,7 @@ export function NewsletterForm() {
             </FormItem>
           )}
         />
-        <Button className="px-4" size="sm" type="submit">
+        <Button className="px-4" size="sm" type="submit" variant="default">
           Subscribe
         </Button>
       </form>

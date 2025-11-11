@@ -3,6 +3,7 @@
 import type { ApplicationStatus } from "@prisma/client";
 import { useTransition } from "react";
 import { updateApplicationStatus } from "@/actions/appllication";
+import { Badge } from "@/components/ui/badge";
 import {
   Select,
   SelectContent,
@@ -11,7 +12,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "@/components/ui/use-toast";
-import { Badge } from "@/components/ui/badge";
 
 interface ApplicationStatusSelectProps {
   applicationId: string;

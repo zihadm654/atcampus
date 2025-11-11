@@ -17,11 +17,16 @@ const allowedImageTypes = [
   "image/heic",
 ];
 
+const allowedCoverImageTypes = [
+  "image/jpeg",
+  "image/png",
+  "image/gif",
+  "image/webp",
+  "image/heic",
+];
+
 const allowedVideoTypes = ["video/mp4", "video/webm", "video/quicktime"];
 // const allowedPdfTypes = ["application/pdf"];
-
-// Allowed cover image types (reuse image types for now)
-const allowedCoverImageTypes = allowedImageTypes;
 
 // Validation schema for file metadata
 const fileMetadataSchema = z.object({
@@ -47,7 +52,7 @@ const cleanupFailedUpload = async (fileUrl: string | null) => {
 export const ourFileRouter = {
   avatar: f({
     image: {
-      maxFileSize: "2MB",
+      maxFileSize: "4MB",
       maxFileCount: 1,
     },
   })
@@ -76,6 +81,7 @@ export const ourFileRouter = {
     })
     .onUploadComplete(async ({ metadata, file }) => {
       try {
+        console.log("Avatar upload completed", { metadata, file });
         const oldAvatarUrl = metadata.user.image;
 
         if (oldAvatarUrl) {
@@ -98,13 +104,14 @@ export const ourFileRouter = {
 
         return { avatarUrl: newAvatarUrl };
       } catch (_error) {
+        console.error("Avatar upload error:", _error);
         await cleanupFailedUpload(file.ufsUrl); // Update cleanup to use ufsUrl
         throw new UploadThingError("Failed to update avatar");
       }
     }),
   coverImage: f({
     image: {
-      maxFileSize: "2MB",
+      maxFileSize: "4MB",
       maxFileCount: 1,
     },
   })
@@ -133,6 +140,7 @@ export const ourFileRouter = {
     })
     .onUploadComplete(async ({ metadata, file }) => {
       try {
+        console.log("Cover image upload completed", { metadata, file });
         // Fetch the user from the database to get the current coverImage
         const dbUser = await prisma.user.findUnique({
           where: { id: metadata.user.id },
@@ -153,6 +161,7 @@ export const ourFileRouter = {
 
         return { coverImageUrl: newCoverUrl };
       } catch (_error) {
+        console.error("Cover image upload error:", _error);
         await cleanupFailedUpload(file.ufsUrl);
         throw new UploadThingError("Failed to update cover image");
       }
@@ -183,6 +192,7 @@ export const ourFileRouter = {
     })
     .onUploadComplete(async ({ file }) => {
       try {
+        console.log("Attachment upload completed", { file });
         const media = await prisma.media.create({
           data: {
             url: file.ufsUrl, // Replace with ufsUrl,
@@ -192,11 +202,102 @@ export const ourFileRouter = {
 
         return { mediaId: media.id };
       } catch (_error) {
-        await cleanupFailedUpload(file.url);
+        console.error("PDF attachment upload error:", _error);
+        await cleanupFailedUpload(file.ufsUrl); // Update cleanup to use ufsUrl
         throw new UploadThingError("Failed to create media record");
       }
     }),
 
+  schoolLogo: f({
+    image: {
+      maxFileSize: "4MB",
+      maxFileCount: 1,
+    },
+  })
+    .middleware(async ({ files }) => {
+      const user = await getCurrentUser();
+      if (!user) throw new UploadThingError("Unauthorized");
+
+      // Check if user is an institution
+      if (user.role !== "INSTITUTION") {
+        throw new UploadThingError("Only institutions can upload school logos");
+      }
+
+      try {
+        // Validate file metadata
+        const metadata = fileMetadataSchema.parse(files[0]);
+
+        // Validate image type
+        if (!allowedImageTypes.includes(metadata.type)) {
+          throw new UploadThingError(
+            "Invalid file type. Only JPEG, PNG, GIF, WebP, and HEIC images are allowed."
+          );
+        }
+
+        return { user };
+      } catch (error) {
+        if (error instanceof z.ZodError) {
+          throw new UploadThingError("Invalid file metadata");
+        }
+        throw error;
+      }
+    })
+    .onUploadComplete(async ({ metadata, file }) => {
+      try {
+        console.log("School logo upload completed", { metadata, file });
+        return { schoolLogoUrl: file.ufsUrl };
+      } catch (_error) {
+        console.error("School logo upload error:", _error);
+        await cleanupFailedUpload(file.ufsUrl);
+        throw new UploadThingError("Failed to upload school logo");
+      }
+    }),
+  schoolCoverImage: f({
+    image: {
+      maxFileSize: "4MB",
+      maxFileCount: 1,
+    },
+  })
+    .middleware(async ({ files }) => {
+      const user = await getCurrentUser();
+      if (!user) throw new UploadThingError("Unauthorized");
+
+      // Check if user is an institution
+      if (user.role !== "INSTITUTION") {
+        throw new UploadThingError(
+          "Only institutions can upload school cover images"
+        );
+      }
+
+      try {
+        // Validate file metadata
+        const metadata = fileMetadataSchema.parse(files[0]);
+
+        // Validate image type
+        if (!allowedCoverImageTypes.includes(metadata.type)) {
+          throw new UploadThingError(
+            "Invalid file type. Only JPEG, PNG, GIF, WebP, and HEIC images are allowed for cover images."
+          );
+        }
+
+        return { user };
+      } catch (error) {
+        if (error instanceof z.ZodError) {
+          throw new UploadThingError("Invalid file metadata");
+        }
+        throw error;
+      }
+    })
+    .onUploadComplete(async ({ metadata, file }) => {
+      try {
+        console.log("School cover image upload completed", { metadata, file });
+        return { schoolCoverImageUrl: file.ufsUrl };
+      } catch (_error) {
+        console.error("School cover image upload error:", _error);
+        await cleanupFailedUpload(file.ufsUrl);
+        throw new UploadThingError("Failed to upload school cover image");
+      }
+    }),
   attachment: f({
     image: { maxFileSize: "4MB", maxFileCount: 5 },
     video: { maxFileSize: "64MB", maxFileCount: 5 },
@@ -241,6 +342,7 @@ export const ourFileRouter = {
     })
     .onUploadComplete(async ({ file }) => {
       try {
+        console.log("General attachment upload completed", { file });
         const media = await prisma.media.create({
           data: {
             url: file.ufsUrl, // Replace with ufsUrl
@@ -250,6 +352,7 @@ export const ourFileRouter = {
 
         return { mediaId: media.id };
       } catch (_error) {
+        console.error("General attachment upload error:", _error);
         await cleanupFailedUpload(file.ufsUrl); // Update cleanup to use ufsUrl
         throw new UploadThingError("Failed to create media record");
       }

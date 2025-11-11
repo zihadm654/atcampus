@@ -9,8 +9,7 @@ import { getJobDataInclude } from "@/types/types";
 
 export const metadata: Metadata = constructMetadata({
   title: "Jobs - AtCampus",
-  description:
-    "Find and apply for jobs to gain practical experience.",
+  description: "Find and apply for jobs to gain practical experience.",
 });
 
 const getAppliedJobs = cache(async (userId: string) => {

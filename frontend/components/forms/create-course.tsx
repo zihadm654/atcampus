@@ -201,7 +201,10 @@ export function CreateCourseForm({ user, course }: CreateCourseFormProps) {
       } catch (error) {
         console.error(error);
         // Check if it's a Prisma unique constraint error
-        if (error instanceof Error && error.message.includes("already exists")) {
+        if (
+          error instanceof Error &&
+          error.message.includes("already exists")
+        ) {
           toast.error(error.message);
         } else {
           toast.error("Something went wrong. Please try again.");
@@ -232,7 +235,10 @@ export function CreateCourseForm({ user, course }: CreateCourseFormProps) {
       } catch (error) {
         console.error(error);
         // Check if it's a Prisma unique constraint error
-        if (error instanceof Error && error.message.includes("already exists")) {
+        if (
+          error instanceof Error &&
+          error.message.includes("already exists")
+        ) {
           toast.error(error.message);
         } else {
           toast.error("Something went wrong. Please try again.");

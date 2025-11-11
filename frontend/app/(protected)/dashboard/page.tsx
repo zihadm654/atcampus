@@ -3,7 +3,9 @@ import Link from "next/link";
 import { ReturnButton } from "@/components/auth/return-button";
 import { SignOutButton } from "@/components/auth/sign-out-button";
 import { DashboardHeader } from "@/components/dashboard/header";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -12,8 +14,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/session";
@@ -78,9 +78,9 @@ export default async function DashboardPage() {
         </div>
         {user?.role === "ORGANIZATION" && (
           <Card className="border-border shadow-sm">
-            <CardHeader className="border-b border-border bg-muted/50 px-6 py-4">
+            <CardHeader className="border-border border-b bg-muted/50 px-6 py-4">
               <CardTitle className="flex items-center justify-between">
-                <span className="text-xl font-semibold">Job Applicants</span>
+                <span className="font-semibold text-xl">Job Applicants</span>
                 <Badge className="bg-blue-500 text-white hover:bg-blue-600">
                   {applications.length} Applicants
                 </Badge>
@@ -95,7 +95,7 @@ export default async function DashboardPage() {
                         Job Title
                       </TableHead>
                       <TableHead className="whitespace-nowrap px-4 py-3 text-left font-medium">
-                        ID
+                        Username
                       </TableHead>
                       <TableHead className="whitespace-nowrap px-4 py-3 text-left font-medium">
                         Candidate
@@ -118,8 +118,8 @@ export default async function DashboardPage() {
                     {applications.length > 0 ? (
                       applications.map((application) => (
                         <TableRow
+                          className="border-border border-b transition-colors hover:bg-muted/50"
                           key={application.id}
-                          className="border-b border-border transition-colors hover:bg-muted/50"
                         >
                           <TableCell className="px-4 py-3">
                             <div className="font-medium">
@@ -127,8 +127,8 @@ export default async function DashboardPage() {
                             </div>
                           </TableCell>
                           <TableCell className="px-4 py-3">
-                            <Badge variant="outline" className="font-mono">
-                              {application.applicant.instituteId}
+                            <Badge className="font-mono" variant="outline">
+                              {application.applicant.username}
                             </Badge>
                           </TableCell>
                           <TableCell className="px-4 py-3">
@@ -148,8 +148,8 @@ export default async function DashboardPage() {
                           </TableCell>
                           <TableCell className="px-4 py-3">
                             <a
-                              href={`mailto:${application.applicant.email}`}
                               className="text-primary hover:underline"
+                              href={`mailto:${application.applicant.email}`}
                             >
                               {application.applicant.email}
                             </a>
@@ -162,8 +162,8 @@ export default async function DashboardPage() {
                           </TableCell>
                           <TableCell className="px-4 py-3">
                             <Badge
-                              variant="secondary"
                               className="bg-secondary/80"
+                              variant="secondary"
                             >
                               {application.applicant.currentSemester || 1}
                             </Badge>
@@ -173,8 +173,8 @@ export default async function DashboardPage() {
                     ) : (
                       <TableRow>
                         <TableCell
-                          colSpan={7}
                           className="py-8 text-center text-muted-foreground"
+                          colSpan={7}
                         >
                           No job applicants found
                         </TableCell>

@@ -160,7 +160,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
             <Badge className="w-fit" variant="secondary">
               Credits: {course.credits}
             </Badge>
-            <div className="flex items-center gap-2 mt-3">
+            <div className="mt-3 flex items-center gap-2">
               <h1>Faculty:</h1>
               <UserAvatar user={course.instructor} />
               <h3>{course.instructor.name}</h3>

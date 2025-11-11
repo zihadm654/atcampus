@@ -1,7 +1,7 @@
 "use client";
 
 import type { Enrollment } from "@prisma/client";
-import { BookOpen, Building, Clock, CreditCard, Users } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { useOptimistic, useState, useTransition } from "react";
 import { toast } from "sonner";
@@ -12,12 +12,11 @@ import {
   CardContent,
   CardFooter,
   CardHeader,
+  CardTitle,
 } from "@/components/ui/card";
 import { useSession } from "@/lib/auth-client";
 import { formatRelativeDate } from "@/lib/utils";
 import type { CourseData } from "@/types";
-import { UserAvatar } from "../shared/user-avatar";
-import UserTooltip from "../UserTooltip";
 import { Button } from "../ui/button";
 import CourseMoreButton from "./CourseMoreButton";
 
@@ -64,92 +63,56 @@ export default function Course({ course }: { course: CourseData }) {
     });
   };
   return (
-    <Card className="group transition-shadow duration-200 hover:shadow-lg">
-      <CardHeader>
-        <div className="flex items-start justify-between">
-          <div className="flex items-center gap-3">
-            <UserTooltip user={course?.instructor}>
-              <Link href={`/${course?.instructor?.username}`}>
-                <UserAvatar user={course?.instructor} />
-              </Link>
-            </UserTooltip>
-            <div>
-              <UserTooltip user={course?.instructor}>
-                <Link
-                  className="font-semibold hover:underline"
-                  href={`/${course?.instructor?.username}`}
-                >
-                  {course?.instructor?.name || course?.instructor?.username}
-                </Link>
-              </UserTooltip>
-              <div className="flex items-center gap-2 text-muted-foreground text-sm">
-                <Link
-                  className="hover:underline"
-                  href={`/courses/${course.id}`}
-                  suppressHydrationWarning
-                >
-                  {formatRelativeDate(course.createdAt)}
-                </Link>
-              </div>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            {course.instructorId === user.id && (
-              <CourseMoreButton course={course} />
-            )}
-          </div>
+    <Card className="group pt-0 transition-shadow duration-200 hover:shadow-lg">
+      <CardHeader className="relative px-0">
+        <Image
+          alt={course.instructor.name}
+          className="h-44 w-full rounded-sm object-cover"
+          height="600"
+          src={course.instructor.image || "/_static/avatars/shadcn.jpeg"}
+          width="400"
+        />
+        <div className="absolute inset-0 flex items-start justify-end">
+          {course.instructorId === user.id && (
+            <CourseMoreButton course={course} />
+          )}
         </div>
       </CardHeader>
 
       <Link href={`/courses/${course.id}`}>
-        <CardContent className="pt-0 pb-4">
-          <h1 className="font-semibold text-xl">{course.title}</h1>
+        <CardContent className="pt-0 pb-2">
+          <CardTitle className="text-xl">{course.title}</CardTitle>
+          <div className="grid grid-cols-2 gap-4 py-2">
+            <p className="text-lg">{formatRelativeDate(course.createdAt)}</p>
+            <Badge className="text-xs" variant="outline">
+              {course.code}
+            </Badge>
+          </div>
           {course.faculty && (
-            <div className="flex flex-wrap items-center justify-start gap-2">
-              <span className="flex items-center gap-1">
-                <Building className="mr-1 size-3" />
-                {course.faculty.name}
-              </span>
-              <Badge className="text-xs" variant="outline">
-                {course.code}
-              </Badge>
+            <div className="flex flex-wrap items-center justify-start gap-3">
+              <h5>{course.faculty.name}</h5>
+              {/* <div className="flex items-center gap-2 text-muted-foreground">
+                <span>{course.enrollments?.length || 0} enrolled</span>
+              </div> */}
             </div>
           )}
-
-          <div className="grid grid-cols-2 gap-4 text-sm">
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <CreditCard className="size-4" />
-              <span>{course.credits} credits</span>
-            </div>
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <Clock className="size-4" />
-              <span>{course.estimatedHours} weeks</span>
-            </div>
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <Users className="size-4" />
-              <span className="capitalize">{course.difficulty}</span>
-            </div>
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <BookOpen className="size-4" />
-              <span>{course.enrollments?.length || 0} enrolled</span>
-            </div>
-          </div>
         </CardContent>
       </Link>
 
       <CardFooter className="pt-0">
-        {user.role === "STUDENT" && (
-          <Button
-            className="w-full"
-            disabled={optimisticEnrolled || isEnrolled || isPending}
-            onClick={handleEnroll}
-            variant={optimisticEnrolled || isEnrolled ? "secondary" : "default"}
-          >
-            {optimisticEnrolled || isEnrolled
-              ? "Already Enrolled"
-              : "Enroll Now"}
-          </Button>
-        )}
+        <Button
+          className="w-full"
+          disabled={
+            optimisticEnrolled ||
+            isEnrolled ||
+            isPending ||
+            user.role !== "STUDENT"
+          }
+          onClick={handleEnroll}
+          variant={optimisticEnrolled || isEnrolled ? "secondary" : "default"}
+        >
+          {optimisticEnrolled || isEnrolled ? "Already Enrolled" : "Enroll Now"}
+        </Button>
       </CardFooter>
     </Card>
   );

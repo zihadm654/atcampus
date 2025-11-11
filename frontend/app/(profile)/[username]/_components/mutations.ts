@@ -19,8 +19,10 @@ export function useUpdateProfileMutation() {
 
   const queryClient = useQueryClient();
 
-  const { startUpload: startAvatarUpload } = useUploadThing("avatar");
-  const { startUpload: startCoverUpload } = useUploadThing("coverImage");
+  const { startUpload: startAvatarUpload, isUploading: isAvatarUploading } =
+    useUploadThing("avatar");
+  const { startUpload: startCoverUpload, isUploading: isCoverUploading } =
+    useUploadThing("coverImage");
 
   const mutation = useMutation({
     mutationFn: async ({
@@ -31,15 +33,59 @@ export function useUpdateProfileMutation() {
       values: UpdateUserProfileValues;
       avatar?: File;
       coverImage?: File;
-    }) =>
-      Promise.all([
-        updateUserProfile(values),
-        avatar && startAvatarUpload([avatar]),
-        coverImage && startCoverUpload([coverImage]),
-      ]),
+    }) => {
+      // First update the user profile data
+      const updatedUser = await updateUserProfile(values);
+
+      // Then handle file uploads
+      let avatarUploadResult;
+      let coverUploadResult;
+
+      try {
+        if (avatar) {
+          const avatarResult = await startAvatarUpload([avatar]);
+          if (avatarResult && avatarResult.length > 0) {
+            avatarUploadResult = avatarResult;
+          }
+        }
+        if (coverImage) {
+          const coverResult = await startCoverUpload([coverImage]);
+          if (coverResult && coverResult.length > 0) {
+            coverUploadResult = coverResult;
+          }
+        }
+      } catch (uploadError) {
+        console.error("Upload error:", uploadError);
+        // We don't throw here to allow the profile update to succeed even if image upload fails
+        // The user will see a toast notification about the failed upload
+      }
+
+      return [updatedUser, avatarUploadResult, coverUploadResult];
+    },
     onSuccess: async ([updatedUser, avatarUploadResult, coverUploadResult]) => {
-      const newAvatarUrl = avatarUploadResult?.[0]?.serverData?.avatarUrl;
-      const newCoverUrl = coverUploadResult?.[0]?.serverData?.coverImageUrl;
+      console.log("Profile update success", {
+        userId: updatedUser.id,
+        hasAvatarResult: !!avatarUploadResult,
+        hasCoverResult: !!coverUploadResult,
+      });
+
+      // Check if any uploads failed
+      const avatarUploadFailed = avatarUploadResult === undefined;
+      const coverUploadFailed = coverUploadResult === undefined;
+
+      let newAvatarUrl = updatedUser.image;
+      let newCoverUrl = updatedUser.coverImage;
+
+      // Only update URLs if uploads were successful
+      if (avatarUploadResult?.[0]?.serverData?.avatarUrl) {
+        newAvatarUrl = avatarUploadResult[0].serverData.avatarUrl;
+        console.log("Avatar URL updated", { newAvatarUrl });
+      }
+
+      if (coverUploadResult?.[0]?.serverData?.coverImageUrl) {
+        newCoverUrl = coverUploadResult[0].serverData.coverImageUrl;
+        console.log("Cover URL updated", { newCoverUrl });
+      }
 
       const queryFilter: QueryFilters = {
         queryKey: ["post-feed"],
@@ -62,8 +108,8 @@ export function useUpdateProfileMutation() {
                     ...post,
                     user: {
                       ...updatedUser,
-                      avatarUrl: newAvatarUrl || updatedUser.image,
-                      coverImage: newCoverUrl || updatedUser.coverImage,
+                      avatarUrl: newAvatarUrl,
+                      coverImage: newCoverUrl,
                     },
                   };
                 }

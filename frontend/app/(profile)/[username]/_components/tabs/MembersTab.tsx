@@ -1,8 +1,9 @@
-"use client"
+"use client";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
 import { Icons } from "@/components/shared/icons";
 import { UserAvatar } from "@/components/shared/user-avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
 import {
   Select,
   SelectContent,
@@ -10,11 +11,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/components/ui/use-toast";
 import { useActiveOrganization } from "@/lib/auth-client";
 import type { UserData } from "@/types";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState, useEffect } from "react";
 
 interface MembersTabProps {
   user: UserData;
@@ -57,16 +57,25 @@ async function assignFacultyToMember({
   return response.json();
 }
 
-export default function MembersTab({ user, loggedInUserId, permissions, loading = false }: MembersTabProps) {
+export default function MembersTab({
+  user,
+  loggedInUserId,
+  permissions,
+  loading = false,
+}: MembersTabProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const { data: activeOrganization, isPending: isLoadingOrganization } = useActiveOrganization();
+  const { data: activeOrganization, isPending: isLoadingOrganization } =
+    useActiveOrganization();
   const [faculties, setFaculties] = useState<Faculty[]>([]);
   const [loadingFaculties, setLoadingFaculties] = useState(false);
-  
+
   // Get current member role from active organization
-  const currentMember = activeOrganization?.members?.find((member: any) => member.userId === loggedInUserId);
-  const hasAdminPermissions = currentMember?.role === "owner" || currentMember?.role === "admin";
+  const currentMember = activeOrganization?.members?.find(
+    (member: any) => member.userId === loggedInUserId
+  );
+  const hasAdminPermissions =
+    currentMember?.role === "owner" || currentMember?.role === "admin";
 
   // Mutation hook for assigning faculty to member
   const assignFacultyMutation = useMutation({
@@ -84,11 +93,12 @@ export default function MembersTab({ user, loggedInUserId, permissions, loading 
 
         return {
           ...old,
-          members: old.members?.map((member: any) =>
-            member.id === variables.memberId
-              ? { ...member, facultyId: variables.facultyId }
-              : member
-          ) || [],
+          members:
+            old.members?.map((member: any) =>
+              member.id === variables.memberId
+                ? { ...member, facultyId: variables.facultyId }
+                : member
+            ) || [],
         };
       });
 
@@ -124,7 +134,9 @@ export default function MembersTab({ user, loggedInUserId, permissions, loading 
   const fetchFaculties = async (organizationId: string) => {
     setLoadingFaculties(true);
     try {
-      const response = await fetch(`/api/faculties?organizationId=${organizationId}`);
+      const response = await fetch(
+        `/api/faculties?organizationId=${organizationId}`
+      );
       if (response.ok) {
         const data = await response.json();
         setFaculties(data);
@@ -186,10 +198,14 @@ export default function MembersTab({ user, loggedInUserId, permissions, loading 
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {activeOrganization?.members && activeOrganization.members.length > 0 ? (
+          {activeOrganization?.members &&
+          activeOrganization.members.length > 0 ? (
             <div className="space-y-4">
               {activeOrganization.members.map((member: any) => (
-                <div className="flex items-center justify-between" key={member.id}>
+                <div
+                  className="flex items-center justify-between"
+                  key={member.id}
+                >
                   <div className="flex items-center space-x-4">
                     {member.user && <UserAvatar user={member.user} />}
                     <div className="space-y-1">
@@ -206,32 +222,35 @@ export default function MembersTab({ user, loggedInUserId, permissions, loading 
                       )}
                     </div>
                   </div>
-                  {hasAdminPermissions && member.role === "member" && member.user && activeOrganization.id && (
-                    <div className="flex items-center gap-2">
-                      <Select
-                        disabled={assignFacultyMutation.isPending}
-                        onValueChange={(value) =>
-                          assignFacultyMutation.mutate({
-                            memberId: member.id,
-                            facultyId: value === "none" ? null : value,
-                            organizationId: activeOrganization.id,
-                          })
-                        }
-                        value={member.facultyId || ""}
-                      >
-                        <SelectTrigger className="w-[120px]">
-                          <SelectValue placeholder="Assign Faculty" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {faculties.map((faculty) => (
-                            <SelectItem key={faculty.id} value={faculty.id}>
-                              {faculty.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  )}
+                  {hasAdminPermissions &&
+                    member.role === "member" &&
+                    member.user &&
+                    activeOrganization.id && (
+                      <div className="flex items-center gap-2">
+                        <Select
+                          disabled={assignFacultyMutation.isPending}
+                          onValueChange={(value) =>
+                            assignFacultyMutation.mutate({
+                              memberId: member.id,
+                              facultyId: value === "none" ? null : value,
+                              organizationId: activeOrganization.id,
+                            })
+                          }
+                          value={member.facultyId || ""}
+                        >
+                          <SelectTrigger className="w-[120px]">
+                            <SelectValue placeholder="Assign Faculty" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {faculties.map((faculty) => (
+                              <SelectItem key={faculty.id} value={faculty.id}>
+                                {faculty.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
                 </div>
               ))}
             </div>

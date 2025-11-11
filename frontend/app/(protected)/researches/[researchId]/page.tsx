@@ -47,7 +47,7 @@ export async function generateMetadata({
 
   return constructMetadata({
     title: `${research.title}`,
-    description: `${research.description}`
+    description: `${research.description}`,
   });
 }
 export default async function ResearchPage({ params }: PageProps) {

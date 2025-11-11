@@ -100,7 +100,7 @@ export function DashboardSidebar({ links }: DashboardSidebarProps) {
                 </Button>
               </div> */}
               <ProfileCard />
-              <nav className="flex flex-1 flex-col gap-8 px-4 pt-4">
+              <nav className="flex flex-1 flex-col gap-8 px-4">
                 {links.map((section) => (
                   <section
                     className="flex flex-col gap-0.5"

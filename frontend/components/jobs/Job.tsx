@@ -1,33 +1,23 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import {
-  BadgeCheckIcon,
-  Calendar,
-  Clock,
-  DollarSign,
-  Loader2,
-  MapPin,
-  Users,
-} from "lucide-react";
+import { Loader2 } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { useOptimistic, useState, useTransition } from "react";
 import { toast } from "sonner";
 import { applyJob } from "@/actions/appllication";
 import { isEnrolledInCourse } from "@/actions/enrollment";
 import { useSession } from "@/lib/auth-client";
-import { formatDate, formatRelativeDate } from "@/lib/utils";
+import { formatRelativeDate, timeAgo } from "@/lib/utils";
 import type { JobData } from "@/types/types";
 import JobMoreButton from "../jobs/JobMoreButton";
 import SaveJobButton from "../jobs/SaveJobButton";
-import { UserAvatar } from "../shared/user-avatar";
-import UserTooltip from "../UserTooltip";
 import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
@@ -36,8 +26,8 @@ import {
 // Add this component for the skill match display
 function SkillMatchBadge({ matchData }: { matchData: any }) {
   // Extract match percentages
-  const skillMatchPercentage = matchData?.skillMatchPercentage || 0;
-  const courseMatchPercentage = matchData?.courseMatchPercentage || 0;
+  // const skillMatchPercentage = matchData?.skillMatchPercentage || 0;
+  // const courseMatchPercentage = matchData?.courseMatchPercentage || 0;
   const overallMatchPercentage = matchData?.matchPercentage || 0;
 
   // Determine color based on overall match
@@ -57,10 +47,10 @@ function SkillMatchBadge({ matchData }: { matchData: any }) {
       <Badge className={`${bgColor} ${textColor}`}>
         Match: {Math.round(overallMatchPercentage)}%
       </Badge>
-      <div className="text-muted-foreground text-xs">
+      {/* <div className="text-muted-foreground text-xs">
         Skills: {Math.round(skillMatchPercentage)}% | Courses:{" "}
         {Math.round(courseMatchPercentage)}%
-      </div>
+      </div> */}
     </div>
   );
 }
@@ -71,11 +61,6 @@ interface JobProps {
 
 export default function Job({ job }: JobProps) {
   const { data: session } = useSession();
-  const user = session?.user;
-  if (!user) {
-    return null;
-  }
-
   const [isPending, startTransition] = useTransition();
 
   // Fetch job match for students
@@ -88,40 +73,45 @@ export default function Job({ job }: JobProps) {
       }
       return response.json();
     },
-    enabled: user.role === "STUDENT",
+    // enabled: user.role === "STUDENT",
     staleTime: 1000 * 60 * 5, // 5 minutes
     refetchOnMount: true,
     refetchOnWindowFocus: false,
   });
 
   // Check enrollment for all job courses
-  const { data: enrolledCourses } = useQuery({
-    queryKey: ["enrolled", job?.jobCourses?.map(jc => jc.courseId)],
+  const { data: _enrolledCourses } = useQuery({
+    queryKey: ["enrolled", job?.jobCourses?.map((jc) => jc.courseId)],
     queryFn: async () => {
       if (!job?.jobCourses || job.jobCourses.length === 0) return [];
       const enrollmentChecks = await Promise.all(
         job.jobCourses.map(async (jobCourse) => ({
           courseId: jobCourse.courseId,
-          isEnrolled: await isEnrolledInCourse(jobCourse.courseId)
+          isEnrolled: await isEnrolledInCourse(jobCourse.courseId),
         }))
       );
       return enrollmentChecks;
     },
-    enabled: !!job?.jobCourses && job.jobCourses.length > 0 && user.role === "STUDENT",
+    // enabled:
+    //   !!job?.jobCourses && job.jobCourses.length > 0 && user.role === "STUDENT",
   });
-
   // Determine if user is enrolled in any of the required courses
-  const isEnrolled = enrolledCourses?.some(ec => ec.isEnrolled) || false;
+  // const isEnrolled = enrolledCourses?.some((ec) => ec.isEnrolled) || false;
 
+  // if (!user) {
+  //   return null;
+  // }
   // Use a local state to track application status
   const [isApplied, setIsApplied] = useState<boolean>(
-    job.applications.some((application) => application.applicantId === user.id)
+    job.applications.some(
+      (application) => application.applicantId === session?.user.id
+    )
   );
 
   const [optimisticApplied, setOptimisticApplied] = useOptimistic<
     boolean,
     boolean
-  >(isApplied, (state, newState: boolean) => newState);
+  >(isApplied, (_state, newState: boolean) => newState);
 
   const handleApply = () => {
     startTransition(async () => {
@@ -138,7 +128,7 @@ export default function Job({ job }: JobProps) {
           // Revert the optimistic update on failure
           setOptimisticApplied(false);
         }
-      } catch (error) {
+      } catch (_error) {
         // Revert the optimistic update on error
         setOptimisticApplied(false);
         toast.error("Failed to apply for job");
@@ -147,112 +137,59 @@ export default function Job({ job }: JobProps) {
   };
 
   return (
-    <Card className="group hover:-translate-y-1 relative overflow-hidden transition-all duration-300 hover:shadow-lg">
-      {/* Match Badge */}
-      {job?.jobCourses && job.jobCourses.length > 0 && (
-        <Badge
-          className={`absolute top-3 right-3 z-10 ${
-            isEnrolled
-              ? "bg-green-500/90 text-white"
-              : "bg-orange-500/90 text-white"
-          }`}
-        >
-          {isEnrolled ? "Profile Match" : "Course Required"}
-        </Badge>
-      )}
-
-      <CardHeader>
-        <div className="flex items-start justify-between">
-          <div className="flex items-start gap-3">
-            <UserTooltip user={job.user}>
-              <Link href={`/${job.user.username}`}>
-                <UserAvatar className="h-12 w-12" user={job.user} />
-              </Link>
-            </UserTooltip>
-            <div>
-              <UserTooltip user={job.user}>
-                <Link
-                  className="flex items-center gap-1.5 font-semibold text-md hover:underline"
-                  href={`/${job.user.username}`}
-                >
-                  {job.user.name}
-                  {job.user.emailVerified ?? (
-                    <Badge
-                      className="bg-blue-500 text-white dark:bg-blue-600"
-                      variant="secondary"
-                    >
-                      <BadgeCheckIcon className="size-4" />
-                      Verified
-                    </Badge>
-                  )}
-                </Link>
-              </UserTooltip>
-              <Link
-                className="text-muted-foreground text-sm hover:underline"
-                href={`/jobs/${job.id}`}
-              >
-                @{job.user.username} • {formatRelativeDate(job.createdAt)}
-              </Link>
-            </div>
+    <Card className="group hover:-translate-y-1 relative overflow-hidden pt-0 transition-all duration-300 hover:shadow-lg">
+      <CardHeader className="relative px-0">
+        <Image
+          alt={job.user.name}
+          className="h-44 w-full rounded-sm object-cover"
+          height="600"
+          src={job.user.image || "/_static/avatars/shadcn.jpeg"}
+          width="400"
+        />
+        {/* Display skill match for students */}
+        {session?.user.role === "STUDENT" && (
+          <div className="absolute top-0 right-0">
+            {isMatchLoading ? (
+              <Badge variant="secondary">Calculating...</Badge>
+            ) : matchData ? (
+              <SkillMatchBadge matchData={matchData} />
+            ) : null}
           </div>
-          {job.user.id === user.id && <JobMoreButton job={job} />}
+        )}
+        <div className="absolute inset-0 top-4 right-2 flex items-start justify-end">
+          {job.user.id === session?.user.id && <JobMoreButton job={job} />}
         </div>
       </CardHeader>
-
       <CardContent>
         <Link className="space-y-1.5" href={`/jobs/${job.id}`}>
           <CardTitle className="text-2xl leading-tight transition-colors hover:text-blue-600">
             {job.title}
           </CardTitle>
 
-          <CardDescription className="line-clamp-3 text-md leading-relaxed">
-            {job.summary}
-          </CardDescription>
-
           <div className="grid grid-cols-2 gap-3">
-            <div className="flex items-center gap-2 text-sm">
-              <MapPin className="size-5 text-muted-foreground" />
-              <span className="truncate">{job.location}</span>
-            </div>
-            <div className="flex items-center gap-2 text-sm">
-              <Clock className="size-5 text-muted-foreground" />
-              <span>{job.weeklyHours} hrs/week</span>
-            </div>
-            <div className="flex items-center gap-2 text-sm">
-              <DollarSign className="h-4 w-4 text-muted-foreground" />
-              <span className="font-medium">
-                ${job.salary.toLocaleString()}/month
-              </span>
-            </div>
-            <div className="flex items-center gap-2 text-sm">
-              <Calendar className="h-4 w-4 text-muted-foreground" />
-              <span className="text-muted-foreground">
-                Due {formatDate(job.endDate, "MMM dd")}
-              </span>
-            </div>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2">
+            <p className="truncate">{job.location}</p>
             <Badge className="font-medium text-sm" variant="secondary">
               {job.type.replace("_", " ")}
             </Badge>
-            <Badge className="text-sm" variant="outline">
-              <Users className="mr-1 h-3 w-3" />
-              {optimisticApplied || isApplied
-                ? job._count.applications + 1
-                : job._count.applications}{" "}
-              applied
-            </Badge>
-            {/* Display skill match for students */}
-            {user.role === "STUDENT" && (
-              <div className="mt-2">
-                {isMatchLoading ? (
-                  <Badge variant="secondary">Calculating...</Badge>
-                ) : matchData ? (
-                  <SkillMatchBadge matchData={matchData} />
-                ) : null}
-              </div>
-            )}
+            <p className="col-span-2 text-muted-foreground">
+              Posted {timeAgo(job.createdAt)}
+              {"  |  "} Apply by: {formatRelativeDate(job.createdAt)}
+              {", "}
+              {formatRelativeDate(job.endDate)}
+            </p>
+            <p className="col-span-2">
+              {job.type === "INTERNSHIP" ? "Paid Internship" : "Salary"} (
+              {job.salary.toLocaleString()}/monthly)
+            </p>
+            {/* <div className="flex flex-wrap items-center gap-2">
+              <Badge className="text-sm" variant="outline">
+                <Users className="mr-1 h-3 w-3" />
+                {optimisticApplied || isApplied
+                  ? job._count.applications + 1
+                  : job._count.applications}{" "}
+                applied
+              </Badge>
+            </div> */}
           </div>
         </Link>
       </CardContent>
@@ -262,7 +199,7 @@ export default function Job({ job }: JobProps) {
           <SaveJobButton
             initialState={{
               isSaveJobByUser: job.savedJobs.some(
-                (saveJob) => saveJob.userId === user.id
+                (saveJob) => saveJob.userId === session?.user.id
               ),
             }}
             jobId={job.id}
@@ -272,7 +209,7 @@ export default function Job({ job }: JobProps) {
             disabled={
               optimisticApplied ||
               isApplied ||
-              user.role !== "STUDENT" ||
+              session?.user.role !== "STUDENT" ||
               isPending
             }
             onClick={handleApply}

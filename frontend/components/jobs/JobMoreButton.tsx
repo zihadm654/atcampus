@@ -27,7 +27,7 @@ export default function JobMoreButton({ job, className }: JobMoreButtonProps) {
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button className={className} size="icon" variant="ghost">
-            <MoreHorizontal className="size-5 text-muted-foreground" />
+            <MoreHorizontal className="size-5" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent>

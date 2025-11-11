@@ -17,7 +17,7 @@ export const siteConfig: SiteConfig = {
 
 export const footerLinks: SidebarNavItem[] = [
   {
-    title: "Company",
+    title: "About us",
     items: [
       { title: "About", href: "#" },
       { title: "Enterprise", href: "#" },
@@ -26,11 +26,10 @@ export const footerLinks: SidebarNavItem[] = [
     ],
   },
   {
-    title: "Product",
+    title: "Security",
     items: [
       { title: "Security", href: "#" },
-      { title: "Customization", href: "#" },
-      { title: "Customers", href: "#" },
+      { title: "Sitemap", href: "#" },
       { title: "Changelog", href: "#" },
     ],
   },

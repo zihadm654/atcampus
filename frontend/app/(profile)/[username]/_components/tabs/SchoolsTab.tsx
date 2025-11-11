@@ -2,8 +2,9 @@
 
 import { MoreHorizontalIcon, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { toast } from "sonner";
+import UserAvatar from "@/components/UserAvatar";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -12,13 +13,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -31,20 +25,16 @@ import {
 import { UserRole } from "@/lib/validations/auth";
 import type { ProfilePermissions } from "@/types/profile-types";
 import type { UserData } from "@/types/types";
-import AddFacultyDialog from "../AddFacultyDialog";
 import AddSchoolDialog from "../AddSchoolDialog";
-import EditFacultyDialog from "../EditFacultyDialog";
-import EditSchoolDialog from "../EditSchoolDialog";
-import {
-  useDeleteFacultyMutation,
-  useDeleteSchoolMutation,
-} from "../schoolMutations";
+import { useDeleteSchoolMutation } from "../schoolMutations";
 
 export interface Faculty {
   id: string;
   name: string;
   schoolId: string; // Add schoolId to the Faculty interface
   description?: string | null;
+  logo?: string | null;
+  coverPhoto?: string | null;
 }
 
 export interface School {
@@ -53,6 +43,8 @@ export interface School {
   slug: string;
   description?: string | null;
   website?: string | null;
+  logo?: string | null;
+  coverPhoto?: string | null;
   faculties: Faculty[];
 }
 
@@ -74,12 +66,7 @@ const SchoolManagement = ({
   isCurrentUser: boolean;
 }) => {
   const router = useRouter();
-  const [showNewDialog, setShowNewDialog] = useState(false);
-  const [showEditDialog, setShowEditDialog] = useState(false);
-  const [showEditFaculty, setShowEditFaculty] = useState(false);
-  const [selectedFaculty, setSelectedFaculty] = useState<Faculty | null>(null); // Add state for selected faculty
   const deleteSchoolMutation = useDeleteSchoolMutation();
-  const deleteFacultyMutation = useDeleteFacultyMutation();
 
   // Use permissions for more granular control
   const canManageAcademic =
@@ -94,21 +81,14 @@ const SchoolManagement = ({
     });
   };
 
-  const handleDeleteFaculty = (facultyId: string) => {
-    toast.promise(deleteFacultyMutation.mutateAsync(facultyId), {
-      loading: "Deleting faculty...",
-      success: "Faculty deleted successfully",
-      error: "Failed to delete faculty",
-    });
-  };
-
   return (
     <Card className="my-2">
       <CardHeader>
         <CardTitle
-          className="text-lg hover:cursor-pointer"
+          className="flex items-center gap-2 text-lg hover:cursor-pointer"
           onClick={() => router.push(`/${user.username}/${school.id}`)}
         >
+          <UserAvatar avatarUrl={school.logo} size={60} />
           {school.name}
         </CardTitle>
         {canManageAcademic && (
@@ -123,12 +103,6 @@ const SchoolManagement = ({
                 <DropdownMenuLabel>Actions</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuGroup>
-                  <DropdownMenuItem onSelect={() => setShowEditDialog(true)}>
-                    Edit School
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onSelect={() => setShowNewDialog(true)}>
-                    Add Faculty
-                  </DropdownMenuItem>
                   <DropdownMenuItem>
                     <Button
                       className="w-full justify-start text-red-500 hover:text-red-600"
@@ -146,106 +120,9 @@ const SchoolManagement = ({
                 </DropdownMenuGroup>
               </DropdownMenuContent>
             </DropdownMenu>
-            <Dialog onOpenChange={setShowNewDialog} open={showNewDialog}>
-              <DialogContent className="sm:max-w-[425px]">
-                <DialogHeader>
-                  <DialogTitle>Create New Faculty</DialogTitle>
-                  <DialogDescription>
-                    Provide a name for your new faculty. Click create when
-                    you&apos;re done.
-                  </DialogDescription>
-                </DialogHeader>
-                <AddFacultyDialog
-                  schoolId={school.id}
-                  schoolName={school.name}
-                />
-              </DialogContent>
-            </Dialog>
-            <Dialog onOpenChange={setShowEditDialog} open={showEditDialog}>
-              <DialogContent className="sm:max-w-[425px]">
-                <DialogHeader>
-                  <DialogTitle>Edit School</DialogTitle>
-                  <DialogDescription>Edit School Information</DialogDescription>
-                </DialogHeader>
-                <EditSchoolDialog school={school} />
-              </DialogContent>
-            </Dialog>
           </CardAction>
         )}
       </CardHeader>
-      <CardContent className="grid grid-cols-1 gap-3 max-md:px-4">
-        {school.faculties.map((faculty) => (
-          <div key={faculty.id}>
-            <div className="flex items-center justify-between gap-1">
-              <h4>{faculty.name}</h4>
-              {canManageAcademic && (
-                <DropdownMenu modal={false}>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      aria-label="Open menu"
-                      size="icon-sm"
-                      variant="outline"
-                    >
-                      <MoreHorizontalIcon />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-40">
-                    <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuGroup>
-                      <DropdownMenuItem
-                        onSelect={() => {
-                          setSelectedFaculty({
-                            ...faculty,
-                            schoolId: school.id,
-                            description: faculty.description || undefined,
-                          });
-                          setShowEditFaculty(true);
-                        }}
-                      >
-                        Edit Faculty
-                      </DropdownMenuItem>
-                      <DropdownMenuItem>
-                        <Button
-                          className="w-full justify-start text-red-500 hover:text-red-600"
-                          disabled={deleteFacultyMutation.isPending}
-                          onClick={() => handleDeleteFaculty(faculty.id)}
-                          size="sm"
-                          variant="ghost"
-                        >
-                          <Trash2 className="mr-2 h-4 w-4" />
-                          {deleteFacultyMutation.isPending
-                            ? "Deleting..."
-                            : "Delete"}
-                        </Button>
-                      </DropdownMenuItem>
-                    </DropdownMenuGroup>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              )}
-            </div>
-            <p className="text-gray-500">{faculty.description}</p>
-          </div>
-        ))}
-        {/* Move the Dialog outside the map loop and use selectedFaculty */}
-        <Dialog onOpenChange={setShowEditFaculty} open={showEditFaculty}>
-          <DialogContent className="sm:max-w-[425px]">
-            <DialogHeader>
-              <DialogTitle>Edit Faculty</DialogTitle>
-              <DialogDescription>Edit Faculty Information</DialogDescription>
-            </DialogHeader>
-            {selectedFaculty && (
-              <EditFacultyDialog
-                faculty={{
-                  ...selectedFaculty,
-                  schoolId: school.id,
-                  description: selectedFaculty.description || undefined,
-                }}
-              />
-            )}
-          </DialogContent>
-        </Dialog>
-      </CardContent>
     </Card>
   );
 };
@@ -285,6 +162,8 @@ export default function SchoolsTab({
                   ...school,
                   description: school.description ?? undefined,
                   website: school.website ?? undefined,
+                  logo: school.logo ?? undefined,
+                  coverPhoto: school.coverPhoto ?? undefined,
                 }}
                 user={user}
               />
@@ -313,7 +192,11 @@ export default function SchoolsTab({
           {user.schools && user.schools.length > 0 ? (
             <div className="grid gap-2 lg:grid-cols-2">
               {user.schools.map((school) => (
-                <div className="rounded-lg border p-4" key={school.id}>
+                <div
+                  className="rounded-lg border p-4 hover:cursor-pointer"
+                  key={school.id}
+                  onClick={() => router.push(`/${user.username}/${school.id}`)}
+                >
                   <h3 className="font-semibold">{school.name}</h3>
                   <p className="text-gray-500 text-sm">
                     {school.faculties.length} faculties

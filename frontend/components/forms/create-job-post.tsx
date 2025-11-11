@@ -96,7 +96,7 @@ export function CreateJobForm({ job }: CreateJobFormProps) {
           experienceLevel: job.experienceLevel as ExperienceLevel,
           endDate: new Date(job.endDate),
           duration: job.duration || undefined,
-          courseIds: job.jobCourses?.map(jc => jc.courseId) || [],
+          courseIds: job.jobCourses?.map((jc) => jc.courseId) || [],
           summary: job.summary || "", // Convert null to empty string
           skills: job.skills || [],
         }
@@ -125,7 +125,7 @@ export function CreateJobForm({ job }: CreateJobFormProps) {
   useEffect(() => {
     if (courses && job && job.jobCourses) {
       // Make sure the courseIds in the form match the job's jobCourses
-      const courseIds = job.jobCourses.map(jc => jc.courseId);
+      const courseIds = job.jobCourses.map((jc) => jc.courseId);
       form.setValue("courseIds", courseIds);
     }
   }, [courses, job, form]);
@@ -309,13 +309,19 @@ export function CreateJobForm({ job }: CreateJobFormProps) {
                     <FormLabel>Associated Courses (Optional)</FormLabel>
                     <FormControl>
                       <MultipleSelector
-                        defaultOptions={isLoadingCourses ? [] : courses?.map(course => ({
-                          label: `${course.title} (${course.code})`,
-                          value: course.id
-                        })) || []}
+                        defaultOptions={
+                          isLoadingCourses
+                            ? []
+                            : courses?.map((course) => ({
+                                label: `${course.title} (${course.code})`,
+                                value: course.id,
+                              })) || []
+                        }
                         emptyIndicator={
                           <p className="text-center text-gray-600 text-lg leading-10 dark:text-gray-400">
-                            {isLoadingCourses ? "Loading courses..." : "No courses found."}
+                            {isLoadingCourses
+                              ? "Loading courses..."
+                              : "No courses found."}
                           </p>
                         }
                         onChange={(selectedOptions: Option[]) =>
@@ -323,12 +329,27 @@ export function CreateJobForm({ job }: CreateJobFormProps) {
                             selectedOptions.map((option) => option.value)
                           )
                         }
-                        placeholder={isLoadingCourses ? "Loading courses..." : "Select associated courses..."}
-                        value={courses && field.value ? 
-                          field.value.map(id => {
-                            const course = courses.find(c => c.id === id);
-                            return course ? { label: `${course.title} (${course.code})`, value: course.id } : null;
-                          }).filter(Boolean) as Option[] : []
+                        placeholder={
+                          isLoadingCourses
+                            ? "Loading courses..."
+                            : "Select associated courses..."
+                        }
+                        value={
+                          courses && field.value
+                            ? (field.value
+                                .map((id) => {
+                                  const course = courses.find(
+                                    (c) => c.id === id
+                                  );
+                                  return course
+                                    ? {
+                                        label: `${course.title} (${course.code})`,
+                                        value: course.id,
+                                      }
+                                    : null;
+                                })
+                                .filter(Boolean) as Option[])
+                            : []
                         }
                       />
                     </FormControl>
@@ -481,7 +502,12 @@ export function CreateJobForm({ job }: CreateJobFormProps) {
             </div>
           </CardContent>
         </Card>
-        <Button variant="default" className="w-full" disabled={pending} type="submit">
+        <Button
+          className="w-full"
+          disabled={pending}
+          type="submit"
+          variant="default"
+        >
           {pending ? "Submitting..." : "Continue"}
         </Button>
       </form>

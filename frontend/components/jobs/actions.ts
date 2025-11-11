@@ -102,7 +102,7 @@ export async function createJob(values: TJob) {
 
       // Create new job course associations
       await prisma.jobCourse.createMany({
-        data: courseIds.map(courseId => ({
+        data: courseIds.map((courseId) => ({
           jobId: job.id,
           courseId,
         })),
@@ -185,7 +185,7 @@ export async function updateJob(values: TJob, jobId: string) {
 
       // Create new job course associations
       await prisma.jobCourse.createMany({
-        data: courseIds.map(courseId => ({
+        data: courseIds.map((courseId) => ({
           jobId,
           courseId,
         })),

@@ -1,11 +1,15 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect, useState } from "react";
+import { Camera } from "lucide-react";
+import Image, { type StaticImageData } from "next/image";
+import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
+import Resizer from "react-image-file-resizer";
 import { toast } from "sonner";
 import * as z from "zod";
 import { useCreateFacultyMutation } from "@/app/(profile)/[username]/_components/schoolMutations";
+import CropImageDialog from "@/components/shared/CropImageDialog";
 import { Button } from "@/components/ui/button";
 import { DialogClose, DialogFooter } from "@/components/ui/dialog";
 import {
@@ -17,6 +21,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -31,20 +36,185 @@ const addFacultySchema = z.object({
   name: z.string().min(1, "Faculty name is required"),
   slug: z.string().min(1, "Faculty slug is required"),
   description: z.string().optional(),
+  logo: z.string().optional(),
+  coverPhoto: z.string().optional(),
 });
+
+interface AvatarInputProps {
+  src: string | StaticImageData;
+  onImageCropped: (blob: Blob | null) => void;
+}
+
+function AvatarInput({ src, onImageCropped }: AvatarInputProps) {
+  const [imageToCrop, setImageToCrop] = useState<File>();
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  function onImageSelected(image: File | undefined) {
+    if (!image) return;
+
+    Resizer.imageFileResizer(
+      image,
+      1024,
+      1024,
+      "WEBP",
+      100,
+      0,
+      (uri) => setImageToCrop(uri as File),
+      "file"
+    );
+  }
+
+  return (
+    <>
+      <input
+        accept="image/*"
+        className="sr-only hidden"
+        onChange={(e) => onImageSelected(e.target.files?.[0])}
+        ref={fileInputRef}
+        type="file"
+      />
+      <button
+        aria-label="Change avatar"
+        className="group relative block"
+        onClick={() => fileInputRef.current?.click()}
+        type="button"
+      >
+        <Image
+          alt="Avatar preview"
+          className="size-20 flex-none rounded-full border-2 border-gray-200 object-cover shadow"
+          height={150}
+          key={typeof src === "string" ? src : src.src}
+          src={src}
+          width={150}
+        />
+        <span className="absolute inset-0 m-auto flex size-12 items-center justify-center rounded-full bg-black bg-opacity-30 text-white transition-colors duration-200 group-hover:bg-opacity-25">
+          <Camera size={24} />
+        </span>
+      </button>
+      {imageToCrop && (
+        <CropImageDialog
+          cropAspectRatio={1}
+          onClose={() => {
+            setImageToCrop(undefined);
+            if (fileInputRef.current) {
+              fileInputRef.current.value = "";
+            }
+          }}
+          onCropped={onImageCropped}
+          src={URL.createObjectURL(imageToCrop)}
+        />
+      )}
+    </>
+  );
+}
+
+// CoverImageInput is similar to AvatarInput but with a 3:1 aspect ratio and larger preview
+function CoverImageInput({
+  src,
+  onImageCropped,
+}: {
+  src: string | StaticImageData;
+  onImageCropped: (blob: Blob | null) => void;
+}) {
+  const [imageToCrop, setImageToCrop] = useState<File>();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  function onImageSelected(image: File | undefined) {
+    if (!image) return;
+    Resizer.imageFileResizer(
+      image,
+      1800,
+      600,
+      "WEBP",
+      100,
+      0,
+      (uri) => setImageToCrop(uri as File),
+      "file"
+    );
+  }
+
+  return (
+    <>
+      <input
+        accept="image/*"
+        className="sr-only hidden"
+        onChange={(e) => onImageSelected(e.target.files?.[0])}
+        ref={fileInputRef}
+        type="file"
+      />
+      <button
+        aria-label="Change cover image"
+        className="group relative block w-full"
+        onClick={() => fileInputRef.current?.click()}
+        type="button"
+      >
+        <Image
+          alt="Cover preview"
+          className="h-32 w-full rounded-lg border-2 border-gray-200 object-cover shadow"
+          height={200}
+          key={typeof src === "string" ? src : src.src}
+          src={src}
+          width={600}
+        />
+        <span className="absolute inset-0 m-auto flex items-center justify-center rounded-lg bg-black bg-opacity-30 text-white transition-colors duration-200 group-hover:bg-opacity-25">
+          <Camera size={32} />
+        </span>
+      </button>
+      {imageToCrop && (
+        <CropImageDialog
+          cropAspectRatio={3}
+          onClose={() => {
+            setImageToCrop(undefined);
+            if (fileInputRef.current) {
+              fileInputRef.current.value = "";
+            }
+          }}
+          onCropped={onImageCropped}
+          src={URL.createObjectURL(imageToCrop)}
+        />
+      )}
+    </>
+  );
+}
 
 interface AddFacultyDialogProps {
   schoolId: string;
   schoolName: string;
+  onAdded?: () => void;
+  setOpen: (open: boolean) => void;
 }
 
 export default function AddFacultyDialog({
   schoolId,
   schoolName,
+  onAdded,
+  setOpen,
 }: AddFacultyDialogProps) {
-  const [open, setOpen] = useState(false);
   const createFacultyMutation = useCreateFacultyMutation();
   const [isSlugEdited, setIsSlugEdited] = useState(false);
+
+  // State for image handling
+  const [croppedAvatar, setCroppedAvatar] = useState<Blob | null>(null);
+  const [croppedCover, setCroppedCover] = useState<Blob | null>(null);
+  const [avatarPreviewUrl, setAvatarPreviewUrl] = useState<string>("");
+  const [coverPreviewUrl, setCoverPreviewUrl] = useState<string>("");
+
+  useEffect(() => {
+    if (croppedAvatar) {
+      const url = URL.createObjectURL(croppedAvatar);
+      setAvatarPreviewUrl(url);
+      return () => URL.revokeObjectURL(url);
+    }
+  }, [croppedAvatar]);
+
+  useEffect(() => {
+    if (croppedCover) {
+      const url = URL.createObjectURL(croppedCover);
+      setCoverPreviewUrl(url);
+      return () => URL.revokeObjectURL(url);
+    }
+  }, [croppedCover]);
 
   // Since we're working with static data and schoolId is a database ID,
   // we'll try to find a matching school by checking if any school name contains the schoolId
@@ -60,6 +230,8 @@ export default function AddFacultyDialog({
       name: "",
       slug: "",
       description: "",
+      logo: "",
+      coverPhoto: "",
     },
   });
   const name = form.watch("name");
@@ -78,10 +250,20 @@ export default function AddFacultyDialog({
   }, [name, isSlugEdited, form]);
 
   function onSubmit(values: z.infer<typeof addFacultySchema>) {
+    // Convert blobs to files if they exist
+    const logoFile = croppedAvatar
+      ? new File([croppedAvatar], "faculty-logo.webp", { type: "image/webp" })
+      : values.logo;
+    const coverFile = croppedCover
+      ? new File([croppedCover], "faculty-cover.webp", { type: "image/webp" })
+      : values.coverPhoto;
+
     createFacultyMutation.mutate(
       {
         ...values,
         schoolId,
+        logo: logoFile,
+        coverPhoto: coverFile,
       },
       {
         onSuccess: () => {
@@ -89,6 +271,15 @@ export default function AddFacultyDialog({
           form.reset();
           setIsSlugEdited(false);
           setOpen(false);
+          // Reset image states
+          setCroppedAvatar(null);
+          setCroppedCover(null);
+          setAvatarPreviewUrl("");
+          setCoverPreviewUrl("");
+          // Call the onAdded callback if provided
+          if (onAdded) {
+            onAdded();
+          }
         },
         onError: (error) => {
           toast.error(error.message || "Failed to create faculty");
@@ -99,18 +290,37 @@ export default function AddFacultyDialog({
 
   // Reset form and state when dialog opens
   useEffect(() => {
-    if (open) {
-      form.reset({
-        name: "",
-        slug: "",
-        description: "",
-      });
-      setIsSlugEdited(false);
-    }
-  }, [open, form]);
+    form.reset({
+      name: "",
+      slug: "",
+      description: "",
+      logo: "",
+      coverPhoto: "",
+    });
+    setIsSlugEdited(false);
+    // Reset image states when dialog opens
+    setCroppedAvatar(null);
+    setCroppedCover(null);
+    setAvatarPreviewUrl("");
+    setCoverPreviewUrl("");
+  }, []);
 
   return (
     <Form {...form}>
+      <div className="space-y-1.5">
+        <Label>Logo</Label>
+        <AvatarInput
+          onImageCropped={setCroppedAvatar}
+          src={avatarPreviewUrl || "/placeholder-avatar.png"}
+        />
+      </div>
+      <div className="space-y-1.5">
+        <Label>Cover Photo</Label>
+        <CoverImageInput
+          onImageCropped={setCroppedCover}
+          src={coverPreviewUrl || "/placeholder-cover.jpg"}
+        />
+      </div>
       <form className="space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
         <FormField
           control={form.control}

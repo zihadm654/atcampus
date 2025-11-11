@@ -102,7 +102,8 @@ export default function JobMatchScore({ jobId }: JobMatchScoreProps) {
               </div>
               <Progress className="h-2" value={skillPercentage} />
               <div className="mt-1 text-muted-foreground text-xs">
-                {matchData.matchedSkills || 0} of {matchData.requiredSkills || 0} skills matched
+                {matchData.matchedSkills || 0} of{" "}
+                {matchData.requiredSkills || 0} skills matched
               </div>
             </div>
             <div>
@@ -112,8 +113,8 @@ export default function JobMatchScore({ jobId }: JobMatchScoreProps) {
               </div>
               <Progress className="h-2" value={coursePercentage} />
               <div className="mt-1 text-muted-foreground text-xs">
-                {matchData.matchedCourses || 0} of {matchData.requiredCourses || 0} courses
-                matched
+                {matchData.matchedCourses || 0} of{" "}
+                {matchData.requiredCourses || 0} courses matched
               </div>
             </div>
           </div>

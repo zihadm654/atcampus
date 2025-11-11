@@ -197,25 +197,33 @@ export default function EditProfileDialog({
                 </FormItem>
               )}
             /> */}
-            <FormField
-              control={form.control}
-              name="currentSemester"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Current Seamester</FormLabel>
-                  <FormControl>
-                    <Input
-                      max={100}
-                      min={0}
-                      placeholder="current seamester"
-                      type="number"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            {user.role === "STUDENT" && (
+              <FormField
+                control={form.control}
+                name="currentSemester"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Current Semester</FormLabel>
+                    <FormControl>
+                      <Input
+                        max={100}
+                        min={0}
+                        placeholder="Current semester"
+                        type="number"
+                        {...field}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          field.onChange(
+                            value === "" ? 0 : Number.parseInt(value, 10)
+                          );
+                        }}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
             <DialogFooter>
               <LoadingButton loading={mutation.isPending} type="submit">
                 Save

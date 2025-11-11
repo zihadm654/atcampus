@@ -5,7 +5,7 @@ import { MessageSquare } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { useSession } from "@/lib/auth-client";
-import { cn, formatRelativeDate } from "@/lib/utils";
+import { formatRelativeDate } from "@/lib/utils";
 import type { PostData } from "@/types/types";
 
 import Linkify from "../feed/Linkify";
@@ -116,7 +116,7 @@ function MediaPreviews({ attachments }: MediaPreviewsProps) {
     return (
       <div className="grid grid-cols-2 gap-2">
         {attachments.map((m) => (
-          <div key={m.id} className="overflow-hidden rounded-2xl">
+          <div className="overflow-hidden rounded-2xl" key={m.id}>
             <MediaPreview media={m} />
           </div>
         ))}
@@ -160,7 +160,9 @@ function MediaPreviews({ attachments }: MediaPreviewsProps) {
         {attachments.length > 4 && (
           <div className="absolute inset-0 flex items-center justify-center bg-black/50">
             <div className="rounded-full bg-white/20 px-4 py-2 backdrop-blur-sm">
-              <span className="text-lg font-bold text-white">+{attachments.length - 4}</span>
+              <span className="font-bold text-lg text-white">
+                +{attachments.length - 4}
+              </span>
             </div>
           </div>
         )}

@@ -7,8 +7,6 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import * as z from "zod";
-import { JsonToHtml } from "@/components/editor/JsonToHtml";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -163,260 +161,184 @@ export function CourseReviewForm({
   };
 
   return (
-    <div className="grid gap-6 lg:grid-cols-3">
-      {/* Course Details */}
-      <div className="space-y-6 lg:col-span-2">
-        <Card>
-          <CardHeader>
-            <div className="flex items-start justify-between">
-              <div>
-                <CardTitle className="text-2xl">
-                  {approval.course.title}
-                </CardTitle>
-                <CardDescription className="mt-2 text-base">
-                  {approval.course.code} • {approval.course.faculty.name}
-                </CardDescription>
-              </div>
-              <div className="flex flex-col gap-2">
-                <Badge
-                  className="text-sm"
-                  variant={getStatusColor(approval.status) as any}
-                >
-                  {approval.status.replace("_", " ")}
-                </Badge>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <div>
-                <p className="font-medium text-sm">Instructor</p>
-                <p className="text-muted-foreground text-sm">
-                  {approval.course.instructor.name}
-                </p>
-              </div>
-              <div>
-                <p className="font-medium text-sm">Institution</p>
-                <p className="text-muted-foreground text-sm">
-                  {approval.course.faculty.school.institution.name}
-                </p>
-              </div>
-            </div>
-            <div>
-              <h4 className="font-medium text-sm">Description</h4>
-              <p className="text-muted-foreground text-sm">
-                <JsonToHtml json={JSON.parse(approval.course.description)} />
-              </p>
-            </div>
-            <div>
-              <p className="font-medium text-sm">Objectives</p>
-              <ul className="list-inside list-disc text-muted-foreground text-sm">
-                {approval.course.objectives?.map((obj, index) => (
-                  <li key={index}>{obj}</li>
-                ))}
-              </ul>
-            </div>
-          </CardContent>
-        </Card>
-
-        {approval.comments && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Previous Reviewer Comments</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground text-sm">
-                {approval.comments}
-              </p>
-            </CardContent>
-          </Card>
-        )}
-      </div>
-
-      {/* Review Form */}
-      <div className="lg:col-span-1">
-        <Card>
-          <CardHeader>
-            <CardTitle>Review Course</CardTitle>
-            <CardDescription>Make a decision on this course.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Form {...form}>
-              <form
-                className="space-y-6"
-                onSubmit={form.handleSubmit(onSubmit)}
-              >
-                <FormField
-                  control={form.control}
-                  name="decision"
-                  render={({ field }) => (
-                    <FormItem className="space-y-3">
-                      <FormLabel>Decision</FormLabel>
-                      <FormControl>
-                        <RadioGroup
-                          className="flex flex-col space-y-1"
-                          defaultValue={field.value}
-                          onValueChange={field.onChange}
-                        >
-                          <FormItem className="flex items-center space-x-3 space-y-0">
-                            <FormControl>
-                              <RadioGroupItem value="PUBLISHED" />
-                            </FormControl>
-                            <FormLabel className="font-normal">
-                              Approve and Publish
-                            </FormLabel>
-                          </FormItem>
-                          <FormItem className="flex items-center space-x-3 space-y-0">
-                            <FormControl>
-                              <RadioGroupItem value="REJECTED" />
-                            </FormControl>
-                            <FormLabel className="font-normal">
-                              Reject
-                            </FormLabel>
-                          </FormItem>
-                          <FormItem className="flex items-center space-x-3 space-y-0">
-                            <FormControl>
-                              <RadioGroupItem value="NEEDS_REVISION" />
-                            </FormControl>
-                            <FormLabel className="font-normal">
-                              Request Revision
-                            </FormLabel>
-                          </FormItem>
-                        </RadioGroup>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                {form.watch("decision") === "PUBLISHED" && (
-                  <div className="space-y-4">
-                    <FormField
-                      control={form.control}
-                      name="qualityScore"
-                      render={({ field }) => (
-                        <FormItem>
-                          <div className="flex items-center justify-between">
-                            <FormLabel>Overall Quality Score</FormLabel>
-                            <span className="rounded-md bg-muted px-2 py-1 font-medium text-sm">
-                              {field.value || 75}%
-                            </span>
-                          </div>
+    <div className="lg:col-span-1">
+      <Card>
+        <CardHeader>
+          <CardTitle>Review Course</CardTitle>
+          <CardDescription>Make a decision on this course.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Form {...form}>
+            <form className="space-y-6" onSubmit={form.handleSubmit(onSubmit)}>
+              <FormField
+                control={form.control}
+                name="decision"
+                render={({ field }) => (
+                  <FormItem className="space-y-3">
+                    <FormLabel>Decision</FormLabel>
+                    <FormControl>
+                      <RadioGroup
+                        className="flex flex-col space-y-1"
+                        defaultValue={field.value}
+                        onValueChange={field.onChange}
+                      >
+                        <FormItem className="flex items-center space-x-3 space-y-0">
                           <FormControl>
-                            <div className="pt-2">
-                              <div className="mb-1 flex justify-between text-muted-foreground text-xs">
-                                <span>0%</span>
-                                <span>100%</span>
-                              </div>
-                              <Slider
-                                className="w-full"
-                                defaultValue={[field.value || 75]}
-                                max={100}
-                                min={0}
-                                onValueChange={(val) => field.onChange(val[0])}
-                                step={1}
-                              />
-                            </div>
+                            <RadioGroupItem value="PUBLISHED" />
                           </FormControl>
-                          <FormMessage />
+                          <FormLabel className="font-normal">
+                            Approve and Publish
+                          </FormLabel>
                         </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="contentQualityScore"
-                      render={({ field }) => (
-                        <FormItem>
-                          <div className="flex items-center justify-between">
-                            <FormLabel>Content Quality Score</FormLabel>
-                            <span className="rounded-md bg-muted px-2 py-1 font-medium text-sm">
-                              {field.value || 75}%
-                            </span>
-                          </div>
+                        <FormItem className="flex items-center space-x-3 space-y-0">
                           <FormControl>
-                            <div className="pt-2">
-                              <div className="mb-1 flex justify-between text-muted-foreground text-xs">
-                                <span>0%</span>
-                                <span>100%</span>
-                              </div>
-                              <Slider
-                                className="w-full"
-                                defaultValue={[field.value || 75]}
-                                max={100}
-                                min={0}
-                                onValueChange={(val) => field.onChange(val[0])}
-                                step={1}
-                              />
-                            </div>
+                            <RadioGroupItem value="REJECTED" />
                           </FormControl>
-                          <FormMessage />
+                          <FormLabel className="font-normal">Reject</FormLabel>
                         </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="pedagogyQualityScore"
-                      render={({ field }) => (
-                        <FormItem>
-                          <div className="flex items-center justify-between">
-                            <FormLabel>Pedagogy Quality Score</FormLabel>
-                            <span className="rounded-md bg-muted px-2 py-1 font-medium text-sm">
-                              {field.value || 75}%
-                            </span>
-                          </div>
+                        <FormItem className="flex items-center space-x-3 space-y-0">
                           <FormControl>
-                            <div className="pt-2">
-                              <div className="mb-1 flex justify-between text-muted-foreground text-xs">
-                                <span>0%</span>
-                                <span>100%</span>
-                              </div>
-                              <Slider
-                                className="w-full"
-                                defaultValue={[field.value || 75]}
-                                max={100}
-                                min={0}
-                                onValueChange={(val) => field.onChange(val[0])}
-                                step={1}
-                              />
-                            </div>
+                            <RadioGroupItem value="NEEDS_REVISION" />
                           </FormControl>
-                          <FormMessage />
+                          <FormLabel className="font-normal">
+                            Request Revision
+                          </FormLabel>
                         </FormItem>
-                      )}
-                    />
-                  </div>
+                      </RadioGroup>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
                 )}
+              />
 
-                <FormField
-                  control={form.control}
-                  name="comments"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Comments</FormLabel>
-                      <FormControl>
-                        <Textarea
-                          className="resize-y"
-                          placeholder="Add any comments or feedback here..."
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+              {form.watch("decision") === "PUBLISHED" && (
+                <div className="space-y-4">
+                  <FormField
+                    control={form.control}
+                    name="qualityScore"
+                    render={({ field }) => (
+                      <FormItem>
+                        <div className="flex items-center justify-between">
+                          <FormLabel>Overall Quality Score</FormLabel>
+                          <span className="rounded-md bg-muted px-2 py-1 font-medium text-sm">
+                            {field.value || 75}%
+                          </span>
+                        </div>
+                        <FormControl>
+                          <div className="pt-2">
+                            <div className="mb-1 flex justify-between text-muted-foreground text-xs">
+                              <span>0%</span>
+                              <span>100%</span>
+                            </div>
+                            <Slider
+                              className="w-full"
+                              defaultValue={[field.value || 75]}
+                              max={100}
+                              min={0}
+                              onValueChange={(val) => field.onChange(val[0])}
+                              step={1}
+                            />
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="contentQualityScore"
+                    render={({ field }) => (
+                      <FormItem>
+                        <div className="flex items-center justify-between">
+                          <FormLabel>Content Quality Score</FormLabel>
+                          <span className="rounded-md bg-muted px-2 py-1 font-medium text-sm">
+                            {field.value || 75}%
+                          </span>
+                        </div>
+                        <FormControl>
+                          <div className="pt-2">
+                            <div className="mb-1 flex justify-between text-muted-foreground text-xs">
+                              <span>0%</span>
+                              <span>100%</span>
+                            </div>
+                            <Slider
+                              className="w-full"
+                              defaultValue={[field.value || 75]}
+                              max={100}
+                              min={0}
+                              onValueChange={(val) => field.onChange(val[0])}
+                              step={1}
+                            />
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="pedagogyQualityScore"
+                    render={({ field }) => (
+                      <FormItem>
+                        <div className="flex items-center justify-between">
+                          <FormLabel>Pedagogy Quality Score</FormLabel>
+                          <span className="rounded-md bg-muted px-2 py-1 font-medium text-sm">
+                            {field.value || 75}%
+                          </span>
+                        </div>
+                        <FormControl>
+                          <div className="pt-2">
+                            <div className="mb-1 flex justify-between text-muted-foreground text-xs">
+                              <span>0%</span>
+                              <span>100%</span>
+                            </div>
+                            <Slider
+                              className="w-full"
+                              defaultValue={[field.value || 75]}
+                              max={100}
+                              min={0}
+                              onValueChange={(val) => field.onChange(val[0])}
+                              step={1}
+                            />
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              )}
 
-                <Button
-                  className="w-full"
-                  disabled={isSubmitting || !canReview}
-                  type="submit"
-                >
-                  {isSubmitting ? "Processing..." : "Submit Review"}
-                </Button>
-              </form>
-            </Form>
-          </CardContent>
-        </Card>
-      </div>
+              <FormField
+                control={form.control}
+                name="comments"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Comments</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        className="resize-y"
+                        placeholder="Add any comments or feedback here..."
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <Button
+                className="w-full"
+                disabled={isSubmitting || !canReview}
+                type="submit"
+                variant="default"
+              >
+                {isSubmitting ? "Processing..." : "Submit Review"}
+              </Button>
+            </form>
+          </Form>
+        </CardContent>
+      </Card>
     </div>
   );
 }

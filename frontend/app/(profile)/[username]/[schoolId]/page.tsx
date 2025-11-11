@@ -1,14 +1,21 @@
-import { GraduationCap } from "lucide-react";
 import type { Metadata } from "next";
 import Image from "next/image";
 import { notFound } from "next/navigation";
-import { cache } from "react";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
+import { cache, Suspense } from "react";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/session";
 import { getUserDataSelect } from "@/types/types";
-import { FacultyCard } from "../_components/FacultyCard";
+import EditSchoolDialog from "../_components/EditSchoolDialog";
+import Client from "./client";
 
 interface PageProps {
   params: Promise<{ username: string; schoolId: string }>;
@@ -54,7 +61,11 @@ const getUser = cache(async (username: string, loggedInUserId: string) => {
                     },
                   },
                 },
-                take: 10, // Limit courses per faculty for initial load
+              },
+              members: {
+                include: {
+                  user: true,
+                },
               },
               _count: {
                 select: {
@@ -70,6 +81,8 @@ const getUser = cache(async (username: string, loggedInUserId: string) => {
       clubs: true,
     },
   });
+
+  if (!user) notFound();
 
   return user;
 });
@@ -146,6 +159,7 @@ export async function generateMetadata({
     title: `${schoolId} (@${user.username})`,
   };
 }
+
 export default async function Page({ params }: PageProps) {
   const { username, schoolId } = await params;
   const loggedInUser = await getCurrentUser();
@@ -163,6 +177,10 @@ export default async function Page({ params }: PageProps) {
   if (!(user && school)) {
     return notFound();
   }
+
+  // Check if the current user can manage this school
+  const canManageSchool =
+    user.role === "INSTITUTION" && loggedInUser.id === user.id;
 
   return (
     <div className="container mx-auto w-full space-y-6 max-md:p-3">
@@ -198,13 +216,20 @@ export default async function Page({ params }: PageProps) {
               </div>
             )}
             <div className="flex-1">
-              <h1 className="mb-2 font-bold text-4xl">{school.name}</h1>
-              {school.shortName && (
-                <p className="text-lg opacity-90">{school.shortName}</p>
-              )}
-              {school.description && (
-                <p className="mt-2 text-sm opacity-80">{school.description}</p>
-              )}
+              <div className="flex items-start justify-between">
+                <div>
+                  <h1 className="mb-2 font-bold text-4xl">{school.name}</h1>
+                  {school.shortName && (
+                    <p className="text-lg opacity-90">{school.shortName}</p>
+                  )}
+                  {school.description && (
+                    <p className="mt-2 text-sm opacity-80">
+                      {school.description}
+                    </p>
+                  )}
+                </div>
+                {canManageSchool && <EditSchoolDialogButton school={school} />}
+              </div>
             </div>
           </div>
         </div>
@@ -212,43 +237,34 @@ export default async function Page({ params }: PageProps) {
 
       {/* Faculties Section */}
       <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="font-bold text-3xl">Faculties</h2>
-          <Badge className="text-sm" variant="secondary">
-            {school.faculties.length}{" "}
-            {school.faculties.length === 1 ? "Faculty" : "Faculties"}
-          </Badge>
-        </div>
-
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {school.faculties && school.faculties.length > 0 ? (
-            school.faculties.map((faculty) => (
-              <FacultyCard
-                faculty={faculty}
-                key={faculty.id}
-                schoolId={school.id}
-                showActions={
-                  user.role === "INSTITUTION" && loggedInUser.id === user.id
-                }
-                username={username}
-              />
-            ))
-          ) : (
-            <Card className="col-span-full border-dashed">
-              <CardContent className="flex flex-col items-center justify-center py-12 text-center">
-                <GraduationCap className="mb-4 h-12 w-12 text-muted-foreground" />
-                <h3 className="mb-2 font-semibold text-lg">
-                  No Faculties Found
-                </h3>
-                <p className="max-w-md text-muted-foreground text-sm">
-                  This school doesn't have any faculties yet. Faculties will
-                  appear here once they are added.
-                </p>
-              </CardContent>
-            </Card>
-          )}
-        </div>
+        <Suspense fallback="loading....">
+          <Client
+            canManageSchool={canManageSchool}
+            school={school}
+            username={username}
+          />
+        </Suspense>
       </div>
     </div>
+  );
+}
+
+// Client component for the Edit School Dialog
+function EditSchoolDialogButton({ school }: { school: any }) {
+  return (
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button size="sm" variant="secondary">
+          Edit School
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>Edit School</DialogTitle>
+          <DialogDescription>Edit School Information</DialogDescription>
+        </DialogHeader>
+        <EditSchoolDialog school={school} />
+      </DialogContent>
+    </Dialog>
   );
 }
