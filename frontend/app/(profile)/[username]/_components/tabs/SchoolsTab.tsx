@@ -27,6 +27,7 @@ import type { ProfilePermissions } from "@/types/profile-types";
 import type { UserData } from "@/types/types";
 import AddSchoolDialog from "../AddSchoolDialog";
 import { useDeleteSchoolMutation } from "../schoolMutations";
+import Image from "next/image";
 
 export interface Faculty {
   id: string;
@@ -82,46 +83,48 @@ const SchoolManagement = ({
   };
 
   return (
-    <Card className="my-2">
-      <CardHeader>
-        <CardTitle
-          className="flex items-center gap-2 text-lg hover:cursor-pointer"
-          onClick={() => router.push(`/${user.username}/${school.id}`)}
-        >
-          <UserAvatar avatarUrl={school.logo} size={60} />
-          {school.name}
-        </CardTitle>
-        {canManageAcademic && (
-          <CardAction>
-            <DropdownMenu modal={false}>
-              <DropdownMenuTrigger asChild>
-                <Button aria-label="Open menu" size="icon-sm" variant="outline">
-                  <MoreHorizontalIcon />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-40">
-                <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuGroup>
-                  <DropdownMenuItem>
-                    <Button
-                      className="w-full justify-start text-red-500 hover:text-red-600"
-                      disabled={deleteSchoolMutation.isPending}
-                      onClick={handleDeleteSchool}
-                      size="sm"
-                      variant="outline"
-                    >
-                      <Trash2 className="mr-2 h-4 w-4" />
-                      {deleteSchoolMutation.isPending
-                        ? "Deleting..."
-                        : "Delete"}
-                    </Button>
-                  </DropdownMenuItem>
-                </DropdownMenuGroup>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </CardAction>
-        )}
+    <Card className="my-2 p-0">
+      <CardHeader className="flex items-center gap-2 justify-between p-0">
+        <Image src={school.logo || ""} alt={school.name} width={60} height={60} className="h-52 w-60" />
+        <div className="flex items-center justify-between gap-2 pr-5">
+          <CardTitle
+            className="text-xl hover:cursor-pointer"
+            onClick={() => router.push(`/${user.username}/${school.id}`)}
+          >
+            {school.name}
+          </CardTitle>
+          {canManageAcademic && (
+            <CardAction>
+              <DropdownMenu modal={false}>
+                <DropdownMenuTrigger asChild>
+                  <Button aria-label="Open menu" size="icon-sm" variant="outline">
+                    <MoreHorizontalIcon />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-40">
+                  <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuGroup>
+                    <DropdownMenuItem>
+                      <Button
+                        className="w-full justify-start text-red-500 hover:text-red-600"
+                        disabled={deleteSchoolMutation.isPending}
+                        onClick={handleDeleteSchool}
+                        size="sm"
+                        variant="outline"
+                      >
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        {deleteSchoolMutation.isPending
+                          ? "Deleting..."
+                          : "Delete"}
+                      </Button>
+                    </DropdownMenuItem>
+                  </DropdownMenuGroup>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </CardAction>
+          )}
+        </div>
       </CardHeader>
     </Card>
   );
@@ -144,14 +147,14 @@ export default function SchoolsTab({
   // For institutions, show created schools
   if (user.role === UserRole.INSTITUTION) {
     return (
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-xl">Academic Structure</CardTitle>
+      <Card className="border-none p-0">
+        <CardHeader className="border-2 rounded-xl mx-4 pt-2">
+          <div className="flex items-center justify-between gap-2">
+            <CardTitle className="text-xl">Schools</CardTitle>
             {canManageAcademic && <AddSchoolDialog />}
           </div>
         </CardHeader>
-        <CardContent className="grid gap-2 max-md:px-3 lg:grid-cols-2">
+        <CardContent className="">
           {user.schools && user.schools.length > 0 ? (
             user.schools.map((school) => (
               <SchoolManagement

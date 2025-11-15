@@ -298,7 +298,7 @@ export default function AddSchoolDialog({ onAdded }: AddSchoolDialogProps) {
   return (
     <Dialog onOpenChange={setOpen} open={open}>
       <DialogTrigger asChild>
-        <Button>Add School</Button>
+        <Button variant="default">Add School</Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>

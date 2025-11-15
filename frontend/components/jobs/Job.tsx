@@ -9,7 +9,7 @@ import { toast } from "sonner";
 import { applyJob } from "@/actions/appllication";
 import { isEnrolledInCourse } from "@/actions/enrollment";
 import { useSession } from "@/lib/auth-client";
-import { formatRelativeDate, timeAgo } from "@/lib/utils";
+import { formatDate, formatRelativeDate, timeAgo } from "@/lib/utils";
 import type { JobData } from "@/types/types";
 import JobMoreButton from "../jobs/JobMoreButton";
 import SaveJobButton from "../jobs/SaveJobButton";
@@ -101,36 +101,37 @@ export default function Job({ job }: JobProps) {
   // if (!user) {
   //   return null;
   // }
-  // Use a local state to track application status
-  const [isApplied, setIsApplied] = useState<boolean>(
-    job.applications.some(
-      (application) => application.applicantId === session?.user.id
-    )
+
+  // Get the current user's application status
+  const userApplication = job.applications.find(
+    (application) => application.applicantId === session?.user.id
   );
 
+  const isApplied = !!userApplication;
+  const applicationStatus = userApplication?.status;
+
   const [optimisticApplied, setOptimisticApplied] = useOptimistic<
-    boolean,
-    boolean
-  >(isApplied, (_state, newState: boolean) => newState);
+    { applied: boolean; status?: string },
+    { applied: boolean; status?: string }
+  >({ applied: isApplied, status: applicationStatus }, (_state, newState) => newState);
 
   const handleApply = () => {
     startTransition(async () => {
-      setOptimisticApplied(true);
+      setOptimisticApplied({ applied: true, status: "PENDING" });
 
       try {
         const res = await applyJob(job.id);
         if (res.success) {
           toast.success(res.message);
           // Update the local state to persist the application
-          setIsApplied(true);
         } else {
           toast.error(res.message);
           // Revert the optimistic update on failure
-          setOptimisticApplied(false);
+          setOptimisticApplied({ applied: false, status: undefined });
         }
       } catch (_error) {
         // Revert the optimistic update on error
-        setOptimisticApplied(false);
+        setOptimisticApplied({ applied: false, status: undefined });
         toast.error("Failed to apply for job");
       }
     });
@@ -175,11 +176,13 @@ export default function Job({ job }: JobProps) {
               Posted {timeAgo(job.createdAt)}
               {"  |  "} Apply by: {formatRelativeDate(job.createdAt)}
               {", "}
-              {formatRelativeDate(job.endDate)}
+              {formatDate(job.endDate, "MMM d")}
             </p>
             <p className="col-span-2">
               {job.type === "INTERNSHIP" ? "Paid Internship" : "Salary"} (
-              {job.salary.toLocaleString()}/monthly)
+              <span className="text-sm">
+                {job.salary.toLocaleString()}/monthly)
+              </span>
             </p>
             {/* <div className="flex flex-wrap items-center gap-2">
               <Badge className="text-sm" variant="outline">
@@ -207,21 +210,33 @@ export default function Job({ job }: JobProps) {
           <Button
             className="min-w-[120px]"
             disabled={
-              optimisticApplied ||
+              optimisticApplied.applied ||
               isApplied ||
               session?.user.role !== "STUDENT" ||
               isPending
             }
             onClick={handleApply}
             size="sm"
-            variant={optimisticApplied || isApplied ? "outline" : "default"}
+            variant={
+              optimisticApplied.status === "ACCEPTED" || applicationStatus === "ACCEPTED"
+                ? "success"
+                : optimisticApplied.status === "REJECTED" || applicationStatus === "REJECTED"
+                  ? "destructive"
+                  : optimisticApplied.applied || isApplied
+                    ? "success"
+                    : "default"
+            }
           >
             {isPending ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Applying...
               </>
-            ) : optimisticApplied || isApplied ? (
+            ) : optimisticApplied.status === "ACCEPTED" || applicationStatus === "ACCEPTED" ? (
+              "Accepted ✓"
+            ) : optimisticApplied.status === "REJECTED" || applicationStatus === "REJECTED" ? (
+              "Rejected"
+            ) : optimisticApplied.applied || isApplied ? (
               "Applied ✓"
             ) : (
               "Apply Now"

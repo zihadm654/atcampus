@@ -2,6 +2,7 @@ import Link from "next/link";
 import FollowButton from "@/components/feed/FollowButton";
 import UserAvatar from "@/components/UserAvatar";
 import UserTooltip from "@/components/UserTooltip";
+import UserAvatarTooltip from "@/components/UserAvatarTooltip";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { prisma } from "@/lib/db";
@@ -58,36 +59,33 @@ async function Connections() {
             key={connectionUser.id}
           >
             {/* Profile Picture as Main Visual Element */}
-            <div className="flex justify-center p-2">
-              <UserTooltip user={connectionUser}>
-                <Link href={`/${connectionUser.username}`}>
-                  <div className="relative">
-                    <UserAvatar
-                      avatarUrl={connectionUser.image}
-                      className="size-24 rounded-full ring-4 ring-primary/10 transition-transform duration-300 hover:scale-105"
-                      size={96}
-                    />
-                    <div className="absolute inset-0 rounded-full ring-1 ring-black/5 ring-inset" />
-                  </div>
-                </Link>
-              </UserTooltip>
+            <div className="relative flex justify-center p-2">
+              <Link href={`/${connectionUser.username}`}>
+                <div className="relative">
+                  <UserAvatarTooltip
+                    user={connectionUser}
+                    avatarUrl={connectionUser.image}
+                    className="size-24 rounded-full ring-4 ring-primary/10 transition-transform duration-300 hover:scale-105"
+                    size={96}
+                  />
+                  <div className="absolute inset-0 rounded-full ring-1 ring-black/5 ring-inset" />
+                </div>
+              </Link>
             </div>
 
             {/* User Information */}
-            <CardContent className="p-2 text-center">
-              <div className="flex items-center justify-around gap-3">
-                <div>
+            <CardContent>
+              <div className="gap-2 flex items-start flex-col  justify-start w-full">
+                <Link href={`/${connectionUser.username}`}>
                   <UserTooltip user={connectionUser}>
-                    <Link href={`/${connectionUser.username}`}>
-                      <h3 className="truncate font-bold text-xl hover:underline">
-                        {connectionUser.name}
-                      </h3>
-                    </Link>
+                    <h3 className="truncate font-bold text-xl hover:underline">
+                      {connectionUser.name}
+                    </h3>
                   </UserTooltip>
-                  <p className="mb-3 truncate text-muted-foreground">
-                    @{connectionUser.username}
-                  </p>
-                </div>
+                </Link>
+                <p className="mb-3 truncate text-muted-foreground">
+                  @{connectionUser.username}
+                </p>
                 <FollowButton
                   initialState={{
                     followers: connectionUser._count.followers,
@@ -97,21 +95,6 @@ async function Connections() {
                   }}
                   userId={connectionUser.id}
                 />
-              </div>
-              {/* User Stats */}
-              <div className="flex justify-center gap-3 text-sm">
-                <div className="text-center">
-                  <p className="font-bold text-foreground">
-                    {connectionUser._count.followers}
-                  </p>
-                  <p className="text-muted-foreground">Followers</p>
-                </div>
-                <div className="text-center">
-                  <p className="font-bold text-foreground">
-                    {connectionUser._count.following}
-                  </p>
-                  <p className="text-muted-foreground">Following</p>
-                </div>
               </div>
             </CardContent>
           </Card>

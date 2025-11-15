@@ -10,9 +10,7 @@ export const metadata = constructMetadata({
 export default function Page() {
   return (
     <div className="w-full min-w-0 space-y-5">
-      <div className="rounded-2xl bg-card p-5 shadow-sm">
-        <h1 className="text-center font-bold text-2xl">Saved Jobs</h1>
-      </div>
+      <h1 className=" font-bold text-2xl">Saved Jobs</h1>
       <SaveJobs />
     </div>
   );

@@ -1,9 +1,4 @@
-#!/bin/sh
-# Simple pre-commit hook
-
-echo "Running pre-commit hook..."
-# Exit successfully to allow commits
-exit 0
+pnpm test
 
 #!/bin/sh
 # Exit on any error

@@ -46,6 +46,7 @@ next-env.d.ts
 /.vscode/
 /.trae/
 /.kiro/
+/.zed
 # /.github/
 
 # prisma

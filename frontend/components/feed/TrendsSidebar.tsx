@@ -46,26 +46,28 @@ async function WhoToFollow() {
       <div className="font-bold text-xl">Who to follow</div>
       {usersToFollow.map((user) => (
         <div className="flex items-center justify-between gap-3" key={user.id}>
-          <UserTooltip user={user}>
-            <Link
-              className="flex items-center gap-3"
-              href={`/${user.username}`}
-            >
-              <UserAvatar
-                avatarUrl={user.image}
-                className="hidden sm:inline"
-                size={40}
-              />
-              <div>
-                <p className="line-clamp-1 break-all font-semibold hover:underline">
-                  {user.name}
-                </p>
-                <p className="line-clamp-1 break-all text-muted-foreground">
-                  @{user.username}
-                </p>
+          <Link
+            className="flex items-center gap-3"
+            href={`/${user.username}`}
+          >
+            <UserTooltip user={user}>
+              <div className="flex items-center gap-3 relative">
+                <UserAvatar
+                  avatarUrl={user.image}
+                  className="hidden sm:inline"
+                  size={40}
+                />
+                <div>
+                  <p className="line-clamp-1 break-all font-semibold hover:underline">
+                    {user.name}
+                  </p>
+                  <p className="line-clamp-1 break-all text-muted-foreground">
+                    @{user.username}
+                  </p>
+                </div>
               </div>
-            </Link>
-          </UserTooltip>
+            </UserTooltip>
+          </Link>
           <FollowButton
             initialState={{
               followers: user._count.followers,

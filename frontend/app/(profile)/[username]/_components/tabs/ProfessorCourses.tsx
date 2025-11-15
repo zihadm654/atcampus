@@ -23,9 +23,9 @@ export default function ProfessorCourses({
   const canCreateCourses = permissions?.canCreateCourses || isCurrentUser;
 
   return (
-    <Card>
+    <Card className="border-none p-0">
       <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle>My Courses</CardTitle>
+        <CardTitle className="text-xl font-semibold">Courses</CardTitle>
         {canCreateCourses && (
           <Button
             className="cursor-pointer"
@@ -33,7 +33,7 @@ export default function ProfessorCourses({
             variant="default"
           >
             <Icons.add className="mr-2 h-4 w-4" />
-            Create New Course
+            Create Course
           </Button>
         )}
       </CardHeader>

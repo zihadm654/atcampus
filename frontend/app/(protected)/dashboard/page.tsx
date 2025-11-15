@@ -77,14 +77,14 @@ export default async function DashboardPage() {
           </div>
         </div>
         {user?.role === "ORGANIZATION" && (
-          <Card className="border-border shadow-sm">
-            <CardHeader className="border-border border-b bg-muted/50 px-6 py-4">
-              <CardTitle className="flex items-center justify-between">
-                <span className="font-semibold text-xl">Job Applicants</span>
-                <Badge className="bg-blue-500 text-white hover:bg-blue-600">
-                  {applications.length} Applicants
-                </Badge>
+          <Card className="shadow-sm">
+            <CardHeader className="bg-muted/50 p-4 flex items-center justify-between">
+              <CardTitle className="text-xl font-semibold">
+                Job Applicants
               </CardTitle>
+              <Badge className="bg-blue-500 text-white hover:bg-blue-600">
+                {applications.length} Applicants
+              </Badge>
             </CardHeader>
             <CardContent className="p-0">
               <div className="overflow-x-auto">

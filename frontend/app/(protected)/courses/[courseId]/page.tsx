@@ -101,18 +101,9 @@ export default async function CoursePage({ params }: CoursePageProps) {
         <Card className="flex flex-col gap-3">
           <CardHeader className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-3">
-              <UserTooltip user={course?.instructor}>
-                <Link href={`/${course.instructor.username}`}>
-                  <UserAvatar className="size-10" user={course.instructor} />
-                </Link>
-              </UserTooltip>
-              <UserTooltip user={course?.instructor}>
-                <Link
-                  className="flex items-center gap-1 font-medium text-md hover:underline"
-                  href={`/${course.instructor?.username}`}
-                >
-                  {course.instructor.name}
-                  {user.emailVerified ?? (
+                <Link className="flex items-center gap-3" href={`/${course.instructor.username}`}>
+                  <UserAvatar className="size-10" user={course.faculty.school.institution} />{course.faculty.school.institution.name}
+                  {course.faculty.school.institution.emailVerified ?? (
                     <Badge
                       className="bg-blue-500 text-white dark:bg-blue-600"
                       variant="secondary"
@@ -122,14 +113,6 @@ export default async function CoursePage({ params }: CoursePageProps) {
                     </Badge>
                   )}
                 </Link>
-              </UserTooltip>
-              <Link
-                className="block text-muted-foreground text-sm hover:underline"
-                href={`/courses/${course.id}`}
-                suppressHydrationWarning
-              >
-                {formatRelativeDate(course.createdAt)}
-              </Link>
             </CardTitle>
             {course.instructor?.id === user.id && (
               <CourseMoreButton course={course} />
@@ -138,28 +121,28 @@ export default async function CoursePage({ params }: CoursePageProps) {
 
           <CardContent className="mt-2 gap-4 text-md">
             <h1 className="font-bold text-2xl">{course.title}</h1>
-            <h5 className="mb-2 text-muted-foreground">
+            <h5 className="my-2 text-muted-foreground flex items-center gap-2">
+              <Icons.bookOpen className="size-5" />
               {course.faculty.name}
             </h5>
 
-            <div className="flex items-center gap-1.5 rounded-full px-3 py-1">
+            {/*<div className="flex items-center gap-1.5 rounded-full px-3 py-1">
               <Icons.bookOpen className="size-5" />
               Code: <span>{course.code}</span>
+            </div>*/}
+            <div className="flex items-center gap-1.5 rounded-full py-1">
+              <Icons.calendar className="size-5" />
+              <span>{formatRelativeDate(course.createdAt)}</span>
             </div>
-            <div className="flex items-center gap-1.5 rounded-full px-3 py-1">
-              <Clock className="size-5" />
-              Duration: <span>{course.estimatedHours}</span>
-            </div>
-            <div className="flex items-center gap-1.5 rounded-full px-3 py-1">
-              <Icons.edu className="mt-0.5 h-5 w-5 text-primary" />
-              Enrollments:{" "}
+            <div className="flex items-center gap-1.5 rounded-full py-1">
+              <Icons.users className="mt-0.5 h-5 w-5 text-primary" />
               <span className="text-muted-foreground">
-                {course.enrollments.length} students
+                {course.enrollments.length} students have enrolled
               </span>
             </div>
-            <Badge className="w-fit" variant="secondary">
+            {/*<Badge className="w-fit" variant="secondary">
               Credits: {course.credits}
-            </Badge>
+            </Badge>*/}
             <div className="mt-3 flex items-center gap-2">
               <h1>Faculty:</h1>
               <UserAvatar user={course.instructor} />

@@ -52,6 +52,8 @@ import {
   Video,
   X,
   Zap,
+  BadgeCheckIcon,
+  Mail
 } from "lucide-react";
 
 export type Icon = LucideIcon;
@@ -176,4 +178,6 @@ export const Icons = {
   calendar: Calendar,
   info: ShieldQuestion,
   video: Video,
+  verified: BadgeCheckIcon,
+  email: Mail
 };

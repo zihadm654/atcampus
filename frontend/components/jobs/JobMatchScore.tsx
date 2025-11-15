@@ -78,9 +78,9 @@ export default function JobMatchScore({ jobId }: JobMatchScoreProps) {
 
   return (
     <Card>
-      <CardHeader>
+      {/* <CardHeader>
         <CardTitle>Job Match Score</CardTitle>
-      </CardHeader>
+      </CardHeader> */}
       <CardContent>
         <div className="space-y-4">
           <div>

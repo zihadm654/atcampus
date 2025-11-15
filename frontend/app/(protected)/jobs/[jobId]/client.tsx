@@ -32,7 +32,7 @@ const Client = ({ job, user }: any) => {
 
   return (
     <div className="flex flex-col gap-2">
-      {user.role === "STUDENT" && (
+      {/* {user.role === "STUDENT" && (
         <div className="flex flex-col gap-2">
           {isMatchLoading ? (
             <Badge variant="secondary">Calculating match...</Badge>
@@ -40,7 +40,7 @@ const Client = ({ job, user }: any) => {
             <MatchBadge matchData={matchData.match} />
           ) : null}
         </div>
-      )}
+      )} */}
       <Button
         disabled={hasApplied || user.role !== "STUDENT"}
         onClick={handleApply}

@@ -10,6 +10,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { UserRole } from "@/lib/validations/auth";
+import type { JobData } from "@/types/types";
 
 interface JobApplication {
   id: string;
@@ -22,10 +24,11 @@ interface Research {
 }
 
 interface ActivitySectionProps {
-  jobs: JobApplication[];
+  jobs: JobApplication[] | JobData[];
   research: Research[];
   userRole: string;
   userId: string;
+  loggedInUserId: string;
   canEdit: boolean;
   limit?: number;
   showHeader?: boolean;
@@ -37,8 +40,11 @@ interface ActivitySectionProps {
 export default function ActivitySection({
   jobs,
   research,
-  limit,
+  userRole,
+  userId,
+  loggedInUserId,
   canEdit,
+  limit,
   showHeader = true,
   className = "",
   onViewAllJobs,
@@ -49,15 +55,78 @@ export default function ActivitySection({
   const hasMoreJobs = limit && jobs && jobs.length > limit;
   const hasMoreResearch = limit && research && research.length > limit;
 
-  if (!showHeader) {
-    // Simplified view for overview
-    return (
-      <div className={`space-y-4 ${className}`}>
-        {/* Jobs Card */}
-        <Card className="overflow-hidden rounded-xl border border-gray-100 shadow-sm transition-all hover:border-gray-200 hover:shadow">
+  // Helper function to render job content based on user role
+  const renderJobContent = () => {
+    const isStudent = userRole === UserRole.STUDENT;
+    const isOrganization = userRole === UserRole.ORGANIZATION;
+    const isOwnProfile = userId === loggedInUserId;
+
+    // For students, show applied jobs message
+    if (isStudent) {
+      return (
+        <>
           <CardHeader className="flex items-center justify-between pb-4">
             <CardTitle className="flex items-center font-medium text-lg">
-              <Icons.job className="mr-2 size-5" />
+              <span>Jobs & Activities</span>
+            </CardTitle>
+            <CardAction>
+              <Button
+                className="rounded-full text-amber-600 hover:bg-amber-50 hover:text-amber-800"
+                onClick={onViewAllJobs}
+                size="sm"
+                variant="ghost"
+              >
+                <span>See More</span>
+                <Icons.chevronRight className="size-5" />
+              </Button>
+            </CardAction>
+          </CardHeader>
+          <CardContent className="grid grid-cols-3 gap-2 max-md:grid-cols-1">
+            {displayJobs && displayJobs.length > 0 ? (
+              displayJobs.map((jobItem: any) => {
+                // Handle both JobApplication and JobData types
+                const job = jobItem.job || jobItem;
+                return (
+                  <div key={jobItem.id || job.id}>
+                    {job ? (
+                      <JobComponent job={job} />
+                    ) : (
+                      <div className="p-4 text-muted-foreground text-sm">
+                        Job data not available
+                      </div>
+                    )}
+                  </div>
+                );
+              })
+            ) : (
+              <div className="col-span-2 flex w-full flex-col items-center justify-center">
+                <Icons.job className="size-10 text-gray-400" />
+                <p className="mt-2 text-gray-500">
+                  No applied jobs yet
+                </p>
+                {canEdit && (
+                  <Button
+                    className="mt-4 rounded-full"
+                    size="sm"
+                    variant="outline"
+                  >
+                    <Icons.add className="mr-1 size-4" />
+                    Apply to Jobs
+                  </Button>
+                )}
+              </div>
+            )}
+          </CardContent>
+        </>
+      );
+    }
+
+    // For organizations, show created jobs message
+    if (isOrganization) {
+      return (
+        <>
+          <CardHeader className="flex items-center justify-between pb-4">
+            <CardTitle className="flex items-center font-medium text-lg">
               <span>Job & Activities</span>
             </CardTitle>
             <CardAction>
@@ -74,22 +143,26 @@ export default function ActivitySection({
           </CardHeader>
           <CardContent className="grid grid-cols-2 gap-2 max-md:grid-cols-1">
             {displayJobs && displayJobs.length > 0 ? (
-              displayJobs.map((application) => (
-                <div key={application.id}>
-                  {application.job ? (
-                    <JobComponent job={application.job} />
-                  ) : (
-                    <div className="p-4 text-muted-foreground text-sm">
-                      Job data not available
-                    </div>
-                  )}
-                </div>
-              ))
+              displayJobs.map((jobItem: any) => {
+                // Handle both JobApplication and JobData types
+                const job = jobItem.job || jobItem;
+                return (
+                  <div key={jobItem.id || job.id}>
+                    {job ? (
+                      <JobComponent job={job} />
+                    ) : (
+                      <div className="p-4 text-muted-foreground text-sm">
+                        Job data not available
+                      </div>
+                    )}
+                  </div>
+                );
+              })
             ) : (
               <div className="col-span-2 flex w-full flex-col items-center justify-center">
                 <Icons.job className="size-10 text-gray-400" />
                 <p className="mt-2 text-gray-500">
-                  No job activities added yet
+                  No created jobs yet
                 </p>
                 {canEdit && (
                   <Button
@@ -98,19 +171,87 @@ export default function ActivitySection({
                     variant="outline"
                   >
                     <Icons.add className="mr-1 size-4" />
-                    Add Experience
+                    Create Job
                   </Button>
                 )}
               </div>
             )}
           </CardContent>
+        </>
+      );
+    }
+
+    // For other roles, show generic jobs message
+    return (
+      <>
+        <CardHeader className="flex items-center justify-between pb-4">
+          <CardTitle className="flex items-center font-medium text-lg">
+            <span>Jobs & Activities</span>
+          </CardTitle>
+          <CardAction>
+            <Button
+              className="rounded-full text-amber-600 hover:bg-amber-50 hover:text-amber-800"
+              onClick={onViewAllJobs}
+              size="sm"
+              variant="ghost"
+            >
+              <span>See More</span>
+              <Icons.chevronRight className="size-5" />
+            </Button>
+          </CardAction>
+        </CardHeader>
+        <CardContent className="grid grid-cols-2 gap-2 max-md:grid-cols-1">
+          {displayJobs && displayJobs.length > 0 ? (
+            displayJobs.map((jobItem: any) => {
+              // Handle both JobApplication and JobData types
+              const job = jobItem.job || jobItem;
+              return (
+                <div key={jobItem.id || job.id}>
+                  {job ? (
+                    <JobComponent job={job} />
+                  ) : (
+                    <div className="p-4 text-muted-foreground text-sm">
+                      Job data not available
+                    </div>
+                  )}
+                </div>
+              );
+            })
+          ) : (
+            <div className="col-span-2 flex w-full flex-col items-center justify-center">
+              <Icons.job className="size-10 text-gray-400" />
+              <p className="mt-2 text-gray-500">
+                No job activities added yet
+              </p>
+              {canEdit && (
+                <Button
+                  className="mt-4 rounded-full"
+                  size="sm"
+                  variant="outline"
+                >
+                  <Icons.add className="mr-1 size-4" />
+                  Add Experience
+                </Button>
+              )}
+            </div>
+          )}
+        </CardContent>
+      </>
+    );
+  };
+
+  if (!showHeader) {
+    // Simplified view for overview
+    return (
+      <div className={`space-y-4 ${className}`}>
+        <Card className="overflow-hidden rounded-xl shadow-sm transition-all hover:border-gray-200 hover:shadow">
+          {renderJobContent()}
         </Card>
 
         {/* Achievements Placeholder */}
-        <Card className="overflow-hidden rounded-xl border border-gray-100 shadow-sm transition-all hover:border-gray-200 hover:shadow">
+        <Card className="overflow-hidden rounded-xl shadow-sm transition-all hover:border-gray-200 hover:shadow">
           <CardHeader className="flex items-center justify-between pb-4">
             <CardTitle className="flex items-center font-medium text-lg">
-              <Icons.star className="size-7 pr-2" />
               Achievements
             </CardTitle>
             <CardAction>
@@ -171,17 +312,21 @@ export default function ActivitySection({
             {displayJobs && displayJobs.length > 0 ? (
               <>
                 <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
-                  {displayJobs.map((application) => (
-                    <div key={application.id}>
-                      {application.job ? (
-                        <JobComponent job={application.job} />
-                      ) : (
-                        <div className="rounded-lg border p-4 text-muted-foreground text-sm">
-                          Job data not available
-                        </div>
-                      )}
-                    </div>
-                  ))}
+                  {displayJobs.map((jobItem: any) => {
+                    // Handle both JobApplication and JobData types
+                    const job = jobItem.job || jobItem;
+                    return (
+                      <div key={jobItem.id || job.id}>
+                        {job ? (
+                          <JobComponent job={job} />
+                        ) : (
+                          <div className="rounded-lg border p-4 text-muted-foreground text-sm">
+                            Job data not available
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
                 {hasMoreJobs && (
                   <div className="text-center">
@@ -199,7 +344,13 @@ export default function ActivitySection({
             ) : (
               <div className="flex flex-col items-center py-8">
                 <Icons.job className="size-12 text-gray-400" />
-                <p className="mt-2 text-gray-500">No job activities yet</p>
+                <p className="mt-2 text-gray-500">
+                  {userRole === UserRole.STUDENT
+                    ? "No applied jobs yet"
+                    : userRole === UserRole.ORGANIZATION
+                      ? "No created jobs yet"
+                      : "No job activities yet"}
+                </p>
                 {canEdit && (
                   <Button
                     className="mt-4 rounded-full"
@@ -207,7 +358,11 @@ export default function ActivitySection({
                     variant="outline"
                   >
                     <Icons.add className="mr-1 size-4" />
-                    Add Experience
+                    {userRole === UserRole.STUDENT
+                      ? "Apply to Jobs"
+                      : userRole === UserRole.ORGANIZATION
+                        ? "Create Job"
+                        : "Add Experience"}
                   </Button>
                 )}
               </div>

@@ -66,7 +66,7 @@ export default function JobsTab({
               <CardHeader className="flex items-center justify-between pb-4">
                 <CardTitle className="flex items-center font-medium text-lg">
                   <Icons.job className="mr-3 size-5" />
-                  <span>Applied Jobs</span>
+                  <span>Jobs & Activities</span>
                 </CardTitle>
                 <Button
                   className="rounded-full text-amber-600 hover:bg-amber-50 hover:text-amber-800"
@@ -114,7 +114,7 @@ export default function JobsTab({
               <CardHeader className="flex items-center justify-between pb-4">
                 <CardTitle className="flex items-center font-medium text-lg">
                   <Icons.job className="mr-3 size-5" />
-                  <span>Created Jobs</span>
+                  <span>Jobs & Activities</span>
                 </CardTitle>
                 <Button
                   className="rounded-full text-amber-600 hover:bg-amber-50 hover:text-amber-800"

@@ -17,6 +17,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { useSession } from "@/lib/auth-client";
 
 interface CourseApproval {
   id: string;
@@ -99,7 +100,7 @@ export function MyCoursesList({ courses }: MyCoursesListProps) {
       });
     }
   };
-
+  const { data: session } = useSession();
   if (courses.length === 0) {
     return (
       <Card>
@@ -107,9 +108,11 @@ export function MyCoursesList({ courses }: MyCoursesListProps) {
           <p className="text-center text-muted-foreground">
             You haven't created any courses yet.
           </p>
-          <Button asChild className="mt-4">
-            <Link href="/courses/create">Create Your First Course</Link>
-          </Button>
+          {session?.user.role === "PROFESSOR" &&
+            <Button asChild className="mt-4">
+              <Link href="/courses/create">Create Your First Course</Link>
+            </Button>
+          }
         </CardContent>
       </Card>
     );
@@ -190,27 +193,27 @@ export function MyCoursesList({ courses }: MyCoursesListProps) {
               {(course.status === "DRAFT" ||
                 course.status === "NEEDS_REVISION" ||
                 course.status === "REJECTED") && (
-                <Button
-                  className="flex-1"
-                  disabled={submittingCourses.has(course.id)}
-                  onClick={() => handleSubmitForApproval(course.id)}
-                  size="sm"
-                  variant={
-                    course.status === "NEEDS_REVISION" ||
-                    course.status === "REJECTED"
-                      ? "destructive"
-                      : "default"
-                  }
-                >
-                  {submittingCourses.has(course.id)
-                    ? "Submitting..."
-                    : course.status === "NEEDS_REVISION"
-                      ? "Submit Revision"
-                      : course.status === "REJECTED"
-                        ? "Resubmit Course"
-                        : "Submit for Approval"}
-                </Button>
-              )}
+                  <Button
+                    className="flex-1"
+                    disabled={submittingCourses.has(course.id)}
+                    onClick={() => handleSubmitForApproval(course.id)}
+                    size="sm"
+                    variant={
+                      course.status === "NEEDS_REVISION" ||
+                        course.status === "REJECTED"
+                        ? "destructive"
+                        : "default"
+                    }
+                  >
+                    {submittingCourses.has(course.id)
+                      ? "Submitting..."
+                      : course.status === "NEEDS_REVISION"
+                        ? "Submit Revision"
+                        : course.status === "REJECTED"
+                          ? "Resubmit Course"
+                          : "Submit for Approval"}
+                  </Button>
+                )}
 
               {course.status === "UNDER_REVIEW" && (
                 <Button className="flex-1" disabled size="sm">

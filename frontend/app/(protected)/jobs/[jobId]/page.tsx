@@ -1,6 +1,4 @@
-import { JobType } from "@prisma/client";
 import {
-  BadgeCheckIcon,
   Briefcase,
   Calendar,
   Clock,
@@ -23,8 +21,6 @@ import SaveJobButton from "@/components/jobs/SaveJobButton";
 import StudentSkillMatch from "@/components/jobs/StudentSkillMatch";
 import { Icons } from "@/components/shared/icons";
 import { UserAvatar } from "@/components/shared/user-avatar";
-import UserTooltip from "@/components/UserTooltip";
-import { Badge } from "@/components/ui/badge";
 import {
   Card,
   CardContent,
@@ -38,6 +34,8 @@ import { getCurrentUser } from "@/lib/session";
 import { constructMetadata, formatDate, formatRelativeDate } from "@/lib/utils";
 import { getJobDataInclude, getUserDataSelect } from "@/types/types";
 import Client from "./client";
+import UserTooltip from "@/components/UserTooltip";
+import { Badge } from "@/components/ui/badge";
 
 interface PageProps {
   params: Promise<{ jobId: string }>;
@@ -122,63 +120,38 @@ export default async function JobPage({ params }: PageProps) {
         <Card className="flex flex-col gap-3">
           <CardHeader className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <UserTooltip user={job?.user}>
-                <Link href={`/${job.user.username}`}>
-                  <UserAvatar user={job?.user} />
-                </Link>
-              </UserTooltip>
-              <UserTooltip user={job?.user}>
-                <Link
-                  className="flex items-center gap-1 font-medium text-md hover:underline"
-                  href={`/${job.user.username}`}
-                >
-                  {job.user.name}
-                  {job.user.emailVerified && (
-                    <Badge
-                      className="bg-blue-500 text-white dark:bg-blue-600"
-                      variant="secondary"
-                    >
-                      <BadgeCheckIcon className="size-4" />
-                      Verified
-                    </Badge>
-                  )}
-                </Link>
-              </UserTooltip>
-              <Link
-                className="block text-muted-foreground text-sm hover:underline"
-                href={`/jobs/${job.id}`}
-                suppressHydrationWarning
-              >
-                {formatRelativeDate(job.createdAt)}
+              <Link className="flex items-center gap-3" href={`/${job.user.username}`}>
+                <UserAvatar user={job.user} />
+                <span className="font-medium text-md">{job.user.name}</span>
               </Link>
             </div>
             {job.user.id === user.id && <JobMoreButton job={job} />}
           </CardHeader>
-          <CardContent className="mt-2 gap-4 text-md">
+          <CardContent className="mt-2 gap-3 space-y-2 text-md px-4">
+            <CardTitle className="text-2xl font-semibold">{job.title}</CardTitle>
             <div className="flex items-center gap-1.5 rounded-full px-3 py-1">
-              <MapPin className="size-5" />
+              <MapPin className="size-6" />
               Location: <span>{job.location}</span>
             </div>
             <div className="flex items-center gap-1.5 rounded-full px-3 py-1">
-              Job Type: <Badge>{job.type}</Badge>
+              <Icons.calendar className="size-6" />
+              Posted on: <span>{formatRelativeDate(job.createdAt)}</span>
             </div>
-            {job.type === JobType.INTERNSHIP && (
+            <div className="flex items-center gap-1.5 rounded-full px-3 py-1">
+              Type: <Badge>{job.type}</Badge>
+            </div>
+            {job.type === "INTERNSHIP" && (
               <div className="flex items-center gap-1.5 rounded-full px-3 py-1">
                 <Clock className="size-5" />
                 Duration: <span>{job.duration}</span>
               </div>
             )}
             <div className="flex items-center gap-1.5 rounded-full px-3 py-1">
-              <Clock className="size-5" />
-              Weekly Hours: <span>{job.weeklyHours}</span>
+              <h5>Salary: {job.salary}</h5>
             </div>
             <div className="flex items-center gap-1.5 rounded-full px-3 py-1">
-              <DollarSign className="size-5" />
-              Salary: <span>{job.salary}</span>
-            </div>
-            <div className="flex items-center gap-1.5 rounded-full px-3 py-1">
-              <Calendar className="size-5" />
-              Deadline: <span>{formatDate(job.endDate, "MM/dd/yyyy")}</span>
+              <Calendar className="size-6" />
+              Deadline: <span>{formatDate(job.endDate, "MMM dd, yyyy")}</span>
             </div>
           </CardContent>
           <CardFooter className="flex justify-between gap-5">
@@ -194,35 +167,43 @@ export default async function JobPage({ params }: PageProps) {
           </CardFooter>
         </Card>
         {isStudentViewing && (
-          <Card>
+          <Card className="gap-4 py-4">
             <CardHeader>
-              <CardTitle className="flex items-center gap-3">
+              <CardTitle className="flex items-center flex-col justify-center gap-2">
                 <UserTooltip user={currentUser}>
                   <Link href={`/${currentUser.username}`}>
-                    <UserAvatar user={currentUser} />
+                    <div className="relative">
+                      <UserAvatar
+                        user={currentUser}
+                        className="size-24 rounded-full ring-4 ring-primary/10 transition-transform duration-300 hover:scale-105"
+                      />
+                      <div className="absolute inset-0 rounded-full ring-1 ring-black/5 ring-inset" />
+                    </div>
                   </Link>
                 </UserTooltip>
                 <UserTooltip user={currentUser}>
                   <Link
-                    className="flex items-center gap-1 font-medium text-md hover:underline"
+                    className="flex items-center flex-col justify-center gap-1 font-medium text-md hover:underline"
                     href={`/${currentUser.username}`}
                   >
-                    {currentUser.name}
-                    {currentUser.emailVerified && (
-                      <Badge
-                        className="bg-blue-500 text-white dark:bg-blue-600"
-                        variant="secondary"
-                      >
-                        <BadgeCheckIcon className="size-4" />
-                        Verified
-                      </Badge>
-                    )}
+                    <h3 className="text-xl font-semibold">
+                      {currentUser.name}
+                      {currentUser.emailVerified && (
+                        <Badge
+                          className="bg-blue-500 text-white dark:bg-blue-600"
+                          variant="secondary"
+                        >
+                          <Icons.verified className="size-4" />
+                          Verified
+                        </Badge>
+                      )}
+                    </h3>
                   </Link>
                 </UserTooltip>
               </CardTitle>
             </CardHeader>
             <CardContent className="max-h-48 overflow-auto">
-              <div className="space-y-4">
+              <div className="space-y-2">
                 <Suspense
                   fallback={
                     <div className="space-y-4">
@@ -232,7 +213,7 @@ export default async function JobPage({ params }: PageProps) {
                   }
                 >
                   <JobMatchScore jobId={job.id} />
-                  <MissingSkills jobId={job.id} />
+                  {/* <MissingSkills jobId={job.id} /> */}
                 </Suspense>
               </div>
             </CardContent>
@@ -259,25 +240,23 @@ export default async function JobPage({ params }: PageProps) {
               </TabsTrigger>
               <TabsTrigger
                 className="flex-1 rounded-xl py-4 transition-all data-[state=active]:border-blue-600 data-[state=active]:text-blue-600"
-                value="academics"
+                value="qualification"
               >
                 <Icons.skill className="size-5" />
-                <span className="hidden lg:block">Academics</span>
+                <span className="hidden lg:block">Qualification</span>
               </TabsTrigger>
             </TabsList>
           </div>
           <TabsContent className="p-2" value="summary">
             {/* Main content */}
-            <div className="flex-1 space-y-6">
-              <div className="rounded-xl border bg-card p-6 shadow-sm">
-                <h2 className="mb-4 flex items-center gap-2 font-semibold text-xl">
-                  <span className="rounded-full bg-blue-100 p-1.5 text-blue-700">
-                    <Briefcase className="h-5 w-5" />
-                  </span>
-                  Summary
-                </h2>
-                <p className="text-muted-foreground">{job.summary}</p>
-              </div>
+            <div className="flex-1 space-y-4 p-2">
+              <h4 className="mb-4 font-medium text-md">
+                Weekly Hours: {job.weeklyHours}
+              </h4>
+              <h4 className="mb-4 font-medium text-md">
+                Experience Level: {job.experienceLevel}
+              </h4>
+              <p className="text-muted-foreground">{job.summary}</p>
             </div>
           </TabsContent>
           <TabsContent className="p-2" value="description">
@@ -291,18 +270,14 @@ export default async function JobPage({ params }: PageProps) {
               <JsonToHtml json={JSON.parse(job.description)} />
             </div>
           </TabsContent>
-          <TabsContent className="p-2" value="academics">
+          <TabsContent className="p-2" value="qualification">
             <div className="space-y-2">
               <JobSkills jobId={job.id} />
               {user.role === "STUDENT" && <StudentSkillMatch jobId={job.id} />}
-              <h4 className="mb-4 flex items-center gap-2 font-semibold text-lg">
-                <span className="rounded-full bg-green-100 p-1.5 text-green-700">
-                  <Icons.post className="size-5" />
-                </span>
-                Required Courses
+              <h4 className="px-3 flex items-center gap-2 font-semibold text-lg">
+                Enrolled Courses
               </h4>
-              <div className="grid grid-cols-2 gap-2 max-md:grid-cols-1">
-                {/* Display all associated courses */}
+              <div className="p-2 space-y-2 gap-2">
                 {job.jobCourses?.map((jobCourse) => (
                   <JobCourse
                     courseId={jobCourse.courseId}

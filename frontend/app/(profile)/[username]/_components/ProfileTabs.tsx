@@ -278,7 +278,7 @@ export default function ProfileTabs({
           />
         </TabsContent>
 
-        <TabsContent className="mx-auto max-w-2xl p-6" value="posts">
+        <TabsContent className="mx-auto max-w-2xl w-full p-6" value="posts">
           <PostsTab permissions={permissions} user={user} />
         </TabsContent>
 

@@ -1,8 +1,6 @@
-import { formatDate } from "date-fns";
 import Image from "next/image";
 import FollowButton from "@/components/feed/FollowButton";
 import FollowerCount from "@/components/feed/FollowerCount";
-import Linkify from "@/components/feed/Linkify";
 import { Icons } from "@/components/shared/icons";
 import UserAvatar from "@/components/UserAvatar";
 import { formatNumber } from "@/lib/utils";
@@ -76,38 +74,16 @@ export default function ProfileHeader({
           <div className="space-between mb-2 flex items-center gap-6 rounded-xl p-1 pl-36 max-sm:pl-3">
             <div className="flex flex-col items-center">
               <span className="font-semibold text-blue-700">
-                {formatNumber(user._count.posts)}
+                {formatNumber(user._count.following)}
               </span>
-              <span className="text-muted-foreground text-sm">Posts</span>
+              <span className="text-muted-foreground text-sm">Following</span>
             </div>
             <div className="h-10 w-px" />
             <FollowerCount initialState={followerInfo} userId={user.id} />
             <div className="h-10 w-px" />
-            <div className="flex flex-col items-center">
-              <span className="font-semibold text-blue-700">
-                {formatDate(user.createdAt, "yyyy")}
-              </span>
-              <span className="text-muted-foreground text-sm">Joined</span>
-            </div>
           </div>
-
-          {/* Bio section with enhanced styling */}
-          {user.bio ? (
-            <div className="py-2">
-              <div className="mb-2 flex items-center">
-                <Icons.info className="mr-2 size-6 text-green-600" />
-                <h3 className="font-medium text-muted-foreground">About</h3>
-              </div>
-              <Linkify>
-                <p className="overflow-hidden whitespace-pre-line break-words">
-                  {user.bio}
-                </p>
-              </Linkify>
-            </div>
-          ) : null}
-
-          {/* Academic Information Section */}
-          <AcademicInformation user={user} />
+          <p className="overflow-hidden whitespace-pre-line break-words">{user.bio}</p>
+          {/* <AcademicInformation user={user} /> */}
         </div>
       </div>
     </div>

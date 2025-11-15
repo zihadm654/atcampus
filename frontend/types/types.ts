@@ -30,6 +30,8 @@ export function getUserDataSelect(loggedInUserId: string) {
             category: true,
             difficulty: true,
             yearsOfExperience: true,
+            subcategory: true,
+            estimatedHours: true,
           },
         },
         _count: {
@@ -176,6 +178,7 @@ export function getJobDataInclude(loggedInUserId: string) {
       },
       select: {
         applicantId: true,
+        status: true, // Add status field to track application status
       },
     },
     _count: {
@@ -278,9 +281,10 @@ export interface ResearchesPage {
   researches: ResearchData[];
   nextCursor: string | null;
 }
-export interface SkillPage {
-  skills: SkillData[];
-  previousCursor: string | null;
+
+export interface MyResearchesPage {
+  ownedResearches: ResearchesPage;
+  collaborativeResearches: ResearchesPage;
 }
 
 export function getCommentDataInclude(loggedInUserId: string) {
@@ -416,3 +420,7 @@ export type StreamChatGenerics = {
   pollOptionType: Record<string, unknown>;
   pollType: Record<string, unknown>;
 };
+
+
+
+

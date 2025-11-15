@@ -66,14 +66,14 @@ export default function Course({ course }: { course: CourseData }) {
     <Card className="group pt-0 transition-shadow duration-200 hover:shadow-lg">
       <CardHeader className="relative px-0">
         <Image
-          alt={course.instructor.name}
+          alt={course?.instructor.name}
           className="h-44 w-full rounded-sm object-cover"
           height="600"
-          src={course.instructor.image || "/_static/avatars/shadcn.jpeg"}
+          src={course?.instructor.image || "/_static/avatars/shadcn.jpeg"}
           width="400"
         />
         <div className="absolute inset-0 flex items-start justify-end">
-          {course.instructorId === user.id && (
+          {course?.instructorId === user.id && (
             <CourseMoreButton course={course} />
           )}
         </div>

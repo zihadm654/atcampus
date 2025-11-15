@@ -22,14 +22,13 @@
         "useFilenamingConvention": "off",
         "noNestedTernary": "off",
         "noParameterAssign": "off",
+        "useConsistentTypeDefinitions": "off",
         "noNonNullAssertion": "off"
       },
       "nursery": {
-        "useConsistentTypeDefinitions": "off",
         "noShadow": "off",
         "noUnusedExpressions": "off",
         "useMaxParams": "off",
-        "useImageSize": "off"
       },
       "complexity": {
         "noExcessiveCognitiveComplexity": "off",
@@ -56,7 +55,8 @@
         "noNestedComponentDefinitions": "off",
         "useHookAtTopLevel": "off",
         "useParseIntRadix": "off",
-        "noUnknownFunction": "off"
+        "noUnknownFunction": "off",
+        "useImageSize": "off"
       },
       "performance": {
         "noDelete": "off",
@@ -76,5 +76,9 @@
       }
     }
   },
-  "extends": ["ultracite"]
+  "extends": [
+    "ultracite",
+    "ultracite/core",
+    "ultracite/next"
+  ]
 }

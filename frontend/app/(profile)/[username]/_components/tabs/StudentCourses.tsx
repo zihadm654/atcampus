@@ -14,7 +14,7 @@ interface StudentCoursesProps {
 export default function StudentCourses({ courses }: StudentCoursesProps) {
   const router = useRouter();
   return (
-    <Card>
+    <Card className="border-none p-0">
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle>Enrolled Courses</CardTitle>
         <Button onClick={() => router.push("/courses")} variant="link">

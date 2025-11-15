@@ -5,6 +5,7 @@ import { getCurrentUser } from "@/lib/session";
 import { constructMetadata } from "@/lib/utils";
 import { getJobDataInclude } from "@/types/types";
 import MyJobs from "./myJobs";
+import JobsDashboard from "@/components/jobs/JobsDashboard";
 
 export const metadata: Metadata = constructMetadata({
   title: "My-Jobs - AtCampus",
@@ -54,17 +55,10 @@ export default async function JobsPage() {
   const user = await getCurrentUser();
   if (!user) throw new Error("Unauthorized");
 
-  const [_appliedJobs, initialJobsData] = await Promise.all([
-    getAppliedJobs(user.id),
-    getInitialJobs(user.id),
-  ]);
-
   return (
     <div className="w-full min-w-0 space-y-5">
-      <div className="rounded-2xl bg-card p-5 shadow-sm">
-        <h1 className="text-center font-bold text-2xl">My Jobs</h1>
-      </div>
-      <MyJobs />
+      {user.role === "ORGANIZATION" && <MyJobs />}
+      {user.role === "STUDENT" && <JobsDashboard user={user} />}
     </div>
   );
 }

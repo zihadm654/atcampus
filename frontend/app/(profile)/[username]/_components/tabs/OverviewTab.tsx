@@ -66,6 +66,7 @@ export default function OverviewTab({
           courses={courses}
           isOwnProfile={isOwnProfile}
           jobs={jobs}
+          loggedInUserId={loggedInUserId}
           permissions={permissions}
           user={user}
         />
@@ -79,14 +80,16 @@ function StudentOverview({
   courses,
   jobs,
   permissions,
+  loggedInUserId,
+  isOwnProfile,
 }: {
   user: UserData;
   courses: any[];
   jobs: any[];
   permissions: ProfilePermissions;
+  loggedInUserId: string;
   isOwnProfile: boolean;
 }) {
-  // Transform userSkills to match UserSkillData type expected by SkillsSection
   const userSkillsData: UserSkillData[] =
     user.userSkills?.map((skill) => ({
       id: skill.id,
@@ -105,7 +108,6 @@ function StudentOverview({
   return (
     <>
       <div className="grid grid-cols-2 gap-2 max-md:grid-cols-1">
-        {/* Skills Section */}
         <SkillsSection
           canEdit={permissions.canEdit}
           limit={5}
@@ -114,7 +116,6 @@ function StudentOverview({
           userSkills={userSkillsData}
         />
 
-        {/* Courses Section */}
         <CoursesSection
           canEdit={permissions.canEdit}
           enrollments={courses}
@@ -124,10 +125,10 @@ function StudentOverview({
       </div>
 
       <div className="space-y-2">
-        {/* Activity Section */}
         <ActivitySection
           canEdit={permissions.canEdit}
           jobs={jobs}
+          loggedInUserId={loggedInUserId}
           research={user.research || []}
           showHeader={false}
           userId={user.id}

@@ -242,6 +242,14 @@ export async function getProfessorCourses(userId: string, limit = 10) {
     },
     include: {
       faculty: true,
+      instructor: {
+        select: {
+          id: true,
+          name: true,
+          username: true,
+          image: true,
+        },
+      },
       _count: {
         select: {
           enrollments: true,

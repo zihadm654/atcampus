@@ -126,9 +126,9 @@ export default function CoursesTab({
       case UserRole.INSTITUTION:
         // For institutions, show created courses with more detailed information
         return (
-          <Card>
+          <Card className="border-none p-0">
             <CardHeader>
-              <CardTitle>Institution Courses</CardTitle>
+              <CardTitle>Courses</CardTitle>
             </CardHeader>
             <CardContent className="max-md:p-2">
               {courses && courses.length > 0 ? (
@@ -149,7 +149,7 @@ export default function CoursesTab({
       case UserRole.ADMIN:
         // For admins, show all courses with administrative information
         return (
-          <Card>
+          <Card className="border-none p-0">
             <CardHeader>
               <CardTitle>All Courses</CardTitle>
             </CardHeader>

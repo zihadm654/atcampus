@@ -187,6 +187,42 @@ function SkillsEmpty({
   );
 }
 
+// Category card component for grouped skills
+function CategoryCard({
+  category,
+  skills,
+  canEdit,
+  userId,
+  user,
+  onSkillsUpdate,
+}: {
+  category: string;
+  skills: UserSkillData[];
+  canEdit: boolean;
+  userId: string;
+  user: UserData;
+  onSkillsUpdate?: () => void;
+}) {
+  return (
+    <Card className="py-2 rounded-xl transition-al hover:shadow gap-2 border-b-2">
+      <CardHeader className="p-2">
+        <CardTitle className="flex items-center font-medium text-lg">
+          {category || "Uncategorized"}
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="p-2">
+        <UserSkillList
+          canEdit={canEdit}
+          currentUser={user}
+          onSkillUpdated={onSkillsUpdate}
+          skills={skills}
+          userId={userId}
+        />
+      </CardContent>
+    </Card>
+  );
+}
+
 export default function SkillsSection({
   userSkills,
   userId,
@@ -201,23 +237,47 @@ export default function SkillsSection({
 }: SkillsSectionProps) {
   const [showAll, setShowAll] = useState(false);
 
-  const displaySkills = useMemo(() => {
-    const skills = limit && !showAll ? userSkills.slice(0, limit) : userSkills;
-    return skills.map((skill) => ({
-      ...skill,
-      _count: { endorsements: skill._count?.endorsements || 0 },
-      skillId: skill.id,
-      skill: {
-        name: skill.skill.name,
-        category: skill.skill.category,
-        yearsOfExperience: skill.yearsOfExperience || 0,
-        difficulty: skill.difficulty || "BEGINNER",
-      },
-    })) as UserSkillData[];
-  }, [userSkills, limit, showAll]);
+  // Group skills by category
+  const groupedSkills = useMemo(() => {
+    if (!userSkills || userSkills.length === 0) return {};
 
-  const hasMoreSkills = limit && userSkills.length > limit;
-  const totalSkills = userSkills.length;
+    const grouped = userSkills.reduce((acc: Record<string, any[]>, skill: any) => {
+      const category = skill.skill.category || "Uncategorized";
+      if (!acc[category]) {
+        acc[category] = [];
+      }
+      acc[category].push({
+        ...skill,
+        _count: { endorsements: skill._count?.endorsements || 0 },
+        skillId: skill.id,
+        skill: {
+          name: skill.skill.name,
+          category: skill.skill.category,
+          yearsOfExperience: skill.yearsOfExperience || 0,
+          difficulty: skill.difficulty || "BEGINNER",
+        },
+      });
+      return acc;
+    }, {} as Record<string, any[]>);
+
+    return grouped;
+  }, [userSkills]);
+
+  // Get all categories
+  const categories = useMemo(() => {
+    return Object.keys(groupedSkills).sort();
+  }, [groupedSkills]);
+
+  // Limit skills per category if needed
+  const displayCategories = useMemo(() => {
+    if (!limit || showAll) return categories;
+
+    // Take only first few categories based on limit
+    return categories.slice(0, limit);
+  }, [categories, limit, showAll]);
+
+  const totalSkills = userSkills?.length || 0;
+  const hasMoreCategories = limit && categories.length > limit;
 
   if (isLoading) {
     return (
@@ -252,65 +312,55 @@ export default function SkillsSection({
   }
 
   return (
-    <Card
-      className={cn(
-        "rounded-xl border border-gray-100 shadow-sm transition-all hover:border-gray-200 hover:shadow",
-        className
-      )}
-    >
+    <div className={cn("space-y-2", className)}>
       {showHeader && (
-        <CardHeader className="flex items-center justify-between pb-2">
-          <CardTitle className="flex items-center font-medium text-lg">
-            <Icons.skill className="size-7 pr-2" />
-            Skills
-            <Badge className="ml-2" variant="secondary">
-              {totalSkills}
-            </Badge>
-          </CardTitle>
+        <div className="flex items-center justify-between">
+          <h3 className="font-medium text-lg">Skills</h3>
           {canEdit && (
-            <CardAction>
-              <SkillButton
-                onSkillAdded={onSkillsUpdate}
-                user={{ id: userId }}
-              />
-            </CardAction>
-          )}
-        </CardHeader>
-      )}
-      <CardContent className={showHeader ? "pt-1" : ""}>
-        <div className="space-y-2">
-          <UserSkillList
-            canEdit={canEdit}
-            currentUser={user}
-            onSkillUpdated={onSkillsUpdate}
-            skills={displaySkills}
-            userId={userId}
-          />
-
-          {hasMoreSkills && (
-            <div className="pt-2 text-center">
-              <Button
-                className="text-blue-600 transition-colors hover:bg-blue-50 hover:text-blue-700"
-                onClick={() => setShowAll(!showAll)}
-                size="sm"
-                variant="ghost"
-              >
-                {showAll ? (
-                  <>
-                    <Icons.chevronUp className="mr-1 h-4 w-4" />
-                    Show Less
-                  </>
-                ) : (
-                  <>
-                    <Icons.chevronDown className="mr-1 h-4 w-4" />
-                    Show All ({userSkills.length})
-                  </>
-                )}
-              </Button>
-            </div>
+            <SkillButton
+              onSkillAdded={onSkillsUpdate}
+              user={{ id: userId }}
+            />
           )}
         </div>
-      </CardContent>
-    </Card>
+      )}
+
+      <div className="max-h-dvh overflow-y-auto gap-2">
+        {displayCategories.map((category) => (
+          <CategoryCard
+            key={category}
+            canEdit={canEdit}
+            category={category}
+            onSkillsUpdate={onSkillsUpdate}
+            skills={groupedSkills[category]}
+            user={user}
+            userId={userId}
+          />
+        ))}
+      </div>
+
+      {hasMoreCategories && (
+        <div className="pt-2 text-center">
+          <Button
+            className="text-blue-600 transition-colors hover:bg-blue-50 hover:text-blue-700"
+            onClick={() => setShowAll(!showAll)}
+            size="sm"
+            variant="ghost"
+          >
+            {showAll ? (
+              <>
+                <Icons.chevronUp className="mr-1 h-4 w-4" />
+                Show Less
+              </>
+            ) : (
+              <>
+                <Icons.chevronDown className="mr-1 h-4 w-4" />
+                Show All Categories ({categories.length})
+              </>
+            )}
+          </Button>
+        </div>
+      )}
+    </div>
   );
 }

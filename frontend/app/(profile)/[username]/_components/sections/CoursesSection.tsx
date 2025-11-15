@@ -1,5 +1,6 @@
 import Course from "@/components/courses/Course";
 import { Icons } from "@/components/shared/icons";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -8,6 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { formatDate, formatRelativeDate } from "@/lib/utils";
 import type { CourseData } from "@/types/types";
 
 interface CourseEnrollment {
@@ -56,12 +58,11 @@ export default function CoursesSection({
 
   return (
     <Card
-      className={`overflow-hidden rounded-xl border border-gray-100 shadow-sm transition-all hover:border-gray-200 hover:shadow ${className}`}
+      className={`overflow-hidden rounded-xl py-2 border-none transition-all hover:border-gray-200 hover:shadow ${className}`}
     >
       {showHeader && (
         <CardHeader className="flex items-center justify-between pb-2">
           <CardTitle className="flex items-center font-medium text-lg">
-            <Icons.bookOpen className="size-7 pr-2" />
             {userRole === "PROFESSOR" ? "Teaching" : "Courses"}
             {hasMoreCourses && (
               <span className="ml-2 text-gray-500 text-sm">
@@ -86,7 +87,10 @@ export default function CoursesSection({
         {displayCourses.length > 0 ? (
           <div className="grid max-h-48 grid-cols-1 gap-4 overflow-y-auto">
             {displayCourses.map((course) => (
-              <Course course={course} key={course?.id} />
+              <article key={course?.id} className="border-b-2 py-2">
+                <h1>{course?.title}</h1>
+                <p>{formatRelativeDate(course.updatedAt)}  | <Badge>{course.code}</Badge></p>
+              </article>
             ))}
           </div>
         ) : (

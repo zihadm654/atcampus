@@ -29,23 +29,24 @@ interface ResearchProps {
 export default function Research({ research }: ResearchProps) {
   const [isPending, startTransition] = useTransition();
   const { data: session } = useSession();
-  // if (!user) {
-  //   return null;
-  // }
 
-  // Safely check if user is a collaborator
+  // Check if user is the owner
+  const isOwner = research.userId === session?.user.id;
+
+  // Check if user is a collaborator
   const isCollaborator = research.collaborators?.some
     ? research.collaborators?.some((c: any) => c.id === session?.user.id)
     : false;
 
-  // Use a local state to track collaboration request status
-  const [hasRequested, setHasRequested] = useState<boolean>(
-    research.collaborationRequests.some
-      ? research.collaborationRequests?.some(
-          (c: any) => c.requesterId === session?.user.id
-        )
-      : false
-  );
+  // Check if user has sent a collaboration request
+  const userCollaborationRequest = Array.isArray(research.collaborationRequests) && research.collaborationRequests.length > 0
+    ? research.collaborationRequests.find(
+      (c: any) => c.requesterId === session?.user.id
+    )
+    : null;
+
+  const hasRequested = !!userCollaborationRequest;
+  const isRequestRejected = userCollaborationRequest?.status === "DECLINED";
 
   const [optimisticRequested, setOptimisticRequested] = useOptimistic<
     boolean,
@@ -60,7 +61,6 @@ export default function Research({ research }: ResearchProps) {
         if (res.success) {
           toast.success(res.message);
           // Update the local state to persist the request
-          setHasRequested(true);
         } else {
           setOptimisticRequested(false);
           toast.error(res.message);
@@ -71,6 +71,7 @@ export default function Research({ research }: ResearchProps) {
       }
     });
   };
+
   return (
     <Card className="group hover:-translate-y-1 relative overflow-hidden pt-0 transition-all duration-300 hover:shadow-lg">
       <CardHeader className="relative px-0">
@@ -82,7 +83,7 @@ export default function Research({ research }: ResearchProps) {
           width="400"
         />
         <div className="absolute inset-0 flex items-start justify-end">
-          {research.userId === session?.user.id && (
+          {isOwner && (
             <ResearchMoreButton research={research} />
           )}
         </div>
@@ -114,36 +115,50 @@ export default function Research({ research }: ResearchProps) {
         </Link>
       </CardContent>
       <CardFooter className="flex w-full items-center justify-between gap-2 pt-0">
-        {research.user.id !== session?.user.id ? (
+        {!isOwner ? (
           <Button
-            className="flex-1"
             disabled={
-              isCollaborator || optimisticRequested || hasRequested || isPending
+              isCollaborator || optimisticRequested || (hasRequested && !isRequestRejected) || isPending
             }
             onClick={handleCollaborationRequest}
             variant={
               isCollaborator
-                ? "secondary"
-                : optimisticRequested || hasRequested
-                  ? "outline"
-                  : "default"
+                ? "success"
+                : isRequestRejected
+                  ? "destructive"
+                  : optimisticRequested || hasRequested
+                    ? "outline"
+                    : "default"
+            }
+            className={
+              isCollaborator
+                ? "flex-1 bg-green-600 hover:bg-green-700 text-white"
+                : isRequestRejected
+                  ? "flex-1"
+                  : optimisticRequested || hasRequested
+                    ? "flex-1 border-gray-400 text-gray-400 hover:bg-gray-100"
+                    : "flex-1"
             }
           >
             {isCollaborator
-              ? "Already Collaborating"
-              : optimisticRequested || hasRequested
-                ? "Request Sent"
-                : "Request to Collaborate"}
+              ? "Collaborator"
+              : isRequestRejected
+                ? "Rejected"
+                : optimisticRequested || hasRequested
+                  ? "Request Sent"
+                  : "Request to Collaborate"}
           </Button>
         ) : (
-          <Button>Own research</Button>
+          <Button className="flex-1 bg-blue-600 hover:bg-blue-700 text-white" disabled>
+            Own research
+          </Button>
         )}
         <SaveResearchButton
           initialState={{
             isSaveResearchByUser: research.savedResearch?.some
               ? research.savedResearch.some(
-                  (bookmark: any) => bookmark.userId === session?.user.id
-                )
+                (bookmark: any) => bookmark.userId === session?.user.id
+              )
               : false,
           }}
           researchId={research.id}
