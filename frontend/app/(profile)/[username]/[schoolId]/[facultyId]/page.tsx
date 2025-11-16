@@ -296,7 +296,6 @@ export default async function Page({ params }: PageProps) {
           </CardTitle>
         </CardHeader>
         <CardContent className="px-6">
-          {/* Contact Information */}
           <div className="mb-4 space-y-2">
             <div className="flex items-center gap-2 text-muted-foreground text-sm">
               <Mail className="h-4 w-4" />
@@ -311,32 +310,10 @@ export default async function Page({ params }: PageProps) {
             {userData.instituteId && (
               <div className="flex items-center gap-2 text-muted-foreground text-sm">
                 <School className="h-4 w-4" />
-                <span>{userData.institution}</span>
+                <span>{userData.instituteId}</span>
               </div>
             )}
-            {userData.currentSemester && (
-              <div className="flex items-center gap-2 text-muted-foreground text-sm">
-                <BookOpen className="h-4 w-4" />
-                <span>Semester {userData.currentSemester}</span>
-              </div>
-            )}
-            {/* Remove graduationYear since it doesn't exist in the User model */}
           </div>
-
-          {/* Academic Information for Professors */}
-          {isProfessor && (
-            <div className="space-y-3 border-t pt-4">
-              {userData.institution && (
-                <div className="flex items-center gap-2 text-sm">
-                  <GraduationCap className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-muted-foreground">
-                    {userData.institution}
-                  </span>
-                </div>
-              )}
-              {/* Remove graduationYear since it doesn't exist in the User model */}
-            </div>
-          )}
         </CardContent>
       </Card>
     );

@@ -204,13 +204,13 @@ function CategoryCard({
   onSkillsUpdate?: () => void;
 }) {
   return (
-    <Card className="py-2 rounded-xl transition-al hover:shadow gap-2 border-b-2">
-      <CardHeader className="p-2">
+    <Card className="py-2 transition-all hover:shadow gap-2">
+      <CardHeader>
         <CardTitle className="flex items-center font-medium text-lg">
           {category || "Uncategorized"}
         </CardTitle>
       </CardHeader>
-      <CardContent className="p-2">
+      <CardContent>
         <UserSkillList
           canEdit={canEdit}
           currentUser={user}
@@ -325,7 +325,7 @@ export default function SkillsSection({
         </div>
       )}
 
-      <div className="max-h-dvh overflow-y-auto gap-2">
+      <div className="max-h-dvh overflow-y-auto grid gap-2">
         {displayCategories.map((category) => (
           <CategoryCard
             key={category}

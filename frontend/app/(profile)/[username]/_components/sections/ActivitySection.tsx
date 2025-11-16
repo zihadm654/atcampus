@@ -244,15 +244,14 @@ export default function ActivitySection({
     // Simplified view for overview
     return (
       <div className={`space-y-4 ${className}`}>
-        <Card className="overflow-hidden rounded-xl shadow-sm transition-all hover:border-gray-200 hover:shadow">
+        <Card className="overflow-hidden rounded-xl shadow-sm transition-all hover:border-gray-200 hover:shadow border-none">
           {renderJobContent()}
         </Card>
 
-        {/* Achievements Placeholder */}
-        <Card className="overflow-hidden rounded-xl shadow-sm transition-all hover:border-gray-200 hover:shadow">
+        <Card className="overflow-hidden rounded-xl shadow-sm transition-all hover:border-gray-200 hover:shadow border-none p-0">
           <CardHeader className="flex items-center justify-between pb-4">
             <CardTitle className="flex items-center font-medium text-lg">
-              Achievements
+              Awards & Certificates
             </CardTitle>
             <CardAction>
               <Button

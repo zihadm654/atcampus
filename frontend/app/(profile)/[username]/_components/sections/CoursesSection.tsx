@@ -58,7 +58,7 @@ export default function CoursesSection({
 
   return (
     <Card
-      className={`overflow-hidden rounded-xl py-2 border-none transition-all hover:border-gray-200 hover:shadow ${className}`}
+      className={`overflow-hidden rounded-xl transition-all hover:border-gray-200 hover:shadow ${className}`}
     >
       {showHeader && (
         <CardHeader className="flex items-center justify-between pb-2">

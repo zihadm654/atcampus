@@ -61,8 +61,7 @@ export default function ResearchTab({
     <div className="grid grid-cols-1 gap-3">
       <Card className="overflow-hidden rounded-xl border-none p-0 shadow-sm transition-all hover:border-gray-200 hover:shadow">
         <CardHeader className="flex items-center justify-between pb-4">
-          <CardTitle className="flex items-center font-medium text-lg">
-            <Icons.bookMarked className="mr-3 size-5" />
+          <CardTitle className="text-lg">
             <span>Research</span>
           </CardTitle>
           <Button

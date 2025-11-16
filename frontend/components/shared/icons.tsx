@@ -53,7 +53,9 @@ import {
   X,
   Zap,
   BadgeCheckIcon,
-  Mail
+  Mail,
+  Link,
+  MapPin
 } from "lucide-react";
 
 export type Icon = LucideIcon;
@@ -179,5 +181,7 @@ export const Icons = {
   info: ShieldQuestion,
   video: Video,
   verified: BadgeCheckIcon,
-  email: Mail
+  email: Mail,
+  link: Link,
+  location: MapPin
 };

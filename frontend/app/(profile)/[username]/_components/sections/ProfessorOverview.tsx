@@ -36,9 +36,9 @@ export default function ProfessorOverview({
 
 }: ProfessorOverviewProps) {
   return (
-    <div className="grid grid-cols-1 gap-4">
-      <div className="flex items-center justify-between gap-3 w-full">
-        <Card className="border-none p-0 rounded-xl shadow-sm flex-1">
+    <div className="space-y-4">
+      <div className="grid lg:grid-cols-2 gap-3 w-full">
+        <Card className="rounded-xl shadow-sm flex-1">
           <CardHeader className="py-0">
             <CardTitle className="flex items-center text-xl font-semibold">
               Features
@@ -48,15 +48,17 @@ export default function ProfessorOverview({
 
           </CardContent>
         </Card>
-        <Card className="border-none p-0 rounded-xl shadow-sm flex-1">
+        <Card className=" rounded-xl shadow-sm flex-1">
           <CardHeader className="py-0">
             <CardTitle className="flex items-center text-xl font-semibold">
               Basic Info
             </CardTitle>
           </CardHeader>
-          <CardContent className="py-2">
-            <h1 className="text-md font-semibold">Professor at: </h1>
+          <CardContent className="space-y-2">
+            <h1 className="text-md font-semibold">Professor at:</h1>
             <p className="flex items-center gap-2"><Icons.email className="size-6" />{user.email}</p>
+            <p className="flex items-center gap-2"><Icons.link className="size-6" />{user.website}</p>
+            <p className="flex items-center gap-2"><Icons.location className="size-6" />{user.location}</p>
           </CardContent>
         </Card>
       </div>

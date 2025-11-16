@@ -24,12 +24,12 @@ export async function updateUserProfile(values: UpdateUserProfileValues) {
       data: validatedValues,
       select: getUserDataSelect(user.id),
     });
-    await streamServerClient.partialUpdateUser({
-      id: user.id,
-      set: {
-        name: validatedValues.name,
-      },
-    });
+    // await streamServerClient.partialUpdateUser({
+    //   id: user.id,
+    //   set: {
+    //     name: validatedValues.name,
+    //   },
+    // });
     return updateUser;
   });
 

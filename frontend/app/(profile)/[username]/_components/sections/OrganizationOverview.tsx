@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { Job, ProfilePermissions } from "@/types/profile-types";
 import type { UserData } from "@/types/types";
+import Link from "next/link";
 
 interface OrganizationOverviewProps {
   user: UserData;
@@ -36,7 +37,7 @@ export default function OrganizationOverview({
           )} */}
         </CardHeader>
         <CardContent>
-          <p className="text-gray-500">asdflasdl asdfasodiawelk asdf asdfljasldfo</p>
+          <p className="text-gray-500">{user.summary}</p>
         </CardContent>
         <CardHeader>
           <CardTitle className="text-xl">
@@ -44,7 +45,7 @@ export default function OrganizationOverview({
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-gray-500">www.example.com</p>
+          <Link href={user?.website || ""}>{user.website}</Link>
         </CardContent>
         <CardHeader>
           <CardTitle className="text-xl">
@@ -62,14 +63,14 @@ export default function OrganizationOverview({
         <CardContent>
           <p className="text-gray-500">{uniqueMembers.length} members</p>
         </CardContent>
-        <CardHeader>
+        {/* <CardHeader>
           <CardTitle className="text-xl">
             Specialities
           </CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-gray-500">{uniqueMembers.length} members</p>
-        </CardContent>
+        </CardContent> */}
       </Card>
     </div>
   );

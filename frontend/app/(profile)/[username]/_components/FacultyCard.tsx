@@ -29,7 +29,7 @@ export function FacultyCard({
   const courseCount = faculty._count?.courses || faculty.courses?.length || 0;
 
   return (
-    <Card className="group overflow-hidden py-2 transition-all duration-300 hover:shadow-lg">
+    <Card className="group overflow-hidden transition-all duration-300 hover:shadow-lg pt-0">
       {/* Faculty Header */}
       <div className="relative h-32 bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500">
         {faculty.coverPhoto && (

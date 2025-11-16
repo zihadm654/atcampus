@@ -51,6 +51,9 @@ export default function EditProfileDialog({
       name: user.name,
       bio: user.bio || "",
       currentSemester: user.currentSemester || 0,
+      website: user.website || "",
+      summary: user.summary || "",
+      location: user.location || "",
     },
   });
 
@@ -91,13 +94,13 @@ export default function EditProfileDialog({
   async function onSubmit(values: UpdateUserProfileValues) {
     const newAvatarFile = croppedAvatar
       ? new File([croppedAvatar], `avatar_${user.id}.webp`, {
-          type: "image/webp",
-        })
+        type: "image/webp",
+      })
       : undefined;
     const newCoverFile = croppedCover
       ? new File([croppedCover], `cover_${user.id}.webp`, {
-          type: "image/webp",
-        })
+        type: "image/webp",
+      })
       : undefined;
 
     mutation.mutate(
@@ -161,6 +164,22 @@ export default function EditProfileDialog({
                 <FormItem>
                   <FormLabel>Bio</FormLabel>
                   <FormControl>
+                    <Input type="text"
+                      placeholder="bio"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="summary"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Summary</FormLabel>
+                  <FormControl>
                     <Textarea
                       className="resize-none"
                       placeholder="Tell us a little bit about yourself"
@@ -171,14 +190,14 @@ export default function EditProfileDialog({
                 </FormItem>
               )}
             />
-            {/* <FormField
+            <FormField
               control={form.control}
-              name='institution'
+              name='website'
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Institution</FormLabel>
+                  <FormLabel>Website</FormLabel>
                   <FormControl>
-                    <Input placeholder='institution name' {...field} />
+                    <Input type="url" placeholder='website' {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -186,17 +205,17 @@ export default function EditProfileDialog({
             />
             <FormField
               control={form.control}
-              name='instituteId'
+              name='location'
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Institute Id</FormLabel>
+                  <FormLabel>Location</FormLabel>
                   <FormControl>
-                    <Input placeholder='institution id' {...field} />
+                    <Input placeholder='location' {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
-            /> */}
+            />
             {user.role === "STUDENT" && (
               <FormField
                 control={form.control}

@@ -156,7 +156,7 @@ export default function MembersTab({
   if (loading || isLoadingOrganization) {
     return (
       <div className="grid grid-cols-1 gap-3">
-        <Card className="overflow-hidden rounded-xl border border-gray-100 shadow-sm">
+        <Card className="overflow-hidden rounded-xl p-0 border-none shadow-sm">
           <CardHeader className="flex items-center justify-between pb-4">
             <div className="flex items-center font-medium text-lg">
               <Skeleton className="mr-3 h-5 w-5 rounded-full" />
@@ -190,7 +190,7 @@ export default function MembersTab({
   // For institutions, show a simplified list of members
   return (
     <div className="grid grid-cols-1 gap-3">
-      <Card className="overflow-hidden rounded-xl border border-gray-100 shadow-sm">
+      <Card className="overflow-hidden rounded-xl p-0 border-none shadow-sm">
         <CardHeader className="flex items-center justify-between pb-4">
           <CardTitle className="flex items-center font-medium text-lg">
             <Icons.users className="mr-3 size-5" />
@@ -199,7 +199,7 @@ export default function MembersTab({
         </CardHeader>
         <CardContent>
           {activeOrganization?.members &&
-          activeOrganization.members.length > 0 ? (
+            activeOrganization.members.length > 0 ? (
             <div className="space-y-4">
               {activeOrganization.members.map((member: any) => (
                 <div

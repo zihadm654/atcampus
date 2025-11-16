@@ -238,7 +238,7 @@ const Client = ({ school, canManage, canManageSchool, username }: any) => {
             ) : null,
           )
         ) : (
-          <Card className="col-span-full border-dashed">
+          <Card className="col-span-full border-dashed py-0">
             <CardContent className="flex flex-col items-center justify-center py-12 text-center">
               <GraduationCap className="mb-4 h-12 w-12 text-muted-foreground" />
               <h3 className="mb-2 font-semibold text-lg">No Faculties Found</h3>

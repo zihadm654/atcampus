@@ -107,7 +107,7 @@ function StudentOverview({
 
   return (
     <>
-      <div className="grid grid-cols-2 gap-2 max-md:grid-cols-1">
+      <div className="grid lg:grid-cols-2 gap-2 ">
         <SkillsSection
           canEdit={permissions.canEdit}
           limit={5}
@@ -124,17 +124,15 @@ function StudentOverview({
         />
       </div>
 
-      <div className="space-y-2">
-        <ActivitySection
-          canEdit={permissions.canEdit}
-          jobs={jobs}
-          loggedInUserId={loggedInUserId}
-          research={user.research || []}
-          showHeader={false}
-          userId={user.id}
-          userRole={user.role}
-        />
-      </div>
+      <ActivitySection
+        canEdit={permissions.canEdit}
+        jobs={jobs}
+        loggedInUserId={loggedInUserId}
+        research={user.research || []}
+        showHeader={false}
+        userId={user.id}
+        userRole={user.role}
+      />
     </>
   );
 }

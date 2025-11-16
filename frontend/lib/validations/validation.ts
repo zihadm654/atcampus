@@ -32,6 +32,9 @@ export const updateUserProfileSchema = z.object({
   currentSemester: z.coerce.number().max(100, "required").optional(),
   institution: z.string().max(100, "Must be at most 100 characters").optional(),
   instituteId: z.string().optional(),
+  website: z.string().url("Invalid URL").optional(),
+  summary: z.string().max(1000, "Must be at most 1000 characters").optional(),
+  location: z.string().max(1000, "Must be at most 1000 characters").optional(),
 });
 
 export type UpdateUserProfileValues = z.infer<typeof updateUserProfileSchema>;

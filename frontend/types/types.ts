@@ -18,6 +18,9 @@ export function getUserDataSelect(loggedInUserId: string) {
     emailVerified: true,
     displayUsername: true,
     createdAt: true,
+    website: true,
+    summary: true,
+    location: true,
     userSkills: {
       where: {
         isDeleted: false, // Only fetch non-deleted skills

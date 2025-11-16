@@ -27,7 +27,7 @@ export default function JobsTab({
   if (loading) {
     return (
       <div className="grid grid-cols-1 gap-3">
-        <Card className="overflow-hidden rounded-xl border border-gray-100 shadow-sm">
+        <Card className="overflow-hidden rounded-xl border-none p-0 shadow-sm">
           <CardHeader className="flex items-center justify-between pb-4">
             <div className="flex items-center font-medium text-lg">
               <Skeleton className="mr-3 h-5 w-5 rounded-full" />
@@ -62,10 +62,9 @@ export default function JobsTab({
         // For students, show applied jobs
         return (
           <div className="grid grid-cols-1 gap-3">
-            <Card className="overflow-hidden rounded-xl border border-gray-100 shadow-sm transition-all hover:border-gray-200 hover:shadow">
-              <CardHeader className="flex items-center justify-between pb-4">
-                <CardTitle className="flex items-center font-medium text-lg">
-                  <Icons.job className="mr-3 size-5" />
+            <Card className="overflow-hidden rounded-xl border-none p-0 shadow-sm transition-all hover:border-gray-200 hover:shadow">
+              <CardHeader className="flex items-center justify-between">
+                <CardTitle className="text-lg">
                   <span>Jobs & Activities</span>
                 </CardTitle>
                 <Button
@@ -110,10 +109,9 @@ export default function JobsTab({
         // For organizations, show created jobs
         return (
           <div className="grid grid-cols-1 gap-3">
-            <Card className="overflow-hidden rounded-xl border border-gray-100 shadow-sm transition-all hover:border-gray-200 hover:shadow">
-              <CardHeader className="flex items-center justify-between pb-4">
-                <CardTitle className="flex items-center font-medium text-lg">
-                  <Icons.job className="mr-3 size-5" />
+            <Card className="overflow-hidden rounded-xl border-none p-0 shadow-sm transition-all hover:border-gray-200 hover:shadow">
+              <CardHeader className="flex items-center justify-between">
+                <CardTitle className="text-lg">
                   <span>Jobs & Activities</span>
                 </CardTitle>
                 <Button
@@ -168,10 +166,9 @@ export default function JobsTab({
         // For other roles (ADMIN, INSTITUTION, PROFESSOR), show a generic message or all jobs
         return (
           <div className="grid grid-cols-1 gap-3">
-            <Card className="overflow-hidden rounded-xl border border-gray-100 shadow-sm transition-all hover:border-gray-200 hover:shadow">
-              <CardHeader className="flex items-center justify-between pb-4">
-                <CardTitle className="flex items-center font-medium text-lg">
-                  <Icons.job className="mr-3 size-5" />
+            <Card className="overflow-hidden rounded-xl border-none p-0 shadow-sm transition-all hover:border-gray-200 hover:shadow">
+              <CardHeader className="flex items-center justify-between">
+                <CardTitle className="text-lg">
                   <span>Jobs & Activities</span>
                 </CardTitle>
                 <Button
