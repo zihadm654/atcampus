@@ -39,14 +39,14 @@ export const applyJob = async (jobId: string) => {
       data: {
         applicantId: user.id,
         jobId,
-        status: "PENDING" as ApplicationStatus,
+        status: "PENDING",
       },
     });
 
     // Notify the job creator about the new application
     await notifyJobApplication(jobId, user.id, job.userId);
 
-    revalidatePath("/jobs");
+    revalidatePath("/jobs", "page");
     return {
       success: true,
       message: "Job application submitted successfully.",

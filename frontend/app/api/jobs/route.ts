@@ -38,10 +38,10 @@ export async function GET(req: NextRequest) {
       }),
       ...(jobTypes &&
         jobTypes.length > 0 && {
-          type: {
-            in: jobTypes,
-          },
-        }),
+        type: {
+          in: jobTypes,
+        },
+      }),
     };
 
     const jobs = await prisma.job.findMany({

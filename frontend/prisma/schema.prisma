@@ -65,6 +65,8 @@ enum CollaborationStatus {
 enum NotificationType {
   LIKE
   FOLLOW
+  FOLLOW_REQUEST
+  FOLLOW_REQUEST_ACCEPTED
   COMMENT
   POST
   JOB_APPLICATION
@@ -255,6 +257,9 @@ model User {
   twoFactorEnabled Boolean?   @default(false)
   status           UserStatus @default(PENDING)
 
+  // Privacy settings
+  requireFollowApproval Boolean @default(false) // Whether follow requests require approval
+
   // Moderation
   banned     Boolean?  @default(false)
   banReason  String?
@@ -269,14 +274,16 @@ model User {
   twoFactors TwoFactor[]
 
   // Social features
-  posts     Post[]
-  comments  Comment[]
-  likes     Like[]
-  bookmarks Bookmark[]
-  followers Follow[]   @relation("UserFollowers")
-  following Follow[]   @relation("UserFollowing")
-  block     Block[]    @relation("BlocksSent")
-  blockBy   Block[]    @relation("BlocksReceived")
+  posts                  Post[]
+  comments               Comment[]
+  likes                  Like[]
+  bookmarks              Bookmark[]
+  followers              Follow[]        @relation("UserFollowers")
+  following              Follow[]        @relation("UserFollowing")
+  sentFollowRequests     FollowRequest[] @relation("UserSentFollowRequests")
+  receivedFollowRequests FollowRequest[] @relation("UserReceivedFollowRequests")
+  block                  Block[]         @relation("BlocksSent")
+  blockBy                Block[]         @relation("BlocksReceived")
 
   // Notifications
   receivedNotifications Notification[] @relation("Recipient")
@@ -774,6 +781,34 @@ model Follow {
   @@unique([followerId, followingId])
   @@index([followingId])
   @@map(name: "follows")
+}
+
+enum FollowRequestStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  CANCELLED
+}
+
+model FollowRequest {
+  id          String @id @default(cuid()) @map("_id")
+  requesterId String
+  requester   User   @relation("UserSentFollowRequests", fields: [requesterId], references: [id], onDelete: Cascade)
+  targetId    String
+  target      User   @relation("UserReceivedFollowRequests", fields: [targetId], references: [id], onDelete: Cascade)
+
+  status  FollowRequestStatus @default(PENDING)
+  message String? // Optional message when sending follow request
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  respondedAt DateTime? // When the request was accepted/rejected
+
+  @@unique([requesterId, targetId])
+  @@index([targetId, status])
+  @@index([requesterId, status])
+  @@index([status, createdAt])
+  @@map(name: "follow_requests")
 }
 
 model Block {

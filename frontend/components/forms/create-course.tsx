@@ -41,8 +41,8 @@ import {
 import { Textarea } from "../ui/textarea";
 
 interface CreateCourseFormProps {
-  user?: User;
-  course?: Course;
+  user?: any;
+  course?: any;
 }
 
 // Define types for schools and faculties
@@ -80,33 +80,33 @@ export function CreateCourseForm({ user, course }: CreateCourseFormProps) {
     resolver: zodResolver(courseSchema),
     defaultValues: course
       ? {
-          title: course.title || "",
-          description: course.description || "",
-          code: course.code || "",
-          credits: course.credits || 3,
-          difficulty: course.difficulty || "BEGINNER",
-          estimatedHours: course.estimatedHours || 10,
-          facultyId: course.facultyId || "",
-          schoolId: course.schoolId || "",
-          objectives: course.objectives || "",
-          // Remove outcomes since it doesn't exist in the model
-          status: course.status || CourseStatus.DRAFT,
-          skills: course.skills || [], // Initialize with existing course skills if editing
-        }
+        title: course.title || "",
+        description: course.description || "",
+        code: course.code || "",
+        credits: course.credits || 3,
+        difficulty: course.difficulty || "BEGINNER",
+        estimatedHours: course.estimatedHours || 10,
+        facultyId: course.facultyId || "",
+        schoolId: course.schoolId || "",
+        objectives: course.objectives || "",
+        // Remove outcomes since it doesn't exist in the model
+        status: course.status || CourseStatus.DRAFT,
+        skills: course.skills || [], // Initialize with existing course skills if editing
+      }
       : {
-          title: "",
-          description: "",
-          code: "",
-          credits: 3,
-          difficulty: "BEGINNER",
-          estimatedHours: 10,
-          facultyId: "",
-          schoolId: "",
-          objectives: "",
-          // Remove outcomes since it doesn't exist in the model
-          status: CourseStatus.DRAFT,
-          skills: [], // Initialize skills as empty array
-        },
+        title: "",
+        description: "",
+        code: "",
+        credits: 3,
+        difficulty: "BEGINNER",
+        estimatedHours: 10,
+        facultyId: "",
+        schoolId: "",
+        objectives: "",
+        // Remove outcomes since it doesn't exist in the model
+        status: CourseStatus.DRAFT,
+        skills: [], // Initialize skills as empty array
+      },
   });
 
   // Fetch schools with TanStack Query
@@ -640,7 +640,7 @@ export function CreateCourseForm({ user, course }: CreateCourseFormProps) {
               : course
                 ? "Update Course"
                 : user?.role === "PROFESSOR" &&
-                    form.watch("status") === CourseStatus.UNDER_REVIEW
+                  form.watch("status") === CourseStatus.UNDER_REVIEW
                   ? "Submit for Approval"
                   : user?.role === "PROFESSOR"
                     ? "Save as Draft"

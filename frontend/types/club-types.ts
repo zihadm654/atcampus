@@ -243,13 +243,13 @@ export interface ClubUpdateData extends Partial<ClubCreationData> {
 // Club notification types
 export interface ClubNotificationData {
   type:
-    | "CLUB_CREATED"
-    | "CLUB_UPDATED"
-    | "MEMBER_JOINED"
-    | "MEMBER_LEFT"
-    | "MEMBER_APPROVED"
-    | "MEMBER_REJECTED"
-    | "EVENT_LINKED";
+  | "CLUB_CREATED"
+  | "CLUB_UPDATED"
+  | "MEMBER_JOINED"
+  | "MEMBER_LEFT"
+  | "MEMBER_APPROVED"
+  | "MEMBER_REJECTED"
+  | "EVENT_LINKED";
   clubId: string;
   clubName: string;
   recipientIds: string[];
@@ -352,10 +352,10 @@ export interface ClubEventLinkData {
 export interface ClubActivityData {
   clubId: string;
   type:
-    | "MEMBER_JOINED"
-    | "EVENT_CREATED"
-    | "EVENT_COMPLETED"
-    | "DISCUSSION_STARTED";
+  | "MEMBER_JOINED"
+  | "EVENT_CREATED"
+  | "EVENT_COMPLETED"
+  | "DISCUSSION_STARTED";
   timestamp: Date;
   actorId: string;
   actorName: string;

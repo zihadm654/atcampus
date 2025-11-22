@@ -676,7 +676,7 @@ export async function updateCourse(values: TCourse, courseId: string) {
         : objectives || "[]",
       status:
         user.role === "PROFESSOR" &&
-        existingCourse.status === CourseStatus.PUBLISHED
+          existingCourse.status === CourseStatus.PUBLISHED
           ? existingCourse.status
           : validatedFields.data.status,
     };

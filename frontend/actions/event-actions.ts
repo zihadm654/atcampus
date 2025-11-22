@@ -61,9 +61,9 @@ function getEventInclude(userId?: string) {
     },
     likesUsers: userId
       ? {
-          where: { userId },
-          take: 1,
-        }
+        where: { userId },
+        take: 1,
+      }
       : false,
     _count: {
       select: {

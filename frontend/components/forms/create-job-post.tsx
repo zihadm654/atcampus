@@ -91,28 +91,28 @@ export function CreateJobForm({ job }: CreateJobFormProps) {
     resolver: zodResolver(jobSchema),
     defaultValues: job
       ? {
-          ...job,
-          type: job.type as JobType,
-          experienceLevel: job.experienceLevel as ExperienceLevel,
-          endDate: new Date(job.endDate),
-          duration: job.duration || undefined,
-          courseIds: job.jobCourses?.map((jc) => jc.courseId) || [],
-          summary: job.summary || "", // Convert null to empty string
-          skills: job.skills || [],
-        }
+        ...job,
+        type: job.type as JobType,
+        experienceLevel: job.experienceLevel as ExperienceLevel,
+        endDate: new Date(job.endDate),
+        duration: job.duration || undefined,
+        courseIds: job.jobCourses?.map((jc) => jc.courseId) || [],
+        summary: job.summary || "", // Convert null to empty string
+        skills: job.skills || [],
+      }
       : {
-          title: "",
-          summary: "",
-          description: "",
-          location: "",
-          weeklyHours: 0,
-          type: JobType.INTERNSHIP,
-          experienceLevel: ExperienceLevel.ENTRY_LEVEL,
-          salary: 0,
-          endDate: new Date(),
-          courseIds: [],
-          skills: [],
-        },
+        title: "",
+        summary: "",
+        description: "",
+        location: "",
+        weeklyHours: 0,
+        type: JobType.INTERNSHIP,
+        experienceLevel: ExperienceLevel.ENTRY_LEVEL,
+        salary: 0,
+        endDate: new Date(),
+        courseIds: [],
+        skills: [],
+      },
   });
   const queryClient = useQueryClient();
 
@@ -313,9 +313,9 @@ export function CreateJobForm({ job }: CreateJobFormProps) {
                           isLoadingCourses
                             ? []
                             : courses?.map((course) => ({
-                                label: `${course.title} (${course.code})`,
-                                value: course.id,
-                              })) || []
+                              label: `${course.title} (${course.code})`,
+                              value: course.id,
+                            })) || []
                         }
                         emptyIndicator={
                           <p className="text-center text-gray-600 text-lg leading-10 dark:text-gray-400">
@@ -337,18 +337,18 @@ export function CreateJobForm({ job }: CreateJobFormProps) {
                         value={
                           courses && field.value
                             ? (field.value
-                                .map((id) => {
-                                  const course = courses.find(
-                                    (c) => c.id === id
-                                  );
-                                  return course
-                                    ? {
-                                        label: `${course.title} (${course.code})`,
-                                        value: course.id,
-                                      }
-                                    : null;
-                                })
-                                .filter(Boolean) as Option[])
+                              .map((id) => {
+                                const course = courses.find(
+                                  (c) => c.id === id
+                                );
+                                return course
+                                  ? {
+                                    label: `${course.title} (${course.code})`,
+                                    value: course.id,
+                                  }
+                                  : null;
+                              })
+                              .filter(Boolean) as Option[])
                             : []
                         }
                       />

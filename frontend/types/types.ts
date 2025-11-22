@@ -371,6 +371,10 @@ export interface NotificationsPage {
 export interface FollowerInfo {
   followers: number;
   isFollowedByUser: boolean;
+  followRequestStatus?: string | null;
+  hasPendingFollowRequest?: boolean;
+  isPrivateAccount?: boolean;
+  followRequestId?: string | null;
 }
 
 export interface LikeInfo {

@@ -42,50 +42,50 @@ export async function createNotification(
       },
       post: data.postId
         ? {
-            select: {
-              id: true,
-              content: true,
-            },
-          }
+          select: {
+            id: true,
+            content: true,
+          },
+        }
         : false,
       job: data.jobId
         ? {
-            select: {
-              id: true,
-              title: true,
-              user: {
-                select: {
-                  id: true,
-                  username: true,
-                },
+          select: {
+            id: true,
+            title: true,
+            user: {
+              select: {
+                id: true,
+                username: true,
               },
             },
-          }
+          },
+        }
         : false,
       course: data.courseId
         ? {
-            select: {
-              id: true,
-              title: true,
-              code: true,
-            },
-          }
+          select: {
+            id: true,
+            title: true,
+            code: true,
+          },
+        }
         : false,
       research: data.researchId
         ? {
-            select: {
-              id: true,
-              title: true,
-            },
-          }
+          select: {
+            id: true,
+            title: true,
+          },
+        }
         : false,
       invitation: data.invitationId
         ? {
-            select: {
-              id: true,
-              email: true,
-            },
-          }
+          select: {
+            id: true,
+            email: true,
+          },
+        }
         : false,
     },
   });
@@ -434,6 +434,54 @@ export async function notifyFollow(followerId: string, followingId: string) {
   });
 }
 
+// Follow request notification
+export async function notifyFollowRequest(
+  requesterId: string,
+  targetId: string
+) {
+  const requester = await prisma.user.findUnique({
+    where: { id: requesterId },
+    select: {
+      name: true,
+      username: true,
+    },
+  });
+
+  if (!requester) return;
+
+  await createNotification({
+    type: NotificationType.FOLLOW_REQUEST,
+    recipientId: targetId,
+    issuerId: requesterId,
+    title: "New Follow Request",
+    message: `${requester.name} sent you a follow request`,
+  });
+}
+
+// Follow request accepted notification
+export async function notifyFollowRequestAccepted(
+  targetId: string,
+  requesterId: string
+) {
+  const target = await prisma.user.findUnique({
+    where: { id: targetId },
+    select: {
+      name: true,
+      username: true,
+    },
+  });
+
+  if (!target) return;
+
+  await createNotification({
+    type: NotificationType.FOLLOW_REQUEST_ACCEPTED,
+    recipientId: requesterId,
+    issuerId: targetId,
+    title: "Follow Request Accepted",
+    message: `${target.name} accepted your follow request`,
+  });
+}
+
 // Club-specific notification helpers
 export async function notifyClubMemberJoined(clubId: string, userId: string) {
   const club = await prisma.club.findUnique({
@@ -447,7 +495,7 @@ export async function notifyClubMemberJoined(clubId: string, userId: string) {
   if (!club) return;
 
   // Notify club advisors
-  const advisorNotifications = club.members.map((advisor) =>
+  const advisorNotifications = club.members.map((advisor: any) =>
     createNotification({
       type: NotificationType.SYSTEM_ANNOUNCEMENT,
       recipientId: advisor.userId,
@@ -484,7 +532,7 @@ export async function notifyClubEventCreated(
   if (!(club && event)) return;
 
   // Notify all club members
-  const memberNotifications = club.members.map((member) =>
+  const memberNotifications = club.members.map((member: any) =>
     createNotification({
       type: NotificationType.SYSTEM_ANNOUNCEMENT,
       recipientId: member.userId,

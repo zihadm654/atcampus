@@ -53,7 +53,7 @@ export default function SaveJobs() {
 
   return (
     <InfiniteScrollContainer
-      className="space-y-5"
+      className="space-y-5 grid gap-3 lg:grid-cols-3"
       onBottomReached={() => hasNextPage && !isFetching && fetchNextPage()}
     >
       {jobs.map((job) => (

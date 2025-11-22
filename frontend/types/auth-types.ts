@@ -14,6 +14,7 @@ export interface CustomUserProperties {
   institution?: string;
   instituteId?: string;
   phone?: string;
+  coverImage?: string;
 }
 
 // Extended user type that combines better-auth User with our custom properties
@@ -24,6 +25,7 @@ export interface SessionUser extends ExtendedUser {
   id: string;
   email: string;
   name: string;
+  coverImage: string;
   emailVerified: boolean;
   twoFactorEnabled: boolean;
   banned?: boolean;

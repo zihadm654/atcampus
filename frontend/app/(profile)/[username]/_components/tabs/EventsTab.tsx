@@ -411,8 +411,8 @@ export function EventsTab({
                 (event.registrationDeadline
                   ? new Date(event.registrationDeadline) < new Date()
                   : new Date(event.startDate) < new Date()) ||
-                  (event.capacity &&
-                    (event._count?.attendees || 0) >= Number(event.capacity))
+                (event.capacity &&
+                  (event._count?.attendees || 0) >= Number(event.capacity))
               )}
               onClick={() => handleJoinEvent(event.id)}
               size="sm"

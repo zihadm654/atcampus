@@ -76,6 +76,6 @@ export const columns: ColumnDef<UserWithRoleAndStatus>[] = [
   },
 ];
 
-export function UsersTable({ users }) {
+export function UsersTable({ users }: any) {
   return <DataTable columns={columns} data={users} />;
 }

@@ -39,7 +39,7 @@ export async function GET(req: NextRequest) {
     } catch (error) {
       console.error("Query validation error:", error);
       return NextResponse.json(
-        { error: "Invalid query parameters", details: error.errors },
+        { error: "Invalid query parameters", details: error },
         { status: 400 }
       );
     }

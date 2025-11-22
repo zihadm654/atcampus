@@ -1,5 +1,6 @@
 "use client";
-import { MoreHorizontal, Trash2 } from "lucide-react";
+import { Edit, MoreHorizontal, Trash2 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import type { CourseData } from "@/types/types";
@@ -23,7 +24,12 @@ export default function CourseMoreButton({
   course,
   className,
 }: CourseMoreButtonProps) {
+  const router = useRouter();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+
+  const handleEdit = () => {
+    router.push(`/courses/createCourse?edit=${course.id}`);
+  };
 
   return (
     <>
@@ -34,6 +40,12 @@ export default function CourseMoreButton({
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent>
+          <DropdownMenuItem onClick={handleEdit}>
+            <span className="flex items-center gap-3">
+              <Edit className="size-4" />
+              Edit
+            </span>
+          </DropdownMenuItem>
           <DropdownMenuItem onClick={() => setShowDeleteDialog(true)}>
             <span className="flex items-center gap-3 text-destructive">
               <Trash2 className="size-4" />

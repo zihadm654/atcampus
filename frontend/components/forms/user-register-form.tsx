@@ -29,7 +29,7 @@ interface UserRegisterFormProps {
   className?: string;
 }
 
-interface UserAuthFormProps extends React.HTMLAttributes<HTMLDivElement> {}
+interface UserAuthFormProps extends React.HTMLAttributes<HTMLDivElement> { }
 
 export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
   const [currentStep, setCurrentStep] = React.useState(1);
@@ -297,29 +297,29 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
               />
               {(role === UserRole.ORGANIZATION ||
                 role === UserRole.INSTITUTION) && (
-                <FormField
-                  control={form.control}
-                  name="phone"
-                  render={({ field }) => (
-                    <FormItem className="grid gap-1">
-                      <FormLabel htmlFor="telephone">Phone Number</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="telephone"
-                          {...field}
-                          autoCapitalize="none"
-                          autoComplete="tel"
-                          autoCorrect="off"
-                          disabled={isLoading || isGoogleLoading}
-                          id="telephone"
-                          placeholder="05555555555"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              )}
+                  <FormField
+                    control={form.control}
+                    name="phone"
+                    render={({ field }) => (
+                      <FormItem className="grid gap-1">
+                        <FormLabel htmlFor="telephone">Phone Number</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="telephone"
+                            {...field}
+                            autoCapitalize="none"
+                            autoComplete="tel"
+                            autoCorrect="off"
+                            disabled={isLoading || isGoogleLoading}
+                            id="telephone"
+                            placeholder="05555555555"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                )}
               <FormField
                 control={form.control}
                 name="email"

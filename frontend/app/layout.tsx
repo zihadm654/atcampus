@@ -17,6 +17,14 @@ interface RootLayoutProps {
 }
 
 export const metadata = constructMetadata();
+import { connection } from "next/server"; // [!code ++]
+import { Suspense } from "react"; // [!code ++]
+
+async function UTSSR() {
+  await connection(); // [!code ++]
+
+  return <NextSSRPlugin routerConfig={extractRouterConfig(ourFileRouter)} />
+}
 
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
@@ -31,7 +39,9 @@ export default function RootLayout({ children }: RootLayoutProps) {
           fontGeist.variable
         )}
       >
-        <NextSSRPlugin routerConfig={extractRouterConfig(ourFileRouter)} />
+        <Suspense>
+          <UTSSR />
+        </Suspense>
         <ReactQueryProvider>
           <ThemeProvider
             attribute="class"

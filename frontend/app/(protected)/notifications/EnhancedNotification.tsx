@@ -7,6 +7,8 @@ import {
   Heart,
   MessageCircle,
   User2,
+  UserCheck,
+  UserPlus,
 } from "lucide-react";
 import Link from "next/link";
 import type { JSX } from "react";
@@ -123,6 +125,20 @@ export default function EnhancedNotification({
       href: "/courses/my-courses",
       color: "text-green-500",
     },
+    FOLLOW_REQUEST: {
+      title: notification.title || "Follow Request",
+      message: notification.message || `${notification.issuer.displayUsername} sent you a follow request`,
+      icon: <UserPlus className="size-7 text-blue-500" />,
+      href: "/connections",
+      color: "text-blue-500",
+    },
+    FOLLOW_REQUEST_ACCEPTED: {
+      title: notification.title || "Follow Request Accepted",
+      message: notification.message || `${notification.issuer.displayUsername} accepted your follow request`,
+      icon: <UserCheck className="size-7 text-green-500" />,
+      href: `/${notification.issuer.username}`,
+      color: "text-green-500",
+    },
   };
 
   const { title, message, icon, href, color } =
@@ -140,13 +156,13 @@ export default function EnhancedNotification({
           <div className="absolute top-3 right-3 h-2 w-2 rounded-full bg-primary" />
         )}
 
-        <div className="flex-shrink-0">
+        <div className="shrink-0">
           <UserAvatar avatarUrl={notification.issuer.image} size={36} />
         </div>
 
         <div className="min-w-0 flex-1">
           <div className="mb-1 flex items-center gap-2">
-            <div className={cn("flex-shrink-0", color)}>{icon}</div>
+            <div className={cn("shrink-0", color)}>{icon}</div>
             <span className="truncate font-bold text-sm">
               {notification.issuer.displayUsername}
             </span>

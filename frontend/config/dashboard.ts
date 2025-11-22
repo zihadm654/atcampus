@@ -1,4 +1,3 @@
-import { UserRole } from "@prisma/client";
 import type { SidebarNavItem } from "@/types";
 
 export const sidebarLinks: SidebarNavItem[] = [
@@ -9,7 +8,7 @@ export const sidebarLinks: SidebarNavItem[] = [
         href: "/admin",
         icon: "laptop",
         title: "Admin Panel",
-        authorizeOnly: UserRole.ADMIN,
+        authorizeOnly: "ADMIN",
       },
       { href: "/", icon: "home", title: "Feed" },
       {

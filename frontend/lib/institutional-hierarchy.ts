@@ -101,7 +101,7 @@ export async function getInstitutionalHierarchy(
         website: institution.institution || undefined,
         isActive: true,
       },
-      schools: institution.schools.map((school) => ({
+      schools: institution.schools.map((school: any) => ({
         id: school.id,
         name: school.name,
         shortName: school.shortName || undefined,
@@ -111,7 +111,7 @@ export async function getInstitutionalHierarchy(
         coverPhoto: school.coverPhoto || undefined,
         website: school.website || undefined,
         isActive: school.isActive,
-        faculties: school.faculties.map((faculty) => ({
+        faculties: school.faculties.map((faculty: any) => ({
           id: faculty.id,
           name: faculty.name,
           shortName: faculty.shortName || undefined,
@@ -473,7 +473,7 @@ export async function getProfessorFacultyAssignments(
       },
     });
 
-    return assignments.map((assignment) => ({
+    return assignments.map((assignment: any) => ({
       userId: assignment.userId,
       organizationId: assignment.organizationId,
       facultyId: assignment.facultyId!,
