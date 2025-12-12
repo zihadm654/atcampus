@@ -38,7 +38,7 @@ export const courseSchema = z
       .max(20, "Course code cannot exceed 20 characters")
       .regex(
         /^[A-Z0-9-]+$/,
-        "Course code must contain only uppercase letters, numbers, and hyphens"
+        "Course code must contain only uppercase letters, numbers, and hyphens",
       ),
 
     title: z
@@ -116,7 +116,7 @@ export const courseSchema = z
     {
       message: "End date must be after start date",
       path: ["endDate"],
-    }
+    },
   )
   .refine(
     (data) => {
@@ -128,7 +128,7 @@ export const courseSchema = z
     {
       message: "Max students must be greater than or equal to min students",
       path: ["maxStudents"],
-    }
+    },
   );
 
 // Enhanced invitation schema with comprehensive validation
@@ -144,7 +144,7 @@ export const invitationSchema = z.object({
     .max(50, "First name cannot exceed 50 characters")
     .regex(
       /^[a-zA-Z\s'-]+$/,
-      "First name can only contain letters, spaces, hyphens, and apostrophes"
+      "First name can only contain letters, spaces, hyphens, and apostrophes",
     )
     .optional(),
 
@@ -154,7 +154,7 @@ export const invitationSchema = z.object({
     .max(50, "Last name cannot exceed 50 characters")
     .regex(
       /^[a-zA-Z\s'-]+$/,
-      "Last name can only contain letters, spaces, hyphens, and apostrophes"
+      "Last name can only contain letters, spaces, hyphens, and apostrophes",
     )
     .optional(),
 
@@ -213,7 +213,7 @@ export const invitationSchema = z.object({
       },
       {
         message: "Expiration date must be between now and 1 year from now",
-      }
+      },
     ),
 });
 
@@ -261,7 +261,7 @@ export const approvalDecisionSchema = z
       message:
         "When requesting revision, you must provide required changes or comments",
       path: ["requiredChanges"],
-    }
+    },
   )
   .refine(
     (data) => {
@@ -274,7 +274,7 @@ export const approvalDecisionSchema = z
     {
       message: "Comments are required when rejecting a course",
       path: ["comments"],
-    }
+    },
   );
 
 // Query parameter validation
@@ -282,10 +282,10 @@ export const courseApprovalQuerySchema = z.object({
   status: z
     .enum(["UNDER_REVIEW", "PUBLISHED", "REJECTED", "NEEDS_REVISION"])
     .optional(),
-  level: z.coerce.number().int().min(1).max(3).optional(),
+  level: z.number().int().min(1).max(3).optional(),
   priority: z.enum(["LOW", "NORMAL", "HIGH", "URGENT"]).optional(),
-  page: z.coerce.number().int().min(1).default(1),
-  limit: z.coerce.number().int().min(1).max(100).default(10),
+  page: z.number().int().min(1).default(1),
+  limit: z.number().int().min(1).max(100).default(10),
 });
 
 // Soft delete validation

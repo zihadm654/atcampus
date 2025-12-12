@@ -57,7 +57,7 @@ export async function GET(_req: NextRequest, { params }: RouteParams) {
     if (!approval) {
       return NextResponse.json(
         { error: "Course approval not found" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -65,7 +65,7 @@ export async function GET(_req: NextRequest, { params }: RouteParams) {
     if (approval.course?.isDeleted) {
       return NextResponse.json(
         { error: "Course approval not found" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -100,7 +100,7 @@ export async function GET(_req: NextRequest, { params }: RouteParams) {
     console.error("Error fetching course approval:", error);
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -128,8 +128,8 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
 
     if (!validation.success) {
       return NextResponse.json(
-        { error: "Invalid request body", details: validation.error.errors },
-        { status: 400 }
+        { error: "Invalid request body", details: validation.error.cause },
+        { status: 400 },
       );
     }
 
@@ -156,7 +156,7 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
       default:
         return NextResponse.json(
           { error: "Invalid decision" },
-          { status: 400 }
+          { status: 400 },
         );
     }
 
@@ -190,7 +190,7 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
     if (!approval) {
       return NextResponse.json(
         { error: "Course approval not found" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -198,7 +198,7 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
     if (approval.course?.isDeleted) {
       return NextResponse.json(
         { error: "Course approval not found" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -206,14 +206,14 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
     if (approval.reviewerId !== currentUser.id) {
       return NextResponse.json(
         { error: "Only the assigned reviewer can make approval decisions" },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
     if (approval.status !== "UNDER_REVIEW") {
       return NextResponse.json(
         { error: "This approval has already been processed" },
-        { status: 409 }
+        { status: 409 },
       );
     }
 
@@ -251,7 +251,7 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
         approval.course?.instructorId || "",
         currentUser.id,
         decision,
-        comments
+        comments,
       );
 
       return { updatedApproval, updatedCourse };
@@ -265,7 +265,7 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
     console.error("Error processing course approval:", error);
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

@@ -19,7 +19,7 @@ export const getCurrentUser = cache(
 
     // Cast to our extended user type
     return session.user as ExtendedUser;
-  }
+  },
 );
 
 export const getCurrentSession = cache(async () => {
@@ -33,14 +33,14 @@ export const getCurrentSession = cache(async () => {
 });
 
 export const isSessionExpired = (
-  session: { expiresAt: Date } | null
+  session: { expiresAt: Date } | null,
 ): boolean => {
   if (!session) return true;
   return new Date() > new Date(session.expiresAt);
 };
 
 export const getSessionTimeRemaining = (
-  session: { expiresAt: Date } | null
+  session: { expiresAt: Date } | null,
 ): number => {
   if (!session) return 0;
   const now = Date.now(); // Current time in milliseconds since January 1, 1970 00:00:00 UTC
@@ -50,7 +50,7 @@ export const getSessionTimeRemaining = (
 
 export const isSessionExpiringSoon = (
   session: { expiresAt: Date } | null,
-  thresholdMinutes = 30
+  thresholdMinutes = 30,
 ): boolean => {
   if (!session) return false;
   const timeRemaining = getSessionTimeRemaining(session);
@@ -81,14 +81,14 @@ export const hasRole = cache(
   async (allowedRoles: ExtendedUser["role"][]): Promise<boolean> => {
     const user = await getCurrentUser();
     return user ? allowedRoles.includes(user.role) : false;
-  }
+  },
 );
 
 export const hasAnyRole = cache(
   async (allowedRoles: ExtendedUser["role"][]): Promise<boolean> => {
     const user = await getCurrentUser();
     return user ? allowedRoles.includes(user.role) : false;
-  }
+  },
 );
 
 export const hasActiveStatus = cache(async (): Promise<boolean> => {

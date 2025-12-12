@@ -32,74 +32,69 @@ export default function NewChatDialog({
   const [selectedUsers, setSelectedUsers] = useState<UserResponse[]>([]);
   const { client, setActiveChannel } = useChatContext();
   const { data: session } = useSession();
-  const loggedInUser = session?.user;
   const { toast } = useToast();
+  const loggedInUser = session?.user || "";
+  // const { data, isFetching, isError, isSuccess } = useQuery({
+  //   queryKey: ["stream-users", searchInputDebounced],
+  //   queryFn: async () => {
+  //     if (!(searchInputDebounced && client)) return { users: [] };
+  //     return client.queryUsers(
+  //       {
+  //         id: { $in: [loggedInUser?.id] }, // Use $nin instead of $ne for proper typing
+  //         $or: [
+  //           { name: { $autocomplete: searchInputDebounced } },
+  //           { id: { $autocomplete: searchInputDebounced } },
+  //         ],
+  //       },
+  //       { created_at: -1 }, // Sort by creation date descending
+  //       { limit: 15 },
+  //     );
+  //   },
+  //   enabled: !!client && !!searchInputDebounced,
+  // });
 
-  if (!loggedInUser) {
-    console.error("User not logged in");
-    return null;
-  }
-  const { data, isFetching, isError, isSuccess } = useQuery({
-    queryKey: ["stream-users", searchInputDebounced],
-    queryFn: async () => {
-      if (!(searchInputDebounced && client)) return { users: [] };
-      return client.queryUsers(
-        {
-          id: { $in: [loggedInUser.id] }, // Use $nin instead of $ne for proper typing
-          $or: [
-            { name: { $autocomplete: searchInputDebounced } },
-            { id: { $autocomplete: searchInputDebounced } },
-          ],
-        },
-        { created_at: -1 }, // Sort by creation date descending
-        { limit: 15 }
-      );
-    },
-    enabled: !!client && !!searchInputDebounced,
-  });
+  // const mutation = useMutation({
+  //   mutationFn: async () => {
+  //     if (!selectedUsers.length) {
+  //       throw new Error("Select at least one user");
+  //     } // For 1:1 chats, create a deterministic channel ID
+  //     const channelId =
+  //       selectedUsers.length === 1
+  //         ? [loggedInUser?.id, selectedUsers[0].id].sort().join("::")
+  //         : crypto.randomUUID();
 
-  const mutation = useMutation({
-    mutationFn: async () => {
-      if (!selectedUsers.length) {
-        throw new Error("Select at least one user");
-      } // For 1:1 chats, create a deterministic channel ID
-      const channelId =
-        selectedUsers.length === 1
-          ? [loggedInUser.id, selectedUsers[0].id].sort().join("::")
-          : crypto.randomUUID();
+  //     const channelData = {
+  //       members: [loggedInUser?.id, ...selectedUsers.map((u) => u.id)],
+  //       created_by_id: loggedInUser?.id,
+  //     };
 
-      const channelData = {
-        members: [loggedInUser.id, ...selectedUsers.map((u) => u.id)],
-        created_by_id: loggedInUser.id,
-      };
+  //     // Add optional name for group chats
+  //     if (selectedUsers.length > 1) {
+  //       channelData["name"] =
+  //         `${loggedInUser?.name}, ${selectedUsers.map((u) => u.name || u.id).join(", ")}`;
+  //     }
 
-      // Add optional name for group chats
-      if (selectedUsers.length > 1) {
-        channelData["name"] =
-          `${loggedInUser.name}, ${selectedUsers.map((u) => u.name || u.id).join(", ")}`;
-      }
+  //     const channel = client.channel("messaging", channelId, channelData);
 
-      const channel = client.channel("messaging", channelId, channelData);
-
-      await channel.create();
-      return channel;
-    },
-    onSuccess: (channel) => {
-      setActiveChannel(channel);
-      onChatCreated();
-      toast({
-        description: "Chat created successfully",
-      });
-    },
-    onError: (error) => {
-      console.error("Error creating chat:", error);
-      toast({
-        variant: "destructive",
-        description:
-          error instanceof Error ? error.message : "Failed to create chat",
-      });
-    },
-  });
+  //     await channel.create();
+  //     return channel;
+  //   },
+  //   onSuccess: (channel) => {
+  //     setActiveChannel(channel);
+  //     onChatCreated();
+  //     toast({
+  //       description: "Chat created successfully",
+  //     });
+  //   },
+  //   onError: (error) => {
+  //     console.error("Error creating chat:", error);
+  //     toast({
+  //       variant: "destructive",
+  //       description:
+  //         error instanceof Error ? error.message : "Failed to create chat",
+  //     });
+  //   },
+  // });
 
   return (
     <Dialog onOpenChange={onOpenChange} open>
@@ -124,7 +119,7 @@ export default function NewChatDialog({
                   key={user.id}
                   onRemove={() => {
                     setSelectedUsers((prev) =>
-                      prev.filter((u) => u.id !== user.id)
+                      prev.filter((u) => u.id !== user.id),
                     );
                   }}
                   user={user}
@@ -133,7 +128,7 @@ export default function NewChatDialog({
             </div>
           )}
           <hr />{" "}
-          <div className="h-96 overflow-y-auto">
+          {/*<div className="h-96 overflow-y-auto">
             {isFetching ? (
               <div className="flex justify-center py-4">
                 <Loader2 className="size-6 animate-spin text-muted-foreground" />
@@ -156,7 +151,7 @@ export default function NewChatDialog({
                     setSelectedUsers((prev) =>
                       prev.some((u) => u.id === user.id)
                         ? prev.filter((u) => u.id !== user.id)
-                        : [...prev, user]
+                        : [...prev, user],
                     );
                   }}
                   selected={selectedUsers.some((u) => u.id === user.id)}
@@ -168,13 +163,13 @@ export default function NewChatDialog({
                 Start typing to search for users
               </p>
             )}
-          </div>
+          </div>*/}
         </div>
         <DialogFooter className="flex-row items-center justify-between border-t p-4">
           <Button onClick={() => onOpenChange(false)} variant="ghost">
             Cancel
           </Button>
-          <Button
+          {/*<Button
             disabled={selectedUsers.length === 0 || mutation.isPending}
             onClick={() => mutation.mutate()}
           >
@@ -182,7 +177,7 @@ export default function NewChatDialog({
               <Loader2 className="mr-2 size-4 animate-spin" />
             )}
             Start Chat
-          </Button>
+          </Button>*/}
         </DialogFooter>
       </DialogContent>
     </Dialog>

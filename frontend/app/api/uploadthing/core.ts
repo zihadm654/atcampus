@@ -12,7 +12,7 @@ const cleanupFailedUpload = async (fileUrl: string | null) => {
   if (fileUrl) {
     try {
       const key = fileUrl.split(
-        `/a/${process.env.NEXT_PUBLIC_UPLOADTHING_APP_ID}/`
+        `/a/${process.env.NEXT_PUBLIC_UPLOADTHING_APP_ID}/`,
       )[1];
       await new UTApi().deleteFiles(key);
     } catch (error) {
@@ -63,7 +63,7 @@ export const ourFileRouter = {
       maxFileCount: 1,
     },
   })
-    .middleware(async ({ files }) => {
+    .middleware(async () => {
       const user = await getCurrentUser();
       if (!user) throw new UploadThingError("Unauthorized");
 
@@ -94,7 +94,7 @@ export const ourFileRouter = {
   pdfAttachment: f({
     pdf: { maxFileSize: "16MB", maxFileCount: 1 },
   })
-    .middleware(async ({ files }) => {
+    .middleware(async () => {
       const user = await getCurrentUser();
       if (!user) throw new UploadThingError("Unauthorized");
       return { userId: user.id };
@@ -120,7 +120,7 @@ export const ourFileRouter = {
       }
       return { userId: user.id };
     })
-    .onUploadComplete(async ({ metadata, file }) => {
+    .onUploadComplete(async ({ file }) => {
       return { schoolLogoUrl: file.ufsUrl };
     }),
 
@@ -130,14 +130,31 @@ export const ourFileRouter = {
       const user = await getCurrentUser();
       if (!user) throw new UploadThingError("Unauthorized");
       if (user.role !== "INSTITUTION") {
-        throw new UploadThingError("Only institutions can upload school cover images");
+        throw new UploadThingError(
+          "Only institutions can upload school cover images",
+        );
       }
       return { userId: user.id };
     })
-    .onUploadComplete(async ({ metadata, file }) => {
+    .onUploadComplete(async ({ file }) => {
       return { schoolCoverImageUrl: file.ufsUrl };
     }),
 
+  // course cover image (institution only)
+  courseCoverImage: f({ image: { maxFileSize: "4MB", maxFileCount: 1 } })
+    .middleware(async () => {
+      const user = await getCurrentUser();
+      if (!user) throw new UploadThingError("Unauthorized");
+      if (user.role !== "INSTITUTION") {
+        throw new UploadThingError(
+          "Only institutions can upload school cover images",
+        );
+      }
+      return { userId: user.id };
+    })
+    .onUploadComplete(async ({ file }) => {
+      return { courseCoverImageUrl: file.ufsUrl };
+    }),
   // General attachments (images and videos)
   attachment: f({
     image: { maxFileSize: "4MB", maxFileCount: 5 },

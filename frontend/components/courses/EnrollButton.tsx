@@ -6,12 +6,17 @@ import { enrollCourse } from "@/actions/enrollment";
 import { useSession } from "@/lib/auth-client";
 import { Button } from "../ui/button";
 
-export default function EnrollButton({ courseId, initialEnrolled = false }) {
+export default function EnrollButton({
+  courseId,
+  initialEnrolled = false,
+}: {
+  courseId: string;
+  initialEnrolled?: boolean;
+}) {
   const { data: session } = useSession();
+  const [isPending, startTransition] = useTransition();
   const user = session?.user;
   if (!user) return null;
-
-  const [isPending, startTransition] = useTransition();
 
   const handleEnroll = () => {
     startTransition(async () => {

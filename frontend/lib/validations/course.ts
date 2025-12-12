@@ -11,12 +11,12 @@ export const courseSchema = z.object({
     .min(1, "code is required")
     .max(20, "Must be at most 20 characters"),
   difficulty: z.string().max(100, "Must be at most 100 characters").optional(),
-  credits: z.coerce
+  credits: z
     .number()
     .min(1, "Credits must be at least 1")
     .max(10, "Credits must be at most 10")
     .optional(),
-  estimatedHours: z.coerce
+  estimatedHours: z
     .number()
     .min(1, "Duration must be at least 1 week")
     .max(52, "Duration must be at most 52 weeks")

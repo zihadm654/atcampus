@@ -28,7 +28,7 @@
       "nursery": {
         "noShadow": "off",
         "noUnusedExpressions": "off",
-        "useMaxParams": "off",
+        "useMaxParams": "off"
       },
       "complexity": {
         "noExcessiveCognitiveComplexity": "off",
@@ -76,9 +76,5 @@
       }
     }
   },
-  "extends": [
-    "ultracite",
-    "ultracite/core",
-    "ultracite/next"
-  ]
+  "extends": ["ultracite", "ultracite/core", "ultracite/next"]
 }

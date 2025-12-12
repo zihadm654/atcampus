@@ -42,15 +42,15 @@ export const eventSchema = z.object({
     .max(500, "Location must be at most 500 characters"),
   venue: z.string().max(200, "Venue must be at most 200 characters").optional(),
   isOnline: z.boolean().default(false),
-  meetingUrl: z.string().url("Must be a valid URL").optional().nullable(),
+  meetingUrl: z.url("Must be a valid URL").optional().nullable(),
 
   // Date and time
-  startDate: z.date({ required_error: "Start date is required" }),
-  endDate: z.date({ required_error: "End date is required" }),
+  startDate: z.date(),
+  endDate: z.date(),
   registrationDeadline: z.date().optional(),
 
   // Capacity and requirements
-  maxAttendees: z.coerce
+  maxAttendees: z
     .number()
     .int()
     .min(1, "Max attendees must be at least 1")
@@ -62,20 +62,20 @@ export const eventSchema = z.object({
     .optional(),
 
   // Contact information
-  contactEmail: z.string().email("Must be a valid email address").optional(),
+  contactEmail: z.email("Must be a valid email address").optional(),
   contactPhone: z
     .string()
     .max(20, "Phone must be at most 20 characters")
     .optional(),
-  websiteUrl: z.string().url("Must be a valid URL").optional().nullable(),
+  websiteUrl: z.url("Must be a valid URL").optional().nullable(),
 
   // Media and assets
-  coverPhoto: z.string().url("Must be a valid URL").optional().nullable(),
-  bannerImage: z.string().url("Must be a valid URL").optional().nullable(),
+  coverPhoto: z.url("Must be a valid URL").optional().nullable(),
+  bannerImage: z.url("Must be a valid URL").optional().nullable(),
 
   // Pricing
   isFree: z.boolean().default(true),
-  price: z.coerce.number().min(0, "Price must be non-negative").optional(),
+  price: z.number().min(0, "Price must be non-negative").optional(),
   currency: z
     .string()
     .max(3, "Currency must be at most 3 characters")
@@ -147,8 +147,8 @@ export const eventFilterSchema = z.object({
     .max(100, "Search must be at most 100 characters")
     .optional(),
   tags: z.array(z.string()).optional(),
-  page: z.coerce.number().int().min(1).default(1),
-  limit: z.coerce.number().int().min(1).max(100).default(20),
+  page: z.number().int().min(1).default(1),
+  limit: z.number().int().min(1).max(100).default(20),
 });
 
 // Type exports

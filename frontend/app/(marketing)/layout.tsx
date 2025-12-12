@@ -16,16 +16,16 @@ export default async function MarketingLayout({
 }: MarketingLayoutProps) {
   const user = await getCurrentUser();
 
-  if (!user) {
-    // Redirect to login, but middleware should handle the 'from' parameter
-    redirect("/login");
-  }
+  // if (!user) {
+  //   // Redirect to login, but middleware should handle the 'from' parameter
+  //   redirect("/login");
+  // }
 
   // Basic authentication check (middleware should handle detailed status checks)
   const filteredLinks = menubar.map((section) => ({
     ...section,
     items: section.items.filter(
-      ({ authorizeOnly }) => !authorizeOnly || authorizeOnly === user.role
+      ({ authorizeOnly }) => !authorizeOnly || authorizeOnly === user?.role,
     ),
   }));
   return (

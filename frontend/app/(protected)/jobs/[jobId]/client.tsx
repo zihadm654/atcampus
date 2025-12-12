@@ -27,7 +27,7 @@ const Client = ({ job, user }: any) => {
 
   // Check if current user has applied
   const hasApplied = job.applications?.some(
-    (application) => application.applicantId === user.id
+    (application: any) => application.applicantId === user.id,
   );
 
   return (

@@ -29,25 +29,25 @@ export const UserRoleSelect = ({ userId, role }: UserRoleSelectProps) => {
       return toast.error("Forbidden");
     }
 
-    await admin.setRole({
-      userId,
-      role: newRole as UserRole,
-      fetchOptions: {
-        onRequest: () => {
-          setIsPending(true);
-        },
-        onResponse: () => {
-          setIsPending(false);
-        },
-        onError: (ctx) => {
-          toast.error(ctx.error.message);
-        },
-        onSuccess: () => {
-          toast.success("User role updated");
-          router.refresh();
-        },
-      },
-    });
+    // await admin.setRole({
+    //   userId,
+    //   role: newRole as UserRole,
+    //   fetchOptions: {
+    //     onRequest: () => {
+    //       setIsPending(true);
+    //     },
+    //     onResponse: () => {
+    //       setIsPending(false);
+    //     },
+    //     onError: (ctx) => {
+    //       toast.error(ctx.error.message);
+    //     },
+    //     onSuccess: () => {
+    //       toast.success("User role updated");
+    //       router.refresh();
+    //     },
+    //   },
+    // });
   }
 
   return (

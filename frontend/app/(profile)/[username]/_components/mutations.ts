@@ -38,8 +38,8 @@ export function useUpdateProfileMutation() {
       const updatedUser = await updateUserProfile(values);
 
       // Then handle file uploads
-      let avatarUploadResult;
-      let coverUploadResult;
+      let avatarUploadResult: any;
+      let coverUploadResult: any;
 
       try {
         if (avatar) {
@@ -63,11 +63,11 @@ export function useUpdateProfileMutation() {
       return [updatedUser, avatarUploadResult, coverUploadResult];
     },
     onSuccess: async ([updatedUser, avatarUploadResult, coverUploadResult]) => {
-      console.log("Profile update success", {
-        userId: updatedUser.id,
-        hasAvatarResult: !!avatarUploadResult,
-        hasCoverResult: !!coverUploadResult,
-      });
+      // console.log("Profile update success", {
+      //   userId: updatedUser?.id,
+      //   hasAvatarResult: !!avatarUploadResult,
+      //   hasCoverResult: !!coverUploadResult,
+      // });
 
       // Check if any uploads failed
       const avatarUploadFailed = avatarUploadResult === undefined;
@@ -117,7 +117,7 @@ export function useUpdateProfileMutation() {
               }),
             })),
           };
-        }
+        },
       );
 
       router.refresh();

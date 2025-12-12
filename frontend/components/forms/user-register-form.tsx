@@ -1,7 +1,6 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { UserRole } from "@prisma/client";
 import { Briefcase, GraduationCap, HomeIcon } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import * as React from "react";
@@ -24,12 +23,13 @@ import {
   FormMessage,
 } from "../ui/form";
 import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
+import { UserRole } from "@prisma/client";
 
 interface UserRegisterFormProps {
   className?: string;
 }
 
-interface UserAuthFormProps extends React.HTMLAttributes<HTMLDivElement> { }
+interface UserAuthFormProps extends React.HTMLAttributes<HTMLDivElement> {}
 
 export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
   const [currentStep, setCurrentStep] = React.useState(1);
@@ -37,9 +37,9 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
     resolver: zodResolver(registerSchema),
     mode: "onChange", // Validate on change for better UX
     defaultValues: {
+      name: "",
       email: "",
       password: "",
-      name: "",
       role: UserRole.STUDENT,
       institution: "",
       instituteId: "",
@@ -66,17 +66,14 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
         }
       } else if (result.success) {
         form.reset();
-        if (
-          data.role === UserRole.INSTITUTION ||
-          data.role === UserRole.ORGANIZATION
-        ) {
+        if (data.role === "INSTITUTION" || data.role === "ORGANIZATION") {
           router.push("/pending-approval");
         } else {
           // Redirect to the intended destination or success page
           router.push(from === "/" ? "/register/success" : from);
         }
         toast.success(
-          result.message || "Verification link has been sent to your mail"
+          result.message || "Verification link has been sent to your mail",
         );
       }
     } catch (error) {
@@ -104,7 +101,7 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
   };
   React.useEffect(() => {
     const subscription = form.watch((value, { name, type }) =>
-      console.log(value, name, type)
+      console.log(value, name, type),
     );
     return () => subscription.unsubscribe();
   }, [form]);
@@ -133,7 +130,7 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
                             <FormControl>
                               <RadioGroupItem
                                 className="mt-1"
-                                value={UserRole.STUDENT}
+                                value={"STUDENT"}
                               />
                             </FormControl>
                             <div className="space-y-1">
@@ -151,7 +148,7 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
                             <FormControl>
                               <RadioGroupItem
                                 className="mt-1"
-                                value={UserRole.PROFESSOR}
+                                value={"PROFESSOR"}
                               />
                             </FormControl>
                             <div className="space-y-1">
@@ -168,7 +165,7 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
                             <FormControl>
                               <RadioGroupItem
                                 className="mt-1"
-                                value={UserRole.ORGANIZATION}
+                                value={"ORGANIZATION"}
                               />
                             </FormControl>
                             <div className="space-y-1">
@@ -186,7 +183,7 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
                             <FormControl>
                               <RadioGroupItem
                                 className="mt-1"
-                                value={UserRole.INSTITUTION}
+                                value={"INSTITUTION"}
                               />
                             </FormControl>
                             <div className="space-y-1">
@@ -297,29 +294,29 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
               />
               {(role === UserRole.ORGANIZATION ||
                 role === UserRole.INSTITUTION) && (
-                  <FormField
-                    control={form.control}
-                    name="phone"
-                    render={({ field }) => (
-                      <FormItem className="grid gap-1">
-                        <FormLabel htmlFor="telephone">Phone Number</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="telephone"
-                            {...field}
-                            autoCapitalize="none"
-                            autoComplete="tel"
-                            autoCorrect="off"
-                            disabled={isLoading || isGoogleLoading}
-                            id="telephone"
-                            placeholder="05555555555"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                )}
+                <FormField
+                  control={form.control}
+                  name="phone"
+                  render={({ field }) => (
+                    <FormItem className="grid gap-1">
+                      <FormLabel htmlFor="telephone">Phone Number</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="telephone"
+                          {...field}
+                          autoCapitalize="none"
+                          autoComplete="tel"
+                          autoCorrect="off"
+                          disabled={isLoading || isGoogleLoading}
+                          id="telephone"
+                          placeholder="05555555555"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
               <FormField
                 control={form.control}
                 name="email"
@@ -380,7 +377,7 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
               <Button
                 className={cn(
                   buttonVariants({ variant: "outline" }),
-                  "self-end"
+                  "self-end",
                 )}
                 disabled={isLoading || (currentStep === 1 && !role)}
                 onClick={nextStep}

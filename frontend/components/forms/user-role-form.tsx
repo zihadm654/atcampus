@@ -61,25 +61,25 @@ export function UserRoleForm({ user }: UserNameFormProps) {
       return toast.error("Forbidden");
     }
 
-    await admin.setRole({
-      userId: user?.id,
-      role: data.role,
-      fetchOptions: {
-        onRequest: () => {
-          setIsPending(true);
-        },
-        onResponse: () => {
-          setIsPending(false);
-        },
-        onError: (ctx) => {
-          toast.error(ctx.error.message);
-        },
-        onSuccess: () => {
-          toast.success("User role updated");
-          router.refresh();
-        },
-      },
-    });
+    // await admin.setRole({
+    //   userId: user?.id,
+    //   role: data.role,
+    //   fetchOptions: {
+    //     onRequest: () => {
+    //       setIsPending(true);
+    //     },
+    //     onResponse: () => {
+    //       setIsPending(false);
+    //     },
+    //     onError: (ctx) => {
+    //       toast.error(ctx.error.message);
+    //     },
+    //     onSuccess: () => {
+    //       toast.success("User role updated");
+    //       router.refresh();
+    //     },
+    //   },
+    // });
     // startTransition(async () => {
     //   const { status } = await updateUserRoleWithId(data);
 

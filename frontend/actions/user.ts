@@ -105,7 +105,7 @@ export async function updateSkill(id: string, data: TUserSkillSchema) {
   } catch (error) {
     console.error("Error updating skill:", error);
     if (error instanceof z.ZodError) {
-      throw new Error(error.errors[0]?.message || "Invalid skill data");
+      throw new Error(error.message || "Invalid skill data");
     }
     throw error;
   }
@@ -139,7 +139,7 @@ export async function deleteSkill(id: string) {
 
     if (endorsementCount > 0) {
       throw new Error(
-        `Cannot delete skill "${existingSkill.userId}" as it has ${endorsementCount} endorsement${endorsementCount > 1 ? "s" : ""}`
+        `Cannot delete skill "${existingSkill.userId}" as it has ${endorsementCount} endorsement${endorsementCount > 1 ? "s" : ""}`,
       );
     }
 

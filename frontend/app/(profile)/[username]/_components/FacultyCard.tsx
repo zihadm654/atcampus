@@ -25,7 +25,8 @@ export function FacultyCard({
 }: FacultyCardProps) {
   const memberCount = faculty._count?.members || faculty.members?.length || 0;
   const professorCount =
-    faculty.members?.filter((member) => member.role === "member").length || 0;
+    faculty.members?.filter((member: any) => member.role === "member").length ||
+    0;
   const courseCount = faculty._count?.courses || faculty.courses?.length || 0;
 
   return (
@@ -166,7 +167,7 @@ export function FacultyCard({
               Recent Members
             </h4>
             <div className="flex items-center space-x-2">
-              {faculty.members.slice(0, 5).map((member) => (
+              {faculty.members.slice(0, 5).map((member: any) => (
                 <Avatar
                   className="h-8 w-8 border-2 border-background"
                   key={member.id}
@@ -175,7 +176,7 @@ export function FacultyCard({
                   <AvatarFallback className="text-xs">
                     {member.user.name
                       .split(" ")
-                      .map((n) => n[0])
+                      .map((n: string) => n[0])
                       .join("")
                       .toUpperCase()}
                   </AvatarFallback>

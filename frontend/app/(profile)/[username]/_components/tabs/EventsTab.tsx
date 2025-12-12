@@ -272,7 +272,7 @@ export function EventsTab({
     isOwnProfile && event.creatorId === username;
 
   const isEventAttendee = (event: ExtendedEvent) =>
-    event.attendees?.some((attendee) => attendee.userId === username);
+    event.attendees?.some((attendee: any) => attendee.userId === username);
 
   const hasUserLikedEvent = (event: ExtendedEvent) => event.likesUsers === true;
 
@@ -396,7 +396,7 @@ export function EventsTab({
               disabled={Boolean(
                 event.registrationDeadline
                   ? new Date(event.registrationDeadline) < new Date()
-                  : new Date(event.startDate) < new Date()
+                  : new Date(event.startDate) < new Date(),
               )}
               onClick={() => handleLeaveEvent(event.id)}
               size="sm"
@@ -412,7 +412,7 @@ export function EventsTab({
                   ? new Date(event.registrationDeadline) < new Date()
                   : new Date(event.startDate) < new Date()) ||
                 (event.capacity &&
-                  (event._count?.attendees || 0) >= Number(event.capacity))
+                  (event._count?.attendees || 0) >= Number(event.capacity)),
               )}
               onClick={() => handleJoinEvent(event.id)}
               size="sm"
@@ -522,8 +522,8 @@ export function EventsTab({
               <TabsContent className="mt-6 space-y-4" value="attending">
                 {userEvents.filter((event) =>
                   event.attendees?.some(
-                    (attendee) => attendee.userId === username
-                  )
+                    (attendee: any) => attendee.userId === username,
+                  ),
                 ).length === 0 ? (
                   <Card>
                     <CardContent className="py-12 text-center">
@@ -540,8 +540,8 @@ export function EventsTab({
                   userEvents
                     .filter((event) =>
                       event.attendees?.some(
-                        (attendee) => attendee.userId === username
-                      )
+                        (attendee: any) => attendee.userId === username,
+                      ),
                     )
                     .map((event) => <EventCard event={event} key={event.id} />)
                 )}
@@ -952,7 +952,7 @@ export function EventsTab({
                 id="edit-name"
                 onChange={(e) =>
                   setEditingEvent((prev) =>
-                    prev ? { ...prev, name: e.target.value } : null
+                    prev ? { ...prev, name: e.target.value } : null,
                   )
                 }
                 value={editingEvent?.name || ""}
@@ -968,7 +968,7 @@ export function EventsTab({
                 id="edit-description"
                 onChange={(e) =>
                   setEditingEvent((prev) =>
-                    prev ? { ...prev, description: e.target.value } : null
+                    prev ? { ...prev, description: e.target.value } : null,
                   )
                 }
                 rows={3}

@@ -16,7 +16,7 @@ import type {
   ProfilePermissions,
   // Course,
 } from "@/types/profile-types";
-import type { UserData } from "@/types/types";
+import type { CourseData, UserData } from "@/types/types";
 import Course from "@/components/courses/Course";
 import { Icons } from "@/components/shared/icons";
 
@@ -33,7 +33,6 @@ export default function ProfessorOverview({
   researches,
   permissions,
   user,
-
 }: ProfessorOverviewProps) {
   return (
     <div className="space-y-4">
@@ -44,9 +43,7 @@ export default function ProfessorOverview({
               Features
             </CardTitle>
           </CardHeader>
-          <CardContent>
-
-          </CardContent>
+          <CardContent></CardContent>
         </Card>
         <Card className=" rounded-xl shadow-sm flex-1">
           <CardHeader className="py-0">
@@ -56,9 +53,18 @@ export default function ProfessorOverview({
           </CardHeader>
           <CardContent className="space-y-2">
             <h1 className="text-md font-semibold">Professor at:</h1>
-            <p className="flex items-center gap-2"><Icons.email className="size-6" />{user.email}</p>
-            <p className="flex items-center gap-2"><Icons.link className="size-6" />{user.website}</p>
-            <p className="flex items-center gap-2"><Icons.location className="size-6" />{user.location}</p>
+            <p className="flex items-center gap-2">
+              <Icons.email className="size-6" />
+              {user.email}
+            </p>
+            <p className="flex items-center gap-2">
+              <Icons.link className="size-6" />
+              {user.website}
+            </p>
+            <p className="flex items-center gap-2">
+              <Icons.location className="size-6" />
+              {user.location}
+            </p>
           </CardContent>
         </Card>
       </div>
@@ -71,7 +77,7 @@ export default function ProfessorOverview({
         <CardContent>
           {courses && courses.length > 0 && (
             <div className="grid grid-cols-1 gap-2 lg:grid-cols-3">
-              {courses.slice(0, 3).map((course) => (
+              {courses.slice(0, 3)?.map((course: CourseData) => (
                 <Course course={course} key={course.id} />
               ))}
             </div>

@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { forgetPassword } from "@/lib/auth-client";
+// import { forgetPassword } from "@/lib/auth-client";
 
 export const ForgotPasswordForm = () => {
   const [isPending, setIsPending] = useState(false);
@@ -19,25 +19,25 @@ export const ForgotPasswordForm = () => {
 
     if (!email) return toast.error("Please enter your email.");
 
-    await forgetPassword({
-      email,
-      redirectTo: "/reset-password",
-      fetchOptions: {
-        onRequest: () => {
-          setIsPending(true);
-        },
-        onResponse: () => {
-          setIsPending(false);
-        },
-        onError: (ctx) => {
-          toast.error(ctx.error.message);
-        },
-        onSuccess: () => {
-          toast.success("Reset link sent to your email.");
-          router.push("/forgot-password/success");
-        },
-      },
-    });
+    // await forgetPassword({
+    //   email,
+    //   redirectTo: "/reset-password",
+    //   fetchOptions: {
+    //     onRequest: () => {
+    //       setIsPending(true);
+    //     },
+    //     onResponse: () => {
+    //       setIsPending(false);
+    //     },
+    //     onError: (ctx) => {
+    //       toast.error(ctx.error.message);
+    //     },
+    //     onSuccess: () => {
+    //       toast.success("Reset link sent to your email.");
+    //       router.push("/forgot-password/success");
+    //     },
+    //   },
+    // });
   }
 
   return (

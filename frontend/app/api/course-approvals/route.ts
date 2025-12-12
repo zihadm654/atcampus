@@ -8,7 +8,7 @@ import { excludeDeleted } from "@/lib/soft-delete";
 
 // Simple query schema for course approvals
 const courseApprovalQuerySchema = z.object({
-  status: z.nativeEnum(CourseStatus).optional(),
+  status: z.enum(CourseStatus).optional(),
   page: z.number().int().positive().optional().default(1),
   limit: z.number().int().positive().max(100).optional().default(10),
 });
@@ -25,7 +25,7 @@ export async function GET(req: NextRequest) {
     const url = new URL(req.url);
 
     // Validate query parameters
-    let validatedQuery;
+    let validatedQuery: any;
     try {
       validatedQuery = courseApprovalQuerySchema.parse({
         status: url.searchParams.get("status"),
@@ -40,13 +40,13 @@ export async function GET(req: NextRequest) {
       console.error("Query validation error:", error);
       return NextResponse.json(
         { error: "Invalid query parameters", details: error },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     // Debug logging
     console.log(
-      `User ${currentUser.id} requesting course approvals with status: ${validatedQuery.status}`
+      `User ${currentUser.id} requesting course approvals with status: ${validatedQuery.status}`,
     );
 
     // Build where clause for courses where user is reviewer
@@ -124,15 +124,15 @@ export async function GET(req: NextRequest) {
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error: "Invalid query parameters", details: error.errors },
-        { status: 400 }
+        { error: "Invalid query parameters", details: error.cause },
+        { status: 400 },
       );
     }
 
     console.error("Error fetching course approvals:", error);
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -152,7 +152,7 @@ export async function POST(req: NextRequest) {
     if (!courseId) {
       return NextResponse.json(
         { error: "Course ID is required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -195,7 +195,7 @@ export async function POST(req: NextRequest) {
         {
           error: "You don't have permission to submit this course for approval",
         },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -210,7 +210,7 @@ export async function POST(req: NextRequest) {
           error:
             "Only draft, rejected, or courses needing revision can be submitted for approval",
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -225,7 +225,7 @@ export async function POST(req: NextRequest) {
     if (existingApproval) {
       return NextResponse.json(
         { error: "Course is already under review" },
-        { status: 409 }
+        { status: 409 },
       );
     }
 
@@ -250,7 +250,7 @@ export async function POST(req: NextRequest) {
           error:
             "No institution administrator available to review this course. Please contact your institution administrator.",
         },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -276,7 +276,7 @@ export async function POST(req: NextRequest) {
       await notifyCourseApprovalRequest(
         courseId,
         currentUser.id,
-        institutionAdmin.userId
+        institutionAdmin.userId,
       );
 
       return { updatedCourse, approval };
@@ -287,13 +287,13 @@ export async function POST(req: NextRequest) {
         message: "Course submitted for approval successfully",
         approval: result.approval,
       },
-      { status: 201 }
+      { status: 201 },
     );
   } catch (error) {
     console.error("Error submitting course for approval:", error);
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

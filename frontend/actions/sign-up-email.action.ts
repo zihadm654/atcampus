@@ -23,10 +23,10 @@ export async function signUpEmailAction(data: TRegister) {
     const res = await auth.api.signUpEmail({
       body: {
         name,
-        username: generatedUsername,
         email,
         password,
         role, // Ensure role is explicitly passed with correct type
+        username: generatedUsername,
         phone: phone ?? undefined,
         institution: institution ?? undefined,
         instituteId: instituteId ?? undefined,

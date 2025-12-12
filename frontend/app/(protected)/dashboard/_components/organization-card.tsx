@@ -67,8 +67,10 @@ interface ExtendedMember {
 }
 
 // Extended ActiveOrganization type with proper member typing
-interface ExtendedActiveOrganization
-  extends Omit<ActiveOrganization, "members"> {
+interface ExtendedActiveOrganization extends Omit<
+  ActiveOrganization,
+  "members"
+> {
   members: ExtendedMember[];
 }
 
@@ -84,7 +86,7 @@ export function OrganizationCard(props: {
             ...props.activeOrganization,
             members: props.activeOrganization.members as ExtendedMember[],
           }
-        : null
+        : null,
     );
   const [isRevoking, setIsRevoking] = useState<string[]>([]);
   const [faculties, setFaculties] = useState<Faculty[]>([]);
@@ -100,7 +102,7 @@ export function OrganizationCard(props: {
   const session = data || props.session;
 
   const currentMember = optimisticOrg?.members.find(
-    (member) => member?.userId === session?.user.id
+    (member) => member?.userId === session?.user.id,
   );
 
   // Fetch faculties when organization changes
@@ -114,7 +116,7 @@ export function OrganizationCard(props: {
     setLoadingFaculties(true);
     try {
       const response = await fetch(
-        `/api/faculties?organizationId=${organizationId}`
+        `/api/faculties?organizationId=${organizationId}`,
       );
       if (response.ok) {
         const data = await response.json();
@@ -343,19 +345,19 @@ export function OrganizationCard(props: {
                                 },
                                 onSuccess: () => {
                                   toast.message(
-                                    "Invitation revoked successfully"
+                                    "Invitation revoked successfully",
                                   );
                                   setIsRevoking(
                                     isRevoking.filter(
-                                      (id) => id !== invitation.id
-                                    )
+                                      (id) => id !== invitation.id,
+                                    ),
                                   );
                                   if (optimisticOrg) {
                                     setOptimisticOrg({
                                       ...optimisticOrg,
                                       invitations:
                                         optimisticOrg.invitations.filter(
-                                          (inv) => inv.id !== invitation.id
+                                          (inv) => inv.id !== invitation.id,
                                         ),
                                     });
                                   }
@@ -364,11 +366,11 @@ export function OrganizationCard(props: {
                                   toast.error(ctx.error.message);
                                   setIsRevoking(
                                     isRevoking.filter(
-                                      (id) => id !== invitation.id
-                                    )
+                                      (id) => id !== invitation.id,
+                                    ),
                                   );
                                 },
-                              }
+                              },
                             );
                           }}
                           size="sm"
@@ -430,7 +432,7 @@ export function OrganizationCard(props: {
   );
 }
 
-function CreateOrganizationDialog({ currentMember }) {
+function CreateOrganizationDialog({ currentMember }: any) {
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
   const [loading, setLoading] = useState(false);
@@ -540,7 +542,7 @@ function CreateOrganizationDialog({ currentMember }) {
                     toast.error(error.error.message);
                     setLoading(false);
                   },
-                }
+                },
               );
             }}
           >

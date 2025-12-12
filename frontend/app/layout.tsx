@@ -23,7 +23,7 @@ import { Suspense } from "react"; // [!code ++]
 async function UTSSR() {
   await connection(); // [!code ++]
 
-  return <NextSSRPlugin routerConfig={extractRouterConfig(ourFileRouter)} />
+  return <NextSSRPlugin routerConfig={extractRouterConfig(ourFileRouter)} />;
 }
 
 export default function RootLayout({ children }: RootLayoutProps) {
@@ -36,7 +36,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
           fontSans.variable,
           fontUrban.variable,
           fontHeading.variable,
-          fontGeist.variable
+          fontGeist.variable,
         )}
       >
         <Suspense>

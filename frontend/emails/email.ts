@@ -11,6 +11,12 @@ export const sendVerificationRequest = async ({
   identifier,
   url,
   provider,
+}: {
+  identifier: string;
+  url: string;
+  provider: {
+    from: string;
+  };
 }) => {
   const user = await getUserByEmail(identifier);
   if (!user?.name) return;
@@ -22,7 +28,7 @@ export const sendVerificationRequest = async ({
 
   try {
     const { data, error } = await resend.emails.send({
-      from: provider.from!,
+      from: provider.from,
       to:
         process.env.NODE_ENV === "development"
           ? "delivered@resend.dev"

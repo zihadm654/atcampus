@@ -41,11 +41,11 @@ export function EventDetailModal({
   const [activeTab, setActiveTab] = useState("about");
 
   const attendeeCount =
-    event.attendees?.filter((attendee) => attendee.status === "ATTENDING")
+    event.attendees?.filter((attendee: any) => attendee.status === "ATTENDING")
       .length || 0;
   const isLiked = event.isLiked;
   const isAttending = event.attendees?.some(
-    (attendee) => attendee.status === "ATTENDING"
+    (attendee: any) => attendee.status === "ATTENDING",
   );
   const isEventPast = new Date(event.endDate) < new Date();
 
@@ -146,8 +146,10 @@ export function EventDetailModal({
                 <ScrollArea className="h-96">
                   <div className="space-y-4">
                     {event.attendees
-                      ?.filter((attendee) => attendee.status === "ATTENDING")
-                      .map((attendee) => (
+                      ?.filter(
+                        (attendee: any) => attendee.status === "ATTENDING",
+                      )
+                      .map((attendee: any) => (
                         <Card key={attendee.id}>
                           <CardContent className="p-4">
                             <div className="flex items-center justify-between">
@@ -170,7 +172,7 @@ export function EventDetailModal({
                                     Registered{" "}
                                     {formatDistanceToNow(
                                       new Date(attendee.registeredAt),
-                                      { addSuffix: true }
+                                      { addSuffix: true },
                                     )}
                                   </p>
                                 </div>
@@ -251,7 +253,7 @@ export function EventDetailModal({
                           <p className="font-medium">
                             {format(
                               new Date(event.startDate),
-                              "EEEE, MMMM d, yyyy"
+                              "EEEE, MMMM d, yyyy",
                             )}
                           </p>
                           <p className="text-sm">
@@ -266,7 +268,7 @@ export function EventDetailModal({
                           <p className="font-medium">
                             {format(
                               new Date(event.endDate),
-                              "EEEE, MMMM d, yyyy"
+                              "EEEE, MMMM d, yyyy",
                             )}
                           </p>
                           <p className="text-sm">

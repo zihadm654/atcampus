@@ -22,11 +22,11 @@ interface EventCardProps {
 
 export function EventCard({ event, onClick, onLike, onJoin }: EventCardProps) {
   const attendeeCount =
-    event.attendees?.filter((attendee) => attendee.status === "ATTENDING")
+    event.attendees?.filter((attendee: any) => attendee.status === "ATTENDING")
       .length || 0;
   const isLiked = event.isLiked;
   const isAttending = event.attendees?.some(
-    (attendee) => attendee.status === "ATTENDING"
+    (attendee: any) => attendee.status === "ATTENDING",
   );
   const isEventPast = new Date(event.endDate) < new Date();
 

@@ -44,7 +44,7 @@ const options = {
           VerifyEmail({
             username: user.name,
             verifyUrl: String(link),
-          })
+          }),
         ),
       });
     },
@@ -66,7 +66,7 @@ const options = {
           reactResetPasswordEmail({
             username: user.email,
             resetLink: url,
-          })
+          }),
         ),
       });
     },
@@ -118,7 +118,7 @@ const options = {
   databaseHooks: {
     user: {
       create: {
-        before: async (user: ExtendedUser, context) => {
+        before: async (user, context) => {
           try {
             const userData = { ...user };
 
@@ -255,16 +255,16 @@ const options = {
     }),
     organization({
       requireEmailVerificationOnInvitation: true,
-      allowUserToCreateOrganization: async (user: ExtendedUser) => {
-        // Only institutions and organizations can create organizations
-        return user.role === "INSTITUTION" || user.role === "ORGANIZATION";
-      },
+      // allowUserToCreateOrganization: async (user: ExtendedUser) => {
+      //   // Only institutions and organizations can create organizations
+      //   return user.role === "INSTITUTION" || user.role === "ORGANIZATION";
+      // },
       organizationHooks: {
         // Before creating an invitation
         beforeCreateInvitation: async ({ invitation }) => {
           // Custom validation or expiration logic
           const customExpiration = new Date(
-            Date.now() + 1000 * 60 * 60 * 24 * 7
+            Date.now() + 1000 * 60 * 60 * 24 * 7,
           ); // 7 days
 
           return {
@@ -296,7 +296,7 @@ const options = {
                     process.env.NODE_ENV === "development"
                       ? `http://localhost:3000/accept-invitation/${invitation.id}`
                       : `${process.env.NEXT_PUBLIC_APP_URL}/accept-invitation/${invitation.id}`,
-                })
+                }),
               ),
             });
           } catch (error) {
@@ -305,32 +305,32 @@ const options = {
         },
 
         // Before accepting an invitation
-        beforeAcceptInvitation: async ({
-          invitation,
-          user,
-          organization,
-        }: any) => {
-          // Check if invitation is still valid
-          if (invitation.expiresAt < new Date()) {
-            throw new APIError("BAD_REQUEST", {
-              message: "Invitation has expired",
-            });
-          }
+        // beforeAcceptInvitation: async ({
+        //   invitation,
+        //   user,
+        //   organization,
+        // }: any) => {
+        //   // Check if invitation is still valid
+        //   if (invitation.expiresAt < new Date()) {
+        //     throw new APIError("BAD_REQUEST", {
+        //       message: "Invitation has expired",
+        //     });
+        //   }
 
-          if (invitation.status !== "pending") {
-            throw new APIError("BAD_REQUEST", {
-              message: "Invitation is no longer valid",
-            });
-          }
+        //   if (invitation.status !== "pending") {
+        //     throw new APIError("BAD_REQUEST", {
+        //       message: "Invitation is no longer valid",
+        //     });
+        //   }
 
-          return {
-            data: {
-              invitation,
-              user,
-              organization,
-            },
-          };
-        },
+        //   return {
+        //     data: {
+        //       invitation,
+        //       user,
+        //       organization,
+        //     },
+        //   };
+        // },
 
         // After accepting an invitation
         afterAcceptInvitation: async ({ invitation }: any) => {
@@ -377,7 +377,7 @@ const options = {
                       process.env.BETTER_AUTH_URL ||
                       process.env.NEXT_PUBLIC_APP_URL
                     }/accept-invitation/${data.id}`,
-            })
+            }),
           ),
         });
       },
@@ -424,7 +424,7 @@ export const auth = betterAuth({
           impersonatedBy: session.impersonatedBy,
         },
         user: {
-          ...user,
+          // ...user,
           id: user.id,
           username: user.username,
           displayUsername: user.displayUsername,
@@ -442,7 +442,7 @@ export const auth = betterAuth({
           banExpires: user.banExpires,
         },
       }),
-      options
+      options,
     ),
   ],
 });

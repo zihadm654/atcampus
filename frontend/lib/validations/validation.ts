@@ -1,13 +1,13 @@
 import { SkillLevel } from "@prisma/client";
-import { nativeEnum, z } from "zod";
+import { z } from "zod";
 
 const requiredString = z.string().trim().min(1, "Required");
 
 export const signUpSchema = z.object({
-  email: requiredString.email("Invalid email address"),
+  email: z.email("Invalid email address"),
   username: requiredString.regex(
     /^[a-zA-Z0-9_-]+$/,
-    "Only letters, numbers, - and _ allowed"
+    "Only letters, numbers, - and _ allowed",
   ),
   password: requiredString.min(8, "Must be at least 8 characters"),
 });
@@ -29,10 +29,10 @@ export const createPostSchema = z.object({
 export const updateUserProfileSchema = z.object({
   name: requiredString,
   bio: z.string().max(1000, "Must be at most 1000 characters"),
-  currentSemester: z.coerce.number().max(100, "required").optional(),
-  institution: z.string().max(100, "Must be at most 100 characters").optional(),
-  instituteId: z.string().optional(),
-  website: z.string().url("Invalid URL").optional(),
+  currentSemester: z.number().max(100, "required").optional(),
+  // institution: z.string().max(100, "Must be at most 100 characters").optional(),
+  // instituteId: z.string().optional(),
+  website: z.url("Invalid URL").optional(),
   summary: z.string().max(1000, "Must be at most 1000 characters").optional(),
   location: z.string().max(1000, "Must be at most 1000 characters").optional(),
 });
@@ -56,7 +56,7 @@ export const userSkillSchema = z.object({
     .max(100, "Skill name must be at most 100 characters")
     .regex(
       /^[a-zA-Z0-9\s\-_&+()#@]+$/,
-      "Skill name can only contain letters, numbers, spaces, and common symbols"
+      "Skill name can only contain letters, numbers, spaces, and common symbols",
     ),
   category: z
     .string()
@@ -64,12 +64,12 @@ export const userSkillSchema = z.object({
     .max(50, "Category must be at most 50 characters")
     .regex(
       /^[a-zA-Z\s\-_&]+$/,
-      "Category can only contain letters, spaces, and hyphens"
+      "Category can only contain letters, spaces, and hyphens",
     )
     .optional()
     .or(z.literal("")),
-  difficulty: nativeEnum(SkillLevel),
-  yearsOfExperience: z.coerce
+  difficulty: z.enum(SkillLevel),
+  yearsOfExperience: z
     .number()
     .min(0, "Years of experience must be at least 0")
     .max(50, "Years of experience must be at most 50")
@@ -89,7 +89,7 @@ export const schoolSchema = z.object({
       id: z.string().optional(),
       name: z.string().min(1),
       description: z.string().optional(),
-    })
+    }),
   ),
 });
 export type TSchool = z.infer<typeof schoolSchema>;

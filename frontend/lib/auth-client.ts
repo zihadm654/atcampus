@@ -46,7 +46,7 @@ export const {
   useSession,
   admin,
   sendVerificationEmail,
-  forgetPassword,
+  // forgetPassword,
   resetPassword,
   updateUser,
   organization,

@@ -70,12 +70,12 @@ export function DataTableToolbar<TData>({
     e.preventDefault();
     setIsLoading("create");
     try {
-      await admin.createUser({
-        email: newUser.email,
-        password: newUser.password,
-        name: newUser.name,
-        role: newUser.role as UserRole,
-      });
+      // await admin.createUser({
+      //   email: newUser.email,
+      //   password: newUser.password,
+      //   name: newUser.name,
+      //   role: newUser.role,
+      // });
       toast.success("User created successfully");
       setNewUser({ email: "", password: "", name: "", role: "STUDENT" });
       setIsDialogOpen(false);

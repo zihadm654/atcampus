@@ -84,7 +84,7 @@ export const clubSchema = z.object({
 
   // Membership settings
   isOpenMembership: z.boolean().default(true),
-  maxMembers: z.coerce
+  maxMembers: z
     .number()
     .int()
     .min(1, "Max members must be at least 1")
@@ -114,7 +114,7 @@ export const clubSchema = z.object({
     .array(z.string().max(100, "Category must be at most 100 characters"))
     .max(10, "Maximum 10 categories allowed")
     .optional(),
-  foundedYear: z.coerce
+  foundedYear: z
     .number()
     .int()
     .min(1900, "Founded year must be after 1900")
@@ -164,7 +164,7 @@ export const linkClubEventSchema = z.object({
   clubId: z.string().min(1, "Club ID is required"),
   eventId: z.string().min(1, "Event ID is required"),
   isFeatured: z.boolean().default(false),
-  displayOrder: z.coerce.number().int().min(0).default(0),
+  displayOrder: z.number().int().min(0).default(0),
 });
 
 // Club search and filter schema
@@ -180,8 +180,8 @@ export const clubFilterSchema = z.object({
     .optional(),
   tags: z.array(z.string()).optional(),
   categories: z.array(z.string()).optional(),
-  page: z.coerce.number().int().min(1).default(1),
-  limit: z.coerce.number().int().min(1).max(100).default(20),
+  page: z.number().int().min(1).default(1),
+  limit: z.number().int().min(1).max(100).default(20),
 });
 
 // Club member management schemas
