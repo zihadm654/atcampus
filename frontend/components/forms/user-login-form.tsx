@@ -41,7 +41,7 @@ export function UserAuthForm({ className, type, ...props }: UserAuthFormProps) {
     const res = await signInEmailAction(data);
     if (res.error) {
       toast.error(
-        typeof res.error === "string" ? res.error : "Registration failed"
+        typeof res.error === "string" ? res.error : "Registration failed",
       );
       setIsLoading(false);
     } else {
@@ -132,7 +132,7 @@ export function UserAuthForm({ className, type, ...props }: UserAuthFormProps) {
       </div>
       {/* <SignInOauthButton provider="google" /> */}
       <Button
-        className={cn(buttonVariants({ variant: "outline" }))}
+        className={cn(buttonVariants({ variant: "default" }))}
         disabled={isLoading || isGoogleLoading}
         onClick={async () => {
           setIsGoogleLoading(true);

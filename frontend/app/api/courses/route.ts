@@ -1,6 +1,6 @@
 import { CourseStatus, type Prisma } from "@prisma/client";
 import type { NextRequest } from "next/server";
-import { prisma } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/session";
 import { type CoursesPage, getCourseDataInclude } from "@/types/types";
 

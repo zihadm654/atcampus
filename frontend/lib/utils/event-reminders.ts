@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 import { notifyEventReminder } from "@/lib/services/notification-service";
 
 export async function sendEventReminders() {

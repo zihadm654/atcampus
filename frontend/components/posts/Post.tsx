@@ -58,7 +58,7 @@ export default function Post({ post }: PostProps) {
         {post.user.id === user.id && (
           <PostMoreButton
             post={post}
-          // className="opacity-0 transition-opacity group-hover/post:opacity-100"
+            // className="opacity-0 transition-opacity group-hover/post:opacity-100"
           />
         )}
       </div>
@@ -86,7 +86,7 @@ export default function Post({ post }: PostProps) {
         <BookmarkButton
           initialState={{
             isBookmarkedByUser: post.bookmarks.some(
-              (bookmark) => bookmark.userId === user.id
+              (bookmark) => bookmark.userId === user.id,
             ),
           }}
           postId={post.id}

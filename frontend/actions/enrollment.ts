@@ -2,7 +2,7 @@
 
 import type { EnrollmentStatus } from "@prisma/client";
 import { revalidatePath } from "next/cache";
-import { prisma } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 import { notifyCourseEnrollment } from "@/lib/services/notification-service";
 import { getCurrentUser } from "@/lib/session";
 
@@ -67,7 +67,7 @@ export const enrollCourse = async (courseId: string) => {
 
 export const updateEnrollmentStatus = async (
   enrollmentId: string,
-  newStatus: EnrollmentStatus
+  newStatus: EnrollmentStatus,
 ) => {
   const user = await getCurrentUser();
   if (!user || user.role !== "PROFESSOR") throw new Error("Unauthorized");

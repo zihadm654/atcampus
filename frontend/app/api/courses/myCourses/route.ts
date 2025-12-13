@@ -1,14 +1,16 @@
-import { CourseStatus, type Prisma } from "@prisma/client";
+import { CourseStatus } from "@prisma/client";
 import type { NextRequest } from "next/server";
-import { prisma } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/session";
 import { getCourseDataInclude, type CoursesPage } from "@/types/types";
+import { Prisma } from "@prisma/client";
 
 export async function GET(req: NextRequest) {
   try {
     const cursor = req.nextUrl.searchParams.get("cursor") || undefined;
     const searchQuery = req.nextUrl.searchParams.get("q") || undefined;
-    const courseStatusParam = req.nextUrl.searchParams.get("status") || undefined;
+    const courseStatusParam =
+      req.nextUrl.searchParams.get("status") || undefined;
 
     // Parse job types if provided
     let courseStatus: CourseStatus[] | undefined;
@@ -16,7 +18,7 @@ export async function GET(req: NextRequest) {
       const types = courseStatusParam.split(",");
       // Filter to only valid JobType values
       courseStatus = types.filter((type) =>
-        Object.values(CourseStatus).includes(type as CourseStatus)
+        Object.values(CourseStatus).includes(type as CourseStatus),
       ) as CourseStatus[];
     }
 
@@ -38,10 +40,10 @@ export async function GET(req: NextRequest) {
       }),
       ...(courseStatus &&
         courseStatus.length > 0 && {
-        status: {
-          in: courseStatus,
-        },
-      }),
+          status: {
+            in: courseStatus,
+          },
+        }),
       instructorId: user.id,
     };
 

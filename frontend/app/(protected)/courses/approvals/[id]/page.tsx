@@ -12,7 +12,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { prisma } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/session";
 import { CourseReviewForm } from "./_components/CourseReviewForm";
 
@@ -126,7 +126,7 @@ export default async function CourseApprovalPage({ params }: PageProps) {
       const parsed = JSON.parse(approval.course.objectives);
       if (Array.isArray(parsed)) {
         objectives = parsed.filter(
-          (item): item is string => typeof item === "string"
+          (item): item is string => typeof item === "string",
         );
       } else {
         // If it's not an array, treat as comma-separated string

@@ -19,7 +19,7 @@ import { reactResetPasswordEmail } from "@/emails/reset-password";
 import VerifyEmail from "@/emails/verify-email";
 import { env } from "@/env.mjs";
 import { hashPassword, verifyPassword } from "@/lib/argon2";
-import { prisma } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 import { ac, roles } from "@/lib/permissions";
 import { normalizeName, VALID_DOMAINS } from "@/lib/utils";
 import type { ExtendedUser } from "@/types/auth-types";

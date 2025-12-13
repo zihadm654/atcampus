@@ -25,7 +25,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { prisma } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/session";
 import { getUserDataSelect } from "@/types/types";
 
@@ -215,10 +215,10 @@ export default async function Page({ params }: PageProps) {
 
   // Group members by role
   const professors = faculty?.members.filter(
-    (member) => member.role === "member"
+    (member) => member.role === "member",
   );
   const admins = faculty.members.filter((member) =>
-    ["owner", "admin"].includes(member.role)
+    ["owner", "admin"].includes(member.role),
   );
 
   const MemberCard = ({ member }: { member: (typeof faculty.members)[0] }) => {

@@ -1,6 +1,6 @@
 "use server";
 
-import { prisma } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 import { notifyComment } from "@/lib/services/notification-service";
 import { getCurrentUser } from "@/lib/session";
 import { createCommentSchema } from "@/lib/validations/validation";

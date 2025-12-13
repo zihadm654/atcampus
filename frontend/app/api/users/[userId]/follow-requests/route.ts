@@ -1,10 +1,10 @@
-import { prisma } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 import { notifyFollowRequestAccepted } from "@/lib/services/notification-service";
 import { getCurrentUser } from "@/lib/session";
 
 export async function GET(
   _req: Request,
-  { params }: { params: Promise<{ userId: string }> }
+  { params }: { params: Promise<{ userId: string }> },
 ) {
   try {
     const { userId } = await params;
@@ -56,7 +56,7 @@ export async function GET(
 
 export async function POST(
   req: Request,
-  { params }: { params: Promise<{ userId: string }> }
+  { params }: { params: Promise<{ userId: string }> },
 ) {
   try {
     const { userId } = await params;
@@ -78,11 +78,17 @@ export async function POST(
     });
 
     if (!followRequest) {
-      return Response.json({ error: "Follow request not found" }, { status: 404 });
+      return Response.json(
+        { error: "Follow request not found" },
+        { status: 404 },
+      );
     }
 
     if (followRequest.status !== "PENDING") {
-      return Response.json({ error: "Follow request is not pending" }, { status: 400 });
+      return Response.json(
+        { error: "Follow request is not pending" },
+        { status: 400 },
+      );
     }
 
     switch (action) {
@@ -109,7 +115,9 @@ export async function POST(
         // Create notification for the requester
         await notifyFollowRequestAccepted(loggedInUser.id, userId);
 
-        return Response.json({ message: "Follow request accepted successfully" });
+        return Response.json({
+          message: "Follow request accepted successfully",
+        });
 
       case "reject":
         await prisma.followRequest.update({
@@ -122,7 +130,9 @@ export async function POST(
           },
         });
 
-        return Response.json({ message: "Follow request rejected successfully" });
+        return Response.json({
+          message: "Follow request rejected successfully",
+        });
 
       default:
         return Response.json({ error: "Invalid action" }, { status: 400 });
@@ -135,7 +145,7 @@ export async function POST(
 
 export async function DELETE(
   _req: Request,
-  { params }: { params: Promise<{ userId: string }> }
+  { params }: { params: Promise<{ userId: string }> },
 ) {
   try {
     const { userId } = await params;
@@ -156,11 +166,17 @@ export async function DELETE(
     });
 
     if (!followRequest) {
-      return Response.json({ error: "Follow request not found" }, { status: 404 });
+      return Response.json(
+        { error: "Follow request not found" },
+        { status: 404 },
+      );
     }
 
     if (followRequest.status !== "PENDING") {
-      return Response.json({ error: "Cannot cancel non-pending follow request" }, { status: 400 });
+      return Response.json(
+        { error: "Cannot cancel non-pending follow request" },
+        { status: 400 },
+      );
     }
 
     await prisma.followRequest.update({

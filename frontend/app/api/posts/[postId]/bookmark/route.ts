@@ -1,10 +1,10 @@
-import { prisma } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/session";
 import type { BookmarkInfo } from "@/types/types";
 
 export async function GET(
   _req: Request,
-  { params }: { params: Promise<{ postId: string }> }
+  { params }: { params: Promise<{ postId: string }> },
 ) {
   const { postId } = await params;
   try {
@@ -36,7 +36,7 @@ export async function GET(
 
 export async function POST(
   _req: Request,
-  { params }: { params: Promise<{ postId: string }> }
+  { params }: { params: Promise<{ postId: string }> },
 ) {
   const { postId } = await params;
   try {
@@ -69,7 +69,7 @@ export async function POST(
 
 export async function DELETE(
   _req: Request,
-  { params }: { params: Promise<{ postId: string }> }
+  { params }: { params: Promise<{ postId: string }> },
 ) {
   const { postId } = await params;
   try {

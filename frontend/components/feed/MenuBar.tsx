@@ -1,7 +1,7 @@
 import { Bookmark, Briefcase, GraduationCap, Home } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { prisma } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/session";
 import streamServerClient from "@/lib/stream";
 

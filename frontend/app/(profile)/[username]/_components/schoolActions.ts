@@ -1,9 +1,8 @@
 "use server";
 
-import { Prisma } from "@prisma/client";
 import { z } from "zod";
 
-import { prisma } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/session";
 
 // Remove all user profile related imports and schemas
@@ -57,12 +56,6 @@ export async function createSchool(values: z.infer<typeof createSchoolSchema>) {
     });
     return school;
   } catch (error) {
-    if (
-      error instanceof Prisma.PrismaClientKnownRequestError &&
-      error.code === "P2002"
-    ) {
-      throw new Error("A school with this slug already exists.");
-    }
     throw error;
   }
 }
@@ -138,7 +131,7 @@ const createFacultySchema = z.object({
 });
 
 export async function createFaculty(
-  values: z.infer<typeof createFacultySchema>
+  values: z.infer<typeof createFacultySchema>,
 ) {
   const validatedValues = createFacultySchema.parse(values);
   const user = await getCurrentUser();
@@ -205,13 +198,6 @@ export async function createFaculty(
   } catch (error) {
     console.error("Error creating faculty:", error);
 
-    if (
-      error instanceof Prisma.PrismaClientKnownRequestError &&
-      error.code === "P2002"
-    ) {
-      throw new Error("A faculty with this slug already exists.");
-    }
-
     if (error instanceof Error) {
       throw error;
     }
@@ -223,7 +209,7 @@ export async function createFaculty(
 const updateFacultySchema = createFacultySchema.extend({ id: z.string() });
 
 export async function updateFaculty(
-  values: z.infer<typeof updateFacultySchema>
+  values: z.infer<typeof updateFacultySchema>,
 ) {
   const validatedValues = updateFacultySchema.parse(values);
   const user = await getCurrentUser();
@@ -326,7 +312,7 @@ export async function getProfessorsForFaculty(facultyId: string) {
 
 export async function assignMemberToFaculty(
   memberId: string,
-  facultyId: string
+  facultyId: string,
 ) {
   try {
     const user = await getCurrentUser();

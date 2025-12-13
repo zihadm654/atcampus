@@ -1,8 +1,8 @@
-import { CourseStatus } from "@prisma/client";
+// import { CourseStatus } from "@prisma/client";
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { prisma } from "@/lib/db";
-import { notifyCourseApprovalResult } from "@/lib/services/notification-service";
+import { prisma } from "@/lib/prisma";
+// import { notifyCourseApprovalResult } from "@/lib/services/notification-service";
 import { getCurrentUser } from "@/lib/session";
 
 type RouteParams = {
@@ -142,16 +142,16 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
     } = validation.data;
 
     // Convert decision to proper CourseStatus
-    let courseStatus: CourseStatus;
+    let courseStatus: any;
     switch (decision) {
       case "PUBLISHED":
-        courseStatus = CourseStatus.PUBLISHED;
+        courseStatus = "PUBLISHED";
         break;
       case "REJECTED":
-        courseStatus = CourseStatus.REJECTED;
+        courseStatus = "REJECTED";
         break;
       case "NEEDS_REVISION":
-        courseStatus = CourseStatus.NEEDS_REVISION;
+        courseStatus = "NEEDS_REVISION";
         break;
       default:
         return NextResponse.json(

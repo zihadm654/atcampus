@@ -1,7 +1,7 @@
 import { CourseStatus } from "@prisma/client";
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { prisma } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 import { notifyCourseApprovalRequest } from "@/lib/services/notification-service";
 import { getCurrentUser } from "@/lib/session";
 import { excludeDeleted } from "@/lib/soft-delete";

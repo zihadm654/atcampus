@@ -1,5 +1,5 @@
 import { cache } from "react";
-import { prisma } from "./db";
+import { prisma } from "./prisma";
 
 export interface JobMatchResult {
   skillMatchPercentage: number;
@@ -61,8 +61,8 @@ const cachedCalculateJobMatch = cache(
       const matchedSkills = studentSkills.filter((studentSkill) =>
         job.skills.some(
           (skillName) =>
-            skillName.toLowerCase() === studentSkill.skill.name.toLowerCase()
-        )
+            skillName.toLowerCase() === studentSkill.skill.name.toLowerCase(),
+        ),
       ).length;
 
       const skillMatchPercentage =
@@ -70,18 +70,18 @@ const cachedCalculateJobMatch = cache(
 
       // Get missing skills
       const matchedSkillNames = studentSkills.map((skill) =>
-        skill.skill.name.toLowerCase()
+        skill.skill.name.toLowerCase(),
       );
       const missingSkills = job.skills.filter(
-        (skillName) => !matchedSkillNames.includes(skillName.toLowerCase())
+        (skillName) => !matchedSkillNames.includes(skillName.toLowerCase()),
       );
 
       // Calculate course match
       const requiredCourses = job.jobCourses.length;
       const matchedCourses = studentEnrollments.filter((enrollment) =>
         job.jobCourses.some(
-          (jobCourse) => jobCourse.courseId === enrollment.courseId
-        )
+          (jobCourse) => jobCourse.courseId === enrollment.courseId,
+        ),
       ).length;
 
       const courseMatchPercentage =
@@ -89,7 +89,7 @@ const cachedCalculateJobMatch = cache(
 
       // Get missing courses
       const matchedCourseIds = studentEnrollments.map(
-        (enrollment) => enrollment.courseId
+        (enrollment) => enrollment.courseId,
       );
       const missingCourses = job.jobCourses
         .filter((jobCourse) => !matchedCourseIds.includes(jobCourse.courseId))
@@ -114,12 +114,12 @@ const cachedCalculateJobMatch = cache(
       console.error("Error calculating job match:", error);
       throw error;
     }
-  }
+  },
 );
 
 export async function calculateJobMatch(
   studentId: string,
-  jobId: string
+  jobId: string,
 ): Promise<JobMatchResult> {
   // Use React's cache function for server-side caching
   return cachedCalculateJobMatch(studentId, jobId);

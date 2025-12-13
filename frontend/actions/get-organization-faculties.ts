@@ -1,6 +1,6 @@
 "use server";
 
-import { prisma } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 
 /**
  * Fetches all faculties for a given organization
@@ -23,7 +23,7 @@ export async function getOrganizationFaculties(organizationId: string) {
       school.faculties.map((faculty) => ({
         ...faculty,
         schoolName: school.name,
-      }))
+      })),
     );
 
     return { success: true, faculties };

@@ -1,10 +1,13 @@
-import { prisma } from "@/lib/db";
-import { notifyFollow, notifyFollowRequest } from "@/lib/services/notification-service";
+import { prisma } from "@/lib/prisma";
+import {
+  notifyFollow,
+  notifyFollowRequest,
+} from "@/lib/services/notification-service";
 import { getCurrentUser } from "@/lib/session";
 
 export async function GET(
   _req: Request,
-  { params }: { params: Promise<{ userId: string }> }
+  { params }: { params: Promise<{ userId: string }> },
 ) {
   try {
     const { userId } = await params;
@@ -67,7 +70,7 @@ export async function GET(
 
 export async function POST(
   _req: Request,
-  { params }: { params: Promise<{ userId: string }> }
+  { params }: { params: Promise<{ userId: string }> },
 ) {
   const { userId } = await params;
   try {
@@ -79,7 +82,10 @@ export async function POST(
 
     // Check if user is trying to follow themselves
     if (loggedInUser.id === userId) {
-      return Response.json({ error: "Cannot follow yourself" }, { status: 400 });
+      return Response.json(
+        { error: "Cannot follow yourself" },
+        { status: 400 },
+      );
     }
 
     // Check if target user exists and get their privacy settings
@@ -87,7 +93,7 @@ export async function POST(
       where: { id: userId },
       select: {
         id: true,
-        requireFollowApproval: true
+        requireFollowApproval: true,
       },
     });
 
@@ -106,7 +112,10 @@ export async function POST(
     });
 
     if (existingFollow) {
-      return Response.json({ error: "Already following this user" }, { status: 400 });
+      return Response.json(
+        { error: "Already following this user" },
+        { status: 400 },
+      );
     }
 
     // Check if there's already a pending follow request
@@ -120,7 +129,10 @@ export async function POST(
     });
 
     if (existingRequest && existingRequest.status === "PENDING") {
-      return Response.json({ error: "Follow request already pending" }, { status: 400 });
+      return Response.json(
+        { error: "Follow request already pending" },
+        { status: 400 },
+      );
     }
 
     // If target user requires follow approval, create a follow request instead
@@ -138,7 +150,7 @@ export async function POST(
 
       return Response.json({
         message: "Follow request sent successfully",
-        followRequest
+        followRequest,
       });
     }
 
@@ -169,7 +181,7 @@ export async function POST(
 
 export async function DELETE(
   _req: Request,
-  { params }: { params: Promise<{ userId: string }> }
+  { params }: { params: Promise<{ userId: string }> },
 ) {
   try {
     const { userId } = await params;
@@ -181,7 +193,10 @@ export async function DELETE(
 
     // Check if user is trying to unfollow themselves
     if (loggedInUser.id === userId) {
-      return Response.json({ error: "Cannot unfollow yourself" }, { status: 400 });
+      return Response.json(
+        { error: "Cannot unfollow yourself" },
+        { status: 400 },
+      );
     }
 
     // Check if following relationship exists
@@ -195,7 +210,10 @@ export async function DELETE(
     });
 
     if (!existingFollow) {
-      return Response.json({ error: "Not following this user" }, { status: 400 });
+      return Response.json(
+        { error: "Not following this user" },
+        { status: 400 },
+      );
     }
 
     // Delete the follow relationship

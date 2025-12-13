@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 import { calculateJobMatch } from "@/lib/job-matching";
 import { getCurrentUser } from "@/lib/session";
 
@@ -94,8 +94,8 @@ async function _calculateMatch(studentId: string, jobId: string) {
     const matchedSkills = studentSkills.filter((studentSkill) =>
       job.skills.some(
         (skillName) =>
-          skillName.toLowerCase() === studentSkill.skill.name.toLowerCase()
-      )
+          skillName.toLowerCase() === studentSkill.skill.name.toLowerCase(),
+      ),
     ).length;
 
     const skillMatchPercentage =
@@ -105,8 +105,8 @@ async function _calculateMatch(studentId: string, jobId: string) {
     const requiredCourses = job.jobCourses.length;
     const matchedCourses = studentEnrollments.filter((enrollment) =>
       job.jobCourses.some(
-        (jobCourse) => jobCourse.courseId === enrollment.courseId
-      )
+        (jobCourse) => jobCourse.courseId === enrollment.courseId,
+      ),
     ).length;
 
     const courseMatchPercentage =

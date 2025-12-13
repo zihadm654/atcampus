@@ -1,10 +1,10 @@
-import { prisma } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/session";
 import type { SaveResearchInfo } from "@/types/types";
 
 export async function GET(
   _req: Request,
-  { params }: { params: Promise<{ researchId: string }> }
+  { params }: { params: Promise<{ researchId: string }> },
 ) {
   const { researchId } = await params;
   try {
@@ -36,7 +36,7 @@ export async function GET(
 
 export async function POST(
   _req: Request,
-  { params }: { params: Promise<{ researchId: string }> }
+  { params }: { params: Promise<{ researchId: string }> },
 ) {
   const { researchId } = await params;
   try {
@@ -69,7 +69,7 @@ export async function POST(
 
 export async function DELETE(
   _req: Request,
-  { params }: { params: Promise<{ researchId: string }> }
+  { params }: { params: Promise<{ researchId: string }> },
 ) {
   const { researchId } = await params;
   try {

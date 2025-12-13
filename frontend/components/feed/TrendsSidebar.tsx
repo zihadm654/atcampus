@@ -2,7 +2,7 @@ import { Loader2 } from "lucide-react";
 import { unstable_cache } from "next/cache";
 import Link from "next/link";
 import { Suspense } from "react";
-import { prisma } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/session";
 import { formatNumber } from "@/lib/utils";
 import { getUserDataSelect } from "@/types/types";
@@ -46,10 +46,7 @@ async function WhoToFollow() {
       <div className="font-bold text-xl">Who to follow</div>
       {usersToFollow.map((user) => (
         <div className="flex items-center justify-between gap-3" key={user.id}>
-          <Link
-            className="flex items-center gap-3"
-            href={`/${user.username}`}
-          >
+          <Link className="flex items-center gap-3" href={`/${user.username}`}>
             <UserTooltip user={user}>
               <div className="flex items-center gap-3 relative">
                 <UserAvatar
@@ -72,7 +69,7 @@ async function WhoToFollow() {
             initialState={{
               followers: user._count.followers,
               isFollowedByUser: user.followers.some(
-                ({ followerId }) => followerId === user.id
+                ({ followerId }) => followerId === user.id,
               ),
             }}
             userId={user.id}
@@ -124,7 +121,7 @@ const getTrendingTopics = unstable_cache(
   ["trending_topics"],
   {
     revalidate: 3 * 60 * 60,
-  }
+  },
 );
 
 async function TrendingTopics() {

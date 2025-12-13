@@ -177,7 +177,7 @@ export const columns: ColumnDef<User>[] = [
                         <Button
                           className={cn(
                             "w-full justify-start text-left font-normal",
-                            !banForm.expirationDate && "text-muted-foreground"
+                            !banForm.expirationDate && "text-muted-foreground",
                           )}
                           id="expirationDate"
                           variant={"outline"}
@@ -236,7 +236,7 @@ export const columns: ColumnDef<User>[] = [
                     {
                       onError(context) {
                         toast.error(
-                          context.error.message || "Failed to unban user"
+                          context.error.message || "Failed to unban user",
                         );
                         // setIsLoading(undefined);
                       },
@@ -246,7 +246,7 @@ export const columns: ColumnDef<User>[] = [
                         });
                         toast.success("User unbanned successfully");
                       },
-                    }
+                    },
                   );
                   queryClient.invalidateQueries({
                     queryKey: ["users"],
@@ -264,7 +264,7 @@ export const columns: ColumnDef<User>[] = [
                               "Unban"
                             ) : (
                               "Ban"
-                            )} 
+                            )}
                              */}
               {row.getValue("banned") ? "Unban" : "Ban"}
             </Button>

@@ -2,7 +2,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import type { addSchoolSchema } from "@/app/(profile)/[username]/_components/AddSchoolDialog";
-import { prisma } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/session";
 
 const schoolSchema = z.object({

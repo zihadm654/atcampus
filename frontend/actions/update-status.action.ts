@@ -3,12 +3,12 @@
 import type { UserStatus } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 
-import { prisma } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/session";
 
 export const updateStatusAction = async (
   userId: string,
-  status: UserStatus
+  status: UserStatus,
 ) => {
   const user = await getCurrentUser();
 

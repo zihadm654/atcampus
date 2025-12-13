@@ -2,7 +2,7 @@
 
 import type { ApplicationStatus } from "@prisma/client";
 import { revalidatePath } from "next/cache";
-import { prisma } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 import { notifyJobApplication } from "@/lib/services/notification-service";
 import { getCurrentUser } from "@/lib/session";
 
@@ -59,7 +59,7 @@ export const applyJob = async (jobId: string) => {
 
 export const updateApplicationStatus = async (
   applicationId: string,
-  newStatus: ApplicationStatus
+  newStatus: ApplicationStatus,
 ) => {
   const user = await getCurrentUser();
   if (!user || user.role !== "ORGANIZATION") throw new Error("Unauthorized");

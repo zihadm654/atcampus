@@ -365,7 +365,7 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
           <div className="flex items-center justify-between gap-2">
             {currentStep > 1 && (
               <Button
-                className={cn(buttonVariants({ variant: "ghost" }))}
+                className={cn(buttonVariants({ variant: "default" }))}
                 disabled={isLoading}
                 onClick={prevStep}
                 type="button"
@@ -376,7 +376,7 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
             {currentStep < 2 && (
               <Button
                 className={cn(
-                  buttonVariants({ variant: "outline" }),
+                  buttonVariants({ variant: "default" }),
                   "self-end",
                 )}
                 disabled={isLoading || (currentStep === 1 && !role)}

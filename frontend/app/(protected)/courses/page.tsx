@@ -4,7 +4,7 @@ import { cache } from "react";
 import CourseFeed from "@/components/feed/CourseFeed";
 import { Icons } from "@/components/shared/icons";
 import { Button } from "@/components/ui/button";
-import { prisma } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/session";
 import { constructMetadata } from "@/lib/utils";
 

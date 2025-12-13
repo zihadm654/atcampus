@@ -127,14 +127,18 @@ export default function EnhancedNotification({
     },
     FOLLOW_REQUEST: {
       title: notification.title || "Follow Request",
-      message: notification.message || `${notification.issuer.displayUsername} sent you a follow request`,
+      message:
+        notification.message ||
+        `${notification.issuer.displayUsername} sent you a follow request`,
       icon: <UserPlus className="size-7 text-blue-500" />,
       href: "/connections",
       color: "text-blue-500",
     },
     FOLLOW_REQUEST_ACCEPTED: {
       title: notification.title || "Follow Request Accepted",
-      message: notification.message || `${notification.issuer.displayUsername} accepted your follow request`,
+      message:
+        notification.message ||
+        `${notification.issuer.displayUsername} accepted your follow request`,
       icon: <UserCheck className="size-7 text-green-500" />,
       href: `/${notification.issuer.username}`,
       color: "text-green-500",
@@ -149,7 +153,7 @@ export default function EnhancedNotification({
       <article
         className={cn(
           "relative flex gap-3 rounded-2xl bg-card p-5 shadow-sm transition-colors hover:bg-card/70",
-          !notification.read && "border-primary border-l-4 bg-primary/5"
+          !notification.read && "border-primary border-l-4 bg-primary/5",
         )}
       >
         {!notification.read && (

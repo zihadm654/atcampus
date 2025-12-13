@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { CreateCourseForm } from "@/components/forms/create-course";
 import { getCurrentUser } from "@/lib/session";
 import { constructMetadata } from "@/lib/utils";
-import { prisma } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 import { type Course } from "@prisma/client";
 
 // Define the type for course with included relations
@@ -33,14 +33,14 @@ const PostCoursePage = async ({ searchParams }: PostCoursePageProps) => {
   const courseId = searchParams.edit;
   let course: CourseWithRelations | null = null;
   if (courseId) {
-    course = await prisma.course.findUnique({
+    course = (await prisma.course.findUnique({
       where: { id: courseId },
       include: {
         instructor: true,
         faculty: true,
         school: true,
       },
-    }) as CourseWithRelations | null;
+    })) as CourseWithRelations | null;
 
     if (!course) {
       return redirect("/courses");

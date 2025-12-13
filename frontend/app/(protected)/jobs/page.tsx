@@ -2,7 +2,7 @@ import { Briefcase } from "lucide-react";
 import type { Metadata } from "next";
 import { cache } from "react";
 import JobFeed from "@/components/feed/JobFeed";
-import { prisma } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/session";
 import { constructMetadata } from "@/lib/utils";
 import { getJobDataInclude } from "@/types/types";

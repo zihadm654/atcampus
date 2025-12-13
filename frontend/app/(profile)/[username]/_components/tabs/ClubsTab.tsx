@@ -1011,7 +1011,7 @@ export function ClubsTab({ username, isOwnProfile, userRole }: ClubsTabProps) {
                 id="edit-name"
                 onChange={(e) =>
                   setEditingClub((prev) =>
-                    prev ? { ...prev, name: e.target.value } : null
+                    prev ? { ...prev, name: e.target.value } : null,
                   )
                 }
                 value={editingClub?.name || ""}
@@ -1027,7 +1027,7 @@ export function ClubsTab({ username, isOwnProfile, userRole }: ClubsTabProps) {
                 id="edit-description"
                 onChange={(e) =>
                   setEditingClub((prev) =>
-                    prev ? { ...prev, description: e.target.value } : null
+                    prev ? { ...prev, description: e.target.value } : null,
                   )
                 }
                 rows={3}

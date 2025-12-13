@@ -1,6 +1,6 @@
 "use server";
 
-import { prisma } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 import { calculateJobMatch } from "@/lib/job-matching";
 import { getCurrentUser } from "@/lib/session";
 
@@ -34,7 +34,7 @@ export async function getJobMatch(jobId: string) {
 // Function to update course skills when creating/updating a course
 export async function updateCourseSkills(
   courseId: string,
-  skillNames: string[]
+  skillNames: string[],
 ) {
   try {
     // Update course skills directly in the course model

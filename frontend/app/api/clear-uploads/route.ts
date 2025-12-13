@@ -1,7 +1,7 @@
 import { UTApi } from "uploadthing/server";
 
 import { env } from "@/env.mjs";
-import { prisma } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 
 export async function GET(req: Request) {
   try {
@@ -10,7 +10,7 @@ export async function GET(req: Request) {
     if (authHeader !== `Bearer ${env.CRON_SECRET}`) {
       return Response.json(
         { message: "Invalid authorization header" },
-        { status: 401 }
+        { status: 401 },
       );
     }
     const unusedMedia = await prisma.media.findMany({

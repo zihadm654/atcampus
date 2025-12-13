@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/session";
 
 export async function GET(_req: NextRequest) {
@@ -26,7 +26,7 @@ export async function GET(_req: NextRequest) {
       if (!member?.organizationId) {
         return NextResponse.json(
           { error: "Professor is not assigned to any organization" },
-          { status: 404 }
+          { status: 404 },
         );
       }
 
@@ -41,7 +41,7 @@ export async function GET(_req: NextRequest) {
       if (!organizationOwner?.userId) {
         return NextResponse.json(
           { error: "Organization has no owner" },
-          { status: 404 }
+          { status: 404 },
         );
       }
 
@@ -52,7 +52,7 @@ export async function GET(_req: NextRequest) {
     } else {
       return NextResponse.json(
         { error: "User role not supported" },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -90,7 +90,7 @@ export async function GET(_req: NextRequest) {
     console.error("Error fetching user schools and faculties:", error);
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

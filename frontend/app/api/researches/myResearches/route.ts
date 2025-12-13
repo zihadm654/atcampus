@@ -1,6 +1,6 @@
 import type { Prisma } from "@prisma/client";
 import type { NextRequest } from "next/server";
-import { prisma } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/session";
 import { getResearchDataInclude, type ResearchesPage, type MyResearchesPage } from "@/types/types";
 
@@ -59,7 +59,9 @@ export async function GET(req: NextRequest) {
     });
 
     const collaborativeNextCursor =
-      collaborativeResearches.length > pageSize ? collaborativeResearches[pageSize].id : null;
+      collaborativeResearches.length > pageSize
+        ? collaborativeResearches[pageSize].id
+        : null;
 
     // Return both sets of research projects
     const data: MyResearchesPage = {

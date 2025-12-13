@@ -3,7 +3,7 @@
 import { ClubMemberRole, ClubStatus, type ClubType } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 
-import { prisma } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 import { notifyClubMemberJoined } from "@/lib/services/notification-service";
 import { getCurrentUser } from "@/lib/session";
 import {
@@ -63,9 +63,9 @@ function getClubInclude(userId?: string) {
     },
     likesUsers: userId
       ? {
-        where: { userId },
-        take: 1,
-      }
+          where: { userId },
+          take: 1,
+        }
       : false,
     _count: {
       select: {
@@ -81,7 +81,7 @@ function getClubInclude(userId?: string) {
 
 // Create club - Institution users only
 export async function createClubAction(
-  data: TCreateClub
+  data: TCreateClub,
 ): Promise<{ success: boolean; data?: ExtendedClub; error?: string }> {
   try {
     const user = await getCurrentUser();
@@ -138,7 +138,7 @@ export async function getClubsAction(
     search?: string;
     page?: number;
     limit?: number;
-  } = {}
+  } = {},
 ): Promise<{
   success: boolean;
   data?: ExtendedClub[];
@@ -197,7 +197,7 @@ export async function getClubsAction(
 
 // Get single club with details
 export async function getClubByIdAction(
-  clubId: string
+  clubId: string,
 ): Promise<{ success: boolean; data?: ClubWithDetails; error?: string }> {
   try {
     const user = await getCurrentUser();
@@ -243,7 +243,7 @@ export async function getClubByIdAction(
 // Update club - Only creator or admin can update
 export async function updateClubAction(
   clubId: string,
-  data: TUpdateClub
+  data: TUpdateClub,
 ): Promise<{ success: boolean; data?: ExtendedClub; error?: string }> {
   try {
     const user = await getCurrentUser();
@@ -272,7 +272,7 @@ export async function updateClubAction(
     const isCreator = existingClub.creatorId === user.id;
     const isAdmin = existingClub.members.some(
       (member) =>
-        member.userId === user.id && member.role === ClubMemberRole.PRESIDENT
+        member.userId === user.id && member.role === ClubMemberRole.PRESIDENT,
     );
 
     if (!(isCreator || isAdmin)) {
@@ -317,7 +317,7 @@ export async function updateClubAction(
 
 // Delete club - Only creator can delete
 export async function deleteClubAction(
-  clubId: string
+  clubId: string,
 ): Promise<{ success: boolean; error?: string }> {
   try {
     const user = await getCurrentUser();
@@ -359,7 +359,7 @@ export async function deleteClubAction(
 
 // Join club - Students can join clubs
 export async function joinClubAction(
-  data: TJoinClub
+  data: TJoinClub,
 ): Promise<{ success: boolean; error?: string }> {
   try {
     const user = await getCurrentUser();
@@ -456,7 +456,7 @@ export async function joinClubAction(
 
 // Leave club - Members can leave clubs
 export async function leaveClubAction(
-  clubId: string
+  clubId: string,
 ): Promise<{ success: boolean; error?: string }> {
   try {
     const user = await getCurrentUser();
@@ -498,7 +498,7 @@ export async function leaveClubAction(
 export async function updateClubMemberAction(
   clubId: string,
   memberId: string,
-  data: TUpdateClubMember
+  data: TUpdateClubMember,
 ): Promise<{ success: boolean; error?: string }> {
   try {
     const user = await getCurrentUser();
@@ -549,7 +549,7 @@ export async function updateClubMemberAction(
 
 // Like/unlike club
 export async function toggleClubLikeAction(
-  data: TClubLike
+  data: TClubLike,
 ): Promise<{ success: boolean; isLiked?: boolean; error?: string }> {
   try {
     const user = await getCurrentUser();
@@ -601,7 +601,7 @@ export async function toggleClubLikeAction(
 
 // Get user's clubs
 export async function getUserClubsAction(
-  userId: string
+  userId: string,
 ): Promise<{ success: boolean; data?: ExtendedClub[]; error?: string }> {
   try {
     const currentUser = await getCurrentUser();

@@ -96,7 +96,7 @@ export function DataTableRowActions<TData>({
               onClick={async () => {
                 await updateStatusAction(
                   row.getValue("id"),
-                  UserStatus.PENDING
+                  UserStatus.PENDING,
                 );
                 toast.success("User status updated to pending");
               }}
@@ -107,7 +107,7 @@ export function DataTableRowActions<TData>({
               onClick={async () => {
                 await updateStatusAction(
                   row.getValue("id"),
-                  UserStatus.REJECTED
+                  UserStatus.REJECTED,
                 );
                 toast.success("User status updated to REJECTED");
               }}

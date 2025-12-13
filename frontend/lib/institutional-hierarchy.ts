@@ -1,5 +1,5 @@
 import { UserRole } from "@prisma/client";
-import { prisma } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 
 // ============================================================================
 // TYPES
@@ -57,7 +57,7 @@ export interface FacultyAssignment {
  * Requirements: 1.1, 1.5
  */
 export async function getInstitutionalHierarchy(
-  organizationId: string
+  organizationId: string,
 ): Promise<InstitutionalHierarchy | null> {
   try {
     // Note: We're using organizationId here but it actually refers to institutionId in the new schema
@@ -249,7 +249,7 @@ export async function getFacultyDetails(facultyId: string) {
  */
 export async function validateInstitutionalAccess(
   userId: string,
-  organizationId: string
+  organizationId: string,
 ): Promise<boolean> {
   try {
     const member = await prisma.member.findUnique({
@@ -296,7 +296,7 @@ export async function validateInstitutionalAccess(
  */
 export async function validateSchoolManagementAccess(
   userId: string,
-  schoolId: string
+  schoolId: string,
 ): Promise<boolean> {
   try {
     const school = await prisma.school.findUnique({
@@ -349,7 +349,7 @@ export async function validateSchoolManagementAccess(
  */
 export async function validateFacultyManagementAccess(
   userId: string,
-  facultyId: string
+  facultyId: string,
 ): Promise<boolean> {
   try {
     const faculty = await prisma.faculty.findUnique({
@@ -415,7 +415,7 @@ export async function validateFacultyManagementAccess(
  */
 export async function verifyProfessorFacultyAssignment(
   userId: string,
-  facultyId: string
+  facultyId: string,
 ): Promise<boolean> {
   try {
     const assignment = await prisma.member.findFirst({
@@ -445,7 +445,7 @@ export async function verifyProfessorFacultyAssignment(
  * Requirements: 1.3, 2.3
  */
 export async function getProfessorFacultyAssignments(
-  userId: string
+  userId: string,
 ): Promise<FacultyAssignment[]> {
   try {
     const assignments = await prisma.member.findMany({
@@ -491,7 +491,7 @@ export async function getProfessorFacultyAssignments(
  */
 export async function canAssignProfessorToFaculty(
   userId: string,
-  facultyId: string
+  facultyId: string,
 ): Promise<{ canAssign: boolean; reason?: string }> {
   try {
     // Check if professor is already assigned to this faculty
@@ -602,7 +602,7 @@ export async function canAssignProfessorToFaculty(
   } catch (error) {
     console.error(
       "Error checking professor faculty assignment eligibility:",
-      error
+      error,
     );
     return {
       canAssign: false,

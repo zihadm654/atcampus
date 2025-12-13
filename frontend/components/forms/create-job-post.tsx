@@ -91,28 +91,28 @@ export function CreateJobForm({ job }: CreateJobFormProps) {
     resolver: zodResolver(jobSchema),
     defaultValues: job
       ? {
-        ...job,
-        type: job.type as JobType,
-        experienceLevel: job.experienceLevel as ExperienceLevel,
-        endDate: new Date(job.endDate),
-        duration: job.duration || undefined,
-        courseIds: job.jobCourses?.map((jc) => jc.courseId) || [],
-        summary: job.summary || "", // Convert null to empty string
-        skills: job.skills || [],
-      }
+          ...job,
+          type: job.type as JobType,
+          experienceLevel: job.experienceLevel as ExperienceLevel,
+          endDate: new Date(job.endDate),
+          duration: job.duration || undefined,
+          courseIds: job.jobCourses?.map((jc) => jc.courseId) || [],
+          summary: job.summary || "", // Convert null to empty string
+          skills: job.skills || [],
+        }
       : {
-        title: "",
-        summary: "",
-        description: "",
-        location: "",
-        weeklyHours: 0,
-        type: JobType.INTERNSHIP,
-        experienceLevel: ExperienceLevel.ENTRY_LEVEL,
-        salary: 0,
-        endDate: new Date(),
-        courseIds: [],
-        skills: [],
-      },
+          title: "",
+          summary: "",
+          description: "",
+          location: "",
+          weeklyHours: 0,
+          type: JobType.INTERNSHIP,
+          experienceLevel: ExperienceLevel.ENTRY_LEVEL,
+          salary: 0,
+          endDate: new Date(),
+          courseIds: [],
+          skills: [],
+        },
   });
   const queryClient = useQueryClient();
 
@@ -178,7 +178,7 @@ export function CreateJobForm({ job }: CreateJobFormProps) {
   const type = form.watch("type");
   useEffect(() => {
     const subscription = form.watch((value, { name, type }) =>
-      console.log(value, name, type)
+      console.log(value, name, type),
     );
     return () => subscription.unsubscribe();
   }, [form]);
@@ -277,7 +277,7 @@ export function CreateJobForm({ job }: CreateJobFormProps) {
                                 {roleValue.charAt(0).toUpperCase() +
                                   roleValue.slice(1).toLowerCase()}
                               </SelectItem>
-                            )
+                            ),
                           )}
                         </SelectGroup>
                       </SelectContent>
@@ -313,9 +313,9 @@ export function CreateJobForm({ job }: CreateJobFormProps) {
                           isLoadingCourses
                             ? []
                             : courses?.map((course) => ({
-                              label: `${course.title} (${course.code})`,
-                              value: course.id,
-                            })) || []
+                                label: `${course.title} (${course.code})`,
+                                value: course.id,
+                              })) || []
                         }
                         emptyIndicator={
                           <p className="text-center text-gray-600 text-lg leading-10 dark:text-gray-400">
@@ -326,7 +326,7 @@ export function CreateJobForm({ job }: CreateJobFormProps) {
                         }
                         onChange={(selectedOptions: Option[]) =>
                           field.onChange(
-                            selectedOptions.map((option) => option.value)
+                            selectedOptions.map((option) => option.value),
                           )
                         }
                         placeholder={
@@ -337,18 +337,18 @@ export function CreateJobForm({ job }: CreateJobFormProps) {
                         value={
                           courses && field.value
                             ? (field.value
-                              .map((id) => {
-                                const course = courses.find(
-                                  (c) => c.id === id
-                                );
-                                return course
-                                  ? {
-                                    label: `${course.title} (${course.code})`,
-                                    value: course.id,
-                                  }
-                                  : null;
-                              })
-                              .filter(Boolean) as Option[])
+                                .map((id) => {
+                                  const course = courses.find(
+                                    (c) => c.id === id,
+                                  );
+                                  return course
+                                    ? {
+                                        label: `${course.title} (${course.code})`,
+                                        value: course.id,
+                                      }
+                                    : null;
+                                })
+                                .filter(Boolean) as Option[])
                             : []
                         }
                       />
@@ -373,12 +373,12 @@ export function CreateJobForm({ job }: CreateJobFormProps) {
                         }
                         onChange={(selectedOptions: Option[]) =>
                           field.onChange(
-                            selectedOptions.map((option) => option.value)
+                            selectedOptions.map((option) => option.value),
                           )
                         }
                         placeholder="Select required skills..."
                         value={SKILL_OPTIONS?.filter((option) =>
-                          field.value?.includes(option.value)
+                          field.value?.includes(option.value),
                         )}
                       />
                     </FormControl>
@@ -414,7 +414,7 @@ export function CreateJobForm({ job }: CreateJobFormProps) {
                           <Button
                             className={cn(
                               "w-[240px] pl-3 text-left font-normal",
-                              !field.value && "text-muted-foreground"
+                              !field.value && "text-muted-foreground",
                             )}
                             variant={"outline"}
                           >

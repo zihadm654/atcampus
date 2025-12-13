@@ -17,7 +17,7 @@ export const organizationSchema = z.object({
     .max(50, "Organization slug must not exceed 50 characters")
     .regex(
       /^[a-z0-9-]+$/,
-      "Slug can only contain lowercase letters, numbers, and hyphens"
+      "Slug can only contain lowercase letters, numbers, and hyphens",
     )
     .trim(),
   description: z
@@ -55,7 +55,7 @@ export const schoolSchema = z.object({
     .max(50, "School slug must not exceed 50 characters")
     .regex(
       /^[a-z0-9-]+$/,
-      "Slug can only contain lowercase letters, numbers, and hyphens"
+      "Slug can only contain lowercase letters, numbers, and hyphens",
     )
     .trim(),
   description: z
@@ -97,7 +97,7 @@ export const facultySchema = z.object({
     .max(50, "Faculty slug must not exceed 50 characters")
     .regex(
       /^[a-z0-9-]+$/,
-      "Slug can only contain lowercase letters, numbers, and hyphens"
+      "Slug can only contain lowercase letters, numbers, and hyphens",
     )
     .trim(),
   description: z
@@ -174,7 +174,7 @@ export const professorProfileSchema = z.object({
     .or(z.literal("")),
   researchInterests: z
     .array(
-      z.string().max(100, "Research interest must not exceed 100 characters")
+      z.string().max(100, "Research interest must not exceed 100 characters"),
     )
     .max(10, "Maximum 10 research interests allowed")
     .default([]),
@@ -303,7 +303,7 @@ export const validateAcademicEmail = (email: string): boolean => {
  */
 export const validateResearchInterests = (interests: string[]): boolean =>
   interests.every(
-    (interest) => interest.trim().length > 0 && interest.trim().length <= 100
+    (interest) => interest.trim().length > 0 && interest.trim().length <= 100,
   );
 
 // ============================================================================

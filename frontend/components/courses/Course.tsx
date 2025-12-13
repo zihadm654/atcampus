@@ -29,7 +29,7 @@ export default function Course({ course }: { course: CourseData }) {
   const [isEnrolled, setIsEnrolled] = useState<boolean>(() => {
     if (!course?.enrollments) return false;
     return course.enrollments.some(
-      (enroll: Enrollment) => enroll.studentId === user?.id
+      (enroll: Enrollment) => enroll.studentId === user?.id,
     );
   });
 

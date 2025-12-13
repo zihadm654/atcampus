@@ -2,7 +2,7 @@
 
 import type { UserRole, UserStatus } from "@prisma/client";
 import { APIError } from "better-auth/api";
-import { prisma } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/session";
 import { isAdmin } from "@/types/auth-types";
 

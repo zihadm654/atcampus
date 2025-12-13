@@ -1,6 +1,6 @@
 import { JobType, type Prisma } from "@prisma/client";
 import type { NextRequest } from "next/server";
-import { prisma } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/session";
 import { getJobDataInclude, type JobsPage } from "@/types/types";
 
@@ -16,7 +16,7 @@ export async function GET(req: NextRequest) {
       const types = jobTypesParam.split(",");
       // Filter to only valid JobType values
       jobTypes = types.filter((type) =>
-        Object.values(JobType).includes(type as JobType)
+        Object.values(JobType).includes(type as JobType),
       ) as JobType[];
     }
 
@@ -38,10 +38,10 @@ export async function GET(req: NextRequest) {
       }),
       ...(jobTypes &&
         jobTypes.length > 0 && {
-        type: {
-          in: jobTypes,
-        },
-      }),
+          type: {
+            in: jobTypes,
+          },
+        }),
     };
 
     const jobs = await prisma.job.findMany({

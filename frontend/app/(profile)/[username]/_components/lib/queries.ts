@@ -17,9 +17,6 @@ export const getAcademicStructureInclude = () => ({
                 },
               },
             },
-            orderBy: {
-              createdAt: Prisma.SortOrder.desc,
-            },
             take: 5, // Limit courses per faculty for initial load
           },
           _count: {
@@ -29,18 +26,12 @@ export const getAcademicStructureInclude = () => ({
             },
           },
         },
-        orderBy: {
-          name: Prisma.SortOrder.asc,
-        },
       },
       _count: {
         select: {
           faculties: true,
         },
       },
-    },
-    orderBy: {
-      name: Prisma.SortOrder.asc,
     },
   },
   _count: {
@@ -229,9 +220,6 @@ export async function getCourseEnrollments(userId: string, limit = 10) {
     where: getCourseEnrollmentsWhere(userId),
     include: getCourseEnrollmentsInclude(),
     take: limit,
-    orderBy: {
-      createdAt: Prisma.SortOrder.desc,
-    },
   });
 }
 
@@ -257,9 +245,6 @@ export async function getProfessorCourses(userId: string, limit = 10) {
       },
     },
     take: limit,
-    orderBy: {
-      createdAt: Prisma.SortOrder.desc,
-    },
   });
 }
 
@@ -294,9 +279,6 @@ export async function getInstitutionCourses(institutionId: string, limit = 10) {
       },
     },
     take: limit,
-    orderBy: {
-      createdAt: Prisma.SortOrder.desc,
-    },
   });
 }
 
@@ -307,9 +289,6 @@ export async function getJobApplications(userId: string, limit = 10) {
       applicantId: userId,
     },
     include: getJobApplicationsInclude(userId),
-    orderBy: {
-      createdAt: Prisma.SortOrder.desc,
-    },
     take: limit,
   });
 
@@ -350,9 +329,6 @@ export async function getCreatedJobs(userId: string, limit = 10) {
         },
       },
     },
-    orderBy: {
-      createdAt: Prisma.SortOrder.desc,
-    },
     take: limit,
   });
 
@@ -365,9 +341,6 @@ export async function getResearchProjects(userId: string, limit = 10) {
       userId,
     },
     include: getResearchInclude(userId),
-    orderBy: {
-      createdAt: Prisma.SortOrder.desc,
-    },
     take: limit,
   });
 
@@ -434,9 +407,6 @@ export async function getFacultyDetails(facultyId: string) {
               enrollments: true,
             },
           },
-        },
-        orderBy: {
-          createdAt: Prisma.SortOrder.desc,
         },
       },
       members: {

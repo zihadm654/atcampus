@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { cache } from "react";
 import ResearchFeed from "@/components/feed/ResearchFeed";
-import { prisma } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/session";
 import { constructMetadata } from "@/lib/utils";
 

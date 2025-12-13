@@ -1,7 +1,7 @@
 "use server";
 
 import { APIError } from "better-auth/api";
-import { prisma } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 import {
   acceptInvitation,
   createInvitation,
@@ -68,7 +68,7 @@ export async function getOrganizationBySlug(slug: string) {
 export async function inviteMember(
   organizationId: string,
   email: string,
-  role = "member"
+  role = "member",
 ) {
   try {
     const user = await getCurrentUser();
@@ -83,7 +83,7 @@ export async function inviteMember(
       organizationId,
       user.id,
       email,
-      role
+      role,
     );
 
     return { success: true, invitation };

@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 import type { ExtendedUser } from "@/types/auth-types";
 
 /**
@@ -47,12 +47,12 @@ async function handleInstitutionRegistration(user: ExtendedUser) {
     });
 
     console.log(
-      `Created organization ${organization.id} for institution user ${user.id}`
+      `Created organization ${organization.id} for institution user ${user.id}`,
     );
   } catch (error) {
     console.error(
       `Error creating organization for institution user ${user.id}:`,
-      error
+      error,
     );
   }
 }
@@ -77,12 +77,12 @@ async function handleOrganizationRegistration(user: ExtendedUser) {
     });
 
     console.log(
-      `Created organization ${organization.id} for organization user ${user.id}`
+      `Created organization ${organization.id} for organization user ${user.id}`,
     );
   } catch (error) {
     console.error(
       `Error creating organization for organization user ${user.id}:`,
-      error
+      error,
     );
   }
 }
@@ -112,14 +112,14 @@ async function handleProfessorRegistration(user: ExtendedUser) {
         });
 
         console.log(
-          `Associated professor ${user.id} with faculty ${faculty.id}`
+          `Associated professor ${user.id} with faculty ${faculty.id}`,
         );
       }
     }
   } catch (error) {
     console.error(
       `Error associating professor ${user.id} with faculty:`,
-      error
+      error,
     );
   }
 }

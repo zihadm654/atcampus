@@ -1,4 +1,4 @@
-import { Prisma } from "@prisma/client";
+import type { Prisma } from "@prisma/client";
 import type { LiteralStringForUnion, UR } from "stream-chat";
 
 export function getUserDataSelect(loggedInUserId: string) {
@@ -43,8 +43,6 @@ export function getUserDataSelect(loggedInUserId: string) {
           },
         },
       },
-
-      take: 10, // Limit for performance
     },
     applications: true,
     schools: {
@@ -60,10 +58,6 @@ export function getUserDataSelect(loggedInUserId: string) {
                   },
                 },
               },
-              orderBy: {
-                createdAt: Prisma.SortOrder.desc,
-              },
-              take: 5, // Limit courses per faculty for initial load
             },
             _count: {
               select: {
@@ -71,9 +65,6 @@ export function getUserDataSelect(loggedInUserId: string) {
                 members: true,
               },
             },
-          },
-          orderBy: {
-            name: Prisma.SortOrder.asc,
           },
         },
       },
@@ -157,7 +148,7 @@ export function getPostDataInclude(loggedInUserId: string) {
         comments: true,
       },
     },
-  } satisfies Prisma.PostInclude;
+  };
 }
 
 export function getJobDataInclude(loggedInUserId: string) {
@@ -427,7 +418,3 @@ export type StreamChatGenerics = {
   pollOptionType: Record<string, unknown>;
   pollType: Record<string, unknown>;
 };
-
-
-
-

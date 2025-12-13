@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/session";
 
 export async function GET() {
@@ -19,7 +19,7 @@ export async function GET() {
       },
     });
 
-    const followingIds = following.map(f => f.followingId);
+    const followingIds = following.map((f) => f.followingId);
 
     // Get users who have sent follow requests to the current user
     const receivedRequests = await prisma.followRequest.findMany({
@@ -32,7 +32,7 @@ export async function GET() {
       },
     });
 
-    const receivedRequestIds = receivedRequests.map(r => r.requesterId);
+    const receivedRequestIds = receivedRequests.map((r) => r.requesterId);
 
     // Get users who the current user has sent follow requests to
     const sentRequests = await prisma.followRequest.findMany({
@@ -45,7 +45,7 @@ export async function GET() {
       },
     });
 
-    const sentRequestIds = sentRequests.map(r => r.targetId);
+    const sentRequestIds = sentRequests.map((r) => r.targetId);
 
     // Find users to suggest based on:
     // 1. Mutual connections (people who follow people you follow)

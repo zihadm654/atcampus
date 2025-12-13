@@ -134,7 +134,7 @@ export function CourseReviewForm({
       } else {
         const errorData = await response.json();
         toast.error(
-          `Failed to process review: ${errorData.error || "Unknown error"}`
+          `Failed to process review: ${errorData.error || "Unknown error"}`,
         );
       }
     } catch (error) {

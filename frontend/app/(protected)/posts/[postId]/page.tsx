@@ -8,7 +8,7 @@ import Linkify from "@/components/feed/Linkify";
 import Post from "@/components/posts/Post";
 import UserAvatar from "@/components/UserAvatar";
 import UserTooltip from "@/components/UserTooltip";
-import { prisma } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/session";
 import { getPostDataInclude, type UserData } from "@/types/types";
 
@@ -107,7 +107,7 @@ async function UserInfoSidebar({ user }: UserInfoSidebarProps) {
           initialState={{
             followers: user._count.followers,
             isFollowedByUser: user.followers.some(
-              ({ followerId }) => followerId === loggedInUser.id
+              ({ followerId }) => followerId === loggedInUser.id,
             ),
           }}
           userId={user.id}

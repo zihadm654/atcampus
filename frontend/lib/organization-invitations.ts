@@ -1,5 +1,5 @@
 import { APIError } from "better-auth/api";
-import { prisma } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 
 /**
  * Create an invitation for a user to join an organization
@@ -8,7 +8,7 @@ export async function createInvitation(
   organizationId: string,
   inviterId: string,
   email: string,
-  role = "member"
+  role = "member",
 ) {
   // Check if inviter is a member of the organization
   const inviterMembership = await prisma.member.findFirst({
@@ -173,7 +173,7 @@ export async function getPendingInvitations(email: string) {
  */
 export async function canInviteMembers(
   userId: string,
-  organizationId: string
+  organizationId: string,
 ): Promise<boolean> {
   const membership = await prisma.member.findFirst({
     where: {

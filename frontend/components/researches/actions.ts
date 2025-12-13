@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { prisma } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/session";
 import { researchSchema, type TResearch } from "@/lib/validations/research";
 import { getResearchDataInclude } from "@/types/types";

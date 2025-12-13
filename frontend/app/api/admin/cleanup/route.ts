@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { createAuditLog } from "@/lib/audit";
-import { prisma } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 import { cleanupExpiredDeleted } from "@/lib/soft-delete";
 
 // POST /api/admin/cleanup - Run cleanup tasks (should be called by cron job)
@@ -40,7 +40,7 @@ export async function POST(req: NextRequest) {
       const courseCleanup = await cleanupExpiredDeleted(prisma.course, 90);
       const invitationCleanup = await cleanupExpiredDeleted(
         prisma.invitation,
-        90
+        90,
       );
 
       results.cleanedSoftDeleted =
@@ -188,7 +188,7 @@ export async function GET(req: NextRequest) {
     console.error("Failed to get cleanup stats:", error);
     return NextResponse.json(
       { error: "Failed to get cleanup statistics" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

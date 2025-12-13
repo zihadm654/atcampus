@@ -98,7 +98,7 @@ export const columns: ColumnDef<User>[] = [
           <span
             className={cn(
               "capitalize",
-              type === "price" ? "text-green-500" : "text-red-500"
+              type === "price" ? "text-green-500" : "text-red-500",
             )}
           >
             {" "}

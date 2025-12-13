@@ -19,7 +19,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { prisma } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/session";
 import { constructMetadata, formatRelativeDate } from "@/lib/utils";
 import { getCourseDataInclude, getUserDataSelect } from "@/types/types";
@@ -101,18 +101,25 @@ export default async function CoursePage({ params }: CoursePageProps) {
         <Card className="flex flex-col gap-3">
           <CardHeader className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-3">
-                <Link className="flex items-center gap-3" href={`/${course.instructor.username}`}>
-                  <UserAvatar className="size-10" user={course.faculty.school.institution} />{course.faculty.school.institution.name}
-                  {course.faculty.school.institution.emailVerified ?? (
-                    <Badge
-                      className="bg-blue-500 text-white dark:bg-blue-600"
-                      variant="secondary"
-                    >
-                      <BadgeCheckIcon className="size-4" />
-                      Verified
-                    </Badge>
-                  )}
-                </Link>
+              <Link
+                className="flex items-center gap-3"
+                href={`/${course.instructor.username}`}
+              >
+                <UserAvatar
+                  className="size-10"
+                  user={course.faculty.school.institution}
+                />
+                {course.faculty.school.institution.name}
+                {course.faculty.school.institution.emailVerified ?? (
+                  <Badge
+                    className="bg-blue-500 text-white dark:bg-blue-600"
+                    variant="secondary"
+                  >
+                    <BadgeCheckIcon className="size-4" />
+                    Verified
+                  </Badge>
+                )}
+              </Link>
             </CardTitle>
             {course.instructor?.id === user.id && (
               <CourseMoreButton course={course} />

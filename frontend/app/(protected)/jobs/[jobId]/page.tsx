@@ -1,10 +1,4 @@
-import {
-  Briefcase,
-  Calendar,
-  Clock,
-  DollarSign,
-  MapPin,
-} from "lucide-react";
+import { Briefcase, Calendar, Clock, DollarSign, MapPin } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -29,7 +23,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { prisma } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/session";
 import { constructMetadata, formatDate, formatRelativeDate } from "@/lib/utils";
 import { getJobDataInclude, getUserDataSelect } from "@/types/types";
@@ -100,7 +94,7 @@ export default async function JobPage({ params }: PageProps) {
   const currentUser = await getUser(user.id);
   const job = await getJob(jobId, user.id);
   const _isEnrolled = await isEnrolledInCourse(
-    job?.jobCourses?.[0]?.courseId || ""
+    job?.jobCourses?.[0]?.courseId || "",
   );
 
   // If job not found, return 404
@@ -120,7 +114,10 @@ export default async function JobPage({ params }: PageProps) {
         <Card className="flex flex-col gap-3">
           <CardHeader className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <Link className="flex items-center gap-3" href={`/${job.user.username}`}>
+              <Link
+                className="flex items-center gap-3"
+                href={`/${job.user.username}`}
+              >
                 <UserAvatar user={job.user} />
                 <span className="font-medium text-md">{job.user.name}</span>
               </Link>
@@ -128,7 +125,9 @@ export default async function JobPage({ params }: PageProps) {
             {job.user.id === user.id && <JobMoreButton job={job} />}
           </CardHeader>
           <CardContent className="mt-2 gap-3 space-y-2 text-md px-4">
-            <CardTitle className="text-2xl font-semibold">{job.title}</CardTitle>
+            <CardTitle className="text-2xl font-semibold">
+              {job.title}
+            </CardTitle>
             <div className="flex items-center gap-1.5 rounded-full px-3 py-1">
               <MapPin className="size-6" />
               Location: <span>{job.location}</span>
@@ -158,7 +157,7 @@ export default async function JobPage({ params }: PageProps) {
             <SaveJobButton
               initialState={{
                 isSaveJobByUser: job.savedJobs.some(
-                  (saveJob) => saveJob.userId === user.id
+                  (saveJob) => saveJob.userId === user.id,
                 ),
               }}
               jobId={job.id}

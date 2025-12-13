@@ -1,5 +1,5 @@
 import { createAuditLog } from "@/lib/audit";
-import { prisma } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 
 interface SoftDeleteOptions {
   reason?: string;
@@ -11,7 +11,7 @@ interface SoftDeleteOptions {
 export async function softDelete(
   model: any,
   id: string,
-  options: SoftDeleteOptions = {}
+  options: SoftDeleteOptions = {},
 ) {
   const { reason, metadata } = options;
 
@@ -53,7 +53,7 @@ export async function softDelete(
 export async function restoreSoftDeleted(
   model: any,
   id: string,
-  options: SoftDeleteOptions = {}
+  options: SoftDeleteOptions = {},
 ) {
   const { reason, metadata } = options;
 
@@ -121,7 +121,7 @@ export async function restoreCourse(courseId: string, reason?: string) {
 // Invitation-specific soft delete functions
 export async function softDeleteInvitation(
   invitationId: string,
-  reason?: string
+  reason?: string,
 ) {
   return await softDelete(prisma.invitation, invitationId, { reason });
 }
@@ -134,7 +134,7 @@ export async function restoreInvitation(invitationId: string, reason?: string) {
 export async function bulkSoftDelete(
   modelName: string,
   ids: string[],
-  reason?: string
+  reason?: string,
 ) {
   return await prisma.$transaction(async (tx) => {
     const results: any[] = [];

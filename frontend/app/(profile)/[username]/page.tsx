@@ -1,8 +1,7 @@
-import { Prisma } from "@prisma/client";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { cache, Suspense } from "react";
-import { prisma } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/session";
 import {
   type FollowerInfo,
@@ -89,10 +88,6 @@ const getCourses = cache(async (user: UserData) => {
             },
           },
         },
-        take: 10,
-        orderBy: {
-          createdAt: Prisma.SortOrder.desc,
-        },
       });
       return adminCourses;
     }
@@ -101,7 +96,7 @@ const getCourses = cache(async (user: UserData) => {
       const enrollments = await getCourseEnrollments(user.id, 10);
       // Transform enrollment data to extract course information
       const enrolledCourses = enrollments.map(
-        (enrollment) => enrollment.course
+        (enrollment) => enrollment.course,
       );
       return enrolledCourses;
     }
@@ -147,7 +142,7 @@ export default async function Page({ params }: PageProps) {
   const followerInfo: FollowerInfo = {
     followers: user._count.followers,
     isFollowedByUser: user.followers.some(
-      ({ followerId }) => followerId === loggedInUser.id
+      ({ followerId }) => followerId === loggedInUser.id,
     ),
   };
   return (

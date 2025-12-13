@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/session";
 
 interface AuditLogData {
@@ -59,7 +59,7 @@ export async function auditCourseAction(
   previousData?: any,
   newData?: any,
   reason?: string,
-  metadata?: any
+  metadata?: any,
 ) {
   await createAuditLog({
     action,
@@ -78,7 +78,7 @@ export async function auditInvitationAction(
   previousData?: any,
   newData?: any,
   reason?: string,
-  metadata?: any
+  metadata?: any,
 ) {
   await createAuditLog({
     action,
@@ -97,7 +97,7 @@ export async function auditUserAction(
   previousData?: any,
   newData?: any,
   reason?: string,
-  metadata?: any
+  metadata?: any,
 ) {
   await createAuditLog({
     action,
@@ -116,7 +116,7 @@ export async function auditMemberAction(
   previousData?: any,
   newData?: any,
   reason?: string,
-  metadata?: any
+  metadata?: any,
 ) {
   await createAuditLog({
     action,

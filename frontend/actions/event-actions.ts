@@ -3,7 +3,7 @@
 import { AttendanceStatus, EventStatus, type EventType } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 
-import { prisma } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 import { notifyEventCapacityReached } from "@/lib/services/notification-service";
 import { getCurrentUser } from "@/lib/session";
 import {
@@ -61,9 +61,9 @@ function getEventInclude(userId?: string) {
     },
     likesUsers: userId
       ? {
-        where: { userId },
-        take: 1,
-      }
+          where: { userId },
+          take: 1,
+        }
       : false,
     _count: {
       select: {
@@ -78,7 +78,7 @@ function getEventInclude(userId?: string) {
 
 // Create event - Institution users only
 export async function createEventAction(
-  data: TCreateEvent
+  data: TCreateEvent,
 ): Promise<{ success: boolean; data?: ExtendedEvent; error?: string }> {
   try {
     const user = await getCurrentUser();
@@ -127,7 +127,7 @@ export async function getEventsAction(
     search?: string;
     page?: number;
     limit?: number;
-  } = {}
+  } = {},
 ): Promise<{
   success: boolean;
   data?: ExtendedEvent[];
@@ -190,7 +190,7 @@ export async function getEventsAction(
 
 // Get single event with details
 export async function getEventByIdAction(
-  eventId: string
+  eventId: string,
 ): Promise<{ success: boolean; data?: EventWithDetails; error?: string }> {
   try {
     const user = await getCurrentUser();
@@ -217,7 +217,7 @@ export async function getEventByIdAction(
 // Update event - Only creator can update
 export async function updateEventAction(
   eventId: string,
-  data: TUpdateEvent
+  data: TUpdateEvent,
 ): Promise<{ success: boolean; data?: ExtendedEvent; error?: string }> {
   try {
     const user = await getCurrentUser();
@@ -263,7 +263,7 @@ export async function updateEventAction(
 
 // Delete event - Only creator can delete
 export async function deleteEventAction(
-  eventId: string
+  eventId: string,
 ): Promise<{ success: boolean; error?: string }> {
   try {
     const user = await getCurrentUser();
@@ -305,7 +305,7 @@ export async function deleteEventAction(
 
 // Join event - Students can join events
 export async function joinEventAction(
-  data: TJoinEvent
+  data: TJoinEvent,
 ): Promise<{ success: boolean; error?: string }> {
   try {
     const user = await getCurrentUser();
@@ -408,7 +408,7 @@ export async function joinEventAction(
 
 // Leave event - Students can leave events
 export async function leaveEventAction(
-  eventId: string
+  eventId: string,
 ): Promise<{ success: boolean; error?: string }> {
   try {
     const user = await getCurrentUser();
@@ -448,7 +448,7 @@ export async function leaveEventAction(
 
 // Like/unlike event
 export async function toggleEventLikeAction(
-  data: TEventLike
+  data: TEventLike,
 ): Promise<{ success: boolean; isLiked?: boolean; error?: string }> {
   try {
     const user = await getCurrentUser();
@@ -500,7 +500,7 @@ export async function toggleEventLikeAction(
 
 // Get user's events
 export async function getUserEventsAction(
-  userId: string
+  userId: string,
 ): Promise<{ success: boolean; data?: ExtendedEvent[]; error?: string }> {
   try {
     const currentUser = await getCurrentUser();

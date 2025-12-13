@@ -11,7 +11,7 @@ import ResearchMoreButton from "@/components/researches/ResearchMoreButton";
 import { UserAvatar } from "@/components/shared/user-avatar";
 import UserTooltip from "@/components/UserTooltip";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { prisma } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/session";
 import { constructMetadata, formatRelativeDate } from "@/lib/utils";
 import { getResearchDataInclude } from "@/types/types";
@@ -32,7 +32,7 @@ const getResearch = cache(
     if (!research) notFound();
 
     return research;
-  }
+  },
 );
 
 export async function generateMetadata({
@@ -170,7 +170,7 @@ export default async function ResearchPage({ params }: PageProps) {
                           <DeclineCollaborationButton requestId={req.id} />
                         </div>
                       </div>
-                    )
+                    ),
                 )}
               </CardContent>
             </Card>

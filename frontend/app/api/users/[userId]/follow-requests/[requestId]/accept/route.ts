@@ -1,10 +1,10 @@
-import { prisma } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/session";
 
 // Accept a follow request
 export async function POST(
   req: Request,
-  { params }: { params: Promise<{ userId: string; requestId: string }> }
+  { params }: { params: Promise<{ userId: string; requestId: string }> },
 ) {
   try {
     const { userId, requestId } = await params;
@@ -29,7 +29,10 @@ export async function POST(
     });
 
     if (!followRequest) {
-      return Response.json({ error: "Follow request not found" }, { status: 404 });
+      return Response.json(
+        { error: "Follow request not found" },
+        { status: 404 },
+      );
     }
 
     // Verify the request belongs to the current user
@@ -39,9 +42,12 @@ export async function POST(
 
     // Check if request is already processed
     if (followRequest.status !== "PENDING") {
-      return Response.json({
-        error: `Follow request already ${followRequest.status.toLowerCase()}`
-      }, { status: 400 });
+      return Response.json(
+        {
+          error: `Follow request already ${followRequest.status.toLowerCase()}`,
+        },
+        { status: 400 },
+      );
     }
 
     // Start a transaction to update request and create follow relationship
@@ -80,7 +86,7 @@ export async function POST(
     return Response.json({
       message: "Follow request accepted",
       followRequest: result.updatedRequest,
-      follow: result.follow
+      follow: result.follow,
     });
   } catch (error) {
     console.error("Error accepting follow request:", error);

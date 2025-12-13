@@ -1,5 +1,6 @@
-import { type Notification, NotificationType } from "@prisma/client";
-import { prisma } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
+import type { Notification } from "@prisma/client";
+import { NotificationType } from "@prisma/client";
 
 export interface CreateNotificationData {
   type: NotificationType;
@@ -15,7 +16,7 @@ export interface CreateNotificationData {
 }
 
 export async function createNotification(
-  data: CreateNotificationData
+  data: CreateNotificationData,
 ): Promise<Notification> {
   return await prisma.notification.create({
     data: {
@@ -42,66 +43,66 @@ export async function createNotification(
       },
       post: data.postId
         ? {
-          select: {
-            id: true,
-            content: true,
-          },
-        }
+            select: {
+              id: true,
+              content: true,
+            },
+          }
         : false,
       job: data.jobId
         ? {
-          select: {
-            id: true,
-            title: true,
-            user: {
-              select: {
-                id: true,
-                username: true,
+            select: {
+              id: true,
+              title: true,
+              user: {
+                select: {
+                  id: true,
+                  username: true,
+                },
               },
             },
-          },
-        }
+          }
         : false,
       course: data.courseId
         ? {
-          select: {
-            id: true,
-            title: true,
-            code: true,
-          },
-        }
+            select: {
+              id: true,
+              title: true,
+              code: true,
+            },
+          }
         : false,
       research: data.researchId
         ? {
-          select: {
-            id: true,
-            title: true,
-          },
-        }
+            select: {
+              id: true,
+              title: true,
+            },
+          }
         : false,
       invitation: data.invitationId
         ? {
-          select: {
-            id: true,
-            email: true,
-          },
-        }
+            select: {
+              id: true,
+              email: true,
+            },
+          }
         : false,
     },
   });
 }
 
 export async function createBulkNotifications(
-  data: CreateNotificationData[]
+  data: CreateNotificationData[],
 ): Promise<Notification[]> {
   const notifications = await Promise.all(
-    data.map((item) => createNotification(item))
+    data.map((item) => createNotification(item)),
   );
   return notifications;
 }
 
 export async function markNotificationAsRead(
-  notificationId: string
+  notificationId: string,
 ): Promise<Notification> {
   return await prisma.notification.update({
     where: { id: notificationId },
@@ -110,7 +111,7 @@ export async function markNotificationAsRead(
 }
 
 export async function markAllNotificationsAsRead(
-  userId: string
+  userId: string,
 ): Promise<number> {
   const result = await prisma.notification.updateMany({
     where: {
@@ -123,7 +124,7 @@ export async function markAllNotificationsAsRead(
 }
 
 export async function getUnreadNotificationCount(
-  userId: string
+  userId: string,
 ): Promise<number> {
   return await prisma.notification.count({
     where: {
@@ -136,7 +137,7 @@ export async function getUnreadNotificationCount(
 export async function getUserNotifications(
   userId: string,
   limit = 20,
-  cursor?: string
+  cursor?: string,
 ) {
   const notifications = await prisma.notification.findMany({
     where: { recipientId: userId },
@@ -211,7 +212,7 @@ export async function getUserNotifications(
 export async function notifyCourseEnrollment(
   courseId: string,
   studentId: string,
-  instructorId: string
+  instructorId: string,
 ) {
   const course = await prisma.course.findUnique({
     where: { id: courseId },
@@ -237,7 +238,7 @@ export async function notifyCourseEnrollment(
 export async function notifyJobApplication(
   jobId: string,
   applicantId: string,
-  employerId: string
+  employerId: string,
 ) {
   const job = await prisma.job.findUnique({
     where: { id: jobId },
@@ -262,7 +263,7 @@ export async function notifyJobApplication(
 export async function notifyResearchCollaboration(
   researchId: string,
   requesterId: string,
-  recipientId: string
+  recipientId: string,
 ) {
   const research = await prisma.research.findUnique({
     where: { id: researchId },
@@ -287,7 +288,7 @@ export async function notifyResearchCollaboration(
 export async function notifyCourseApprovalRequest(
   courseId: string,
   instructorId: string,
-  reviewerId: string
+  reviewerId: string,
 ) {
   const course = await prisma.course.findUnique({
     where: { id: courseId },
@@ -322,7 +323,7 @@ export async function notifyCourseApprovalResult(
   instructorId: string,
   reviewerId: string,
   decision: string,
-  comments?: string
+  comments?: string,
 ) {
   const course = await prisma.course.findUnique({
     where: { id: courseId },
@@ -355,7 +356,7 @@ export async function notifyCourseApprovalResult(
 export async function notifyProfessorInvitation(
   invitationId: string,
   senderId: string,
-  recipientEmail: string
+  recipientEmail: string,
 ) {
   await createNotification({
     type: NotificationType.PROFESSOR_INVITATION,
@@ -371,7 +372,7 @@ export async function notifyProfessorInvitation(
 export async function notifyComment(
   postId: string,
   commenterId: string,
-  postOwnerId: string
+  postOwnerId: string,
 ) {
   // Don't notify if user is commenting on their own post
   if (commenterId === postOwnerId) return;
@@ -399,7 +400,7 @@ export async function notifyComment(
 export async function notifyLike(
   postId: string,
   likerId: string,
-  postOwnerId: string
+  postOwnerId: string,
 ) {
   // Don't notify if user is liking their own post
   if (likerId === postOwnerId) return;
@@ -437,7 +438,7 @@ export async function notifyFollow(followerId: string, followingId: string) {
 // Follow request notification
 export async function notifyFollowRequest(
   requesterId: string,
-  targetId: string
+  targetId: string,
 ) {
   const requester = await prisma.user.findUnique({
     where: { id: requesterId },
@@ -461,7 +462,7 @@ export async function notifyFollowRequest(
 // Follow request accepted notification
 export async function notifyFollowRequestAccepted(
   targetId: string,
-  requesterId: string
+  requesterId: string,
 ) {
   const target = await prisma.user.findUnique({
     where: { id: targetId },
@@ -502,7 +503,7 @@ export async function notifyClubMemberJoined(clubId: string, userId: string) {
       issuerId: userId,
       title: "New Club Member",
       message: `New member joined ${club.name}`,
-    })
+    }),
   );
 
   await Promise.all(advisorNotifications);
@@ -511,7 +512,7 @@ export async function notifyClubMemberJoined(clubId: string, userId: string) {
 export async function notifyClubEventCreated(
   clubId: string,
   eventId: string,
-  userId: string
+  userId: string,
 ) {
   const club = await prisma.club.findUnique({
     where: { id: clubId },
@@ -539,7 +540,7 @@ export async function notifyClubEventCreated(
       issuerId: userId,
       title: "New Club Event",
       message: `New event "${event.name}" created in ${club.name}`,
-    })
+    }),
   );
 
   await Promise.all(memberNotifications);

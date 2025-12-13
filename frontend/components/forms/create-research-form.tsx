@@ -54,7 +54,7 @@ function AttachmentPreview({
         className={cn(
           "relative h-24 w-24 overflow-hidden rounded-lg border",
           attachment.error && "border-red-500",
-          attachment.isUploading && "border-muted"
+          attachment.isUploading && "border-muted",
         )}
       >
         {isPdf && attachment.preview ? (
@@ -143,13 +143,13 @@ export function CreateResearchForm({ user }: CreateJobFormProps) {
     (files: File[]) => {
       startUpload(files);
     },
-    [startUpload]
+    [startUpload],
   );
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: generateClientDropzoneAccept(
-      generatePermittedFileTypes(routeConfig).fileTypes
+      generatePermittedFileTypes(routeConfig).fileTypes,
     ),
     disabled: isUploading,
   });
@@ -182,7 +182,7 @@ export function CreateResearchForm({ user }: CreateJobFormProps) {
 
   useEffect(() => {
     const subscription = form.watch((value, { name, type }) =>
-      console.log(value, name, type)
+      console.log(value, name, type),
     );
     return () => subscription.unsubscribe();
   }, [form]);
@@ -231,7 +231,7 @@ export function CreateResearchForm({ user }: CreateJobFormProps) {
                 {...getRootProps()}
                 className={cn(
                   "relative rounded-2xl border-2 border-muted-foreground/50 border-dashed p-8 text-center transition-colors hover:bg-muted/50",
-                  isDragActive && "border-primary-500 bg-primary-500/10"
+                  isDragActive && "border-primary-500 bg-primary-500/10",
                 )}
               >
                 <input {...getInputProps()} />

@@ -112,7 +112,7 @@ export default function Notification({ notification }: NotificationProps) {
       <article
         className={cn(
           "relative flex gap-3 rounded-2xl bg-card p-5 shadow-sm transition-colors hover:bg-card/70",
-          !notification.read && "border-primary border-l-4 bg-primary/5"
+          !notification.read && "border-primary border-l-4 bg-primary/5",
         )}
       >
         {!notification.read && (
