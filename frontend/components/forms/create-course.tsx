@@ -1,12 +1,6 @@
 "use client";
 
-import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  type Course,
-  CourseStatus,
-  SkillLevel,
-  type User,
-} from "@prisma/client";
+import { CourseStatus, SkillLevel } from "@prisma/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -39,6 +33,8 @@ import {
   SelectValue,
 } from "../ui/select";
 import { Textarea } from "../ui/textarea";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { UploadButton } from "@/lib/uploadthing";
 
 interface CreateCourseFormProps {
   user?: any;
@@ -83,6 +79,7 @@ export function CreateCourseForm({ user, course }: CreateCourseFormProps) {
           title: course.title || "",
           description: course.description || "",
           code: course.code || "",
+          image: course.image || "",
           credits: course.credits || 3,
           difficulty: course.difficulty || "BEGINNER",
           estimatedHours: course.estimatedHours || 10,
@@ -97,6 +94,7 @@ export function CreateCourseForm({ user, course }: CreateCourseFormProps) {
           title: "",
           description: "",
           code: "",
+          image: "",
           credits: 3,
           difficulty: "BEGINNER",
           estimatedHours: 10,
@@ -424,6 +422,56 @@ export function CreateCourseForm({ user, course }: CreateCourseFormProps) {
                           !!form.watch("code") && availableCourses.length > 0
                         }
                       />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* Course Cover Image Upload */}
+              <FormField
+                control={form.control}
+                name="image"
+                render={() => (
+                  <FormItem>
+                    <FormLabel>Course Cover Image</FormLabel>
+                    <FormControl>
+                      <div className="space-y-4">
+                        {form.watch("image") ? (
+                          <div className="flex flex-col items-start gap-2">
+                            <img
+                              src={form.watch("image")}
+                              alt="Course Cover Preview"
+                              className="h-40 w-full rounded-md object-cover"
+                            />
+                            <Button
+                              type="button"
+                              variant="outline"
+                              onClick={() => form.setValue("image", "")}
+                            >
+                              Remove Image
+                            </Button>
+                          </div>
+                        ) : (
+                          <div className="flex flex-col gap-4">
+                            <UploadButton
+                              endpoint="courseCoverImage"
+                              onClientUploadComplete={(res) => {
+                                if (res && res[0]) {
+                                  form.setValue("image", res[0].url);
+                                  toast.success("Image uploaded successfully!");
+                                }
+                              }}
+                              onUploadError={(error: Error) => {
+                                toast.error(`ERROR! ${error.message}`);
+                              }}
+                            />
+                            <p className="text-muted-foreground text-sm">
+                              Recommended size: 1200x630px (1.91:1 ratio)
+                            </p>
+                          </div>
+                        )}
+                      </div>
                     </FormControl>
                     <FormMessage />
                   </FormItem>

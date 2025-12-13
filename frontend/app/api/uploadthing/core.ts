@@ -115,7 +115,7 @@ export const ourFileRouter = {
     .middleware(async () => {
       const user = await getCurrentUser();
       if (!user) throw new UploadThingError("Unauthorized");
-      if (user.role !== "INSTITUTION") {
+      if (user.role === "INSTITUTION") {
         throw new UploadThingError("Only institutions can upload school logos");
       }
       return { userId: user.id };
@@ -129,7 +129,7 @@ export const ourFileRouter = {
     .middleware(async () => {
       const user = await getCurrentUser();
       if (!user) throw new UploadThingError("Unauthorized");
-      if (user.role !== "INSTITUTION") {
+      if (user.role === "INSTITUTION") {
         throw new UploadThingError(
           "Only institutions can upload school cover images",
         );
@@ -145,7 +145,7 @@ export const ourFileRouter = {
     .middleware(async () => {
       const user = await getCurrentUser();
       if (!user) throw new UploadThingError("Unauthorized");
-      if (user.role !== "INSTITUTION") {
+      if (user.role !== "INSTITUTION" && user.role !== "PROFESSOR") {
         throw new UploadThingError(
           "Only institutions can upload school cover images",
         );

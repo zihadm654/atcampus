@@ -1,24 +1,9 @@
-import { IconFolderCode } from "@tabler/icons-react";
-import { BookOpen, FlaskConical } from "lucide-react";
-import Research from "@/components/researches/Research";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Empty,
-  EmptyContent,
-  EmptyDescription,
-  EmptyHeader,
-  EmptyMedia,
-  EmptyTitle,
-} from "@/components/ui/empty";
-import type {
-  ProfilePermissions,
-  // Course,
-} from "@/types/profile-types";
+import type { ProfilePermissions } from "@/types/profile-types";
 import type { CourseData, UserData } from "@/types/types";
 import Course from "@/components/courses/Course";
 import { Icons } from "@/components/shared/icons";
+import BlurImage from "@/components/shared/blur-image";
 
 interface ProfessorOverviewProps {
   user: UserData;
@@ -43,7 +28,20 @@ export default function ProfessorOverview({
               Features
             </CardTitle>
           </CardHeader>
-          <CardContent></CardContent>
+          <CardContent className="flex items-center justify-between gap-2">
+            {researches.slice(0, 3).map((research: any) => (
+              <div key={research.id}>
+                <BlurImage
+                  src={research.user.image || "/_static/avatars/shadcn.jpeg"}
+                  alt={research.title}
+                  width={150}
+                  height={150}
+                />
+                <h2 className="text-md font-semibold">{research.title}</h2>
+              </div>
+            ))}
+            <div></div>
+          </CardContent>
         </Card>
         <Card className=" rounded-xl shadow-sm flex-1">
           <CardHeader className="py-0">
@@ -51,7 +49,7 @@ export default function ProfessorOverview({
               Basic Info
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-2">
+          <CardContent className="space-y-3">
             <h1 className="text-md font-semibold">Professor at:</h1>
             <p className="flex items-center gap-2">
               <Icons.email className="size-6" />

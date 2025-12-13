@@ -100,18 +100,6 @@ export function OrganizationCard(props: {
 
   const { data } = useSession();
   const session = data || props.session;
-
-  const currentMember = optimisticOrg?.members.find(
-    (member) => member?.userId === session?.user.id,
-  );
-
-  // Fetch faculties when organization changes
-  useEffect(() => {
-    if (optimisticOrg?.id) {
-      fetchFaculties(optimisticOrg.id);
-    }
-  }, [optimisticOrg?.id]);
-
   const fetchFaculties = async (organizationId: string) => {
     setLoadingFaculties(true);
     try {
@@ -129,6 +117,16 @@ export function OrganizationCard(props: {
       setLoadingFaculties(false);
     }
   };
+  // Fetch faculties when organization changes
+  useEffect(() => {
+    if (optimisticOrg?.id) {
+      fetchFaculties(optimisticOrg.id);
+    }
+  }, [optimisticOrg?.id]);
+
+  const currentMember = optimisticOrg?.members?.find(
+    (member) => member?.userId === session?.user?.id,
+  );
 
   return (
     <Card>
@@ -161,9 +159,9 @@ export function OrganizationCard(props: {
               {organizations.data?.map((org) => (
                 <DropdownMenuItem
                   className="py-1"
-                  key={org.id}
+                  key={org?.id}
                   onClick={async () => {
-                    if (org.id === optimisticOrg?.id) {
+                    if (org?.id === optimisticOrg?.id) {
                       return;
                     }
                     setOptimisticOrg({
@@ -183,7 +181,7 @@ export function OrganizationCard(props: {
                     }
                   }}
                 >
-                  <p className="sm text-sm">{org.name}</p>
+                  <p className="sm text-sm">{org?.name}</p>
                 </DropdownMenuItem>
               ))}
             </DropdownMenuContent>
@@ -205,7 +203,7 @@ export function OrganizationCard(props: {
           <div>
             <p>{optimisticOrg?.name || "Personal"}</p>
             <p className="text-muted-foreground text-xs">
-              {optimisticOrg?.members.length || 1} members
+              {optimisticOrg?.members?.length || 1} members
             </p>
           </div>
         </div>
@@ -217,7 +215,7 @@ export function OrganizationCard(props: {
               Members
             </p>
             <div className="flex flex-col gap-2">
-              {optimisticOrg?.members.map((member) => (
+              {optimisticOrg?.members?.map((member) => (
                 <div
                   className="flex flex-wrap items-center justify-between"
                   key={member.id}

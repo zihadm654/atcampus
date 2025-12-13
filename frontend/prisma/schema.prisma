@@ -467,13 +467,14 @@ model Faculty {
 
 // Production-grade course model with comprehensive features
 model Course {
-  id          String @id @default(cuid()) @map("_id")
-  code        String @db.String // Enforce length limit
-  title       String @db.String
-  description String @db.String
-  credits     Int?   @default(3)
+  id          String  @id @default(cuid()) @map("_id")
+  code        String  @db.String // Enforce length limit
+  title       String  @db.String
+  description String  @db.String
+  credits     Int?    @default(3)
+  image       String?
   maxStudents Int?
-  minStudents Int?   @default(1)
+  minStudents Int?    @default(1)
 
   // Course metadata
   objectives     String

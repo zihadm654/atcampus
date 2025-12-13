@@ -107,7 +107,6 @@ const getResearches = cache(async (userId: string) => {
   const researches = await getResearchProjects(userId, 10);
   return researches;
 });
-
 export async function generateMetadata({
   params,
 }: PageProps): Promise<Metadata> {
@@ -145,6 +144,7 @@ export default async function Page({ params }: PageProps) {
       ({ followerId }) => followerId === loggedInUser.id,
     ),
   };
+
   return (
     <ProfileProvider initialUser={user} loggedInUserId={loggedInUser.id}>
       <div className="container mx-auto w-full min-w-0 space-y-5 max-md:p-2">

@@ -69,7 +69,7 @@ export default function Course({ course }: { course: CourseData }) {
           alt={course?.instructor.name}
           className="h-44 w-full rounded-sm object-cover"
           height="600"
-          src={course?.instructor.image || "/_static/avatars/shadcn.jpeg"}
+          src={course?.image || "/_static/avatars/shadcn.jpeg"}
           width="400"
         />
         <div className="absolute inset-0 flex items-start justify-end">

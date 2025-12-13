@@ -70,6 +70,7 @@ export function getUserDataSelect(loggedInUserId: string) {
       },
     },
     members: true,
+    primaryCourses: true,
     posts: true,
     research: true,
     events: true,

@@ -1,8 +1,7 @@
-// import { CourseStatus } from "@prisma/client";
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-// import { notifyCourseApprovalResult } from "@/lib/services/notification-service";
+import { notifyCourseApprovalResult } from "@/lib/services/notification-service";
 import { getCurrentUser } from "@/lib/session";
 
 type RouteParams = {

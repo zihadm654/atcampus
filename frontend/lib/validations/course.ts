@@ -10,6 +10,7 @@ export const courseSchema = z.object({
     .string()
     .min(1, "code is required")
     .max(20, "Must be at most 20 characters"),
+  image: z.url().optional(),
   difficulty: z.string().max(100, "Must be at most 100 characters").optional(),
   credits: z
     .number()

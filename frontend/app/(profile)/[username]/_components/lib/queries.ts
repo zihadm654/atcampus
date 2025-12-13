@@ -1,5 +1,5 @@
 import { EnrollmentStatus, Prisma } from "@prisma/client";
-import { prisma } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 import { getUserDataSelect } from "@/types/types";
 
 // Optimized academic structure query
