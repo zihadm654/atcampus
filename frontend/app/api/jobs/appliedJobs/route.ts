@@ -4,46 +4,46 @@ import { getCurrentUser } from "@/lib/session";
 import { getJobDataInclude, type JobsPage } from "@/types/types";
 
 export async function GET(req: NextRequest) {
-  try {
-    const cursor = req.nextUrl.searchParams.get("cursor") || undefined;
+	try {
+		const cursor = req.nextUrl.searchParams.get("cursor") || undefined;
 
-    const pageSize = 10;
+		const pageSize = 10;
 
-    const user = await getCurrentUser();
+		const user = await getCurrentUser();
 
-    if (!user) {
-      return Response.json({ error: "Unauthorized" }, { status: 401 });
-    }
+		if (!user) {
+			return Response.json({ error: "Unauthorized" }, { status: 401 });
+		}
 
-    const applications = await prisma.application.findMany({
-      where: {
-        applicantId: user.id,
-      },
-      include: {
-        job: {
-          include: getJobDataInclude(user.id),
-        },
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
-      take: pageSize + 1,
-      cursor: cursor ? { id: cursor } : undefined,
-    });
+		const applications = await prisma.application.findMany({
+			where: {
+				applicantId: user.id,
+			},
+			include: {
+				job: {
+					include: getJobDataInclude(user.id),
+				},
+			},
+			orderBy: {
+				createdAt: "desc",
+			},
+			take: pageSize + 1,
+			cursor: cursor ? { id: cursor } : undefined,
+		});
 
-    const nextCursor =
-      applications.length > pageSize ? applications[pageSize].id : null;
+		const nextCursor =
+			applications.length > pageSize ? applications[pageSize].id : null;
 
-    const data: JobsPage = {
-      jobs: applications
-        .slice(0, pageSize)
-        .map((application) => application.job),
-      nextCursor,
-    };
+		const data: JobsPage = {
+			jobs: applications
+				.slice(0, pageSize)
+				.map((application) => application.job),
+			nextCursor,
+		};
 
-    return Response.json(data);
-  } catch (error) {
-    console.error(error);
-    return Response.json({ error: "Internal server error" }, { status: 500 });
-  }
+		return Response.json(data);
+	} catch (error) {
+		console.error(error);
+		return Response.json({ error: "Internal server error" }, { status: 500 });
+	}
 }
