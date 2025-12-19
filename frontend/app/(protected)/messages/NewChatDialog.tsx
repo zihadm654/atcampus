@@ -65,16 +65,16 @@ export default function NewChatDialog({
 					? [loggedInUser?.id, selectedUsers[0].id].sort().join("::")
 					: crypto.randomUUID();
 
-			const channelData = {
+			const channelData: { members: string[]; created_by_id: string | undefined; name?: string } = {
 				members: [loggedInUser?.id, ...selectedUsers.map((u) => u.id)],
 				created_by_id: loggedInUser?.id,
 			};
 
 			// Add optional name for group chats
-			// if (selectedUsers.length > 1) {
-			// 	channelData["name"] =
-			// 		`${loggedInUser?.name}, ${selectedUsers.map((u) => u.name || u.id).join(", ")}`;
-			// }
+      if (selectedUsers.length > 1) {
+        channelData.name =
+          `${loggedInUser?.name}, ${selectedUsers.map((u) => u.name || u.id).join(", ")}`;
+      }
 
 			const channel = client.channel("messaging", channelId, channelData);
 

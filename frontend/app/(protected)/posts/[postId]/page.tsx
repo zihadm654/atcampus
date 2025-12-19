@@ -40,7 +40,7 @@ export async function generateMetadata({
 	const post = await getPost(postId, user.id);
 
 	return {
-		title: `${post.title}: ${post.content.slice(0, 50)}...`,
+		title: `${post.content.slice(0, 50)}...`,
 	};
 }
 
@@ -63,7 +63,7 @@ export default async function Page({ params }: PageProps) {
 			<div className="w-full min-w-0 space-y-5">
 				<Post post={post} />
 			</div>
-			<div className="sticky top-[5.25rem] hidden h-fit w-80 flex-none lg:block">
+			<div className="sticky top-21 hidden h-fit w-80 flex-none lg:block">
 				<Suspense fallback={<Loader2 className="mx-auto animate-spin" />}>
 					<UserInfoSidebar user={post.user} />
 				</Suspense>
@@ -98,7 +98,7 @@ async function UserInfoSidebar({ user }: UserInfoSidebarProps) {
 				</Link>
 			</UserTooltip>
 			<Linkify>
-				<div className="line-clamp-6 whitespace-pre-line break-words text-muted-foreground">
+				<div className="line-clamp-6 whitespace-pre-line wrap-break-words text-muted-foreground">
 					{user.bio}
 				</div>
 			</Linkify>
