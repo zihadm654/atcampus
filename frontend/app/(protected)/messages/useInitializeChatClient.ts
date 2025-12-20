@@ -7,25 +7,34 @@ import kyInstance from "@/lib/ky";
 export default function useInitializeChatClient() {
 	const [chatClient, setChatClient] = useState<StreamChat | null>(null);
 	const { data: session } = useSession();
+	
 	useEffect(() => {
+		if (!session?.user?.id) return;
+
 		const client = StreamChat.getInstance(env.NEXT_PUBLIC_STREAM_KEY);
 
-		client
-			.connectUser(
-				{
-					id: session?.user.id as string,
-					username: session?.user.username ?? undefined,
-					name: session?.user.name,
-					image: session?.user.image ?? undefined,
-				},
-				async () =>
-					kyInstance
-						.get("/api/get-token")
-						.json<{ token: string }>()
-						.then((data) => data.token),
-			)
-			.catch((error) => console.error("Failed to connect user", error))
-			.then(() => setChatClient(client));
+		const connectUser = async () => {
+			try {
+				const tokenResponse = await kyInstance.get("/api/get-token");
+				const { token } = await tokenResponse.json<{ token: string }>();
+				
+				await client.connectUser(
+					{
+						id: session.user.id,
+						username: session.user.username ?? undefined,
+						name: session.user.name,
+						image: session.user.image ?? undefined,
+					},
+					token
+				);
+				
+				setChatClient(client);
+			} catch (error) {
+				console.error("Failed to connect user", error);
+			}
+		};
+
+		connectUser();
 
 		return () => {
 			setChatClient(null);
@@ -35,10 +44,10 @@ export default function useInitializeChatClient() {
 				.then(() => console.log("Connection closed"));
 		};
 	}, [
-		session?.user.id,
-		session?.user.username,
-		session?.user.name,
-		session?.user.image,
+		session?.user?.id,
+		session?.user?.username,
+		session?.user?.name,
+		session?.user?.image,
 	]);
 
 	return chatClient;

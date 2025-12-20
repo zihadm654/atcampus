@@ -15,14 +15,14 @@ export const env = createEnv({
     NODEMAILER_USER: z.string().min(1),
     NODEMAILER_APP_PASSWORD: z.string().min(1),
     UPLOADTHING_TOKEN: z.string().min(1),
-    NEXT_PUBLIC_STREAM_KEY: z.string().min(1),
     STREAM_SECRET: z.string().min(1),
     UPLOADTHING_SECRET: z.string().min(1),
-    NEXT_PUBLIC_UPLOADTHING_APP_ID: z.string().min(1),
     CRON_SECRET: z.string().min(1),
   },
   client: {
     NEXT_PUBLIC_APP_URL: z.string().min(1),
+    NEXT_PUBLIC_STREAM_KEY: z.string().min(1),
+    NEXT_PUBLIC_UPLOADTHING_APP_ID: z.string().min(1),
   },
   runtimeEnv: {
     BETTER_AUTH_URL: process.env.BETTER_AUTH_URL,
