@@ -42,7 +42,7 @@ export default function NewChatDialog({
 			if (!(searchInputDebounced && client)) return { users: [] };
 			return client.queryUsers(
 				{
-					id: { $in: [loggedInUser?.id] }, // Use $nin instead of $ne for proper typing
+					id: { $nin: [loggedInUser?.id] },
 					$or: [
 						{ name: { $autocomplete: searchInputDebounced } },
 						{ id: { $autocomplete: searchInputDebounced } },
