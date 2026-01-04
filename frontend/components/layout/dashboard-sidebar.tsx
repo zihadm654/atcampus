@@ -65,8 +65,8 @@ export function DashboardSidebar({ links }: DashboardSidebarProps) {
         <ScrollArea className="h-full overflow-y-auto">
           <aside
             className={cn(
-              isSidebarExpanded ? "w-[14rem] xl:w-[17rem]" : "w-[4rem]",
-              "hidden min-h-2/3 py-1 md:block"
+              isSidebarExpanded ? "w-[13rem] xl:w-[15rem]" : "w-[4rem]",
+              "hidden min-h-2/3 py-1 md:block",
             )}
           >
             <div className="flex flex-1 flex-col gap-2">
@@ -100,7 +100,7 @@ export function DashboardSidebar({ links }: DashboardSidebarProps) {
                 </Button>
               </div> */}
               <ProfileCard />
-              <nav className="flex flex-1 flex-col gap-8 px-4">
+              <nav className="flex flex-1 flex-col gap-8 px-2">
                 {links.map((section) => (
                   <section
                     className="flex flex-col gap-0.5"
@@ -126,7 +126,7 @@ export function DashboardSidebar({ links }: DashboardSidebarProps) {
                                     ? "bg-muted"
                                     : "text-muted-foreground hover:text-accent-foreground",
                                   item.disabled &&
-                                    "cursor-not-allowed opacity-80 hover:bg-transparent hover:text-muted-foreground"
+                                    "cursor-not-allowed opacity-80 hover:bg-transparent hover:text-muted-foreground",
                                 )}
                                 href={item.disabled ? "#" : item.href}
                                 key={`link-${item.title}`}
@@ -149,7 +149,7 @@ export function DashboardSidebar({ links }: DashboardSidebarProps) {
                                         ? "bg-muted"
                                         : "text-muted-foreground hover:text-accent-foreground",
                                       item.disabled &&
-                                        "cursor-not-allowed opacity-80 hover:bg-transparent hover:text-muted-foreground"
+                                        "cursor-not-allowed opacity-80 hover:bg-transparent hover:text-muted-foreground",
                                     )}
                                     href={item.disabled ? "#" : item.href}
                                     key={`link-tooltip-${item.title}`}
@@ -231,7 +231,7 @@ export function MobileSheetSidebar({ links }: DashboardSidebarProps) {
                                   ? "bg-muted"
                                   : "text-muted-foreground hover:text-accent-foreground",
                                 item.disabled &&
-                                  "cursor-not-allowed opacity-80 hover:bg-transparent hover:text-muted-foreground"
+                                  "cursor-not-allowed opacity-80 hover:bg-transparent hover:text-muted-foreground",
                               )}
                               href={item.disabled ? "#" : item.href}
                               key={`link-${item.title}`}

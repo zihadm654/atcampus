@@ -15,8 +15,8 @@ export default function MaxWidthWrapper({
     <div
       className={cn(
         "container",
-        large ? "max-w-(--breakpoint-2xl)" : "max-w-7xl",
-        className
+        large ? "max-w-(--breakpoint-2xl)" : "",
+        className,
       )}
     >
       {children}

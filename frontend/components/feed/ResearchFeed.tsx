@@ -50,7 +50,7 @@ export default function ResearchFeed({ initialData }: any) {
 
   const researches = useMemo(
     () => data?.pages.flatMap((page) => page.researches) || [],
-    [data]
+    [data],
   );
   if (status === "pending") {
     return <ResearchesLoadingSkeleton />;
@@ -140,7 +140,7 @@ export default function ResearchFeed({ initialData }: any) {
       )}
       {(researches.length > 0 || isFetchingNextPage) && (
         <InfiniteScrollContainer
-          className="grid grid-cols-3 gap-4 space-y-5 max-md:grid-cols-1"
+          className="grid grid-cols-3 xl:grid-cols-4 gap-4 space-y-5 max-md:grid-cols-1"
           onBottomReached={() => hasNextPage && !isFetching && fetchNextPage()}
         >
           {researches.map((research) => (

@@ -5,7 +5,11 @@ import { APIError, createAuthMiddleware } from "better-auth/api";
 import { nextCookies } from "better-auth/next-js";
 import {
   admin,
+  // bearer,
   customSession,
+  // deviceAuthorization,
+  // jwt,
+  lastLoginMethod,
   magicLink,
   multiSession,
   organization,
@@ -26,6 +30,7 @@ import type { ExtendedUser } from "@/types/auth-types";
 import transporter from "./nodemailer";
 
 const options = {
+  appName: "At campus",
   database: prismaAdapter(prisma, {
     provider: "mongodb",
   }),
@@ -254,120 +259,14 @@ const options = {
       roles,
     }),
     organization({
-      requireEmailVerificationOnInvitation: true,
-      // allowUserToCreateOrganization: async (user: ExtendedUser) => {
-      //   // Only institutions and organizations can create organizations
-      //   return user.role === "INSTITUTION" || user.role === "ORGANIZATION";
-      // },
-      organizationHooks: {
-        // Before creating an invitation
-        beforeCreateInvitation: async ({ invitation }) => {
-          // Custom validation or expiration logic
-          const customExpiration = new Date(
-            Date.now() + 1000 * 60 * 60 * 24 * 7,
-          ); // 7 days
-
-          return {
-            data: {
-              ...invitation,
-              expiresAt: customExpiration,
-            },
-          };
-        },
-
-        // After creating an invitation
-        afterCreateInvitation: async ({
-          invitation,
-          inviter,
-          organization,
-        }: any) => {
-          // Send custom invitation email
-          try {
-            await transporter.sendMail({
-              to: invitation.email,
-              subject: `You've been invited to join ${organization.name}`,
-              html: await render(
-                reactInvitationEmail({
-                  username: invitation.email,
-                  invitedByUsername: inviter.name || inviter.email,
-                  invitedByEmail: inviter.email,
-                  teamName: organization.name,
-                  inviteLink:
-                    process.env.NODE_ENV === "development"
-                      ? `http://localhost:3000/accept-invitation/${invitation.id}`
-                      : `${process.env.NEXT_PUBLIC_APP_URL}/accept-invitation/${invitation.id}`,
-                }),
-              ),
-            });
-          } catch (error) {
-            console.error("Error sending invitation email:", error);
-          }
-        },
-
-        // Before accepting an invitation
-        // beforeAcceptInvitation: async ({
-        //   invitation,
-        //   user,
-        //   organization,
-        // }: any) => {
-        //   // Check if invitation is still valid
-        //   if (invitation.expiresAt < new Date()) {
-        //     throw new APIError("BAD_REQUEST", {
-        //       message: "Invitation has expired",
-        //     });
-        //   }
-
-        //   if (invitation.status !== "pending") {
-        //     throw new APIError("BAD_REQUEST", {
-        //       message: "Invitation is no longer valid",
-        //     });
-        //   }
-
-        //   return {
-        //     data: {
-        //       invitation,
-        //       user,
-        //       organization,
-        //     },
-        //   };
-        // },
-
-        // After accepting an invitation
-        afterAcceptInvitation: async ({ invitation }: any) => {
-          // Update invitation status
-          // Fix: only update if invitation exists
-          if (invitation?.id) {
-            try {
-              await prisma.invitation.update({
-                where: { id: invitation.id },
-                data: { status: "accepted" },
-              });
-            } catch (error) {
-              console.error("Error updating invitation:", error);
-            }
-          }
-        },
-      },
-      // Configure invitation settings
-      invitation: {
-        expiresIn: 7 * 24 * 60 * 60, // 7 days in seconds
-        requireAdmin: false, // Allow organization members to send invitations
-        allowCustomMetadata: true, // Enable invitation metadata support
-      },
-
-      // Enable multi-organization support
-      allowUsersToCreateOrganizations: true,
-      async sendInvitationEmail(data: any) {
-        // This is now handled in afterCreateInvitation hook for more control
-        // Keeping this as fallback
+      async sendInvitationEmail(data) {
         await transporter.sendMail({
           to: data.email,
           subject: "You've been invited to join an organization",
           html: await render(
             reactInvitationEmail({
               username: data.email,
-              invitedByUsername:
-                data.inviter.user.name || data.inviter.user.email,
+              invitedByUsername: data.inviter.user.name,
               invitedByEmail: data.inviter.user.email,
               teamName: data.organization.name,
               inviteLink:
@@ -375,13 +274,142 @@ const options = {
                   ? `http://localhost:3000/accept-invitation/${data.id}`
                   : `${
                       process.env.BETTER_AUTH_URL ||
-                      process.env.NEXT_PUBLIC_APP_URL
+                      "https://demo.better-auth.com"
                     }/accept-invitation/${data.id}`,
             }),
           ),
         });
       },
     }),
+    // organization({
+    //   requireEmailVerificationOnInvitation: true,
+    //   // allowUserToCreateOrganization: async (user: ExtendedUser) => {
+    //   //   // Only institutions and organizations can create organizations
+    //   //   return user.role === "INSTITUTION" || user.role === "ORGANIZATION";
+    //   // },
+    //   organizationHooks: {
+    //     // Before creating an invitation
+    //     beforeCreateInvitation: async ({ invitation }) => {
+    //       // Custom validation or expiration logic
+    //       const customExpiration = new Date(
+    //         Date.now() + 1000 * 60 * 60 * 24 * 7,
+    //       ); // 7 days
+
+    //       return {
+    //         data: {
+    //           ...invitation,
+    //           expiresAt: customExpiration,
+    //         },
+    //       };
+    //     },
+
+    //     // After creating an invitation
+    //     afterCreateInvitation: async ({
+    //       invitation,
+    //       inviter,
+    //       organization,
+    //     }: any) => {
+    //       // Send custom invitation email
+    //       try {
+    //         await transporter.sendMail({
+    //           to: invitation.email,
+    //           subject: `You've been invited to join ${organization.name}`,
+    //           html: await render(
+    //             reactInvitationEmail({
+    //               username: invitation.email,
+    //               invitedByUsername: inviter.name || inviter.email,
+    //               invitedByEmail: inviter.email,
+    //               teamName: organization.name,
+    //               inviteLink:
+    //                 process.env.NODE_ENV === "development"
+    //                   ? `http://localhost:3000/accept-invitation/${invitation.id}`
+    //                   : `${process.env.NEXT_PUBLIC_APP_URL}/accept-invitation/${invitation.id}`,
+    //             }),
+    //           ),
+    //         });
+    //       } catch (error) {
+    //         console.error("Error sending invitation email:", error);
+    //       }
+    //     },
+
+    //     // Before accepting an invitation
+    //     // beforeAcceptInvitation: async ({
+    //     //   invitation,
+    //     //   user,
+    //     //   organization,
+    //     // }: any) => {
+    //     //   // Check if invitation is still valid
+    //     //   if (invitation.expiresAt < new Date()) {
+    //     //     throw new APIError("BAD_REQUEST", {
+    //     //       message: "Invitation has expired",
+    //     //     });
+    //     //   }
+
+    //     //   if (invitation.status !== "pending") {
+    //     //     throw new APIError("BAD_REQUEST", {
+    //     //       message: "Invitation is no longer valid",
+    //     //     });
+    //     //   }
+
+    //     //   return {
+    //     //     data: {
+    //     //       invitation,
+    //     //       user,
+    //     //       organization,
+    //     //     },
+    //     //   };
+    //     // },
+
+    //     // After accepting an invitation
+    //     afterAcceptInvitation: async ({ invitation }: any) => {
+    //       // Update invitation status
+    //       // Fix: only update if invitation exists
+    //       if (invitation?.id) {
+    //         try {
+    //           await prisma.invitation.update({
+    //             where: { id: invitation.id },
+    //             data: { status: "accepted" },
+    //           });
+    //         } catch (error) {
+    //           console.error("Error updating invitation:", error);
+    //         }
+    //       }
+    //     },
+    //   },
+    //   // Configure invitation settings
+    //   invitation: {
+    //     expiresIn: 7 * 24 * 60 * 60, // 7 days in seconds
+    //     requireAdmin: false, // Allow organization members to send invitations
+    //     allowCustomMetadata: true, // Enable invitation metadata support
+    //   },
+
+    //   // Enable multi-organization support
+    //   allowUsersToCreateOrganizations: true,
+    //   async sendInvitationEmail(data: any) {
+    //     // This is now handled in afterCreateInvitation hook for more control
+    //     // Keeping this as fallback
+    //     await transporter.sendMail({
+    //       to: data.email,
+    //       subject: "You've been invited to join an organization",
+    //       html: await render(
+    //         reactInvitationEmail({
+    //           username: data.email,
+    //           invitedByUsername:
+    //             data.inviter.user.name || data.inviter.user.email,
+    //           invitedByEmail: data.inviter.user.email,
+    //           teamName: data.organization.name,
+    //           inviteLink:
+    //             process.env.NODE_ENV === "development"
+    //               ? `http://localhost:3000/accept-invitation/${data.id}`
+    //               : `${
+    //                   process.env.BETTER_AUTH_URL ||
+    //                   process.env.NEXT_PUBLIC_APP_URL
+    //                 }/accept-invitation/${data.id}`,
+    //         }),
+    //       ),
+    //     });
+    //   },
+    // }),
     multiSession({ maximumSessions: 3 }),
     twoFactor({
       otpOptions: {
@@ -394,6 +422,17 @@ const options = {
         },
       },
     }),
+    // bearer(),
+    // deviceAuthorization({
+    //   expiresIn: "3min",
+    //   interval: "5s",
+    // }),
+    lastLoginMethod(),
+    // jwt({
+    //   jwt: {
+    //     issuer: process.env.BETTER_AUTH_URL,
+    //   },
+    // }),
     magicLink({
       sendMagicLink: async ({ email, url }: { email: string; url: string }) => {
         await sendEmailAction({
@@ -414,37 +453,58 @@ export const auth = betterAuth({
   plugins: [
     ...(options.plugins ?? []),
     customSession(
-      async ({ user, session }) => ({
-        session: {
-          ...session,
-          ipAddress: session.ipAddress,
-          expiresAt: session.expiresAt,
-          token: session.token,
-          userAgent: session.userAgent,
-          impersonatedBy: session.impersonatedBy,
-        },
-        user: {
-          // ...user,
-          id: user.id,
-          username: user.username,
-          displayUsername: user.displayUsername,
-          name: user.name,
-          email: user.email,
-          image: user.image,
-          createdAt: user.createdAt,
-          updatedAt: user.updatedAt,
-          role: user.role,
-          status: user.status,
-          emailVerified: user.emailVerified,
-          twoFactorEnabled: user.twoFactorEnabled,
-          banned: user.banned,
-          banReason: user.banReason,
-          banExpires: user.banExpires,
-        },
-      }),
+      async ({ user, session }) => {
+        return {
+          session: {
+            ...session,
+            ipAddress: session.ipAddress,
+            expiresAt: session.expiresAt,
+            token: session.token,
+            userAgent: session.userAgent,
+            impersonatedBy: session.impersonatedBy,
+          },
+          user: {
+            ...user,
+            id: user.id,
+            username: user.username,
+            displayUsername: user.displayUsername,
+            name: user.name,
+            email: user.email,
+            image: user.image,
+            createdAt: user.createdAt,
+            updatedAt: user.updatedAt,
+            role: user.role,
+            status: user.status,
+            emailVerified: user.emailVerified,
+            twoFactorEnabled: user.twoFactorEnabled,
+            banned: user.banned,
+            banReason: user.banReason,
+            banExpires: user.banExpires,
+          },
+        };
+      },
       options,
+      { shouldMutateListDeviceSessionsEndpoint: true },
     ),
   ],
 });
+export type Session = typeof auth.$Infer.Session;
+export type ActiveOrganization = typeof auth.$Infer.ActiveOrganization;
+export type OrganizationRole = ActiveOrganization["members"][number]["role"];
+export type Invitation = typeof auth.$Infer.Invitation;
+export type DeviceSession = Awaited<
+  ReturnType<typeof auth.api.listDeviceSessions>
+>[number];
 
+async function getAllDeviceSessions(headers: Headers): Promise<unknown[]> {
+  return await auth.api.listDeviceSessions({
+    headers,
+  });
+}
+
+async function getAllUserOrganizations(headers: Headers): Promise<unknown[]> {
+  return await auth.api.listOrganizations({
+    headers,
+  });
+}
 export type ErrorCode = keyof typeof auth.$ERROR_CODES | "UNKNOWN";

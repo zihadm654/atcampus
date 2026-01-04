@@ -80,10 +80,10 @@ export default function Course({ course }: { course: CourseData }) {
       </CardHeader>
 
       <Link href={`/courses/${course.id}`}>
-        <CardContent className="pt-0 pb-2">
+        <CardContent className="pt-0 pb-2 px-3">
           <CardTitle className="text-xl">{course.title}</CardTitle>
           <div className="grid grid-cols-2 gap-4 py-2">
-            <p className="text-lg">{formatRelativeDate(course.createdAt)}</p>
+            <p>{formatRelativeDate(course.createdAt)}</p>
             <Badge className="text-xs" variant="outline">
               {course.code}
             </Badge>
@@ -99,7 +99,7 @@ export default function Course({ course }: { course: CourseData }) {
         </CardContent>
       </Link>
 
-      <CardFooter className="pt-0">
+      <CardFooter className="pt-0 px-3">
         <Button
           className="w-full"
           disabled={

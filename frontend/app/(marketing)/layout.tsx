@@ -31,7 +31,7 @@ export default async function MarketingLayout({
   return (
     <div className="flex min-h-screen flex-col">
       <NavBarServer scroll={true} />
-      <div className="relative mx-auto flex w-full max-w-7xl grow gap-4 p-2 lg:gap-20">
+      <div className="relative mx-auto flex w-full container grow gap-4 p-2 lg:gap-20">
         <DashboardSidebar links={filteredLinks} />
         {children}
         <TrendsSidebar />

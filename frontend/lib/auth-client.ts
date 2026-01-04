@@ -1,7 +1,9 @@
 import {
   adminClient,
   customSessionClient,
+  deviceAuthorizationClient,
   inferAdditionalFields,
+  lastLoginMethodClient,
   magicLinkClient,
   multiSessionClient,
   organizationClient,
@@ -29,6 +31,9 @@ export const authClient = createAuthClient({
     }),
     multiSessionClient(),
     organizationClient(),
+    // passkeyClient(),
+    deviceAuthorizationClient(),
+    lastLoginMethodClient(),
   ],
   fetchOptions: {
     onError(e) {

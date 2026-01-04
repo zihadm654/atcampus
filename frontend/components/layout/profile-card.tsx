@@ -12,11 +12,11 @@ const ProfileCard = () => {
 
   return (
     <Card className="border-0 py-1 shadow-none">
-      <CardContent className="flex items-center justify-start gap-2">
+      <CardContent className="flex items-center justify-start gap-2 px-3">
         <UserAvatar avatarUrl={user.image ?? null} size={40} />
         <div className="hidden lg:block">
           <h2 className="font-bold">{user?.name}</h2>
-          <p>@{user.username}</p>
+          <p className="text-sm">@{user.username}</p>
         </div>
       </CardContent>
     </Card>

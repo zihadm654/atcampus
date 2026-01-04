@@ -63,7 +63,7 @@ export default async function DashboardPage() {
         heading="Dashboard"
         text={"Current Role : — explore settings."}
       />
-      <div className="container mx-auto max-w-screen-lg space-y-4 p-3 max-md:p-2">
+      <div className="container mx-auto max-w-5xl space-y-4 p-3 max-md:p-2">
         <div className="flex items-center justify-between gap-2">
           <ReturnButton href="/" label="Home" />
           <div className="flex items-center gap-2">

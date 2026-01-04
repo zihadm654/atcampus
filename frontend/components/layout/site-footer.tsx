@@ -9,8 +9,8 @@ import { Icons } from "../shared/icons";
 
 export function SiteFooter({ className }: React.HTMLAttributes<HTMLElement>) {
   return (
-    <footer className={cn("border-t", className)}>
-      <div className="container grid max-w-6xl grid-cols-2 gap-6 py-14 md:grid-cols-4">
+    <footer className={cn("border-t container", className)}>
+      <div className="grid grid-cols-2 gap-6 py-14 md:grid-cols-4">
         {footerLinks.map((section) => (
           <div key={section.title}>
             <span className="font-medium text-foreground text-sm">
@@ -36,7 +36,7 @@ export function SiteFooter({ className }: React.HTMLAttributes<HTMLElement>) {
       </div>
 
       <div className="border-t py-4">
-        <div className="container flex max-w-6xl items-center justify-between">
+        <div className="flex items-center justify-between">
           <span className="text-muted-foreground text-sm">
             Copyright &copy; 2025. All rights reserved.
           </span>

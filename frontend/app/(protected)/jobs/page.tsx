@@ -61,17 +61,15 @@ export default async function JobsPage() {
   ]);
 
   return (
-    <div className="flex w-full flex-col gap-6">
-      <div>
-        <div className="flex items-center gap-3">
-          <Briefcase className="h-8 w-8" />
-          <h1 className="font-bold text-3xl">Find Your Dream Job</h1>
-        </div>
-        <p className="max-w-2xl">
-          Discover exciting opportunities to gain practical experience and
-          advance your career
-        </p>
+    <div className="flex w-full flex-col gap-3">
+      <div className="flex items-center gap-3">
+        <Briefcase className="size-6" />
+        <h1 className="font-bold text-3xl">Find Your Dream Job</h1>
       </div>
+      <p className="max-w-2xl">
+        Discover exciting opportunities to gain practical experience and advance
+        your career
+      </p>
       <JobFeed initialData={initialJobsData} user={user} />
     </div>
   );

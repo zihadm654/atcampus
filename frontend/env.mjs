@@ -5,7 +5,7 @@ export const env = createEnv({
   server: {
     // This is optional because it's only used in development.
     // See https://better-auth.js.org/deployment.
-    BETTER_AUTH_URL: z.string().url().optional(),
+    BETTER_AUTH_URL: z.url().optional(),
     BETTER_AUTH_SECRET: z.string().min(1),
     GOOGLE_CLIENT_ID: z.string().min(1),
     GOOGLE_CLIENT_SECRET: z.string().min(1),
