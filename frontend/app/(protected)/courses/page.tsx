@@ -81,7 +81,7 @@ export default async function CoursesPage() {
   const initialCoursesData = await getInitialCourses();
 
   return (
-    <div className="flex w-full flex-col gap-6">
+    <div className="flex w-full flex-col gap-4">
       <div className="flex items-center justify-between gap-2 p-2">
         <div className="">
           <h1 className="font-bold text-3xl max-md:text-xl">Courses</h1>

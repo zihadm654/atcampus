@@ -140,7 +140,7 @@ export default function CourseFeed({ user }: Props) {
       {/* Only show course grid when we have courses or are loading more */}
       {(courses.length > 0 || isFetchingNextPage) && (
         <InfiniteScrollContainer
-          className="grid grid-cols-3 xl:grid-cols-4 gap-4 space-y-5 max-md:grid-cols-1"
+          className="grid grid-cols-3 xl:grid-cols-4 gap-3 space-y-5 max-md:grid-cols-1"
           onBottomReached={() => hasNextPage && !isFetching && fetchNextPage()}
         >
           {courses.map((course) => (
